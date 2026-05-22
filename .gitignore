@@ -1,0 +1,52 @@
+# COMPILATION & BUILDS (Maven/Gradle/Java)
+target/
+build/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+*.tmp
+*.swp
+
+# ENVIRONMENT & SECURITY (CRÍTICO)
+.env
+.env.local
+.env.*.local
+
+# INTELLIJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS CODE
+.vscode/
+
+# ECLIPSE / STS (Spring Tool Suite)
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# NETBEANS
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# LOGS
+*.log
+spring.log
+
+# OS GENERATED FILES
+.DS_Store
+Thumbs.db
+
+# DOCUMENTATION
+HELP.md
