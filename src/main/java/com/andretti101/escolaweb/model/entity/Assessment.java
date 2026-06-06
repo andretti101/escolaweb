@@ -52,18 +52,18 @@ public class Assessment implements Serializable {
     private String description;
 
     @Builder.Default
-    @DecimalMin(value = "0.0", message = "O valor máximo deve ser de pelo menos 0.")
-    @DecimalMax(value = "999.99", message = "O valor máximo deve ser no máximo 999.99.")
-    @Column(name = "maximum_score", precision = 5, scale = 2)
+    @DecimalMin(value = "0.0", message = "O valor mínimo permitido é 0.0.")
+    @DecimalMax(value = "10.0", message = "O valor máximo permitido é 10.0.")
+    @Column(name = "maximum_score", precision = 3, scale = 1, nullable = false)
     private BigDecimal maximumScore = BigDecimal.TEN;
 
     @Column(name = "assessment_date")
     private LocalDate assessmentDate;
 
-    @Builder.Default
+    @NotNull(message = "O tipo de avaliação é obrigatório.")
     @Enumerated(EnumType.STRING)
-    @Column(length = 15)
-    private AssessmentType type = AssessmentType.EXAM; // Atenção: alterado de PROVA para EXAM!
+    @Column(name = "assessment_type", length = 20, nullable = false)
+    private AssessmentType type;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

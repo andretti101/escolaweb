@@ -22,10 +22,7 @@ public class Student implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Shares the same PK as the User entity (one-to-one via FK).
-     * The id is not auto-generated here; it mirrors the user's id.
-     */
+
     @Id
     @Column(name = "id")
     private Integer id;

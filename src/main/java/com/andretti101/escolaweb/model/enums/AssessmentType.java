@@ -3,9 +3,7 @@ package com.andretti101.escolaweb.model.enums;
 public enum AssessmentType {
     EXAM("Prova"),
     ASSIGNMENT("Trabalho"),
-    ACTIVITY("Atividade"),
-    RECOVERY("Recuperação");
-
+    ACTIVITY("Atividade");
     private final String label;
 
     AssessmentType(String label) {

@@ -34,8 +34,8 @@ public class SchoolSettings implements Serializable {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "period_type", length = 10)
-    private PeriodType periodType = PeriodType.TRIMESTER; // Atenção: se o seu Enum ainda estiver em PT (TRIMESTRE), lembre-se de alterar lá também!
+    @Column(name = "period_type", length = 20)
+    private PeriodType periodType = PeriodType.TRIMESTER;
 
     @Builder.Default
     @DecimalMin(value = "0.0", message = "A frequência mínima deve ser de pelo menos 0.")
@@ -46,8 +46,8 @@ public class SchoolSettings implements Serializable {
     @Builder.Default
     @DecimalMin(value = "0.0", message = "A média mínima deve ser de pelo menos 0.")
     @DecimalMax(value = "10.0", message = "A média mínima deve ser no máximo 10.")
-    @Column(name = "minimum_average", precision = 5, scale = 2)
-    private BigDecimal minimumAverage = new BigDecimal("6.00");
+    @Column(name = "minimum_average", precision = 3, scale = 1)
+    private BigDecimal minimumAverage = new BigDecimal("6.0");
 
     @Builder.Default
     @Column(name = "recovery_enabled", nullable = false)
