@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "historico_frequencia")
+@Table(name = "attendance_history")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,18 +24,18 @@ public class AttendanceHistory implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Attendance record is required.")
+    @NotNull(message = "O registro de frequência é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_chamada", nullable = false)
+    @JoinColumn(name = "attendance_id", nullable = false)
     private Attendance attendance;
 
-    @Column(name = "status_antigo", length = 30)
+    @Column(name = "old_status", length = 30)
     private String oldStatus;
 
-    @Column(name = "status_novo", length = 30)
+    @Column(name = "new_status", length = 30)
     private String newStatus;
 
     @CreationTimestamp
-    @Column(name = "alterado_em", updatable = false)
+    @Column(name = "changed_at", updatable = false)
     private LocalDateTime changedAt;
 }

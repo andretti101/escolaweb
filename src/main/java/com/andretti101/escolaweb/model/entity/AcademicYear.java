@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "anos_letivos")
+@Table(name = "academic_years")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,13 +25,13 @@ public class AcademicYear implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Year is required.")
+    @NotNull(message = "O ano letivo é obrigatório.")
     @Column(nullable = false, unique = true)
-    private Integer ano;
+    private Integer year;
 
     @Builder.Default
     @Column(nullable = false)
-    private boolean ativo = false;
+    private boolean active = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

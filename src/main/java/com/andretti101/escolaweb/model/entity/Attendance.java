@@ -13,8 +13,8 @@ import java.util.List;
 
 @Entity
 @Table(
-    name = "chamadas",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"id_aula", "id_aluno"})
+        name = "attendances",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"lesson_id", "student_id"})
 )
 @Getter
 @Setter
@@ -30,23 +30,23 @@ public class Attendance implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Lesson is required.")
+    @NotNull(message = "A aula é obrigatória.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_aula", nullable = false)
+    @JoinColumn(name = "lesson_id", nullable = false)
     private Lesson lesson;
 
-    @NotNull(message = "Student is required.")
+    @NotNull(message = "O aluno é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_aluno", nullable = false)
+    @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    @NotNull(message = "Attendance status is required.")
+    @NotNull(message = "O status da presença é obrigatório.")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private AttendanceStatus status;
 
     @Column(columnDefinition = "TEXT")
-    private String observacao;
+    private String notes;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

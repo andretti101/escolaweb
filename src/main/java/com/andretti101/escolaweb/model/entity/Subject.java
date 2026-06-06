@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "materias")
+@Table(name = "subjects")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,13 +27,13 @@ public class Subject implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Subject name is required.")
-    @Size(max = 100, message = "Subject name must have at most 100 characters.")
+    @NotBlank(message = "O nome da matéria é obrigatório.")
+    @Size(max = 100, message = "O nome da matéria deve ter no máximo 100 caracteres.")
     @Column(nullable = false, unique = true, length = 100)
-    private String nome;
+    private String name;
 
     @Column(columnDefinition = "TEXT")
-    private String descricao;
+    private String description;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

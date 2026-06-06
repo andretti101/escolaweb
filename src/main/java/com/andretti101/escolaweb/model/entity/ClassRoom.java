@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "turmas")
+@Table(name = "class_rooms")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,19 +29,19 @@ public class ClassRoom implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Class number is required.")
-    @Size(max = 20, message = "Class number must have at most 20 characters.")
+    @NotBlank(message = "O número da turma é obrigatório.")
+    @Size(max = 20, message = "O número da turma deve ter no máximo 20 caracteres.")
     @Column(nullable = false, length = 20)
-    private String numero;
+    private String number;
 
-    @NotNull(message = "Shift is required.")
+    @NotNull(message = "O turno é obrigatório.")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private Shift turno;
+    private Shift shift;
 
-    @NotNull(message = "Academic year is required.")
+    @NotNull(message = "O ano letivo é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_ano_letivo", nullable = false)
+    @JoinColumn(name = "academic_year_id", nullable = false)
     private AcademicYear academicYear;
 
     @CreationTimestamp

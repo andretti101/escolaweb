@@ -1,8 +1,18 @@
 package com.andretti101.escolaweb.model.enums;
 
 public enum StudentSituation {
-    APROVADO,
-    REPROVADO,
-    EM_RECUPERACAO,
-    REPROVADO_POR_FALTA
+    APPROVED("Aprovado"),
+    FAILED("Reprovado"),
+    IN_RECOVERY("Em Recuperação"),
+    FAILED_BY_ABSENCE("Reprovado por Falta");
+
+    private final String label;
+
+    StudentSituation(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
 }

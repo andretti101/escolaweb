@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "historico_notas")
+@Table(name = "grade_history")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,21 +25,21 @@ public class GradeHistory implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Grade is required.")
+    @NotNull(message = "A nota é obrigatória.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_nota", nullable = false)
+    @JoinColumn(name = "grade_id", nullable = false)
     private Grade grade;
 
-    @Column(name = "nota_antiga", precision = 5, scale = 2)
+    @Column(name = "old_grade", precision = 5, scale = 2)
     private BigDecimal oldGrade;
 
-    @Column(name = "nota_nova", precision = 5, scale = 2)
+    @Column(name = "new_grade", precision = 5, scale = 2)
     private BigDecimal newGrade;
 
     @CreationTimestamp
-    @Column(name = "alterado_em", updatable = false)
+    @Column(name = "changed_at", updatable = false)
     private LocalDateTime changedAt;
 
     @Column(columnDefinition = "TEXT")
-    private String observacao;
+    private String notes;
 }

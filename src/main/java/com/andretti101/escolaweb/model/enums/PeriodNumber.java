@@ -1,18 +1,18 @@
 package com.andretti101.escolaweb.model.enums;
 
 public enum PeriodNumber {
-    ONE("1"),
-    TWO("2"),
-    THREE("3"),
-    FOUR("4");
+    ONE("1º Período"),
+    TWO("2º Período"),
+    THREE("3º Período"),
+    FOUR("4º Período");
 
-    private final String value;
+    private final String label;
 
-    PeriodNumber(String value) {
-        this.value = value;
+    PeriodNumber(String label) {
+        this.label = label;
     }
 
-    public String getValue() {
-        return value;
+    public String getLabel() {
+        return label;
     }
 }

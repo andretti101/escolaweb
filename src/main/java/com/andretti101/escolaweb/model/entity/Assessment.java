@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "avaliacoes")
+@Table(name = "assessments")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,37 +33,37 @@ public class Assessment implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Teacher-class-subject assignment is required.")
+    @NotNull(message = "A atribuição de professor, turma e matéria é obrigatória.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_professor_turma_materia", nullable = false)
+    @JoinColumn(name = "teacher_class_subject_id", nullable = false)
     private TeacherClassSubject teacherClassSubject;
 
-    @NotNull(message = "Period is required.")
+    @NotNull(message = "O período é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_periodo", nullable = false)
+    @JoinColumn(name = "period_id", nullable = false)
     private AcademicPeriod period;
 
-    @NotBlank(message = "Title is required.")
-    @Size(max = 100, message = "Title must have at most 100 characters.")
+    @NotBlank(message = "O título é obrigatório.")
+    @Size(max = 100, message = "O título deve ter no máximo 100 caracteres.")
     @Column(nullable = false, length = 100)
-    private String titulo;
+    private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String descricao;
+    private String description;
 
     @Builder.Default
-    @DecimalMin(value = "0.0", message = "Maximum value must be at least 0.")
-    @DecimalMax(value = "999.99", message = "Maximum value must be at most 999.99.")
-    @Column(name = "valor_maximo", precision = 5, scale = 2)
+    @DecimalMin(value = "0.0", message = "O valor máximo deve ser de pelo menos 0.")
+    @DecimalMax(value = "999.99", message = "O valor máximo deve ser no máximo 999.99.")
+    @Column(name = "maximum_score", precision = 5, scale = 2)
     private BigDecimal maximumScore = BigDecimal.TEN;
 
-    @Column(name = "data_avaliacao")
+    @Column(name = "assessment_date")
     private LocalDate assessmentDate;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(length = 15)
-    private AssessmentType tipo = AssessmentType.PROVA;
+    private AssessmentType type = AssessmentType.EXAM; // Atenção: alterado de PROVA para EXAM!
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

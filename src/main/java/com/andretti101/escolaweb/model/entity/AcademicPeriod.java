@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "periodos_letivos")
+@Table(name = "academic_periods")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,20 +27,20 @@ public class AcademicPeriod implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Academic year is required.")
+    @NotNull(message = "O ano letivo é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_ano_letivo", nullable = false)
+    @JoinColumn(name = "academic_year_id", nullable = false)
     private AcademicYear academicYear;
 
-    @NotNull(message = "Period number is required.")
+    @NotNull(message = "O número do período é obrigatório.")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 1)
-    private PeriodNumber numero;
+    private PeriodNumber number;
 
-    @Column(name = "data_inicio")
+    @Column(name = "start_date")
     private LocalDate startDate;
 
-    @Column(name = "data_fim")
+    @Column(name = "end_date")
     private LocalDate endDate;
 
     @CreationTimestamp

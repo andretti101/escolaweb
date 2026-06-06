@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "aulas")
+@Table(name = "lessons")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,20 +27,20 @@ public class Lesson implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Teacher-class-subject assignment is required.")
+    @NotNull(message = "A atribuição de professor, turma e matéria é obrigatória.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_professor_turma_materia", nullable = false)
+    @JoinColumn(name = "teacher_class_subject_id", nullable = false)
     private TeacherClassSubject teacherClassSubject;
 
-    @NotNull(message = "Lesson date is required.")
-    @Column(name = "data_aula", nullable = false)
+    @NotNull(message = "A data da aula é obrigatória.")
+    @Column(name = "lesson_date", nullable = false)
     private LocalDate lessonDate;
 
     @Column(columnDefinition = "TEXT")
-    private String conteudo;
+    private String content;
 
     @Column(columnDefinition = "TEXT")
-    private String observacoes;
+    private String notes;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

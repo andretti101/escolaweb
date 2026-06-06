@@ -1,7 +1,17 @@
 package com.andretti101.escolaweb.model.enums;
 
 public enum AttendanceStatus {
-    PRESENTE,
-    FALTA,
-    FALTA_JUSTIFICADA
+    PRESENT("Presente"),
+    ABSENT("Falta"),
+    JUSTIFIED_ABSENCE("Falta Justificada");
+
+    private final String label;
+
+    AttendanceStatus(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
 }

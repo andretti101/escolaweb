@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "alunos")
+@Table(name = "students")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -36,13 +36,13 @@ public class Student implements Serializable {
     private User user;
 
     @Column(nullable = false, unique = true, length = 30)
-    private String matricula;
+    private String enrollment;
 
-    @Column(name = "data_nascimento")
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_turma")
+    @JoinColumn(name = "class_room_id")
     private ClassRoom classRoom;
 
     @CreationTimestamp

@@ -10,8 +10,8 @@ import java.util.List;
 
 @Entity
 @Table(
-    name = "professor_turma_materia",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"id_professor", "id_turma", "id_materia"})
+        name = "teacher_class_subject",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"teacher_id", "class_room_id", "subject_id"})
 )
 @Getter
 @Setter
@@ -28,15 +28,15 @@ public class TeacherClassSubject implements Serializable {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_professor", nullable = false)
+    @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_turma", nullable = false)
+    @JoinColumn(name = "class_room_id", nullable = false)
     private ClassRoom classRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_materia", nullable = false)
+    @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
 
     @CreationTimestamp

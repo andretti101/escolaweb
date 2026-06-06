@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "configuracoes_escola")
+@Table(name = "school_settings")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,33 +28,33 @@ public class SchoolSettings implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Size(max = 150, message = "School name must have at most 150 characters.")
-    @Column(name = "nome_escola", length = 150)
+    @Size(max = 150, message = "O nome da escola deve ter no máximo 150 caracteres.")
+    @Column(name = "school_name", length = 150)
     private String schoolName;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_periodo", length = 10)
-    private PeriodType periodType = PeriodType.TRIMESTRE;
+    @Column(name = "period_type", length = 10)
+    private PeriodType periodType = PeriodType.TRIMESTER; // Atenção: se o seu Enum ainda estiver em PT (TRIMESTRE), lembre-se de alterar lá também!
 
     @Builder.Default
-    @DecimalMin(value = "0.0", message = "Minimum attendance must be at least 0.")
-    @DecimalMax(value = "100.0", message = "Minimum attendance must be at most 100.")
-    @Column(name = "frequencia_minima", precision = 5, scale = 2)
+    @DecimalMin(value = "0.0", message = "A frequência mínima deve ser de pelo menos 0.")
+    @DecimalMax(value = "100.0", message = "A frequência mínima deve ser no máximo 100.")
+    @Column(name = "minimum_attendance", precision = 5, scale = 2)
     private BigDecimal minimumAttendance = new BigDecimal("70.00");
 
     @Builder.Default
-    @DecimalMin(value = "0.0", message = "Minimum average must be at least 0.")
-    @DecimalMax(value = "10.0", message = "Minimum average must be at most 10.")
-    @Column(name = "media_minima", precision = 5, scale = 2)
+    @DecimalMin(value = "0.0", message = "A média mínima deve ser de pelo menos 0.")
+    @DecimalMax(value = "10.0", message = "A média mínima deve ser no máximo 10.")
+    @Column(name = "minimum_average", precision = 5, scale = 2)
     private BigDecimal minimumAverage = new BigDecimal("6.00");
 
     @Builder.Default
-    @Column(name = "recuperacao_ativa", nullable = false)
+    @Column(name = "recovery_enabled", nullable = false)
     private boolean recoveryEnabled = true;
 
     @Builder.Default
-    @Column(name = "boletim_liberado", nullable = false)
+    @Column(name = "report_card_released", nullable = false)
     private boolean reportCardReleased = false;
 
     @CreationTimestamp

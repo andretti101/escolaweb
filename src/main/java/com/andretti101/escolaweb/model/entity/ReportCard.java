@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "boletins")
+@Table(name = "report_cards")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,34 +29,34 @@ public class ReportCard implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Student is required.")
+    @NotNull(message = "O aluno é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_aluno", nullable = false)
+    @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    @NotNull(message = "Teacher-class-subject assignment is required.")
+    @NotNull(message = "A atribuição de professor, turma e matéria é obrigatória.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_professor_turma_materia", nullable = false)
+    @JoinColumn(name = "teacher_class_subject_id", nullable = false)
     private TeacherClassSubject teacherClassSubject;
 
-    @NotNull(message = "Period is required.")
+    @NotNull(message = "O período é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_periodo", nullable = false)
+    @JoinColumn(name = "period_id", nullable = false)
     private AcademicPeriod period;
 
-    @DecimalMin(value = "0.0", message = "Final average must be at least 0.")
-    @DecimalMax(value = "10.0", message = "Final average must be at most 10.")
-    @Column(name = "media_final", precision = 5, scale = 2)
+    @DecimalMin(value = "0.0", message = "A média final deve ser de pelo menos 0.")
+    @DecimalMax(value = "10.0", message = "A média final deve ser no máximo 10.")
+    @Column(name = "final_average", precision = 5, scale = 2)
     private BigDecimal finalAverage;
 
-    @DecimalMin(value = "0.0", message = "Attendance percentage must be at least 0.")
-    @DecimalMax(value = "100.0", message = "Attendance percentage must be at most 100.")
-    @Column(name = "frequencia_percentual", precision = 5, scale = 2)
+    @DecimalMin(value = "0.0", message = "O percentual de frequência deve ser de pelo menos 0.")
+    @DecimalMax(value = "100.0", message = "O percentual de frequência deve ser no máximo 100.")
+    @Column(name = "attendance_percentage", precision = 5, scale = 2)
     private BigDecimal attendancePercentage;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 25)
-    private StudentSituation situacao;
+    private StudentSituation situation;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

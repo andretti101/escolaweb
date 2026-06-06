@@ -15,7 +15,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,37 +30,37 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Name is required.")
-    @Size(max = 150, message = "Name must have at most 150 characters.")
+    @NotBlank(message = "O nome é obrigatório.")
+    @Size(max = 150, message = "O nome deve ter no máximo 150 caracteres.")
     @Column(nullable = false, length = 150)
-    private String nome;
+    private String name;
 
-    @Email(message = "Invalid email.")
-    @NotBlank(message = "Email is required.")
-    @Size(max = 150, message = "Email must have at most 150 characters.")
+    @Email(message = "E-mail inválido.")
+    @NotBlank(message = "O e-mail é obrigatório.")
+    @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotBlank(message = "Password is required.")
+    @NotBlank(message = "A senha é obrigatória.")
     @Column(nullable = false, length = 255)
-    private String senha;
+    private String password;
 
-    @Size(max = 20, message = "Phone number must have at most 20 characters.")
+    @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres.")
     @Column(length = 20)
-    private String telefone;
+    private String phone;
 
-    @CPF(message = "Invalid CPF.")
+    @CPF(message = "CPF inválido.")
     @Column(unique = true, length = 14)
     private String cpf;
 
     @Builder.Default
     @Column(nullable = false)
-    private boolean ativo = true;
+    private boolean active = true;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private UserType tipo;
+    private UserType type;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

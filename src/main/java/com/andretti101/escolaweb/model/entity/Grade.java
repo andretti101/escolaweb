@@ -15,8 +15,8 @@ import java.util.List;
 
 @Entity
 @Table(
-    name = "notas",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"id_aluno", "id_avaliacao"})
+        name = "grades",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "assessment_id"})
 )
 @Getter
 @Setter
@@ -32,20 +32,20 @@ public class Grade implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "Student is required.")
+    @NotNull(message = "O aluno é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_aluno", nullable = false)
+    @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    @NotNull(message = "Assessment is required.")
+    @NotNull(message = "A avaliação é obrigatória.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_avaliacao", nullable = false)
+    @JoinColumn(name = "assessment_id", nullable = false)
     private Assessment assessment;
 
-    @DecimalMin(value = "0.0", message = "Grade must be at least 0.")
-    @DecimalMax(value = "10.0", message = "Grade must be at most 10.")
+    @DecimalMin(value = "0.0", message = "A nota deve ser de pelo menos 0.")
+    @DecimalMax(value = "10.0", message = "A nota deve ser no máximo 10.")
     @Column(precision = 5, scale = 2)
-    private BigDecimal nota;
+    private BigDecimal score;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
