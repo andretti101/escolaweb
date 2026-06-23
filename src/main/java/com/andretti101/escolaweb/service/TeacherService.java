@@ -1,57 +1,25 @@
 package com.andretti101.escolaweb.service;
 
 import com.andretti101.escolaweb.model.entity.Teacher;
-import com.andretti101.escolaweb.model.entity.User;
-import com.andretti101.escolaweb.repository.TeacherRepository;
-import com.andretti101.escolaweb.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class TeacherService {
+public interface TeacherService {
 
-    private final TeacherRepository teacherRepository;
-    private final UserRepository userRepository;
+    Teacher create(Teacher teacher);
 
-    public Teacher create(Integer userId) {
+    Teacher update(Integer id, Teacher teacher);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Usuário não encontrado."));
+    Teacher findById(Integer id);
 
-        Teacher teacher = Teacher.builder()
-                .user(user)
-                .build();
+    List<Teacher> findAll();
 
-        return teacherRepository.save(teacher);
-    }
+    void delete(Integer id);
 
-    public Teacher findById(Integer id) {
+    List<TeacherClassSubject> findClassSubjects(Integer teacherId);
 
-        return teacherRepository.findById(id)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Professor não encontrado."));
-    }
+    boolean teachesClassSubject(Integer teacherId, Integer classSubjectId);
 
-    public List<Teacher> findAll() {
-        return teacherRepository.findAll();
-    }
-
-    public Teacher update(Integer id, Teacher updatedTeacher) {
-
-        Teacher teacher = findById(id);
-
-        return teacherRepository.save(teacher);
-    }
-
-    public void delete(Integer id) {
-
-        Teacher teacher = findById(id);
-
-        teacherRepository.delete(teacher);
-    }
+    void validateOwnership(Integer teacherId, Integer classSubjectId);
 }

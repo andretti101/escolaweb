@@ -1,64 +1,29 @@
 package com.andretti101.escolaweb.service;
 
 import com.andretti101.escolaweb.model.entity.User;
-import com.andretti101.escolaweb.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import com.andretti101.escolaweb.model.enums.UserType;
 
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
+public interface UserService {
 
-    private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
+    User create(User user);
 
-    public User create(User user) {
+    User update(Integer id, User user);
 
-        if (repository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("E-mail já cadastrado.");
-        }
+    User findById(Integer id);
 
-        if (user.getCpf() != null &&
-                repository.existsByCpf(user.getCpf())) {
-            throw new RuntimeException("CPF já cadastrado.");
-        }
+    User findByEmail(String email);
 
-        user.setPassword(
-                passwordEncoder.encode(user.getPassword())
-        );
+    List<User> findAll();
 
-        return repository.save(user);
-    }
+    void delete(Integer id);
 
-    public List<User> findAll() {
-        return repository.findAll();
-    }
+    User authenticate(String email, String password);
 
-    public User findById(Integer id) {
-        return repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Usuário não encontrado."));
-    }
+    void validateAccess(User requestingUser, UserType... allowedTypes);
 
-    public User update(Integer id, User data) {
+    boolean hasFullManagementAccess(User user);
 
-        User user = findById(id);
-
-        user.setName(data.getName());
-        user.setEmail(data.getEmail());
-        user.setPhone(data.getPhone());
-        user.setCpf(data.getCpf());
-        user.setType(data.getType());
-        user.setActive(data.isActive());
-
-        return repository.save(user);
-    }
-
-    public void delete(Integer id) {
-        findById(id);
-        repository.deleteById(id);
-    }
+    boolean hasAdminPanelAccess(User user);
 }
