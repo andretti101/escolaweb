@@ -14,4 +14,5 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Integer>
     List<Assessment> findByPeriod(AcademicPeriod period);
     boolean existsByTeacherClassSubject(TeacherClassSubject teacherClassSubject);
     boolean existsByPeriod(AcademicPeriod period);
+    long countByTeacherClassSubjectAndPeriod(TeacherClassSubject teacherClassSubject, AcademicPeriod period);
 }

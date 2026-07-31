@@ -48,13 +48,14 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
             throw new IllegalStateException(
                     "Cannot assign inactive subject with id " + subject.getId() + ".");
         }
-
         if (teacherClassSubjectRepository.existsByTeacherAndClassRoomAndSubject(teacher, classRoom, subject)) {
             throw new IllegalStateException(
                     "Teacher with id " + teacher.getId()
-                    + " is already assigned to subject with id " + subject.getId()
-                    + " in classroom with id " + classRoom.getId() + ".");
+                            + " is already assigned to subject with id " + subject.getId()
+                            + " in classroom with id " + classRoom.getId() + ".");
         }
+
+        validateAssessmentLimits(tcs.getMinAssessmentsPerPeriod(), tcs.getMaxAssessmentsPerPeriod());
 
         tcs.setTeacher(teacher);
         tcs.setClassRoom(classRoom);
@@ -79,13 +80,17 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
         if (changed && teacherClassSubjectRepository.existsByTeacherAndClassRoomAndSubject(teacher, classRoom, subject)) {
             throw new IllegalStateException(
                     "Teacher with id " + teacher.getId()
-                    + " is already assigned to subject with id " + subject.getId()
-                    + " in classroom with id " + classRoom.getId() + ".");
+                            + " is already assigned to subject with id " + subject.getId()
+                            + " in classroom with id " + classRoom.getId() + ".");
         }
+
+        validateAssessmentLimits(incoming.getMinAssessmentsPerPeriod(), incoming.getMaxAssessmentsPerPeriod());
 
         existing.setTeacher(teacher);
         existing.setClassRoom(classRoom);
         existing.setSubject(subject);
+        existing.setMinAssessmentsPerPeriod(incoming.getMinAssessmentsPerPeriod());
+        existing.setMaxAssessmentsPerPeriod(incoming.getMaxAssessmentsPerPeriod());
 
         return existing;
     }
@@ -131,6 +136,15 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
     public List<TeacherClassSubject> findByClassRoom(Integer classRoomId) {
         ClassRoom classRoom = classRoomService.findById(classRoomId);
         return teacherClassSubjectRepository.findByClassRoom(classRoom);
+    }
+
+    // ── Private helpers
+    private void validateAssessmentLimits(Integer min, Integer max) {
+        if (min != null && max != null && min > max) {
+            throw new IllegalArgumentException(
+                    "The minimum number of assessments (" + min
+                            + ") cannot be greater than the maximum (" + max + ").");
+        }
     }
 
     TeacherClassSubject findTcsOrThrow(Integer id) {

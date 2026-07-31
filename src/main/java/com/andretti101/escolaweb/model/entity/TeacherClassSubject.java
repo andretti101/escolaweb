@@ -1,7 +1,9 @@
 package com.andretti101.escolaweb.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
@@ -38,6 +40,14 @@ public class TeacherClassSubject implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
+
+    @Min(value = 1, message = "O número mínimo de avaliações deve ser ao menos 1.")
+    @Column(name = "min_assessments_per_period")
+    private Integer minAssessmentsPerPeriod;
+
+    @Min(value = 1, message = "O número máximo de avaliações deve ser ao menos 1.")
+    @Column(name = "max_assessments_per_period")
+    private Integer maxAssessmentsPerPeriod;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

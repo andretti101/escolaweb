@@ -2,8 +2,11 @@ package com.andretti101.escolaweb.service.impl;
 
 import com.andretti101.escolaweb.model.entity.AcademicPeriod;
 import com.andretti101.escolaweb.model.entity.AcademicYear;
+import com.andretti101.escolaweb.model.entity.Assessment;
+import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.repository.AcademicPeriodRepository;
 import com.andretti101.escolaweb.repository.AssessmentRepository;
+import com.andretti101.escolaweb.repository.TeacherClassSubjectRepository;
 import com.andretti101.escolaweb.service.AcademicPeriodService;
 import com.andretti101.escolaweb.service.AcademicYearService;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +23,7 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
     private final AcademicPeriodRepository academicPeriodRepository;
     private final AssessmentRepository assessmentRepository;
     private final AcademicYearService academicYearService;
+    private final TeacherClassSubjectRepository teacherClassSubjectRepository;
 
     @Override
     @Transactional
@@ -92,8 +96,31 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             throw new IllegalStateException("Academic period with id " + id + " is already closed.");
         }
 
+        validateMinimumAssessments(period);
+
         period.setClosed(true);
         return period;
+    }
+
+    // ── Private helpers
+
+    private void validateMinimumAssessments(AcademicPeriod period) {
+        List<TeacherClassSubject> activeSubjects = teacherClassSubjectRepository.findAll();
+
+        for (TeacherClassSubject tcs : activeSubjects) {
+            if (tcs.getMinAssessmentsPerPeriod() != null) {
+                long count = assessmentRepository.countByTeacherClassSubjectAndPeriod(tcs, period);
+
+                if (count < tcs.getMinAssessmentsPerPeriod()) {
+                    throw new IllegalStateException(
+                            "Cannot close period '" + period.getName()
+                                    + "': subject '" + tcs.getSubject().getName()
+                                    + "' in classroom '" + tcs.getClassRoom().getName()
+                                    + "' has " + count + " assessment(s) but requires at least "
+                                    + tcs.getMinAssessmentsPerPeriod() + ".");
+                }
+            }
+        }
     }
 
     AcademicPeriod findPeriodOrThrow(Integer id) {

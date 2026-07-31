@@ -33,6 +33,8 @@ public class AssessmentServiceImpl implements AssessmentService {
         validatePeriodOpen(period);
         validateDate(assessment);
 
+        validateMaxAssessments(tcs, period);
+
         assessment.setTeacherClassSubject(tcs);
         assessment.setPeriod(period);
 
@@ -51,6 +53,13 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         validatePeriodOpen(period);
         validateDate(incoming);
+
+        boolean tcsChanging = !existing.getTeacherClassSubject().getId().equals(tcs.getId());
+        boolean periodChanging = !existing.getPeriod().getId().equals(period.getId());
+
+        if (tcsChanging || periodChanging) {
+            validateMaxAssessments(tcs, period);
+        }
 
         existing.setTitle(incoming.getTitle());
         existing.setDescription(incoming.getDescription());
@@ -101,6 +110,22 @@ public class AssessmentServiceImpl implements AssessmentService {
     public List<Assessment> findByPeriod(Integer periodId) {
         AcademicPeriod period = academicPeriodService.findById(periodId);
         return assessmentRepository.findByPeriod(period);
+    }
+
+    // ── Private helpers
+
+    private void validateMaxAssessments(TeacherClassSubject tcs, AcademicPeriod period) {
+        if (tcs.getMaxAssessmentsPerPeriod() == null) return;
+
+        long current = assessmentRepository.countByTeacherClassSubjectAndPeriod(tcs, period);
+
+        if (current >= tcs.getMaxAssessmentsPerPeriod()) {
+            throw new IllegalStateException(
+                    "The maximum number of assessments (" + tcs.getMaxAssessmentsPerPeriod()
+                            + ") for subject '" + tcs.getSubject().getName()
+                            + "' in classroom '" + tcs.getClassRoom().getName()
+                            + "' has already been reached for period '" + period.getName() + "'.");
+        }
     }
 
     Assessment findAssessmentOrThrow(Integer id) {
