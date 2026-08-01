@@ -16,5 +16,5 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
     boolean existsByStudent(Student student);
     boolean existsByLessonAndStudent(Lesson lesson, Student student);
     boolean existsByLesson(Lesson lesson);
-    long countByLessonInAndStudentAndStatus(List<Lesson> lessons, Student student, AttendanceStatus status);
+    List<Attendance> findByLessonInAndStudentAndStatus(List<Lesson> lessons, Student student, AttendanceStatus status);
 }

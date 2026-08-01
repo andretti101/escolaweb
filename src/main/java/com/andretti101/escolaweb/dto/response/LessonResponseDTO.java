@@ -12,6 +12,7 @@ public record LessonResponseDTO(
         String subjectName,
         String teacherName,
         String classRoomName,
+        Integer lessonCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

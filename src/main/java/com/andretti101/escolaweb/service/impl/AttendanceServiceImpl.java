@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +47,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (attendanceRepository.existsByLessonAndStudent(lesson, student)) {
             throw new IllegalStateException(
                     "Attendance for student with id " + student.getId()
-                    + " in lesson with id " + lesson.getId() + " is already registered.");
+                            + " in lesson with id " + lesson.getId() + " is already registered.");
         }
 
         attendance.setLesson(lesson);
@@ -123,14 +125,21 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (lessons.isEmpty()) {
             return BigDecimal.valueOf(100);
         }
+        int totalSlots = lessons.stream()
+                .mapToInt(lesson -> lesson.getLessonCount().getValue())
+                .sum();
 
-        long totalLessons = lessons.size();
+        Map<Integer, Integer> slotsByLessonId = lessons.stream()
+                .collect(Collectors.toMap(Lesson::getId, l -> l.getLessonCount().getValue()));
 
-        long absentCount = attendanceRepository.countByLessonInAndStudentAndStatus(
-                lessons, student, AttendanceStatus.ABSENT);
+        int absentSlots = attendanceRepository
+                .findByLessonInAndStudentAndStatus(lessons, student, AttendanceStatus.ABSENT)
+                .stream()
+                .mapToInt(a -> slotsByLessonId.getOrDefault(a.getLesson().getId(), 1))
+                .sum();
 
-        return BigDecimal.valueOf(totalLessons - absentCount)
-                .divide(BigDecimal.valueOf(totalLessons), 4, RoundingMode.HALF_UP)
+        return BigDecimal.valueOf(totalSlots - absentSlots)
+                .divide(BigDecimal.valueOf(totalSlots), 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
     }

@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.model.entity;
 
+import com.andretti101.escolaweb.model.enums.LessonCount;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -41,6 +42,10 @@ public class Lesson implements Serializable {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @Builder.Default
+    @Column(name = "lesson_count", nullable = false)
+    private LessonCount lessonCount = LessonCount.ONE;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

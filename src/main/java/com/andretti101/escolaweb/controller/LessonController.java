@@ -4,6 +4,7 @@ import com.andretti101.escolaweb.dto.request.LessonRequestDTO;
 import com.andretti101.escolaweb.dto.response.LessonResponseDTO;
 import com.andretti101.escolaweb.model.entity.Lesson;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
+import com.andretti101.escolaweb.model.enums.LessonCount;
 import com.andretti101.escolaweb.service.LessonService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +85,13 @@ public class LessonController {
         lesson.setContent(dto.content());
         lesson.setNotes(dto.notes());
         lesson.setTeacherClassSubject(tcs);
+
+        lesson.setLessonCount(
+                dto.lessonCount() != null
+                        ? LessonCount.fromValue(dto.lessonCount())
+                        : LessonCount.ONE
+        );
+
         return lesson;
     }
 
@@ -97,6 +105,7 @@ public class LessonController {
                 l.getTeacherClassSubject().getSubject().getName(),
                 l.getTeacherClassSubject().getTeacher().getName(),
                 l.getTeacherClassSubject().getClassRoom().getName(),
+                l.getLessonCount().getValue(),
                 l.getCreatedAt(),
                 l.getUpdatedAt()
         );
