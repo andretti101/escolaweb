@@ -7,6 +7,7 @@ import com.andretti101.escolaweb.repository.RefreshTokenRepository;
 import com.andretti101.escolaweb.service.RefreshTokenService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +46,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         if (existing.isRevoked()) {
             User compromisedUser = existing.getUser();
             refreshTokenRepository.deleteByUser(compromisedUser);
-            throw new IllegalStateException(
+            throw new BadCredentialsException(
                     "Reutilização de token detectada. Todas as sessões foram encerradas por segurança. "
                             + "Faça login novamente.");
         }
