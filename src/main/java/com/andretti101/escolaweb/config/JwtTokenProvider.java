@@ -23,7 +23,11 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    // ── Token generation
+    @Value("${jwt.refresh-expiration}")
+    private long refreshExpiration;
+
+    // ── Access token generation
+
     public String generateToken(UserDetails userDetails) {
         String role = userDetails.getAuthorities().stream()
                 .findFirst()
@@ -58,6 +62,10 @@ public class JwtTokenProvider {
 
     public long getExpiration() {
         return expiration;
+    }
+
+    public long getRefreshExpiration() {
+        return refreshExpiration;
     }
 
     // ── Private helpers
