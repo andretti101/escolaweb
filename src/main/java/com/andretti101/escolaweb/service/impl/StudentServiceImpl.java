@@ -26,7 +26,7 @@ public class StudentServiceImpl implements StudentService {
         validateEmailAvailable(student.getEmail());
         student.setPassword(passwordEncoder.encode(student.getPassword()));
         student.setActive(true);
-        return student;
+        return studentRepository.save(student);
     }
 
     @Override
