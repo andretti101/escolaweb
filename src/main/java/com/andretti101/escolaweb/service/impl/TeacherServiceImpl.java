@@ -30,7 +30,7 @@ public class TeacherServiceImpl implements TeacherService {
         }
         teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
         teacher.setActive(true);
-        return teacher;
+        return teacherRepository.save(teacher);
     }
 
     @Override

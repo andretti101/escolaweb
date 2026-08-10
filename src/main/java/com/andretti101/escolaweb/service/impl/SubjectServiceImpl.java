@@ -23,7 +23,7 @@ public class SubjectServiceImpl implements SubjectService {
     public Subject create(Subject subject) {
         validateNameAvailable(subject.getName(), null);
         subject.setActive(true);
-        return subject;
+        return subjectRepository.save(subject);
     }
 
     @Override

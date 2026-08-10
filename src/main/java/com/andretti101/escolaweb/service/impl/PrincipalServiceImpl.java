@@ -28,7 +28,7 @@ public class PrincipalServiceImpl implements PrincipalService {
         }
         principal.setPassword(passwordEncoder.encode(principal.getPassword()));
         principal.setActive(true);
-        return principal;
+        return principalRepository.save(principal);
     }
 
     @Override

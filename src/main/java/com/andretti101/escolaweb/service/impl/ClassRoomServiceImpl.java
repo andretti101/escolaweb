@@ -35,7 +35,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
         }
 
         classRoom.setActive(true);
-        return classRoom;
+        return classRoomRepository.save(classRoom);
     }
 
     @Override

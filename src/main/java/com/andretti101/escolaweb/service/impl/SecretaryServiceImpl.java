@@ -28,7 +28,7 @@ public class SecretaryServiceImpl implements SecretaryService {
         }
         secretary.setPassword(passwordEncoder.encode(secretary.getPassword()));
         secretary.setActive(true);
-        return secretary;
+        return secretaryRepository.save(secretary);
     }
 
     @Override
