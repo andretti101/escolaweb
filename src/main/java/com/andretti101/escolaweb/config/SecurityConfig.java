@@ -1,7 +1,6 @@
 package com.andretti101.escolaweb.config;
 
 import com.andretti101.escolaweb.service.impl.CustomUserDetailsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -45,7 +44,18 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
-                                "/v3/api-docs.yaml"
+                                "/v3/api-docs.yaml",
+                                "/login.html",
+                                "/dashboard.html",
+                                "/principal/**",
+                                "/secretary/**",
+                                "/teacher/**",
+                                "/student/**",
+                                "/assets/**",
+                                "/fonts/**",
+                                "/components/**",
+                                "/js/**",
+                                "/libs/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
