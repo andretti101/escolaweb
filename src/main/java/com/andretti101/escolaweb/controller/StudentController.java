@@ -3,6 +3,7 @@ package com.andretti101.escolaweb.controller;
 import com.andretti101.escolaweb.dto.request.StudentRequestDTO;
 import com.andretti101.escolaweb.dto.response.StudentResponseDTO;
 import com.andretti101.escolaweb.model.entity.Student;
+import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    private final AuthenticatedUserService authenticatedUserService;
 
     @PostMapping
     @PreAuthorize("hasRole('SECRETARY')")
@@ -48,6 +50,7 @@ public class StudentController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<StudentResponseDTO> findById(@PathVariable Integer id) {
+        authenticatedUserService.enforceStudentOwnership(id);
         return ResponseEntity.ok(toResponse(studentService.findById(id)));
     }
 

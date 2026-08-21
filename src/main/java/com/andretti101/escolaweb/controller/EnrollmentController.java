@@ -5,7 +5,11 @@ import com.andretti101.escolaweb.dto.response.EnrollmentResponseDTO;
 import com.andretti101.escolaweb.model.entity.ClassRoom;
 import com.andretti101.escolaweb.model.entity.Enrollment;
 import com.andretti101.escolaweb.model.entity.Student;
+import com.andretti101.escolaweb.model.entity.Teacher;
+import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
+import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.EnrollmentService;
+import com.andretti101.escolaweb.service.TeacherClassSubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +33,8 @@ import java.util.List;
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
+    private final AuthenticatedUserService authenticatedUserService;
+    private final TeacherClassSubjectService teacherClassSubjectService;
 
     @PostMapping
     @PreAuthorize("hasRole('SECRETARY')")
@@ -56,6 +62,7 @@ public class EnrollmentController {
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<List<EnrollmentResponseDTO>> findByStudent(@PathVariable Integer studentId) {
+        authenticatedUserService.enforceStudentOwnership(studentId);
         return ResponseEntity.ok(
                 enrollmentService.findByStudent(studentId).stream().map(this::toResponse).toList()
         );
@@ -64,6 +71,15 @@ public class EnrollmentController {
     @GetMapping("/classroom/{classRoomId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER')")
     public ResponseEntity<List<EnrollmentResponseDTO>> findByClassRoom(@PathVariable Integer classRoomId) {
+        if (authenticatedUserService.isTeacher()) {
+            Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
+            boolean teachesInClassroom = teacherClassSubjectService.findByTeacher(teacher.getId())
+                    .stream()
+                    .anyMatch(tcs -> tcs.getClassRoom().getId().equals(classRoomId));
+            if (!teachesInClassroom) {
+                return ResponseEntity.ok(List.of());
+            }
+        }
         return ResponseEntity.ok(
                 enrollmentService.findByClassRoom(classRoomId).stream().map(this::toResponse).toList()
         );

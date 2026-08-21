@@ -3,9 +3,12 @@ package com.andretti101.escolaweb.controller;
 import com.andretti101.escolaweb.dto.request.LessonRequestDTO;
 import com.andretti101.escolaweb.dto.response.LessonResponseDTO;
 import com.andretti101.escolaweb.model.entity.Lesson;
+import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.enums.LessonCount;
+import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.LessonService;
+import com.andretti101.escolaweb.service.TeacherClassSubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,10 +31,16 @@ import java.util.List;
 public class LessonController {
 
     private final LessonService lessonService;
+    private final AuthenticatedUserService authenticatedUserService;
+    private final TeacherClassSubjectService teacherClassSubjectService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<LessonResponseDTO> create(@Valid @RequestBody LessonRequestDTO dto) {
+        if (authenticatedUserService.isTeacher()) {
+            TeacherClassSubject tcs = teacherClassSubjectService.findById(dto.teacherClassSubjectId());
+            authenticatedUserService.enforceTeacherOwnership(tcs);
+        }
         Lesson created = lessonService.create(toEntity(dto));
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
@@ -39,6 +48,14 @@ public class LessonController {
     @GetMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<List<LessonResponseDTO>> findAll() {
+        if (authenticatedUserService.isTeacher()) {
+            Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
+            List<Lesson> myLessons = teacherClassSubjectService.findByTeacher(teacher.getId())
+                    .stream()
+                    .flatMap(tcs -> lessonService.findByTeacherClassSubject(tcs.getId()).stream())
+                    .toList();
+            return ResponseEntity.ok(myLessons.stream().map(this::toResponse).toList());
+        }
         return ResponseEntity.ok(
                 lessonService.findAll().stream().map(this::toResponse).toList()
         );
@@ -47,12 +64,18 @@ public class LessonController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<LessonResponseDTO> findById(@PathVariable Integer id) {
-        return ResponseEntity.ok(toResponse(lessonService.findById(id)));
+        Lesson lesson = lessonService.findById(id);
+        authenticatedUserService.enforceTeacherOwnership(lesson.getTeacherClassSubject());
+        return ResponseEntity.ok(toResponse(lesson));
     }
 
     @GetMapping("/tcs/{tcsId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<List<LessonResponseDTO>> findByTeacherClassSubject(@PathVariable Integer tcsId) {
+        if (authenticatedUserService.isTeacher()) {
+            TeacherClassSubject tcs = teacherClassSubjectService.findById(tcsId);
+            authenticatedUserService.enforceTeacherOwnership(tcs);
+        }
         return ResponseEntity.ok(
                 lessonService.findByTeacherClassSubject(tcsId).stream().map(this::toResponse).toList()
         );
@@ -63,6 +86,12 @@ public class LessonController {
     public ResponseEntity<LessonResponseDTO> update(
             @PathVariable Integer id,
             @Valid @RequestBody LessonRequestDTO dto) {
+        if (authenticatedUserService.isTeacher()) {
+            Lesson existing = lessonService.findById(id);
+            authenticatedUserService.enforceTeacherOwnership(existing.getTeacherClassSubject());
+            TeacherClassSubject newTcs = teacherClassSubjectService.findById(dto.teacherClassSubjectId());
+            authenticatedUserService.enforceTeacherOwnership(newTcs);
+        }
         Lesson updated = lessonService.update(id, toEntity(dto));
         return ResponseEntity.ok(toResponse(updated));
     }
@@ -70,6 +99,10 @@ public class LessonController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        if (authenticatedUserService.isTeacher()) {
+            Lesson existing = lessonService.findById(id);
+            authenticatedUserService.enforceTeacherOwnership(existing.getTeacherClassSubject());
+        }
         lessonService.delete(id);
         return ResponseEntity.noContent().build();
     }

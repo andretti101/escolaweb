@@ -2,6 +2,7 @@ package com.andretti101.escolaweb.exception;
 
 import com.andretti101.escolaweb.dto.response.ApiErrorResponse;
 import com.andretti101.escolaweb.dto.response.ApiErrorResponse.FieldErrorDetail;
+import com.andretti101.escolaweb.service.exception.UnauthorizedOperationException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -207,6 +208,20 @@ public class GlobalExceptionHandler {
                 .body(ApiErrorResponse.of(
                         HttpStatus.FORBIDDEN,
                         "Acesso negado. Você não tem permissão para realizar esta operação.",
+                        request.getRequestURI()));
+    }
+
+    @ExceptionHandler(UnauthorizedOperationException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnauthorizedOperation(
+            UnauthorizedOperationException ex, HttpServletRequest request) {
+
+        log.warn("Unauthorized operation on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ApiErrorResponse.of(
+                        HttpStatus.FORBIDDEN,
+                        ex.getMessage(),
                         request.getRequestURI()));
     }
 

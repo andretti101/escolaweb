@@ -6,6 +6,7 @@ import com.andretti101.escolaweb.model.entity.ClassRoom;
 import com.andretti101.escolaweb.model.entity.Subject;
 import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
+import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.TeacherClassSubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ import java.util.List;
 public class TeacherClassSubjectController {
 
     private final TeacherClassSubjectService teacherClassSubjectService;
+    private final AuthenticatedUserService authenticatedUserService;
 
     @PostMapping
     @PreAuthorize("hasRole('SECRETARY')")
@@ -41,6 +43,13 @@ public class TeacherClassSubjectController {
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER')")
     public ResponseEntity<List<TeacherClassSubjectResponseDTO>> findAll() {
+        if (authenticatedUserService.isTeacher()) {
+            Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
+            return ResponseEntity.ok(
+                    teacherClassSubjectService.findByTeacher(teacher.getId())
+                            .stream().map(this::toResponse).toList()
+            );
+        }
         return ResponseEntity.ok(
                 teacherClassSubjectService.findAll().stream().map(this::toResponse).toList()
         );
@@ -49,12 +58,20 @@ public class TeacherClassSubjectController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
     public ResponseEntity<TeacherClassSubjectResponseDTO> findById(@PathVariable Integer id) {
-        return ResponseEntity.ok(toResponse(teacherClassSubjectService.findById(id)));
+        TeacherClassSubject tcs = teacherClassSubjectService.findById(id);
+        authenticatedUserService.enforceTeacherOwnership(tcs);
+        return ResponseEntity.ok(toResponse(tcs));
     }
 
     @GetMapping("/teacher/{teacherId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER')")
     public ResponseEntity<List<TeacherClassSubjectResponseDTO>> findByTeacher(@PathVariable Integer teacherId) {
+        if (authenticatedUserService.isTeacher()) {
+            Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
+            if (!teacher.getId().equals(teacherId)) {
+                return ResponseEntity.ok(List.of());
+            }
+        }
         return ResponseEntity.ok(
                 teacherClassSubjectService.findByTeacher(teacherId).stream().map(this::toResponse).toList()
         );
