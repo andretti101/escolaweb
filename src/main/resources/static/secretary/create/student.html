@@ -258,19 +258,6 @@
 <!-- Main JS -->
 <script src="/assets/js/main.js"></script>
 
-<!-- Script de Logout -->
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const btnLogout = document.getElementById("btnLogout");
-        if (btnLogout) {
-            btnLogout.addEventListener("click", () => {
-                localStorage.removeItem("jwt_token");
-                window.location.href = "/login.html";
-            });
-        }
-    });
-</script>
-
 <!-- Script de Integração com a API -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {

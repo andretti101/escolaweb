@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html
+  lang="pt-BR"
+  class="light-style layout-menu-fixed"
+  dir="ltr"
+  data-theme="theme-default"
+  data-assets-path="/assets/"
+  data-template="vertical-menu-template-free"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Alunos | EscolaWEB</title>
+    <meta name="description" content="Lista de alunos cadastrados no sistema." />
+
+    <script src="/js/auth-guard.js"></script>
+
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+  </head>
+
+  <body>
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+
+        <!-- sidebar -->
+        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <!--/ sidebar -->
+
+        <div class="layout-page">
+          <!-- Navbar -->
+          <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+              <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                <i class="bx bx-menu bx-sm"></i>
+              </a>
+            </div>
+            <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+              <div class="navbar-nav align-items-center">
+                <div class="nav-item d-flex align-items-center">
+                  <i class="bx bx-search fs-4 lh-0"></i>
+                  <input
+                    type="text"
+                    id="globalSearch"
+                    class="form-control border-0 shadow-none"
+                    placeholder="Buscar por nome, e-mail ou matrícula..."
+                    aria-label="Buscar aluno"
+                    style="min-width: 350px;"
+                  />
+                </div>
+              </div>
+              <ul class="navbar-nav flex-row align-items-center ms-auto">
+                <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                  <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                    <div class="avatar avatar-online">
+                      <img src="/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                    </div>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a class="dropdown-item" href="#">
+                        <div class="d-flex">
+                          <div class="flex-shrink-0 me-3">
+                            <div class="avatar avatar-online">
+                              <img src="/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                            </div>
+                          </div>
+                          <div class="flex-grow-1">
+                            <span class="fw-semibold d-block" id="navbarUserName">Secretaria</span>
+                            <small class="text-muted">Secretaria</small>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                    <li><div class="dropdown-divider"></div></li>
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0);" id="dropdownLogout">
+                        <i class="bx bx-power-off me-2"></i>
+                        <span class="align-middle">Sair</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </nav>
+          <!-- / Navbar -->
+
+          <div class="content-wrapper">
+            <div class="container-xxl flex-grow-1 container-p-y">
+
+              <!-- Header -->
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">
+                  <span class="text-muted fw-light">Alunos /</span> Listagem
+                </h4>
+                <a href="/secretary/create/student.html" class="btn btn-primary">
+                  <i class="bx bx-plus me-1"></i> Cadastrar Aluno
+                </a>
+              </div>
+
+              <!-- Card -->
+              <div class="card">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                  <h5 class="mb-0">Alunos Cadastrados</h5>
+
+                  <!-- Filtros de status -->
+                  <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="statusFilter" id="filterActive" value="active" checked />
+                    <label class="btn btn-outline-success btn-sm" for="filterActive">Ativos</label>
+
+                    <input type="radio" class="btn-check" name="statusFilter" id="filterInactive" value="inactive" />
+                    <label class="btn btn-outline-danger btn-sm" for="filterInactive">Inativos</label>
+
+                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all" />
+                    <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
+                  </div>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Aluno</th>
+                        <th>Matrícula</th>
+                        <th>Nascimento</th>
+                        <th>Telefone</th>
+                        <th>Status</th>
+                        <th class="text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                      <!-- Preenchido via JavaScript -->
+                    </tbody>
+                  </table>
+
+                  <!-- Estado de carregamento -->
+                  <div id="loadingState" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Carregando alunos...</p>
+                  </div>
+
+                  <!-- Estado vazio -->
+                  <div id="emptyState" class="text-center py-5 d-none">
+                    <i class="bx bx-user-x fs-1 text-muted"></i>
+                    <p class="mt-2 text-muted mb-0">Nenhum aluno encontrado.</p>
+                    <a href="/secretary/create/student.html" class="btn btn-primary btn-sm mt-3">
+                      <i class="bx bx-plus me-1"></i> Cadastrar aluno
+                    </a>
+                  </div>
+
+                  <!-- Estado de erro -->
+                  <div id="errorState" class="text-center py-5 d-none">
+                    <i class="bx bx-error-circle fs-1 text-danger"></i>
+                    <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar alunos.</p>
+                    <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadStudents()">
+                      <i class="bx bx-refresh me-1"></i> Tentar novamente
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Rodapé da tabela com contagem -->
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                  <small class="text-muted" id="recordCount"></small>
+                </div>
+              </div>
+
+            </div>
+
+            <footer class="content-footer footer bg-footer-theme">
+              <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                <div class="mb-2 mb-md-0">
+                  © <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                </div>
+              </div>
+            </footer>
+
+            <div class="content-backdrop fade"></div>
+          </div>
+        </div>
+      </div>
+      <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <!-- Core JS -->
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+
+    <script src="/js/load-sidebar.js"></script>
+
+    <script>
+      // ── Estado da página ────────────────────────────────────────────────────
+      let allStudents   = [];
+      let statusFilter  = 'active'; // Mudança pedida: Ativos listados primeiro/por padrão
+      let searchTerm    = '';
+
+      // ── Utilitários ─────────────────────────────────────────────────────────
+      function getToken() {
+        return localStorage.getItem('jwt_token') || '';
+      }
+
+      function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+      }
+
+      function formatPhone(phone) {
+        return phone || '—';
+      }
+
+      function getInitials(name) {
+        if (!name) return 'A';
+        return name
+          .split(' ')
+          .slice(0, 2)
+          .map(n => n[0])
+          .join('')
+          .toUpperCase();
+      }
+
+      const avatarColors = [
+        'bg-label-primary', 'bg-label-success', 'bg-label-info',
+        'bg-label-warning', 'bg-label-danger', 'bg-label-secondary'
+      ];
+
+      function avatarColor(id) {
+        return avatarColors[(id || 0) % avatarColors.length];
+      }
+
+      function handleUnauthorized() {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login.html';
+      }
+
+      function logout() {
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (refreshToken) {
+          fetch('/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + getToken()
+            },
+            body: JSON.stringify({ refreshToken })
+          }).finally(() => {
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login.html';
+          });
+        } else {
+          localStorage.removeItem('jwt_token');
+          window.location.href = '/login.html';
+        }
+      }
+
+      // ── Renderização ────────────────────────────────────────────────────────
+      function renderTable(students) {
+        const tbody       = document.getElementById('studentsTableBody');
+        const emptyState  = document.getElementById('emptyState');
+        const recordCount = document.getElementById('recordCount');
+
+        if (students.length === 0) {
+          tbody.innerHTML = '';
+          emptyState.classList.remove('d-none');
+          recordCount.textContent = 'Nenhum aluno encontrado com esses filtros.';
+          return;
+        }
+
+        emptyState.classList.add('d-none');
+        recordCount.textContent = `Exibindo ${students.length} aluno${students.length !== 1 ? 's' : ''}.`;
+
+        tbody.innerHTML = students.map(student => `
+          <tr>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-sm me-3">
+                  <span class="avatar-initial rounded-circle ${avatarColor(student.id)}">
+                    ${getInitials(student.name)}
+                  </span>
+                </div>
+                <div>
+                  <strong class="d-block">${escapeHtml(student.name)}</strong>
+                  <small class="text-muted">${escapeHtml(student.email)}</small>
+                </div>
+              </div>
+            </td>
+            <td><code>${escapeHtml(student.registrationNumber)}</code></td>
+            <td>${formatDate(student.birthDate)}</td>
+            <td>
+              <div>${formatPhone(student.ownPhone)}</div>
+              ${student.guardianPhone
+                ? `<small class="text-muted"><i class="bx bx-user-pin me-1"></i>${escapeHtml(student.guardianPhone)}</small>`
+                : ''}
+            </td>
+            <td>
+              ${student.active
+                ? '<span class="badge bg-label-success">Ativo</span>'
+                : '<span class="badge bg-label-secondary">Inativo</span>'}
+            </td>
+            <td class="text-center">
+              <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                  <a class="dropdown-item" href="/secretary/edit/student.html?id=${student.id}">
+                    <i class="bx bx-edit-alt me-1"></i> Editar Aluno
+                  </a>
+                  <div class="dropdown-divider"></div>
+                  ${student.active
+                    ? `<button class="dropdown-item text-danger" onclick="toggleStatus(${student.id}, true)">
+                         <i class="bx bx-user-x me-1"></i> Desativar Aluno
+                       </button>`
+                    : `<button class="dropdown-item text-success" onclick="toggleStatus(${student.id}, false)">
+                         <i class="bx bx-user-check me-1"></i> Ativar Aluno
+                       </button>
+                       <button class="dropdown-item text-danger" onclick="deleteStudent(${student.id})">
+                         <i class="bx bx-trash me-1"></i> Excluir do Sistema
+                       </button>`}
+                </div>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return str
+          .toString()
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // ── Filtragem ───────────────────────────────────────────────────────────
+      function applyFilters() {
+        let result = allStudents;
+
+        if (statusFilter === 'active') {
+          result = result.filter(s => s.active);
+        } else if (statusFilter === 'inactive') {
+          result = result.filter(s => !s.active);
+        }
+
+        if (searchTerm.trim()) {
+          const term = searchTerm.trim().toLowerCase();
+          result = result.filter(s =>
+            (s.name || '').toLowerCase().includes(term) ||
+            (s.email || '').toLowerCase().includes(term) ||
+            (s.registrationNumber || '').toLowerCase().includes(term)
+          );
+        }
+
+        renderTable(result);
+      }
+
+      // ── Carregamento de dados ───────────────────────────────────────────────
+      async function loadStudents() {
+        const loadingState = document.getElementById('loadingState');
+        const errorState   = document.getElementById('errorState');
+        const tbody        = document.getElementById('studentsTableBody');
+
+        loadingState.classList.remove('d-none');
+        errorState.classList.add('d-none');
+        tbody.innerHTML = '';
+        document.getElementById('emptyState').classList.add('d-none');
+
+        try {
+          const response = await fetch('/api/students', {
+            headers: {
+              'Authorization': 'Bearer ' + getToken(),
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
+          if (!response.ok) {
+            const err = await response.json().catch(() => null);
+            throw new Error(err?.message || 'Erro ao buscar alunos.');
+          }
+
+          allStudents = await response.json();
+          // Coloca os inativos por último na ordenação geral (caso statusFilter == 'all')
+          allStudents.sort((a, b) => {
+              if(a.active && !b.active) return -1;
+              if(!a.active && b.active) return 1;
+              return 0;
+          });
+          applyFilters();
+
+        } catch (error) {
+          errorState.classList.remove('d-none');
+          document.getElementById('errorMessage').textContent = error.message;
+        } finally {
+          loadingState.classList.add('d-none');
+        }
+      }
+
+      // ── Ativar / Desativar / Excluir ─────────────────────────────────────────
+      async function toggleStatus(id, currentlyActive) {
+        const action  = currentlyActive ? 'desativar' : 'ativar';
+        const student = allStudents.find(s => s.id === id);
+        const name    = student ? student.name : `aluno #${id}`;
+
+        if (!confirm(`Deseja ${action} o aluno "${name}"?`)) return;
+
+        const endpoint = currentlyActive
+          ? `/api/students/${id}/deactivate`
+          : `/api/students/${id}/activate`;
+
+        try {
+          const response = await fetch(endpoint, {
+            method: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + getToken() }
+          });
+
+          if (response.status === 401) {
+            handleUnauthorized();
+            return;
+          }
+
+          if (!response.ok) {
+            const err = await response.json().catch(() => null);
+            throw new Error(err?.message || `Não foi possível ${action} o aluno.`);
+          }
+
+          // Atualiza localmente sem nova chamada à API
+          const index = allStudents.findIndex(s => s.id === id);
+          if (index !== -1) {
+            allStudents[index] = { ...allStudents[index], active: !currentlyActive };
+          }
+          applyFilters();
+
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+
+      async function deleteStudent(id) {
+          const student = allStudents.find(s => s.id === id);
+          const name    = student ? student.name : `aluno #${id}`;
+
+          if (!confirm(`TEM CERTEZA que deseja EXCLUIR DEFINITIVAMENTE o aluno "${name}" do sistema?\n\nEsta ação não poderá ser desfeita.`)) return;
+
+          try {
+            const response = await fetch(`/api/students/${id}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': 'Bearer ' + getToken() }
+            });
+
+            if (response.status === 401) {
+              handleUnauthorized();
+              return;
+            }
+
+            if (!response.ok) {
+              const err = await response.json().catch(() => null);
+              throw new Error(err?.message || 'Não foi possível excluir o aluno. Talvez ele tenha matrículas ou notas vinculadas (restrição de chave estrangeira).');
+            }
+
+            // Removendo da lista e recarregando
+            allStudents = allStudents.filter(s => s.id !== id);
+            applyFilters();
+            alert('Aluno excluído com sucesso.');
+
+          } catch (error) {
+            alert(error.message);
+          }
+      }
+
+
+      // ── Inicialização ───────────────────────────────────────────────────────
+      document.addEventListener('DOMContentLoaded', () => {
+
+        // Exibe o email do usuário logado na navbar
+        const token = getToken();
+        if (token) {
+          try {
+            const base64     = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            const payload    = JSON.parse(atob(base64));
+            const nameEl     = document.getElementById('navbarUserName');
+            if (nameEl && payload.sub) nameEl.textContent = payload.sub;
+          } catch (_) { /* silencia — não é crítico */ }
+        }
+
+        // Filtro de status
+        document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
+          radio.addEventListener('change', e => {
+            statusFilter = e.target.value;
+            applyFilters();
+          });
+        });
+
+        // Busca na navbar
+        document.getElementById('globalSearch').addEventListener('input', e => {
+          searchTerm = e.target.value;
+          applyFilters();
+        });
+
+        // Logout Navbar
+        const handleLogout = () => logout();
+        const dropdownLogout = document.getElementById('dropdownLogout');
+        if(dropdownLogout) dropdownLogout.addEventListener('click', handleLogout);
+
+        // Carrega os dados
+        loadStudents();
+      });
+    </script>
+  </body>
+</html>

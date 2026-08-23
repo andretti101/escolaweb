@@ -18,6 +18,6 @@ public class Teacher extends User {
 
     private static final long serialVersionUID = 1L;
 
-    @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<TeacherClassSubject> teacherClassSubjects;
 }

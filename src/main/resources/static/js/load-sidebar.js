@@ -33,17 +33,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // 2. Habilitar o toggle (abrir/fechar) dos submenus
-            const toggles = document.querySelectorAll('#layout-menu .menu-toggle');
-            toggles.forEach(toggle => {
-                toggle.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const parent = toggle.closest('.menu-item');
-                    if (parent) {
-                        parent.classList.toggle('open');
+            // 2. Inicializar o Menu nativo do Sneat para ter as animações fluidas
+            const layoutMenu = document.querySelector('#layout-menu');
+            if (layoutMenu && typeof Menu !== 'undefined') {
+                const menu = new Menu(layoutMenu, {
+                    orientation: 'vertical',
+                    closeChildren: false
+                });
+                if (window.Helpers) {
+                    window.Helpers.scrollToActive(false);
+                    window.Helpers.mainMenu = menu;
+                }
+            }
+
+            // 3. Re-vincular o botão de fechar sidebar no mobile (já que a sidebar foi injetada agora)
+            const menuTogglers = document.querySelectorAll('#layout-menu .layout-menu-toggle');
+            menuTogglers.forEach(item => {
+                item.addEventListener('click', event => {
+                    event.preventDefault();
+                    if (window.Helpers) {
+                        window.Helpers.toggleCollapsed();
                     }
                 });
             });
+            // 4. Configurar funcionalidade de Sair (Logout)
+            const btnLogout = document.getElementById('btnLogout');
+            if (btnLogout) {
+                btnLogout.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    
+                    const token = localStorage.getItem('jwt_token');
+                    const refreshToken = localStorage.getItem('refresh_token');
+                    
+                    // Avisa a API para invalidar o refresh token (se existir)
+                    if (refreshToken) {
+                        try {
+                            await fetch('/auth/logout', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': token ? `Bearer ${token}` : ''
+                                },
+                                body: JSON.stringify({ refreshToken: refreshToken })
+                            });
+                        } catch (err) {
+                            console.error('Erro ao fazer logout na API', err);
+                        }
+                    }
+                    
+                    // Limpa os tokens locais e redireciona para o login
+                    localStorage.removeItem('jwt_token');
+                    localStorage.removeItem('refresh_token');
+                    window.location.href = '/login.html';
+                });
+            }
         })
         .catch(err => console.error('Erro ao carregar sidebar:', err));
 });
