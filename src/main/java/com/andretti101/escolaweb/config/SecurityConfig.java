@@ -46,6 +46,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/v3/api-docs.yaml",
                                 "/login.html",
+                                "/forgot-password.html",
+                                "/reset-password.html",
                                 "/dashboard.html",
                                 "/principal/**",
                                 "/secretary/**",

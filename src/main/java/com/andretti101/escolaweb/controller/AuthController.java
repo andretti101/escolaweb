@@ -1,8 +1,10 @@
 package com.andretti101.escolaweb.controller;
 
 import com.andretti101.escolaweb.dto.request.ChangePasswordRequestDTO;
+import com.andretti101.escolaweb.dto.request.ForgotPasswordRequestDTO;
 import com.andretti101.escolaweb.dto.request.LoginRequestDTO;
 import com.andretti101.escolaweb.dto.request.RefreshTokenRequestDTO;
+import com.andretti101.escolaweb.dto.request.ResetPasswordRequestDTO;
 import com.andretti101.escolaweb.dto.response.AuthResponseDTO;
 import com.andretti101.escolaweb.service.AuthService;
 import jakarta.validation.Valid;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -44,6 +48,21 @@ public class AuthController {
     public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequestDTO dto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         authService.changePassword(email, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequestDTO dto) {
+        authService.forgotPassword(dto);
+        return ResponseEntity.ok(Map.of("message",
+                "Se o e-mail informado estiver cadastrado, as instruções de redefinição foram enviadas."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody ResetPasswordRequestDTO dto) {
+        authService.resetPassword(dto);
         return ResponseEntity.noContent().build();
     }
 }

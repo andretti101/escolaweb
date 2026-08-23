@@ -58,6 +58,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public void resetPassword(Integer id, String newPassword) {
+        User user = findUserOrThrow(id);
+        user.setPassword(passwordEncoder.encode(newPassword));
+    }
+
+    @Override
+    @Transactional
     public User activate(Integer id) {
         User user = findUserOrThrow(id);
         user.setActive(true);

@@ -11,6 +11,7 @@ public interface UserService {
     List<User> findAll();
     List<User> findAllActive();
     void changePassword(Integer id, String currentPassword, String newPassword);
+    void resetPassword(Integer id, String newPassword);
     User activate(Integer id);
     User deactivate(Integer id);
 }
