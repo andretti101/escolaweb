@@ -44,6 +44,11 @@ public class StudentServiceImpl implements StudentService {
         existing.setGuardianPhone(incoming.getGuardianPhone());
         existing.setBirthDate(incoming.getBirthDate());
 
+        String incomingPassword = incoming.getPassword();
+        if (incomingPassword != null && !incomingPassword.isBlank() && !incomingPassword.equals("SenhaTemporaria123")) {
+            existing.setPassword(passwordEncoder.encode(incomingPassword));
+        }
+
         return studentRepository.save(existing);
     }
 

@@ -46,6 +46,11 @@ public class TeacherServiceImpl implements TeacherService {
         existing.setName(incoming.getName());
         existing.setEmail(incoming.getEmail());
 
+        String incomingPassword = incoming.getPassword();
+        if (incomingPassword != null && !incomingPassword.isBlank() && !incomingPassword.equals("SenhaTemporaria123")) {
+            existing.setPassword(passwordEncoder.encode(incomingPassword));
+        }
+
         return teacherRepository.save(existing);
     }
 
