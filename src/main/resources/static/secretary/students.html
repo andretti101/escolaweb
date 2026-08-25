@@ -47,52 +47,19 @@
               </a>
             </div>
             <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-              <div class="navbar-nav align-items-center">
-                <div class="nav-item d-flex align-items-center">
-                  <i class="bx bx-search fs-4 lh-0"></i>
+              <div class="navbar-nav align-items-center w-100">
+                <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
+                  <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
                   <input
                     type="text"
                     id="globalSearch"
-                    class="form-control border-0 shadow-none"
+                    class="form-control border-0 shadow-none px-0 w-100"
                     placeholder="Buscar por nome, e-mail ou matrícula..."
                     aria-label="Buscar aluno"
                     style="min-width: 350px;"
                   />
                 </div>
               </div>
-              <ul class="navbar-nav flex-row align-items-center ms-auto">
-                <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                  <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                    <div class="avatar avatar-online">
-                      <img src="/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
-                    </div>
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        <div class="d-flex">
-                          <div class="flex-shrink-0 me-3">
-                            <div class="avatar avatar-online">
-                              <img src="/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
-                            </div>
-                          </div>
-                          <div class="flex-grow-1">
-                            <span class="fw-semibold d-block" id="navbarUserName">Secretaria</span>
-                            <small class="text-muted">Secretaria</small>
-                          </div>
-                        </div>
-                      </a>
-                    </li>
-                    <li><div class="dropdown-divider"></div></li>
-                    <li>
-                      <a class="dropdown-item" href="javascript:void(0);" id="dropdownLogout">
-                        <i class="bx bx-power-off me-2"></i>
-                        <span class="align-middle">Sair</span>
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
             </div>
           </nav>
           <!-- / Navbar -->
@@ -251,26 +218,8 @@
         window.location.href = '/login.html';
       }
 
-      function logout() {
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (refreshToken) {
-          fetch('/auth/logout', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + getToken()
-            },
-            body: JSON.stringify({ refreshToken })
-          }).finally(() => {
-            localStorage.removeItem('jwt_token');
-            localStorage.removeItem('refresh_token');
-            window.location.href = '/login.html';
-          });
-        } else {
-          localStorage.removeItem('jwt_token');
-          window.location.href = '/login.html';
-        }
-      }
+
+
 
       // ── Renderização ────────────────────────────────────────────────────────
       function renderTable(students) {
@@ -289,7 +238,7 @@
         recordCount.textContent = `Exibindo ${students.length} aluno${students.length !== 1 ? 's' : ''}.`;
 
         tbody.innerHTML = students.map(student => `
-          <tr>
+          <tr class="${!student.active ? 'opacity-75 bg-lighter' : ''}">
             <td>
               <div class="d-flex align-items-center">
                 <div class="avatar avatar-sm me-3">
@@ -322,20 +271,14 @@
                   <i class="bx bx-dots-vertical-rounded"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
-                  <a class="dropdown-item" href="/secretary/edit/student.html?id=${student.id}">
-                    <i class="bx bx-edit-alt me-1"></i> Editar Aluno
-                  </a>
-                  <div class="dropdown-divider"></div>
+                  ${student.active ? `<a class="dropdown-item" href="/secretary/edit/student.html?id=${student.id}">
+                    <i class="bx bx-edit-alt me-1 text-primary"></i> Editar Aluno
+                  </a>` : ''}
                   ${student.active
-                    ? `<button class="dropdown-item text-danger" onclick="toggleStatus(${student.id}, true)">
-                         <i class="bx bx-user-x me-1"></i> Desativar Aluno
-                       </button>`
-                    : `<button class="dropdown-item text-success" onclick="toggleStatus(${student.id}, false)">
-                         <i class="bx bx-user-check me-1"></i> Ativar Aluno
-                       </button>
-                       <button class="dropdown-item text-danger" onclick="deleteStudent(${student.id})">
-                         <i class="bx bx-trash me-1"></i> Excluir do Sistema
-                       </button>`}
+                    ? `<li><a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus(${student.id}, false)"><i class="bx bx-power-off me-1 text-warning"></i> Desativar Aluno</a></li>`
+                    : `<li><a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus(${student.id}, true)"><i class="bx bx-check-circle me-1 text-success"></i> Ativar Aluno</a></li>
+                       <li><hr class="dropdown-divider"></li>
+                       <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteStudent(${student.id})"><i class="bx bx-trash me-1"></i> Excluir do Sistema</a></li>`}
                 </div>
               </div>
             </td>
@@ -422,16 +365,14 @@
       }
 
       // ── Ativar / Desativar / Excluir ─────────────────────────────────────────
-      async function toggleStatus(id, currentlyActive) {
-        const action  = currentlyActive ? 'desativar' : 'ativar';
+      async function toggleStatus(id, activate) {
+        const action  = activate ? 'ativar' : 'desativar';
         const student = allStudents.find(s => s.id === id);
         const name    = student ? student.name : `aluno #${id}`;
 
         if (!confirm(`Deseja ${action} o aluno "${name}"?`)) return;
 
-        const endpoint = currentlyActive
-          ? `/api/students/${id}/deactivate`
-          : `/api/students/${id}/activate`;
+        const endpoint = `/api/students/${id}/${activate ? 'activate' : 'deactivate'}`;
 
         try {
           const response = await fetch(endpoint, {
@@ -452,7 +393,7 @@
           // Atualiza localmente sem nova chamada à API
           const index = allStudents.findIndex(s => s.id === id);
           if (index !== -1) {
-            allStudents[index] = { ...allStudents[index], active: !currentlyActive };
+            allStudents[index] = { ...allStudents[index], active: activate };
           }
           applyFilters();
 
@@ -497,16 +438,6 @@
       // ── Inicialização ───────────────────────────────────────────────────────
       document.addEventListener('DOMContentLoaded', () => {
 
-        // Exibe o email do usuário logado na navbar
-        const token = getToken();
-        if (token) {
-          try {
-            const base64     = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-            const payload    = JSON.parse(atob(base64));
-            const nameEl     = document.getElementById('navbarUserName');
-            if (nameEl && payload.sub) nameEl.textContent = payload.sub;
-          } catch (_) { /* silencia — não é crítico */ }
-        }
 
         // Filtro de status
         document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
@@ -521,11 +452,6 @@
           searchTerm = e.target.value;
           applyFilters();
         });
-
-        // Logout Navbar
-        const handleLogout = () => logout();
-        const dropdownLogout = document.getElementById('dropdownLogout');
-        if(dropdownLogout) dropdownLogout.addEventListener('click', handleLogout);
 
         // Carrega os dados
         loadStudents();

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html
+        lang="pt-BR"
+        class="light-style layout-menu-fixed"
+        dir="ltr"
+        data-theme="theme-default"
+        data-assets-path="/assets/"
+        data-template="vertical-menu-template-free"
+>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+
+    <title>Edição de Diretor | Escola Web</title>
+
+    <script src="/js/auth-guard.js"></script>
+
+    <meta name="description" content="Formulário de edição de diretores para o sistema escolar"/>
+
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico"/>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+
+        <!-- sidebar -->
+        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <!--/ sidebar -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+
+            <!-- Content wrapper -->
+            <div class="content-wrapper">
+
+                <div class="container-fluid flex-grow-1 container-p-y">
+                    <!-- Botão de menu responsivo-->
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2"
+                           href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+
+                    <h4 class="fw-bold py-3 mb-4">
+                        <span class="text-muted fw-light">Direção /</span> Edição
+                    </h4>
+
+                    <!-- Spinner de Loading para o Formulário -->
+                    <div id="loadingFormState" class="text-center py-5 d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Carregando dados do diretor...</p>
+                    </div>
+                    
+                    <div id="errorFormState" class="text-center py-5 d-none">
+                        <i class="bx bx-error-circle fs-1 text-danger"></i>
+                        <p class="mt-2 text-muted mb-0" id="errorFormMessage">Erro ao carregar diretor.</p>
+                        <a href="/secretary/principals.html" class="btn btn-outline-primary btn-sm mt-3">
+                            <i class="bx bx-arrow-back me-1"></i> Voltar para a lista
+                        </a>
+                    </div>
+
+                    <!-- Formulário de Edição de Diretor -->
+                    <div class="row" id="formWrapper">
+                        <div class="col-12">
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Dados da Direção</h5>
+                                    <small class="text-muted float-end">* Campos obrigatórios</small>
+                                </div>
+
+                                <div class="card-body p-5">
+                                    <form id="principalEditForm">
+                                        
+                                        <!-- ID Oculto -->
+                                        <input type="hidden" id="principalId" />
+
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <label class="form-label" for="name">Nome Completo *</label>
+                                                <div class="input-group input-group-merge">
+                                                    <span id="name-icon" class="input-group-text"><i
+                                                            class="bx bx-user"></i></span>
+                                                    <input type="text" class="form-control" id="name" name="name"
+                                                           placeholder="Ex: Carlos Ferreira"
+                                                           aria-label="Nome completo"
+                                                           aria-describedby="name-icon"
+                                                           required maxlength="150"/>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label" for="email">E-mail *</label>
+                                                <div class="input-group input-group-merge">
+                                                    <span id="email-icon" class="input-group-text"><i
+                                                            class="bx bx-envelope"></i></span>
+                                                    <input type="email" id="email" name="email" class="form-control"
+                                                           placeholder="carlos.ferreira@exemplo.com"
+                                                           aria-label="E-mail"
+                                                           aria-describedby="email-icon"
+                                                           required maxlength="150"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label" for="password">Nova Senha</label>
+                                                <div class="input-group input-group-merge">
+                                                    <input
+                                                            type="password"
+                                                            id="password"
+                                                            class="form-control"
+                                                            name="password"
+                                                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                                            minlength="8" maxlength="255"
+                                                    />
+                                                    <span class="input-group-text cursor-pointer" onclick="
+                                                        var inp = document.getElementById('password');
+                                                        var ico = document.getElementById('togglePasswordIcon');
+                                                        if (inp.type === 'password') {
+                                                            inp.type = 'text';
+                                                            ico.classList.remove('bx-hide');
+                                                            ico.classList.add('bx-show');
+                                                        } else {
+                                                            inp.type = 'password';
+                                                            ico.classList.remove('bx-show');
+                                                            ico.classList.add('bx-hide');
+                                                        }
+                                                    ">
+                                                        <i class="bx bx-hide" id="togglePasswordIcon"></i>
+                                                    </span>
+                                                </div>
+                                                <div class="form-text">Preencha apenas se desejar alterar a senha do diretor.</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Local para mensagens de sucesso ou erro -->
+                                        <div id="formMessage" class="mt-3 mb-3"></div>
+
+                                        <div class="d-flex justify-content-end mt-4">
+                                            <a href="/secretary/principals.html" class="btn btn-outline-secondary me-2 btn-lg">Cancelar</a>
+                                            <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
+                                                Salvar Alterações
+                                            </button>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">
+                            ©
+                            <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<!-- Core JS -->
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const form = document.getElementById("principalEditForm");
+        const formWrapper = document.getElementById("formWrapper");
+        const loadingState = document.getElementById("loadingFormState");
+        const errorState = document.getElementById("errorFormState");
+        
+        const btnSubmit = document.getElementById("btnSubmit");
+        const formMessage = document.getElementById("formMessage");
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const principalId = urlParams.get('id');
+
+        if (!principalId) {
+            formWrapper.classList.add('d-none');
+            errorState.classList.remove('d-none');
+            document.getElementById('errorFormMessage').innerText = "ID do diretor não fornecido na URL.";
+            return;
+        }
+
+        const token = localStorage.getItem('jwt_token');
+
+        async function loadPrincipalData() {
+            formWrapper.classList.add('d-none');
+            loadingState.classList.remove('d-none');
+            errorState.classList.add('d-none');
+
+            try {
+                const response = await fetch(`/api/principals/${principalId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + (token || ''),
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error("Acesso negado. Você não tem permissão para editar este diretor.");
+                    }
+                    throw new Error("Diretor não encontrado ou erro no servidor.");
+                }
+
+                const data = await response.json();
+                
+                document.getElementById('principalId').value = data.id;
+                document.getElementById('name').value = data.name;
+                document.getElementById('email').value = data.email;
+                
+                formWrapper.classList.remove('d-none');
+                
+            } catch (error) {
+                errorState.classList.remove('d-none');
+                document.getElementById('errorFormMessage').innerText = error.message;
+            } finally {
+                loadingState.classList.add('d-none');
+            }
+        }
+
+        await loadPrincipalData();
+
+        if (!form) return;
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            formMessage.innerHTML = '';
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
+
+            const senhaDigitada = document.getElementById('password').value;
+            const payload = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: senhaDigitada.trim() !== '' ? senhaDigitada : 'SenhaTemporaria123'
+            };
+
+            try {
+                const response = await fetch(`/api/principals/${principalId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (token || '')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible" role="alert">Diretor atualizado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                    document.getElementById('password').value = '';
+                } else {
+                    let errorMsg = 'Ocorreu um erro ao atualizar o diretor.';
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.errors && Array.isArray(errorData.errors)) {
+                            errorMsg = errorData.errors.map(err => err.defaultMessage || err.message).join('<br>');
+                        } else if (errorData.message) {
+                            errorMsg = errorData.message;
+                        } else if (errorData.detail) {
+                            errorMsg = errorData.detail;
+                        }
+                    } catch (parseError) {
+                        if (response.status === 403) {
+                            errorMsg = "Acesso negado: seu perfil não tem permissão para editar diretores.";
+                        } else if (response.status === 401) {
+                            errorMsg = "Sessão expirada ou não autenticada. Faça login novamente.";
+                        }
+                    }
+                    formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+                }
+            } catch (error) {
+                formMessage.innerHTML = '<div class="alert alert-danger alert-dismissible" role="alert">Erro de conexão com o servidor.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = 'Salvar Alterações';
+            }
+        });
+    });
+</script>
+
+<script src="/js/load-sidebar.js"></script>
+
+</body>
+</html>

@@ -21,14 +21,14 @@ public class PrincipalController {
     private final PrincipalService principalService;
 
     @PostMapping
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<PrincipalResponseDTO> create(@Valid @RequestBody PrincipalRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(toResponse(principalService.create(toEntity(dto))));
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<List<PrincipalResponseDTO>> findAll(
             @RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
         List<Principal> principals = activeOnly
@@ -44,27 +44,27 @@ public class PrincipalController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<PrincipalResponseDTO> update(
             @PathVariable Integer id, @Valid @RequestBody PrincipalRequestDTO dto) {
         return ResponseEntity.ok(toResponse(principalService.update(id, toEntity(dto))));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         principalService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/activate")
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<PrincipalResponseDTO> activate(@PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(principalService.activate(id)));
     }
 
     @PutMapping("/{id}/deactivate")
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<PrincipalResponseDTO> deactivate(@PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(principalService.deactivate(id)));
     }
