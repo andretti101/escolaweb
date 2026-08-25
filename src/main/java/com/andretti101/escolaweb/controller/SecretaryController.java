@@ -21,7 +21,7 @@ public class SecretaryController {
     private final SecretaryService secretaryService;
 
     @PostMapping
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<SecretaryResponseDTO> create(@Valid @RequestBody SecretaryRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(toResponse(secretaryService.create(toEntity(dto))));
@@ -44,27 +44,27 @@ public class SecretaryController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<SecretaryResponseDTO> update(
             @PathVariable Integer id, @Valid @RequestBody SecretaryRequestDTO dto) {
         return ResponseEntity.ok(toResponse(secretaryService.update(id, toEntity(dto))));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         secretaryService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/activate")
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<SecretaryResponseDTO> activate(@PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(secretaryService.activate(id)));
     }
 
     @PutMapping("/{id}/deactivate")
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<SecretaryResponseDTO> deactivate(@PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(secretaryService.deactivate(id)));
     }
