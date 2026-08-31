@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html
+        lang="pt-BR"
+        class="light-style layout-menu-fixed"
+        dir="ltr"
+        data-theme="theme-default"
+        data-assets-path="/assets/"
+        data-template="vertical-menu-template-free"
+>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Alunos | EscolaWEB</title>
+    <meta name="description" content="Lista de alunos cadastrados no sistema."/>
+
+    <script src="/js/auth-guard.js"></script>
+
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+
+        <!-- sidebar -->
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+        <!--/ sidebar -->
+
+        <div class="layout-page">
+            <!-- Navbar -->
+            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+                 id="layout-navbar">
+                <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                    <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                        <i class="bx bx-menu bx-sm"></i>
+                    </a>
+                </div>
+                <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                    <div class="navbar-nav align-items-center w-100">
+                        <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
+                            <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
+                            <input
+                                    type="text"
+                                    id="globalSearch"
+                                    class="form-control border-0 shadow-none px-0 w-100"
+                                    placeholder="Buscar por nome, e-mail ou matrícula..."
+                                    aria-label="Buscar aluno"
+                                    style="min-width: 350px;"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <!-- / Navbar -->
+
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0">
+                            <span class="text-muted fw-light">Alunos /</span> Listagem
+                        </h4>
+                    </div>
+
+                    <!-- Card -->
+                    <div class="card">
+                        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <h5 class="mb-0">Alunos Cadastrados</h5>
+
+                            <!-- Filtros de status -->
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="statusFilter" id="filterActive"
+                                       value="active" checked/>
+                                <label class="btn btn-outline-success btn-sm" for="filterActive">Ativos</label>
+
+                                <input type="radio" class="btn-check" name="statusFilter" id="filterInactive"
+                                       value="inactive"/>
+                                <label class="btn btn-outline-danger btn-sm" for="filterInactive">Inativos</label>
+
+                                <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all"/>
+                                <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Matrícula</th>
+                                    <th>Nascimento</th>
+                                    <th>Telefone</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody id="studentsTableBody">
+                                <!-- Preenchido via JavaScript -->
+                                </tbody>
+                            </table>
+
+                            <!-- Estado de carregamento -->
+                            <div id="loadingState" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Carregando alunos...</p>
+                            </div>
+
+                            <!-- Estado vazio -->
+                            <div id="emptyState" class="text-center py-5 d-none">
+                                <i class="bx bx-user-x fs-1 text-muted"></i>
+                                <p class="mt-2 text-muted mb-0">Nenhum aluno encontrado.</p>
+                            </div>
+
+                            <!-- Estado de erro -->
+                            <div id="errorState" class="text-center py-5 d-none">
+                                <i class="bx bx-error-circle fs-1 text-danger"></i>
+                                <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar alunos.</p>
+                                <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadStudents()">
+                                    <i class="bx bx-refresh me-1"></i> Tentar novamente
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Rodapé da tabela com contagem -->
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            <small class="text-muted" id="recordCount"></small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">
+                            ©
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
+                        </div>
+                    </div>
+                </footer>
+
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<!-- Core JS -->
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+
+<script src="/js/load-sidebar.js"></script>
+
+<script>
+    let allStudents = [];
+    let statusFilter = 'active';
+    let searchTerm = '';
+
+    function getToken() {
+        return localStorage.getItem('jwt_token') || '';
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+    }
+
+    function formatPhone(phone) {
+        return phone || '—';
+    }
+
+    function getInitials(name) {
+        if (!name) return 'A';
+        return name
+            .split(' ')
+            .slice(0, 2)
+            .map(n => n[0])
+            .join('')
+            .toUpperCase();
+    }
+
+    const avatarColors = [
+        'bg-label-primary', 'bg-label-success', 'bg-label-info',
+        'bg-label-warning', 'bg-label-danger', 'bg-label-secondary'
+    ];
+
+    function avatarColor(id) {
+        return avatarColors[(id || 0) % avatarColors.length];
+    }
+
+    function handleUnauthorized() {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login.html';
+    }
+
+    function renderTable(students) {
+        const tbody = document.getElementById('studentsTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const recordCount = document.getElementById('recordCount');
+
+        if (students.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.classList.remove('d-none');
+            recordCount.textContent = 'Nenhum aluno encontrado com esses filtros.';
+            return;
+        }
+
+        emptyState.classList.add('d-none');
+        recordCount.textContent = `Exibindo ${students.length} aluno${students.length !== 1 ? 's' : ''}.`;
+
+        tbody.innerHTML = students.map(student => `
+          <tr class="${!student.active ? 'opacity-75 bg-lighter' : ''}">
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-sm me-3">
+                  <span class="avatar-initial rounded-circle ${avatarColor(student.id)}">
+                    ${getInitials(student.name)}
+                  </span>
+                </div>
+                <div>
+                  <strong class="d-block">${escapeHtml(student.name)}</strong>
+                  <small class="text-muted">${escapeHtml(student.email)}</small>
+                </div>
+              </div>
+            </td>
+            <td><code>${escapeHtml(student.registrationNumber)}</code></td>
+            <td>${formatDate(student.birthDate)}</td>
+            <td>
+              <div>${formatPhone(student.ownPhone)}</div>
+              ${student.guardianPhone
+            ? `<small class="text-muted"><i class="bx bx-user-pin me-1"></i>${escapeHtml(student.guardianPhone)}</small>`
+            : ''}
+            </td>
+            <td>
+              ${student.active
+            ? '<span class="badge bg-label-success">Ativo</span>'
+            : '<span class="badge bg-label-secondary">Inativo</span>'}
+            </td>
+          </tr>
+        `).join('');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function applyFilters() {
+        let result = allStudents;
+
+        if (statusFilter === 'active') {
+            result = result.filter(s => s.active);
+        } else if (statusFilter === 'inactive') {
+            result = result.filter(s => !s.active);
+        }
+
+        if (searchTerm.trim()) {
+            const term = searchTerm.trim().toLowerCase();
+            result = result.filter(s =>
+                (s.name || '').toLowerCase().includes(term) ||
+                (s.email || '').toLowerCase().includes(term) ||
+                (s.registrationNumber || '').toLowerCase().includes(term)
+            );
+        }
+
+        renderTable(result);
+    }
+
+    async function loadStudents() {
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const tbody = document.getElementById('studentsTableBody');
+
+        loadingState.classList.remove('d-none');
+        errorState.classList.add('d-none');
+        tbody.innerHTML = '';
+        document.getElementById('emptyState').classList.add('d-none');
+
+        try {
+            const response = await fetch('/api/students', {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken(),
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => null);
+                throw new Error(err?.message || 'Erro ao buscar alunos.');
+            }
+
+            allStudents = await response.json();
+            allStudents.sort((a, b) => {
+                if (a.active && !b.active) return -1;
+                if (!a.active && b.active) return 1;
+                return 0;
+            });
+            applyFilters();
+
+        } catch (error) {
+            errorState.classList.remove('d-none');
+            document.getElementById('errorMessage').textContent = error.message;
+        } finally {
+            loadingState.classList.add('d-none');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
+            radio.addEventListener('change', e => {
+                statusFilter = e.target.value;
+                applyFilters();
+            });
+        });
+
+        document.getElementById('globalSearch').addEventListener('input', e => {
+            searchTerm = e.target.value;
+            applyFilters();
+        });
+
+        loadStudents();
+    });
+</script>
+</body>
+</html>
+
+

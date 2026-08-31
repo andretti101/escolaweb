@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Anos Acadêmicos | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Listagem de anos acadêmicos"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+        <div class="layout-page">
+            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+                 id="layout-navbar">
+                <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                    <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)"><i class="bx bx-menu bx-sm"></i></a>
+                </div>
+                <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                    <div class="navbar-nav align-items-center w-100">
+                        <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
+                            <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
+                            <input type="text" class="form-control border-0 shadow-none px-0 w-100"
+                                   placeholder="Buscar ano acadêmico..." aria-label="Buscar" id="globalSearch"
+                                   style="min-width: 350px;"/>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Ano Acadêmico /</span> Listagem</h4>
+                        <a href="/principal/create/academic-year.html" class="btn btn-primary">
+                            <i class="bx bx-plus me-1"></i> Cadastrar Ano
+                        </a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Anos Acadêmicos Cadastrados</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Ano</th>
+                                    <th>Início</th>
+                                    <th>Término</th>
+                                    <th>Cadastrado em</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                                </thead>
+                                <tbody id="yearsTableBody"></tbody>
+                            </table>
+                            <div id="loadingState" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Carregando anos acadêmicos...</p>
+                            </div>
+                            <div id="emptyState" class="text-center py-5 d-none">
+                                <i class="bx bx-calendar-x fs-1 text-muted"></i>
+                                <p class="mt-2 text-muted mb-0">Nenhum ano acadêmico cadastrado.</p>
+                                <a href="/principal/create/academic-year.html" class="btn btn-primary btn-sm mt-3"><i
+                                        class="bx bx-plus me-1"></i> Cadastrar</a>
+                            </div>
+                            <div id="errorState" class="text-center py-5 d-none">
+                                <i class="bx bx-error-circle fs-1 text-danger"></i>
+                                <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar.</p>
+                                <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadYears()"><i
+                                        class="bx bx-refresh me-1"></i> Tentar novamente
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-footer"><small class="text-muted" id="recordCount"></small></div>
+                    </div>
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">©
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script src="/js/load-sidebar.js"></script>
+
+<script>
+    let allYears = [];
+    let searchTerm = '';
+
+    function getToken() {
+        return localStorage.getItem('jwt_token') || '';
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        try {
+            const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
+            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function handleUnauthorized() {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login.html';
+    }
+
+    async function loadYears() {
+        const tableBody = document.getElementById('yearsTableBody');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const errorState = document.getElementById('errorState');
+        tableBody.innerHTML = '';
+        loadingState.classList.remove('d-none');
+        emptyState.classList.add('d-none');
+        errorState.classList.add('d-none');
+
+        try {
+            const response = await fetch('/api/academic-years', {
+                headers: {'Authorization': `Bearer ${getToken()}`}
+            });
+            if (response.status === 401 || response.status === 403) return handleUnauthorized();
+            if (!response.ok) throw new Error('Erro na resposta do servidor');
+            allYears = await response.json();
+            // Sort by year descending
+            allYears.sort((a, b) => b.year - a.year);
+            applyFilters();
+        } catch (error) {
+            console.error(error);
+            loadingState.classList.add('d-none');
+            errorState.classList.remove('d-none');
+        }
+    }
+
+    function applyFilters() {
+        let filtered = allYears;
+        if (searchTerm.trim()) {
+            const term = searchTerm.trim();
+            filtered = filtered.filter(y => String(y.year).includes(term));
+        }
+        renderTable(filtered);
+    }
+
+    function renderTable(years) {
+        const tableBody = document.getElementById('yearsTableBody');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const recordCount = document.getElementById('recordCount');
+        loadingState.classList.add('d-none');
+
+        if (years.length === 0) {
+            tableBody.innerHTML = '';
+            emptyState.classList.remove('d-none');
+            recordCount.textContent = '0 registros';
+            return;
+        }
+        emptyState.classList.add('d-none');
+        recordCount.textContent = `${years.length} ano${years.length !== 1 ? 's' : ''} listado${years.length !== 1 ? 's' : ''}`;
+
+        tableBody.innerHTML = years.map(y => {
+            const statusBadge = y.active
+                ? '<span class="badge bg-label-success"><i class="bx bx-check-circle me-1"></i>Ano Ativo</span>'
+                : '<span class="badge bg-label-secondary">Inativo</span>';
+
+            return `
+                    <tr class="${y.active ? 'table-light' : ''}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm me-3">
+                                    <span class="avatar-initial rounded-circle ${y.active ? 'bg-label-success' : 'bg-label-secondary'}">
+                                        <i class="bx bx-calendar"></i>
+                                    </span>
+                                </div>
+                                <span class="fw-bold fs-5">${escapeHtml(String(y.year))}</span>
+                            </div>
+                        </td>
+                        <td>${formatDate(y.startDate)}</td>
+                        <td>${formatDate(y.endDate)}</td>
+                        <td>${formatDate(y.createdAt)}</td>
+                        <td>${statusBadge}</td>
+                        <td class="text-center">
+                            <div class="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/secretary/edit/academic-year.html?id=${y.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
+                                    ${!y.active ? `
+                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="activateYear(${y.id})"><i class="bx bx-check-circle me-1 text-success"></i> Definir como Ativo</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteYear(${y.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+        }).join('');
+    }
+
+    async function activateYear(id) {
+        if (!confirm('Deseja definir este ano como o ano acadêmico ATIVO? O ano ativo atual será desativado automaticamente.')) return;
+        try {
+            const response = await fetch(`/api/academic-years/${id}/activate`, {
+                method: 'PUT', headers: {'Authorization': `Bearer ${getToken()}`}
+            });
+            if (response.status === 401 || response.status === 403) {
+                alert('Acesso negado: apenas a Direção pode ativar um ano acadêmico.');
+                return;
+            }
+            if (response.ok) {
+                loadYears();
+            } else {
+                const err = await response.json().catch(() => null);
+                alert(`Erro ao ativar ano: ${err?.message || 'Erro desconhecido'}`);
+            }
+        } catch (error) {
+            alert('Erro de conexão.');
+        }
+    }
+
+    async function deleteYear(id) {
+        if (!confirm('ATENÇÃO: Deseja EXCLUIR este ano acadêmico? Esta ação não pode ser desfeita.')) return;
+        try {
+            const response = await fetch(`/api/academic-years/${id}`, {
+                method: 'DELETE', headers: {'Authorization': `Bearer ${getToken()}`}
+            });
+            if (response.status === 401 || response.status === 403) {
+                alert('Acesso negado: apenas a Direção pode excluir anos acadêmicos.');
+                return;
+            }
+            if (response.ok) {
+                loadYears();
+            } else {
+                const err = await response.json().catch(() => null);
+                alert(`Erro ao excluir ano: ${err?.message || 'Este ano possui turmas ou períodos vinculados e não pode ser excluído.'}`);
+            }
+        } catch (error) {
+            alert('Erro de conexão.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('globalSearch').addEventListener('input', e => {
+            searchTerm = e.target.value;
+            applyFilters();
+        });
+        loadYears();
+    });
+</script>
+</body>
+</html>
+
+

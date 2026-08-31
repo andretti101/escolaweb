@@ -7,6 +7,7 @@ import com.andretti101.escolaweb.model.entity.SchoolSettings;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.enums.StudentSituation;
+import com.andretti101.escolaweb.repository.EnrollmentRepository;
 import com.andretti101.escolaweb.repository.GradeHistoryRepository;
 import com.andretti101.escolaweb.repository.GradeRepository;
 import com.andretti101.escolaweb.service.AssessmentService;
@@ -31,6 +32,7 @@ public class GradeServiceImpl implements GradeService {
 
     private final GradeRepository gradeRepository;
     private final GradeHistoryRepository gradeHistoryRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final StudentService studentService;
     private final AssessmentService assessmentService;
     private final SchoolSettingsService schoolSettingsService;
@@ -49,6 +51,7 @@ public class GradeServiceImpl implements GradeService {
                     + " on assessment with id " + assessment.getId() + " is already registered.");
         }
 
+        validateActiveEnrollment(student, assessment.getTeacherClassSubject());
         validatePeriodOpen(assessment);
         validateGradeValue(grade.getValue());
 
@@ -124,19 +127,46 @@ public class GradeServiceImpl implements GradeService {
         Student student = studentService.findById(studentId);
         TeacherClassSubject tcs = teacherClassSubjectService.findById(teacherClassSubjectId);
 
-        List<BigDecimal> values = gradeRepository
-                .findByStudentAndAssessment_TeacherClassSubject(student, tcs)
-                .stream()
-                .map(Grade::getValue)
-                .filter(Objects::nonNull)
-                .toList();
+        List<Grade> allGrades = gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs);
 
-        if (values.isEmpty()) {
+        if (allGrades.isEmpty()) {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal sum = values.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-        return sum.divide(BigDecimal.valueOf(values.size()), 2, RoundingMode.HALF_UP);
+        java.util.Map<com.andretti101.escolaweb.model.entity.AcademicPeriod, List<Grade>> gradesByPeriod = allGrades.stream()
+                .filter(g -> g.getValue() != null && g.getAssessment() != null && g.getAssessment().getPeriod() != null)
+                .collect(java.util.stream.Collectors.groupingBy(g -> g.getAssessment().getPeriod()));
+
+        if (gradesByPeriod.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal sumOfPeriodAverages = BigDecimal.ZERO;
+
+        for (List<Grade> periodGrades : gradesByPeriod.values()) {
+            BigDecimal periodSum = periodGrades.stream()
+                    .map(Grade::getValue)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal periodAvg = periodSum.divide(BigDecimal.valueOf(periodGrades.size()), 2, RoundingMode.HALF_UP);
+            sumOfPeriodAverages = sumOfPeriodAverages.add(periodAvg);
+        }
+
+        SchoolSettings settings = schoolSettingsService.findSettings();
+        int divisor = getDivisorForPeriodType(settings.getPeriodType());
+
+        return sumOfPeriodAverages.divide(BigDecimal.valueOf(divisor), 2, RoundingMode.HALF_UP);
+    }
+
+    private int getDivisorForPeriodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType type) {
+        if (type == null) return 1;
+        switch (type) {
+            case BIMESTER: return 4;
+            case TRIMESTER: return 3;
+            case QUADRIMESTER: return 3; // Um ano tem 3 quadrimestres
+            case SEMESTER: return 2;
+            case ANNUAL: return 1;
+            default: return 1;
+        }
     }
 
     // ── Private helpers
@@ -179,6 +209,15 @@ public class GradeServiceImpl implements GradeService {
         if (value == null) return;
         if (value.compareTo(BigDecimal.ZERO) < 0 || value.compareTo(BigDecimal.TEN) > 0) {
             throw new IllegalArgumentException("Grade value must be between 0 and 10.");
+        }
+    }
+
+    private void validateActiveEnrollment(Student student, TeacherClassSubject tcs) {
+        if (!enrollmentRepository.existsByStudentAndClassRoomAndActiveTrue(student, tcs.getClassRoom())) {
+            throw new IllegalStateException(
+                    "Student with id " + student.getId()
+                    + " does not have an active enrollment in classroom with id "
+                    + tcs.getClassRoom().getId() + ".");
         }
     }
 

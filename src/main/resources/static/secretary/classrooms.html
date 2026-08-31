@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Turmas | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Gestão de Turmas"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <style>
+        .inactive-row {
+            opacity: 0.65;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2"
+                           href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Turmas /</span> Listagem</h4>
+                        <a href="/secretary/create/classroom.html" class="btn btn-primary d-none" id="btnNovaTurma">
+                            <i class="bx bx-plus me-1"></i> Nova Turma
+                        </a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                            <h5 class="m-0">Turmas Cadastradas</h5>
+                            <div class="d-flex flex-column flex-sm-row gap-2">
+                                <select id="yearFilter" class="form-select form-select-sm" style="min-width: 150px;">
+                                    <option value="all">Todos os Anos</option>
+                                    <!-- Options via JS -->
+                                </select>
+                                <select id="statusFilter" class="form-select form-select-sm" style="min-width: 150px;">
+                                    <option value="all">Todas as Turmas</option>
+                                    <option value="active" selected>Somente Ativas</option>
+                                    <option value="inactive">Somente Inativas</option>
+                                </select>
+                                <div class="input-group input-group-sm" style="max-width: 250px;">
+                                    <span class="input-group-text"><i class="bx bx-search"></i></span>
+                                    <input type="text" id="searchInput" class="form-control"
+                                           placeholder="Buscar turma..."/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="alertContainer" class="px-4 pt-2"></div>
+
+                        <div class="table-responsive text-nowrap">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Nome / Código</th>
+                                    <th>Ano Acadêmico</th>
+                                    <th>Turno</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                        <span class="ms-2">Carregando turmas...</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Excluir -->
+                <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirmar Exclusão</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Tem certeza de que deseja excluir permanentemente a turma <strong
+                                    id="deleteTargetName"></strong>?<br><br>
+                                <span class="text-danger"><i class="bx bx-error-circle"></i> Atenção: Esta ação apagará todas as matrículas e associações de professores vinculadas a esta turma.</span>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    Cancelar
+                                </button>
+                                <button type="button" class="btn btn-danger" id="btnConfirmDelete">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">©
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+
+<script>
+    const jwtToken = localStorage.getItem('jwt_token');
+    let classroomsData = [];
+    let deleteId = null;
+
+    // Verificar se é SECRETARY para mostrar botão de "Nova Turma"
+    if (jwtToken) {
+        try {
+            const payload = JSON.parse(atob(jwtToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            const payloadString = JSON.stringify(payload).toUpperCase();
+            if (payloadString.includes("SECRETARY")) {
+                document.getElementById('btnNovaTurma').classList.remove('d-none');
+                window.isSecretary = true;
+            }
+        } catch (e) {
+        }
+    }
+
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe.toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    const shiftMap = {
+        'MORNING': 'Matutino',
+        'AFTERNOON': 'Vespertino',
+        'EVENING': 'Noturno',
+        'FULL_TIME': 'Integral'
+    };
+
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+        setTimeout(() => {
+            container.innerHTML = '';
+        }, 5000);
+    }
+
+    async function loadYears() {
+        try {
+            const res = await fetch('/api/academic-years', {
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            if (res.ok) {
+                const years = await res.json();
+                const filter = document.getElementById('yearFilter');
+                years.sort((a, b) => b.year - a.year).forEach(y => {
+                    const opt = document.createElement('option');
+                    opt.value = y.id;
+                    opt.textContent = y.year + (y.active ? ' (Ativo)' : '');
+                    filter.appendChild(opt);
+                });
+            }
+        } catch (e) {
+            console.error("Erro ao carregar anos:", e);
+        }
+    }
+
+    async function loadClassrooms() {
+        try {
+            const response = await fetch('/api/classrooms', {
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            if (response.ok) {
+                classroomsData = await response.json();
+                renderTable();
+            } else {
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar dados.</td></tr>';
+            }
+        } catch (error) {
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Falha de conexão.</td></tr>';
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        const yearFilter = document.getElementById('yearFilter').value;
+
+        let filtered = classroomsData.filter(c => {
+            const nameMatch = (c.name || '').toLowerCase().includes(searchTerm);
+            const shiftMatch = (shiftMap[c.shift] || '').toLowerCase().includes(searchTerm);
+            const matchSearch = nameMatch || shiftMatch;
+            const matchStatus = statusFilter === 'all' ? true : (statusFilter === 'active' ? c.active : !c.active);
+            const matchYear = yearFilter === 'all' ? true : (c.academicYearId == yearFilter);
+            return matchSearch && matchStatus && matchYear;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhuma turma encontrada.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(c => {
+            const shiftLabel = shiftMap[c.shift] || c.shift || 'N/A';
+            const badgeClass = c.active ? 'bg-label-success' : 'bg-label-secondary';
+            const badgeText = c.active ? 'Ativa' : 'Inativa';
+            const actionIcon = c.active ? 'bx-block' : 'bx-check-circle';
+            const actionText = c.active ? 'Desativar' : 'Ativar';
+            const actionColor = c.active ? 'text-warning' : 'text-success';
+            const academicYearText = c.academicYear || c.academicYearId || '-';
+
+            let actionsHtml = '';
+            if (window.isSecretary) {
+                let editBtn = '';
+                let manageBtn = '';
+                if (c.active) {
+                    editBtn = `<a class="dropdown-item" href="/secretary/edit/classroom.html?id=${c.id}"><i class="bx bx-edit-alt me-1"></i> Editar Dados</a>`;
+                    manageBtn = `<a class="dropdown-item text-primary" href="/secretary/manage-classroom.html?id=${c.id}"><i class="bx bx-cog me-1"></i> Gerenciar (Alunos/Grade)</a>`;
+                }
+
+                actionsHtml = `
+                    <div class="dropdown">
+                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            ${manageBtn}
+                            ${editBtn}
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item ${actionColor}" href="javascript:void(0);" onclick="toggleStatus(${c.id}, ${!c.active})">
+                                <i class="bx ${actionIcon} me-1"></i> ${actionText}
+                            </a>
+                            <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="confirmDelete(${c.id}, '${escapeHtml(c.name)}')">
+                                <i class="bx bx-trash me-1"></i> Excluir
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                actionsHtml = `<span class="text-muted"><i class="bx bx-lock-alt"></i> Restrito</span>`;
+            }
+
+            return `
+                <tr class="${c.active ? '' : 'inactive-row'}">
+                    <td><strong>${escapeHtml(c.name)}</strong></td>
+                    <td>${academicYearText}</td>
+                    <td><span class="badge bg-label-info">${shiftLabel}</span></td>
+                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                    <td>
+                        ${actionsHtml}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async function toggleStatus(id, activate) {
+        const endpoint = `/api/classrooms/${id}/${activate ? 'activate' : 'deactivate'}`;
+        try {
+            const res = await fetch(endpoint, {
+                method: 'PUT',
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            if (res.ok) {
+                showAlert(`Turma ${activate ? 'ativada' : 'desativada'} com sucesso.`, 'success');
+                loadClassrooms();
+            } else {
+                if (res.status === 403) showAlert("Acesso negado. Apenas a Secretaria pode alterar o status de turmas.", "danger");
+                else showAlert("Erro ao alterar status.", "danger");
+            }
+        } catch (e) {
+            showAlert("Erro de conexão.", "danger");
+        }
+    }
+
+    function confirmDelete(id, name) {
+        deleteId = id;
+        document.getElementById('deleteTargetName').textContent = name;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    document.getElementById('btnConfirmDelete').addEventListener('click', async () => {
+        if (!deleteId) return;
+        const btn = document.getElementById('btnConfirmDelete');
+        btn.disabled = true;
+        btn.innerText = 'Excluindo...';
+
+        try {
+            const response = await fetch(`/api/classrooms/${deleteId}`, {
+                method: 'DELETE',
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+            modal.hide();
+
+            if (response.ok || response.status === 204) {
+                showAlert('Turma excluída com sucesso.', 'success');
+                loadClassrooms();
+            } else {
+                if (response.status === 403) showAlert("Acesso negado. Apenas a Secretaria pode excluir turmas.", "danger");
+                else showAlert('Erro ao excluir turma. Verifique se existem dependências.', 'danger');
+            }
+        } catch (e) {
+            showAlert('Erro de conexão com o servidor.', 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Excluir';
+            deleteId = null;
+        }
+    });
+
+    document.getElementById('searchInput').addEventListener('input', renderTable);
+    document.getElementById('statusFilter').addEventListener('change', renderTable);
+    document.getElementById('yearFilter').addEventListener('change', renderTable);
+
+    // Initial load
+    loadYears().then(loadClassrooms);
+</script>
+<script src="/js/load-sidebar.js"></script>
+</body>
+</html>
+
+

@@ -37,22 +37,16 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
         Subject subject = resolveSubject(tcs.getSubject());
 
         if (!teacher.isActive()) {
-            throw new IllegalStateException(
-                    "Cannot assign inactive teacher with id " + teacher.getId() + " to a class.");
+            throw new IllegalStateException("Não é possível vincular um professor inativo à turma.");
         }
         if (!classRoom.isActive()) {
-            throw new IllegalStateException(
-                    "Cannot assign to inactive classroom with id " + classRoom.getId() + ".");
+            throw new IllegalStateException("Não é possível vincular professores a uma turma inativa.");
         }
         if (!subject.isActive()) {
-            throw new IllegalStateException(
-                    "Cannot assign inactive subject with id " + subject.getId() + ".");
+            throw new IllegalStateException("Não é possível vincular uma matéria inativa.");
         }
-        if (teacherClassSubjectRepository.existsByTeacherAndClassRoomAndSubject(teacher, classRoom, subject)) {
-            throw new IllegalStateException(
-                    "Teacher with id " + teacher.getId()
-                            + " is already assigned to subject with id " + subject.getId()
-                            + " in classroom with id " + classRoom.getId() + ".");
+        if (teacherClassSubjectRepository.existsByClassRoomAndSubject(classRoom, subject)) {
+            throw new IllegalStateException("Esta matéria já está vinculada a esta turma (apenas um professor por matéria).");
         }
 
         validateAssessmentLimits(tcs.getMinAssessmentsPerPeriod(), tcs.getMaxAssessmentsPerPeriod());
@@ -73,15 +67,11 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
         ClassRoom classRoom = resolveClassRoom(incoming.getClassRoom());
         Subject subject = resolveSubject(incoming.getSubject());
 
-        boolean changed = !existing.getTeacher().getId().equals(teacher.getId())
-                || !existing.getClassRoom().getId().equals(classRoom.getId())
+        boolean changed = !existing.getClassRoom().getId().equals(classRoom.getId())
                 || !existing.getSubject().getId().equals(subject.getId());
 
-        if (changed && teacherClassSubjectRepository.existsByTeacherAndClassRoomAndSubject(teacher, classRoom, subject)) {
-            throw new IllegalStateException(
-                    "Teacher with id " + teacher.getId()
-                            + " is already assigned to subject with id " + subject.getId()
-                            + " in classroom with id " + classRoom.getId() + ".");
+        if (changed && teacherClassSubjectRepository.existsByClassRoomAndSubject(classRoom, subject)) {
+            throw new IllegalStateException("Esta matéria já está vinculada a esta turma.");
         }
 
         validateAssessmentLimits(incoming.getMinAssessmentsPerPeriod(), incoming.getMaxAssessmentsPerPeriod());
@@ -101,12 +91,10 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
         TeacherClassSubject tcs = findTcsOrThrow(id);
 
         if (lessonRepository.existsByTeacherClassSubject(tcs)) {
-            throw new IllegalStateException(
-                    "Cannot delete assignment with id " + id + " because it has lessons registered.");
+            throw new IllegalStateException("Não é possível excluir este vínculo pois já existem aulas registradas.");
         }
         if (assessmentRepository.existsByTeacherClassSubject(tcs)) {
-            throw new IllegalStateException(
-                    "Cannot delete assignment with id " + id + " because it has assessments registered.");
+            throw new IllegalStateException("Não é possível excluir este vínculo pois já existem avaliações registradas.");
         }
 
         teacherClassSubjectRepository.deleteById(id);

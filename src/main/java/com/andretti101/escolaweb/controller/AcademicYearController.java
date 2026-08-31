@@ -21,7 +21,7 @@ public class AcademicYearController {
     private final AcademicYearService academicYearService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
+    @PreAuthorize("hasRole('PRINCIPAL')")
     public ResponseEntity<AcademicYearResponseDTO> create(@Valid @RequestBody AcademicYearRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(toResponse(academicYearService.create(toEntity(dto))));
@@ -47,7 +47,7 @@ public class AcademicYearController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
+    @PreAuthorize("hasRole('PRINCIPAL')")
     public ResponseEntity<AcademicYearResponseDTO> update(
             @PathVariable Integer id, @Valid @RequestBody AcademicYearRequestDTO dto) {
         return ResponseEntity.ok(toResponse(academicYearService.update(id, toEntity(dto))));

@@ -16,6 +16,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     List<Enrollment> findByStudentAndActiveTrue(Student student);
     List<Enrollment> findByActiveTrue();
     boolean existsByStudentAndClassRoom(Student student, ClassRoom classRoom);
+    boolean existsByStudentAndClassRoomAndActiveTrue(Student student, ClassRoom classRoom);
     boolean existsByStudentAndClassRoom_AcademicYear(Student student, AcademicYear academicYear);
     boolean existsByStudentAndClassRoom_AcademicYearAndActiveTrue(Student student, AcademicYear academicYear);
     boolean existsByClassRoom(ClassRoom classRoom);

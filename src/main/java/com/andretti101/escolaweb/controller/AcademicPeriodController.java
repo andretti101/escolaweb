@@ -22,7 +22,7 @@ public class AcademicPeriodController {
     private final AcademicPeriodService academicPeriodService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
+    @PreAuthorize("hasRole('PRINCIPAL')")
     public ResponseEntity<AcademicPeriodResponseDTO> create(@Valid @RequestBody AcademicPeriodRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(toResponse(academicPeriodService.create(toEntity(dto))));
@@ -49,7 +49,7 @@ public class AcademicPeriodController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
+    @PreAuthorize("hasRole('PRINCIPAL')")
     public ResponseEntity<AcademicPeriodResponseDTO> update(
             @PathVariable Integer id, @Valid @RequestBody AcademicPeriodRequestDTO dto) {
         return ResponseEntity.ok(toResponse(academicPeriodService.update(id, toEntity(dto))));
@@ -62,7 +62,7 @@ public class AcademicPeriodController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
+    @PreAuthorize("hasRole('PRINCIPAL')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         academicPeriodService.delete(id);
         return ResponseEntity.noContent().build();

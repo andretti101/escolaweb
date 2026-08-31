@@ -31,7 +31,7 @@
     <meta name="description" content="Formulário de cadastro de alunos para o sistema escolar"/>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -231,7 +231,8 @@
                     <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">
                             ©
-                            <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
                         </div>
                     </div>
                 </footer>
@@ -297,7 +298,7 @@
                 });
 
                 if (response.ok) {
-                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible" role="alert">Aluno cadastrado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Aluno cadastrado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
                     form.reset();
                 } else {
                     let errorMsg = 'Ocorreu um erro ao cadastrar o aluno.';
@@ -317,10 +318,10 @@
                             errorMsg = "Sessão expirada ou não autenticada. Faça login novamente.";
                         }
                     }
-                    formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+                    formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
                 }
             } catch (error) {
-                formMessage.innerHTML = '<div class="alert alert-danger alert-dismissible" role="alert">Erro de conexão com o servidor.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                formMessage.innerHTML = '<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Erro de conexão com o servidor.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
             } finally {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = 'Cadastrar Aluno';
@@ -333,3 +334,4 @@
 
 </body>
 </html>
+

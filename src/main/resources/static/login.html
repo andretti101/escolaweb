@@ -14,7 +14,7 @@
     <title>Login - EscolaWEB SGE</title>
     <meta name="description" content="Sistema de Gestão Escolar - EscolaWEB"/>
 
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
 
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -41,12 +41,12 @@
                 <div class="card-body p-4 pt-3">
 
                     <div class="app-brand justify-content-center mb-2" style="min-height: auto;">
-                        <a href="index.html" class="app-brand-link gap-2">
+                        <a href="login.html" class="app-brand-link gap-2">
                 <span class="app-brand-logo demo" style="height: auto; width: auto;">
                   <img
-                          src="/assets/img/Logo.svg"
+                          src="/assets/img/Logo.png"
                           alt="EscolaWEB Logo"
-                          style="max-width: 170px; height: auto; display: block;"
+                          style="max-width: 280px; height: auto; display: block;"
                   />
                 </span>
                         </a>
@@ -119,14 +119,14 @@
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            const email    = document.getElementById("email").value.trim();
+            const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value;
 
             try {
                 const response = await fetch("/auth/login", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password })
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({email, password})
                 });
 
                 if (response.ok) {
@@ -134,8 +134,8 @@
                     console.log("Dados recebidos do login:", data);
 
                     // 1. Salva os tokens
-                    localStorage.setItem("jwt_token",      data.accessToken);
-                    localStorage.setItem("refresh_token",  data.refreshToken);
+                    localStorage.setItem("jwt_token", data.accessToken);
+                    localStorage.setItem("refresh_token", data.refreshToken);
 
                     // 2. Lê a role
                     const userRole = String(data.role ?? "").toUpperCase();
@@ -172,4 +172,7 @@
             }
         });
     });
-    </script>
+</script>
+
+
+
