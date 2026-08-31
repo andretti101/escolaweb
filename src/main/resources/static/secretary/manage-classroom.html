@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Gerenciar Turma | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Gerenciamento de Matrículas e Grade de Aulas da Turma"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <style>
+        .search-select-container {
+            position: relative;
+        }
+
+        .search-select-input {
+            cursor: text;
+        }
+
+        .search-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            max-height: 250px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #d9dee3;
+            border-top: none;
+            border-radius: 0 0 .375rem .375rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+            display: none;
+        }
+
+        .search-select-dropdown.show {
+            display: block;
+        }
+
+        .search-select-dropdown .dropdown-item {
+            padding: .5rem .75rem;
+            cursor: pointer;
+            font-size: .875rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .search-select-dropdown .dropdown-item:hover {
+            background: #f5f5f9;
+        }
+
+        .search-select-dropdown .dropdown-item.disabled {
+            color: #a1acb8;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .search-select-dropdown .dropdown-item .form-check-input {
+            margin: 0;
+            pointer-events: none;
+        }
+
+        .search-select-dropdown .no-results {
+            padding: .75rem;
+            text-align: center;
+            color: #a1acb8;
+            font-size: .875rem;
+        }
+
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .25rem;
+            margin-top: .5rem;
+        }
+
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            background: #e7e7ff;
+            color: #696cff;
+            border-radius: .25rem;
+            padding: .15rem .5rem;
+            font-size: .8125rem;
+        }
+
+        .selected-tag .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .selected-tag .remove-tag:hover {
+            color: #ff3e1d;
+        }
+
+        .student-count-badge {
+            font-size: .75rem;
+            color: #697a8d;
+            margin-left: .5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2"
+                           href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold py-3 mb-0">
+                            <span class="text-muted fw-light">Turmas /</span>
+                            <span id="classroomNameTitle">Gerenciar Turma</span>
+                        </h4>
+                        <a href="/secretary/classrooms.html" class="btn btn-outline-secondary">
+                            <i class="bx bx-arrow-back me-1"></i> Voltar
+                        </a>
+                    </div>
+
+                    <div id="alertContainer"></div>
+
+                    <!-- Nav Tabs -->
+                    <ul class="nav nav-pills mb-3" role="tablist">
+                        <li class="nav-item">
+                            <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
+                                    data-bs-target="#navs-students" aria-controls="navs-students" aria-selected="true">
+                                <i class="bx bx-group me-1"></i> Alunos Matriculados
+                                <span id="enrollmentCountBadge" class="badge bg-primary ms-1"
+                                      style="display:none;">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+                                    data-bs-target="#navs-teachers" aria-controls="navs-teachers" aria-selected="false">
+                                <i class="bx bx-book-reader me-1"></i> Grade de Aulas (Professores)
+                                <span id="tcsCountBadge" class="badge bg-info ms-1" style="display:none;">0</span>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content px-0 pb-0 bg-transparent shadow-none">
+                        <!-- TAB ALUNOS -->
+                        <div class="tab-pane fade show active" id="navs-students" role="tabpanel">
+                            <!-- Form Adicionar Alunos -->
+                            <div class="card mb-4">
+                                <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                                    <h5 class="m-0">Nova Matrícula</h5>
+                                    <small class="text-muted">Selecione um ou mais alunos</small>
+                                </div>
+                                <div class="card-body pt-4">
+                                    <form id="enrollmentForm">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="studentSearch">Buscar Alunos</label>
+                                                <div class="search-select-container" id="studentSearchContainer">
+                                                    <input type="text" class="form-control search-select-input"
+                                                           id="studentSearch"
+                                                           placeholder="Digite o nome ou matrícula do aluno..."
+                                                           autocomplete="off"/>
+                                                    <div class="search-select-dropdown" id="studentDropdown"></div>
+                                                </div>
+                                                <div class="selected-tags" id="selectedStudentsTags"></div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label" for="enrollmentDate">Data da Matrícula</label>
+                                                <input type="date" class="form-control" id="enrollmentDate" required/>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="submit" class="btn btn-primary w-100"
+                                                        id="btnSubmitEnrollment" disabled>
+                                                    <i class="bx bx-plus me-1"></i> Matricular <span
+                                                        id="enrollBtnCount"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- Tabela de Alunos -->
+                            <div class="card">
+                                <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                                    <h5 class="m-0">Alunos na Turma</h5>
+                                    <div>
+                                        <input type="text" class="form-control form-control-sm"
+                                               id="enrollmentTableSearch" placeholder="Filtrar alunos..."
+                                               style="width: 200px;"/>
+                                    </div>
+                                </div>
+                                <div class="table-responsive text-nowrap">
+                                    <table class="table table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>Aluno</th>
+                                            <th>Matrícula</th>
+                                            <th>Data Matrícula</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="enrollmentsTableBody">
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4">Carregando matrículas...</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB PROFESSORES/GRADE -->
+                        <div class="tab-pane fade" id="navs-teachers" role="tabpanel">
+                            <!-- Form Adicionar TCS -->
+                            <div class="card mb-4">
+                                <div class="card-header border-bottom">
+                                    <h5 class="m-0">Vincular Professor e Matéria</h5>
+                                </div>
+                                <div class="card-body pt-4">
+                                    <form id="tcsForm">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-4">
+                                                <label class="form-label" for="teacherSearch">Professor</label>
+                                                <div class="search-select-container" id="teacherSearchContainer">
+                                                    <input type="text" class="form-control search-select-input"
+                                                           id="teacherSearch"
+                                                           placeholder="Buscar professor..." autocomplete="off"/>
+                                                    <div class="search-select-dropdown" id="teacherDropdown"></div>
+                                                </div>
+                                                <input type="hidden" id="teacherId"/>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label" for="subjectSearch">Matéria</label>
+                                                <div class="search-select-container" id="subjectSearchContainer">
+                                                    <input type="text" class="form-control search-select-input"
+                                                           id="subjectSearch"
+                                                           placeholder="Buscar matéria..." autocomplete="off"/>
+                                                    <div class="search-select-dropdown" id="subjectDropdown"></div>
+                                                </div>
+                                                <input type="hidden" id="subjectId"/>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <label class="form-label" for="minAssessments">Mín.</label>
+                                                <input type="number" class="form-control" id="minAssessments" min="1"
+                                                       value="1" required title="Mínimo de avaliações por período"/>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <label class="form-label" for="maxAssessments">Máx.</label>
+                                                <input type="number" class="form-control" id="maxAssessments" min="1"
+                                                       value="4" required title="Máximo de avaliações por período"/>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="submit" class="btn btn-primary w-100" id="btnSubmitTcs">
+                                                    <i class="bx bx-plus me-1"></i> Vincular
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- Tabela TCS -->
+                            <div class="card">
+                                <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                                    <h5 class="m-0">Grade da Turma</h5>
+                                    <div>
+                                        <input type="text" class="form-control form-control-sm" id="tcsTableSearch"
+                                               placeholder="Filtrar grade..." style="width: 200px;"/>
+                                    </div>
+                                </div>
+                                <div class="table-responsive text-nowrap">
+                                    <table class="table table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>Matéria</th>
+                                            <th>Professor</th>
+                                            <th>Mín. Notas</th>
+                                            <th>Máx. Notas</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="tcsTableBody">
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4">Carregando grade...</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">
+                            ©
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+
+<script>
+    const jwtToken = localStorage.getItem('jwt_token');
+    const urlParams = new URLSearchParams(window.location.search);
+    const classRoomId = urlParams.get('id');
+
+    // ── State
+    let allStudents = [];
+    let allTeachers = [];
+    let allSubjects = [];
+    let enrolledStudentIds = new Set();
+    let selectedStudentIds = new Set();
+    let allEnrollments = [];
+
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+        setTimeout(() => {
+            container.innerHTML = '';
+        }, 5000);
+        window.scrollTo(0, 0);
+    }
+
+    if (!classRoomId) {
+        document.querySelector('.container-p-y').innerHTML = '<div class="alert alert-danger mt-4">ID da turma não fornecido. <a href="/secretary/classrooms.html">Voltar</a></div>';
+        throw new Error("No classRoomId provided");
+    }
+
+    document.getElementById('enrollmentDate').valueAsDate = new Date();
+
+    // ══════════════════════════════════════════════════════════
+    // DATA LOADERS
+    // ══════════════════════════════════════════════════════════
+
+    async function loadClassroomDetails() {
+        try {
+            const res = await fetch(`/api/classrooms/${classRoomId}`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            if (res.ok) {
+                const c = await res.json();
+                document.getElementById('classroomNameTitle').textContent = `Gerenciar Turma: ${escapeHtml(c.name)} - ${escapeHtml(c.academicYearYear || c.academicYearId)}`;
+            }
+        } catch (e) {
+        }
+    }
+
+    async function loadStudents() {
+        try {
+            const res = await fetch(`/api/students?activeOnly=true`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            if (res.ok) {
+                allStudents = (await res.json()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            }
+        } catch (e) {
+        }
+    }
+
+    async function loadTeachers() {
+        try {
+            const res = await fetch(`/api/teachers?activeOnly=true`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            if (res.ok) {
+                allTeachers = (await res.json()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            }
+        } catch (e) {
+        }
+    }
+
+    async function loadSubjects() {
+        try {
+            const res = await fetch(`/api/subjects`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            if (res.ok) {
+                allSubjects = (await res.json()).filter(s => s.active !== false).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            }
+        } catch (e) {
+        }
+    }
+
+    async function loadEnrollments() {
+        try {
+            const res = await fetch(`/api/enrollments/classroom/${classRoomId}`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            const tbody = document.getElementById('enrollmentsTableBody');
+            if (res.ok) {
+                allEnrollments = await res.json();
+                enrolledStudentIds = new Set(allEnrollments.map(e => e.studentId));
+                renderEnrollmentsTable();
+                // Update badge
+                const badge = document.getElementById('enrollmentCountBadge');
+                badge.textContent = allEnrollments.length;
+                badge.style.display = allEnrollments.length > 0 ? '' : 'none';
+                // Clear any selected students that are now enrolled
+                selectedStudentIds.forEach(id => {
+                    if (enrolledStudentIds.has(id)) selectedStudentIds.delete(id);
+                });
+                updateSelectedStudentsUI();
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar matrículas.</td></tr>';
+            }
+        } catch (e) {
+            document.getElementById('enrollmentsTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Falha de conexão.</td></tr>';
+        }
+    }
+
+    function renderEnrollmentsTable(filter = '') {
+        const tbody = document.getElementById('enrollmentsTableBody');
+        let data = allEnrollments;
+        if (filter) {
+            const q = filter.toLowerCase();
+            data = data.filter(e => (e.studentName || '').toLowerCase().includes(q));
+        }
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">${filter ? 'Nenhum aluno encontrado.' : 'Nenhum aluno matriculado nesta turma.'}</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map(e => {
+            const student = allStudents.find(s => s.id === e.studentId);
+            const regNumber = student ? student.registrationNumber : '';
+            return `
+            <tr>
+                <td><strong>${escapeHtml(e.studentName || e.studentId)}</strong></td>
+                <td><small class="text-muted">${escapeHtml(regNumber)}</small></td>
+                <td>${e.enrollmentDate ? e.enrollmentDate : '-'}</td>
+                <td><span class="badge ${e.active ? 'bg-label-success' : 'bg-label-secondary'}">${e.active ? 'Ativa' : 'Inativa'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-icon ${e.active ? 'text-warning' : 'text-success'}" onclick="toggleEnrollment(${e.id}, ${!e.active})" title="${e.active ? 'Desativar' : 'Ativar'}">
+                        <i class="bx ${e.active ? 'bx-block' : 'bx-check'}"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon text-danger" onclick="deleteEnrollment(${e.id})" title="Excluir Definitivamente">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    async function loadTCS() {
+        try {
+            const res = await fetch(`/api/teacher-class-subjects/classroom/${classRoomId}`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            const tbody = document.getElementById('tcsTableBody');
+            if (res.ok) {
+                const data = await res.json();
+                const badge = document.getElementById('tcsCountBadge');
+                badge.textContent = data.length;
+                badge.style.display = data.length > 0 ? '' : 'none';
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhuma grade definida para esta turma.</td></tr>';
+                    return;
+                }
+                window._tcsData = data;
+                renderTCSTable();
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar grade.</td></tr>';
+            }
+        } catch (e) {
+            document.getElementById('tcsTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Falha de conexão.</td></tr>';
+        }
+    }
+
+    function renderTCSTable(filter = '') {
+        const tbody = document.getElementById('tcsTableBody');
+        let data = window._tcsData || [];
+        if (filter) {
+            const q = filter.toLowerCase();
+            data = data.filter(t => (t.subjectName || '').toLowerCase().includes(q) || (t.teacherName || '').toLowerCase().includes(q));
+        }
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">${filter ? 'Nenhum resultado.' : 'Nenhuma grade definida.'}</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map(t => `
+            <tr>
+                <td><span class="badge bg-label-info">${escapeHtml(t.subjectName || t.subjectId)}</span></td>
+                <td><strong>${escapeHtml(t.teacherName || t.teacherId)}</strong></td>
+                <td>${t.minAssessmentsPerPeriod || '-'}</td>
+                <td>${t.maxAssessmentsPerPeriod || '-'}</td>
+                <td>
+                    <button class="btn btn-sm btn-icon text-danger" onclick="deleteTCS(${t.id})" title="Remover Grade">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // SEARCHABLE MULTI-SELECT (Students)
+    // ══════════════════════════════════════════════════════════
+
+    const studentSearch = document.getElementById('studentSearch');
+    const studentDropdown = document.getElementById('studentDropdown');
+
+    studentSearch.addEventListener('focus', () => renderStudentDropdown(studentSearch.value));
+    studentSearch.addEventListener('input', () => renderStudentDropdown(studentSearch.value));
+
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('studentSearchContainer').contains(e.target)) {
+            studentDropdown.classList.remove('show');
+        }
+    });
+
+    function renderStudentDropdown(query) {
+        const q = (query || '').toLowerCase().trim();
+        const available = allStudents.filter(s => !enrolledStudentIds.has(s.id));
+        let filtered = available;
+        if (q) {
+            filtered = available.filter(s =>
+                (s.name || '').toLowerCase().includes(q) ||
+                (s.registrationNumber || '').toLowerCase().includes(q) ||
+                (s.email || '').toLowerCase().includes(q)
+            );
+        }
+
+        if (filtered.length === 0) {
+            studentDropdown.innerHTML = `<div class="no-results">${q ? 'Nenhum aluno encontrado' : 'Todos os alunos já estão matriculados'}</div>`;
+        } else {
+            studentDropdown.innerHTML = filtered.slice(0, 50).map(s => {
+                const checked = selectedStudentIds.has(s.id);
+                return `<div class="dropdown-item" data-id="${s.id}">
+                    <input type="checkbox" class="form-check-input" ${checked ? 'checked' : ''}/>
+                    <div>
+                        <strong>${escapeHtml(s.name)}</strong>
+                        <br/><small class="text-muted">${escapeHtml(s.registrationNumber || '')}${s.email ? ' · ' + escapeHtml(s.email) : ''}</small>
+                    </div>
+                </div>`;
+            }).join('');
+
+            if (filtered.length > 50) {
+                studentDropdown.innerHTML += `<div class="no-results">Mostrando 50 de ${filtered.length} — refine a busca</div>`;
+            }
+        }
+        studentDropdown.classList.add('show');
+    }
+
+    studentDropdown.addEventListener('click', (e) => {
+        const item = e.target.closest('.dropdown-item');
+        if (!item || item.classList.contains('disabled')) return;
+        const id = parseInt(item.dataset.id);
+        if (selectedStudentIds.has(id)) {
+            selectedStudentIds.delete(id);
+        } else {
+            selectedStudentIds.add(id);
+        }
+        renderStudentDropdown(studentSearch.value);
+        updateSelectedStudentsUI();
+    });
+
+    function updateSelectedStudentsUI() {
+        const tagsEl = document.getElementById('selectedStudentsTags');
+        const btn = document.getElementById('btnSubmitEnrollment');
+        const countSpan = document.getElementById('enrollBtnCount');
+
+        if (selectedStudentIds.size === 0) {
+            tagsEl.innerHTML = '';
+            btn.disabled = true;
+            countSpan.textContent = '';
+        } else {
+            tagsEl.innerHTML = Array.from(selectedStudentIds).map(id => {
+                const s = allStudents.find(st => st.id === id);
+                return `<span class="selected-tag">
+                    ${escapeHtml(s ? s.name : '#' + id)}
+                    <span class="remove-tag" data-id="${id}">&times;</span>
+                </span>`;
+            }).join('');
+            btn.disabled = false;
+            countSpan.textContent = `(${selectedStudentIds.size})`;
+        }
+    }
+
+    document.getElementById('selectedStudentsTags').addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-tag')) {
+            selectedStudentIds.delete(parseInt(e.target.dataset.id));
+            updateSelectedStudentsUI();
+            renderStudentDropdown(studentSearch.value);
+        }
+    });
+
+    // ══════════════════════════════════════════════════════════
+    // SEARCHABLE SINGLE-SELECT (Teacher / Subject)
+    // ══════════════════════════════════════════════════════════
+
+    function setupSingleSearchSelect(inputId, dropdownId, containerId, hiddenId, getItems, formatItem) {
+        const input = document.getElementById(inputId);
+        const dropdown = document.getElementById(dropdownId);
+
+        input.addEventListener('focus', () => render(input.value));
+        input.addEventListener('input', () => {
+            document.getElementById(hiddenId).value = '';
+            render(input.value);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById(containerId).contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        function render(query) {
+            const q = (query || '').toLowerCase().trim();
+            let items = getItems();
+            if (q) {
+                items = items.filter(i => formatItem(i).text.toLowerCase().includes(q));
+            }
+            if (items.length === 0) {
+                dropdown.innerHTML = '<div class="no-results">Nenhum resultado</div>';
+            } else {
+                dropdown.innerHTML = items.map(i => {
+                    const f = formatItem(i);
+                    return `<div class="dropdown-item" data-id="${f.id}" data-label="${escapeHtml(f.text)}">${escapeHtml(f.text)}</div>`;
+                }).join('');
+            }
+            dropdown.classList.add('show');
+        }
+
+        dropdown.addEventListener('click', (e) => {
+            const item = e.target.closest('.dropdown-item');
+            if (!item) return;
+            input.value = item.dataset.label;
+            document.getElementById(hiddenId).value = item.dataset.id;
+            dropdown.classList.remove('show');
+        });
+    }
+
+    setupSingleSearchSelect('teacherSearch', 'teacherDropdown', 'teacherSearchContainer', 'teacherId',
+        () => allTeachers,
+        (t) => ({id: t.id, text: t.name})
+    );
+
+    setupSingleSearchSelect('subjectSearch', 'subjectDropdown', 'subjectSearchContainer', 'subjectId',
+        () => allSubjects,
+        (s) => ({id: s.id, text: s.name})
+    );
+
+    // ══════════════════════════════════════════════════════════
+    // TABLE SEARCH FILTERS
+    // ══════════════════════════════════════════════════════════
+
+    document.getElementById('enrollmentTableSearch').addEventListener('input', (e) => {
+        renderEnrollmentsTable(e.target.value);
+    });
+
+    document.getElementById('tcsTableSearch').addEventListener('input', (e) => {
+        renderTCSTable(e.target.value);
+    });
+
+    // ══════════════════════════════════════════════════════════
+    // FORM HANDLERS
+    // ══════════════════════════════════════════════════════════
+
+    document.getElementById('enrollmentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (selectedStudentIds.size === 0) return;
+
+        const btn = document.getElementById('btnSubmitEnrollment');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Matriculando...';
+
+        const date = document.getElementById('enrollmentDate').value;
+        const ids = Array.from(selectedStudentIds);
+        let success = 0, errors = [];
+
+        for (const studentId of ids) {
+            try {
+                const res = await fetch('/api/enrollments', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken || ''}`},
+                    body: JSON.stringify({studentId, classRoomId: parseInt(classRoomId), enrollmentDate: date})
+                });
+                if (res.ok) {
+                    success++;
+                } else {
+                    const err = await res.json();
+                    const student = allStudents.find(s => s.id === studentId);
+                    errors.push(`${student ? student.name : '#' + studentId}: ${err.message || err.detail || 'Erro'}`);
+                }
+            } catch (ex) {
+                errors.push(`Erro de conexão para aluno #${studentId}`);
+            }
+        }
+
+        if (success > 0) {
+            showAlert(`${success} aluno(s) matriculado(s) com sucesso!${errors.length > 0 ? ` (${errors.length} erro(s))` : ''}`, errors.length > 0 ? 'warning' : 'success');
+        }
+        if (errors.length > 0 && success === 0) {
+            showAlert(errors.join('<br/>'), 'danger');
+        }
+
+        selectedStudentIds.clear();
+        updateSelectedStudentsUI();
+        studentSearch.value = '';
+        await loadEnrollments();
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bx bx-plus me-1"></i> Matricular <span id="enrollBtnCount"></span>';
+    });
+
+    document.getElementById('tcsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const teacherId = document.getElementById('teacherId').value;
+        const subjectId = document.getElementById('subjectId').value;
+
+        if (!teacherId) {
+            showAlert('Selecione um professor da lista.', 'warning');
+            return;
+        }
+        if (!subjectId) {
+            showAlert('Selecione uma matéria da lista.', 'warning');
+            return;
+        }
+
+        const minVal = parseInt(document.getElementById('minAssessments').value);
+        const maxVal = parseInt(document.getElementById('maxAssessments').value);
+        if (minVal > maxVal) {
+            showAlert('O mínimo de avaliações não pode ser maior que o máximo.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btnSubmitTcs');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        const payload = {
+            teacherId: parseInt(teacherId),
+            classRoomId: parseInt(classRoomId),
+            subjectId: parseInt(subjectId),
+            minAssessmentsPerPeriod: minVal,
+            maxAssessmentsPerPeriod: maxVal
+        };
+
+        try {
+            const res = await fetch('/api/teacher-class-subjects', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken || ''}`},
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                showAlert("Grade vinculada com sucesso!", "success");
+                document.getElementById('teacherSearch').value = '';
+                document.getElementById('teacherId').value = '';
+                document.getElementById('subjectSearch').value = '';
+                document.getElementById('subjectId').value = '';
+                loadTCS();
+            } else {
+                const err = await res.json();
+                showAlert(err.message || err.detail || "Erro ao vincular grade.", "danger");
+            }
+        } catch (e) {
+            showAlert("Erro de conexão.", "danger");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-plus me-1"></i> Vincular';
+        }
+    });
+
+    // ══════════════════════════════════════════════════════════
+    // ACTIONS
+    // ══════════════════════════════════════════════════════════
+
+    window.toggleEnrollment = async (id, activate) => {
+        if (!confirm(`Deseja ${activate ? 'ativar' : 'desativar'} esta matrícula?`)) return;
+        try {
+            const res = await fetch(`/api/enrollments/${id}/${activate ? 'activate' : 'deactivate'}`, {
+                method: 'PUT',
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            if (res.ok) {
+                showAlert("Status atualizado.", "success");
+                loadEnrollments();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showAlert(err.message || "Erro ao alterar status.", "danger");
+            }
+        } catch (e) {
+        }
+    };
+
+    window.deleteEnrollment = async (id) => {
+        if (!confirm('Deseja excluir permanentemente esta matrícula?')) return;
+        try {
+            const res = await fetch(`/api/enrollments/${id}`, {
+                method: 'DELETE',
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            if (res.ok || res.status === 204) {
+                showAlert("Matrícula excluída.", "success");
+                loadEnrollments();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showAlert(err.message || "Erro ao excluir matrícula. O aluno pode ter notas ou presenças registradas.", "danger");
+            }
+        } catch (e) {
+        }
+    };
+
+    window.deleteTCS = async (id) => {
+        if (!confirm('Deseja excluir permanentemente este vínculo de grade?')) return;
+        try {
+            const res = await fetch(`/api/teacher-class-subjects/${id}`, {
+                method: 'DELETE',
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            if (res.ok || res.status === 204) {
+                showAlert("Vínculo excluído.", "success");
+                loadTCS();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showAlert(err.message || "Erro ao excluir vínculo. Pode haver aulas ou avaliações registradas.", "warning");
+            }
+        } catch (e) {
+        }
+    };
+
+    // ══════════════════════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════════════════════
+
+    async function init() {
+        loadClassroomDetails();
+        await Promise.all([loadStudents(), loadTeachers(), loadSubjects()]);
+        await Promise.all([loadEnrollments(), loadTCS()]);
+    }
+
+    init();
+</script>
+<script src="/js/load-sidebar.js"></script>
+</body>
+</html>

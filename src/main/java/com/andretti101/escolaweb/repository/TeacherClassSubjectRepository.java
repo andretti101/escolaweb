@@ -14,7 +14,7 @@ public interface TeacherClassSubjectRepository extends JpaRepository<TeacherClas
     List<TeacherClassSubject> findByTeacher(Teacher teacher);
     List<TeacherClassSubject> findByClassRoom(ClassRoom classRoom);
     List<TeacherClassSubject> findBySubject(Subject subject);
-    boolean existsByTeacherAndClassRoomAndSubject(Teacher teacher, ClassRoom classRoom, Subject subject);
+    boolean existsByClassRoomAndSubject(ClassRoom classRoom, Subject subject);
     boolean existsByTeacher(Teacher teacher);
     boolean existsByClassRoom(ClassRoom classRoom);
     boolean existsBySubject(Subject subject);

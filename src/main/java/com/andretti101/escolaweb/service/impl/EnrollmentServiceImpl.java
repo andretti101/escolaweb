@@ -33,24 +33,17 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         ClassRoom classRoom = resolveClassRoom(enrollment.getClassRoom());
 
         if (!student.isActive()) {
-            throw new IllegalStateException(
-                    "Cannot enroll inactive student with id " + student.getId() + ".");
+            throw new IllegalStateException("Não é possível matricular um aluno inativo.");
         }
         if (!classRoom.isActive()) {
-            throw new IllegalStateException(
-                    "Cannot enroll in inactive classroom with id " + classRoom.getId() + ".");
+            throw new IllegalStateException("Não é possível realizar matrículas em uma turma inativa.");
         }
         if (enrollmentRepository.existsByStudentAndClassRoom_AcademicYearAndActiveTrue(
                 student, classRoom.getAcademicYear())) {
-            throw new IllegalStateException(
-                    "Student with id " + student.getId()
-                    + " already has an active enrollment for academic year "
-                    + classRoom.getAcademicYear().getYear() + ".");
+            throw new IllegalStateException("O aluno já possui uma matrícula ativa para este ano letivo.");
         }
         if (enrollmentRepository.existsByStudentAndClassRoom(student, classRoom)) {
-            throw new IllegalStateException(
-                    "Student with id " + student.getId()
-                    + " is already enrolled in classroom with id " + classRoom.getId() + ".");
+            throw new IllegalStateException("O aluno já está matriculado nesta turma.");
         }
 
         enrollment.setStudent(student);
@@ -74,10 +67,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if ((studentChanged || classRoomChanged)
                 && enrollmentRepository.existsByStudentAndClassRoom_AcademicYearAndActiveTrue(
                         student, classRoom.getAcademicYear())) {
-            throw new IllegalStateException(
-                    "Student with id " + student.getId()
-                    + " already has an active enrollment for academic year "
-                    + classRoom.getAcademicYear().getYear() + ".");
+            throw new IllegalStateException("O aluno já possui uma matrícula ativa para este ano letivo.");
         }
 
         existing.setStudent(student);
@@ -94,14 +84,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Student student = enrollment.getStudent();
 
         if (gradeRepository.existsByStudent(student)) {
-            throw new IllegalStateException(
-                    "Cannot delete enrollment with id " + id
-                    + " because the student has grades on record. Use deactivate() instead.");
+            throw new IllegalStateException("Não é possível excluir esta matrícula pois o aluno já possui notas registradas. Considere desativar a matrícula em vez de excluir.");
         }
         if (attendanceRepository.existsByStudent(student)) {
-            throw new IllegalStateException(
-                    "Cannot delete enrollment with id " + id
-                    + " because the student has attendance records. Use deactivate() instead.");
+            throw new IllegalStateException("Não é possível excluir esta matrícula pois o aluno já possui presenças registradas. Considere desativar a matrícula em vez de excluir.");
         }
 
         enrollmentRepository.deleteById(id);

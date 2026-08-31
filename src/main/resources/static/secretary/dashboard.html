@@ -9,7 +9,8 @@
 >
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
 
     <title>Painel da Secretaria | Escola Web</title>
 
@@ -17,10 +18,11 @@
 
     <meta name="description" content="Dashboard principal da Secretaria"/>
 
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
 
     <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
     <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
@@ -31,17 +33,18 @@
 
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
-    
+
     <style>
         .quick-action-card {
             transition: all 0.2s ease-in-out;
             cursor: pointer;
         }
+
         .quick-action-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
         }
-        
+
         .animated-gradient-text {
             background: linear-gradient(270deg, #696cff, #00d2ff, #7128f5, #00d2ff, #696cff);
             background-size: 800% 800%;
@@ -53,19 +56,34 @@
         }
 
         @keyframes gradient-animation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
-        
+
         .icon-pulse {
             animation: pulse-animation 2s infinite;
         }
-        
+
         @keyframes pulse-animation {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.15); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.15);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -80,32 +98,118 @@
 
         <div class="layout-page">
 
-            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
+            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm"
+                 id="layout-navbar">
                 <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
                     <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
                         <i class="bx bx-menu bx-sm"></i>
                     </a>
                 </div>
-                
-                <div class="navbar-nav-right d-flex align-items-center w-100" id="navbar-collapse">
-                    <div class="navbar-nav align-items-center w-100">
-                        <div class="nav-item d-flex align-items-center w-100 py-2">
-                            <i class="bx bx-desktop fs-3 text-primary me-2"></i>
-                            <h4 class="mb-0 fw-bolder text-primary" style="background: linear-gradient(90deg, #696cff, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Centro de Comando EscolaWEB</h4>
-                        </div>
+
+                <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                    <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                        <span class="fs-4 fw-bold">
+                            <i class="bx bx-hive fs-3 text-primary me-2 icon-pulse"></i> 
+                            <span class="text-primary">Centro de Comando EscolaWEB</span>
+                        </span>
                     </div>
+
+                    <ul class="navbar-nav flex-row align-items-center ms-auto">
+                        <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                            <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
+                               data-bs-toggle="dropdown">
+                                <div class="avatar avatar-online">
+                                    <span class="avatar-initial rounded-circle bg-label-primary"
+                                          id="dropdownAvatarInitial">S</span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="avatar avatar-online">
+                                                    <span class="avatar-initial rounded-circle bg-label-primary"
+                                                          id="dropdownAvatarInitialInner">S</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <span class="fw-semibold d-block"
+                                                      id="dropdownUserName">Secretaria</span>
+                                                <small class="text-muted">Secretaria</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <div class="dropdown-divider"></div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="logout()">
+                                        <i class="bx bx-power-off me-2"></i>
+                                        <span class="align-middle">Sair</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div>
             </nav>
 
             <div class="content-wrapper">
                 <div class="container-xxl flex-grow-1 container-p-y">
-                    
+
+                    <!-- 1. Banner de Boas-Vindas -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h4 class="fw-bold py-1 mb-2">
-                                Olá, <span id="userNameDisplay" class="text-primary">Secretaria</span>! 👋
-                            </h4>
-                            <p class="text-muted">Bem-vindo(a) de volta. Aqui está o resumo atualizado da escola.</p>
+                            <div class="card overflow-hidden border-0"
+                                 style="background: linear-gradient(135deg, #696cff 0%, #4558c8 100%); min-height: 130px;">
+                                <div class="card-body p-4 d-flex align-items-center justify-content-between"
+                                     style="position: relative; overflow: hidden;">
+
+                                    <!-- Círculos decorativos de fundo -->
+                                    <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.05);top:-60px;right:120px;pointer-events:none;"></div>
+                                    <div style="position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.07);bottom:-80px;right:40px;pointer-events:none;"></div>
+
+                                    <!-- Lado esquerdo: avatar + texto -->
+                                    <div class="d-flex align-items-center gap-3" style="position:relative;z-index:1;">
+
+                                        <!-- Avatar com inicial do nome -->
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex align-items-center justify-content-center rounded-circle bg-white shadow-sm"
+                                                 style="width:60px;height:60px;">
+                                                <span class="fw-bold fs-4 text-primary" id="avatarInitial">S</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Texto -->
+                                        <div>
+                                            <p class="text-white-50 mb-1 text-uppercase fw-semibold"
+                                               style="font-size:0.70rem;letter-spacing:1.2px;">
+                                                Painel Operacional — Secretaria
+                                            </p>
+                                            <h4 class="text-white fw-bold mb-1">
+                                                <span id="greetingText">Bom dia</span>, <span id="userNameDisplay">Secretário(a)</span>.
+                                            </h4>
+                                            <p class="text-white-50 mb-0" style="font-size:0.85rem;max-width:480px;">
+                                                Resumo atualizado da escola. Gerencie cadastros, matrículas e turmas.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Lado direito: data atual -->
+                                    <div class="text-end flex-shrink-0 ms-4 d-none d-md-block"
+                                         style="position:relative;z-index:1;">
+                                        <p class="text-white-50 mb-1 text-uppercase fw-semibold"
+                                           style="font-size:0.70rem;letter-spacing:1.2px;">
+                                            EscolaWEB
+                                        </p>
+                                        <h5 class="text-white fw-bold mb-0" id="currentDate">—</h5>
+                                        <small class="text-white-50" id="currentDayOfWeek"></small>
+                                    </div>
+
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -118,7 +222,8 @@
                                         <div class="d-flex flex-column">
                                             <span class="fw-semibold text-muted mb-1">Total de Alunos</span>
                                             <h3 class="mb-2" id="countStudents">
-                                                <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+                                                <span class="spinner-border spinner-border-sm text-primary"
+                                                      role="status" aria-hidden="true"></span>
                                             </h3>
                                         </div>
                                         <div class="avatar">
@@ -138,7 +243,8 @@
                                         <div class="d-flex flex-column">
                                             <span class="fw-semibold text-muted mb-1">Total de Professores</span>
                                             <h3 class="mb-2" id="countTeachers">
-                                                <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+                                                <span class="spinner-border spinner-border-sm text-primary"
+                                                      role="status" aria-hidden="true"></span>
                                             </h3>
                                         </div>
                                         <div class="avatar">
@@ -158,7 +264,8 @@
                                         <div class="d-flex flex-column">
                                             <span class="fw-semibold text-muted mb-1">Turmas Ativas</span>
                                             <h3 class="mb-2" id="countClasses">
-                                                <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+                                                <span class="spinner-border spinner-border-sm text-primary"
+                                                      role="status" aria-hidden="true"></span>
                                             </h3>
                                         </div>
                                         <div class="avatar">
@@ -178,7 +285,8 @@
                                         <div class="d-flex flex-column">
                                             <span class="fw-semibold text-muted mb-1">Matrículas no Ano</span>
                                             <h3 class="mb-2" id="countEnrollments">
-                                                <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+                                                <span class="spinner-border spinner-border-sm text-primary"
+                                                      role="status" aria-hidden="true"></span>
                                             </h3>
                                         </div>
                                         <div class="avatar">
@@ -197,7 +305,8 @@
                         <div class="col-md-6 col-lg-4 mb-4">
                             <div class="card h-100">
                                 <div class="card-header d-flex align-items-center justify-content-between">
-                                    <h5 class="card-title m-0 me-2"><i class="bx bx-bolt-circle text-warning me-2"></i>Ações Rápidas</h5>
+                                    <h5 class="card-title m-0 me-2"><i class="bx bx-bolt-circle text-warning me-2"></i>Ações
+                                        Rápidas</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
@@ -252,19 +361,22 @@
                         <div class="col-md-6 col-lg-8 mb-4">
                             <div class="card h-100">
                                 <div class="card-header d-flex align-items-center justify-content-between">
-                                    <h5 class="card-title m-0 me-2"><i class="bx bx-bell text-danger me-2"></i>Avisos e Pendências</h5>
+                                    <h5 class="card-title m-0 me-2"><i class="bx bx-bell text-danger me-2"></i>Avisos e
+                                        Pendências</h5>
                                 </div>
                                 <div class="card-body">
                                     <ul class="p-0 m-0" id="alertsList">
                                         <!-- Preenchido via JS -->
                                         <li class="d-flex mb-4 pb-1">
                                             <div class="avatar flex-shrink-0 me-3">
-                                                <span class="avatar-initial rounded bg-label-danger"><i class="bx bx-error-circle"></i></span>
+                                                <span class="avatar-initial rounded bg-label-danger"><i
+                                                        class="bx bx-error-circle"></i></span>
                                             </div>
                                             <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                                                 <div class="me-2">
                                                     <h6 class="mb-0">Alunos sem Turma</h6>
-                                                    <small class="text-muted d-block mb-1">Há alunos cadastrados que não possuem matrículas ativas.</small>
+                                                    <small class="text-muted d-block mb-1">Há alunos cadastrados que não
+                                                        possuem matrículas ativas.</small>
                                                 </div>
                                                 <div class="user-progress d-flex align-items-center gap-1">
                                                     <span class="badge bg-danger">Verificar</span>
@@ -273,12 +385,14 @@
                                         </li>
                                         <li class="d-flex pb-1">
                                             <div class="avatar flex-shrink-0 me-3">
-                                                <span class="avatar-initial rounded bg-label-warning"><i class="bx bx-calendar-exclamation"></i></span>
+                                                <span class="avatar-initial rounded bg-label-warning"><i
+                                                        class="bx bx-calendar-exclamation"></i></span>
                                             </div>
                                             <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                                                 <div class="me-2">
                                                     <h6 class="mb-0">Período Acadêmico</h6>
-                                                    <small class="text-muted d-block mb-1">Não identificamos o Bimestre atual em andamento no sistema.</small>
+                                                    <small class="text-muted d-block mb-1">Não identificamos o Bimestre
+                                                        atual em andamento no sistema.</small>
                                                 </div>
                                                 <div class="user-progress d-flex align-items-center gap-1">
                                                     <span class="badge bg-warning text-dark">Configurar</span>
@@ -297,24 +411,26 @@
                             <div class="card">
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <h5 class="card-title m-0 me-2">Últimos Alunos Cadastrados</h5>
-                                    <a href="/secretary/students.html" class="btn btn-sm btn-outline-primary">Ver todos</a>
+                                    <a href="/secretary/students.html" class="btn btn-sm btn-outline-primary">Ver
+                                        todos</a>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-hover table-borderless mb-0">
                                         <thead class="table-light">
-                                            <tr>
-                                                <th>Aluno</th>
-                                                <th>E-mail</th>
-                                                <th>Matrícula</th>
-                                                <th>Data de Cadastro</th>
-                                            </tr>
+                                        <tr>
+                                            <th>Aluno</th>
+                                            <th>E-mail</th>
+                                            <th>Matrícula</th>
+                                            <th>Data de Cadastro</th>
+                                        </tr>
                                         </thead>
                                         <tbody id="recentStudentsTable">
-                                            <tr>
-                                                <td colspan="4" class="text-center py-4">
-                                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                                                </td>
-                                            </tr>
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4">
+                                                <div class="spinner-border spinner-border-sm text-primary"
+                                                     role="status"></div>
+                                            </td>
+                                        </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -327,7 +443,9 @@
                 <footer class="content-footer footer bg-footer-theme">
                     <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">
-                            © <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                            ©
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
                         </div>
                     </div>
                 </footer>
@@ -351,36 +469,63 @@
     document.addEventListener("DOMContentLoaded", async () => {
         const token = localStorage.getItem('jwt_token');
         let userEmail = '';
+
+// ── Saudação por horário ──────────────────────────────────────────
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+        document.getElementById('greetingText').textContent = greeting;
+
+        const now = new Date();
+        const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+        const weekDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+        document.getElementById('currentDate').textContent =
+            `${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
+        document.getElementById('currentDayOfWeek').textContent = weekDays[now.getDay()];
+
+// ── Nome e avatar a partir do token ──────────────────────────────
         if (token) {
             try {
-                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                const payload = JSON.parse(atob(base64));
                 if (payload.sub) {
                     userEmail = payload.sub;
-                    // Fallback imediato: pegar antes do @ para não ficar feio se a API demorar
-                    document.getElementById('userNameDisplay').textContent = userEmail.split('@')[0];
+                    const emailName = userEmail.split('@')[0];
+                    document.getElementById('userNameDisplay').textContent = emailName;
+                    document.getElementById('dropdownUserName').textContent = emailName;
+                    const initial = emailName.charAt(0).toUpperCase();
+                    document.getElementById('avatarInitial').textContent = initial;
+                    document.getElementById('dropdownAvatarInitial').textContent = initial;
+                    document.getElementById('dropdownAvatarInitialInner').textContent = initial;
                 }
-            } catch (e) {}
+            } catch (_) {
+            }
         }
 
-        const headers = { 'Authorization': `Bearer ${token || ''}` };
+        const headers = {'Authorization': `Bearer ${token || ''}`};
 
         if (userEmail) {
-            fetch('/api/secretaries', { headers })
-                .then(res => res.json())
+            fetch('/api/secretaries', {headers})
+                .then(res => res.ok ? res.json() : Promise.reject())
                 .then(data => {
-                    if (Array.isArray(data)) {
-                        const me = data.find(s => s.email === userEmail);
-                        if (me && me.name) {
-                            // Pega o primeiro nome
-                            document.getElementById('userNameDisplay').textContent = me.name.split(' ')[0];
-                        }
-                    }
-                }).catch(e => console.error("Erro ao buscar nome real:", e));
+                    if (!Array.isArray(data)) return;
+                    const me = data.find(s => s.email === userEmail);
+                    if (!me?.name) return;
+                    const firstName = me.name.split(' ')[0];
+                    document.getElementById('userNameDisplay').textContent = firstName;
+                    document.getElementById('dropdownUserName').textContent = firstName;
+                    const initial = firstName.charAt(0).toUpperCase();
+                    document.getElementById('avatarInitial').textContent = initial;
+                    document.getElementById('dropdownAvatarInitial').textContent = initial;
+                    document.getElementById('dropdownAvatarInitialInner').textContent = initial;
+                })
+                .catch(() => {
+                });
         }
 
         async function fetchCount(endpoint, elementId) {
             try {
-                const res = await fetch(endpoint, { headers });
+                const res = await fetch(endpoint, {headers});
                 if (res.ok) {
                     const data = await res.json();
                     document.getElementById(elementId).textContent = Array.isArray(data) ? data.length : 0;
@@ -400,10 +545,10 @@
 
         const recentTable = document.getElementById('recentStudentsTable');
         if (students && students.length > 0) {
-            const sorted = students.sort((a,b) => b.id - a.id).slice(0, 5);
-            
+            const sorted = students.sort((a, b) => b.id - a.id).slice(0, 5);
+
             const avatarColors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-warning', 'bg-label-danger'];
-            
+
             recentTable.innerHTML = sorted.map(s => {
                 const color = avatarColors[s.id % avatarColors.length];
                 const initial = s.name.charAt(0).toUpperCase();
@@ -435,3 +580,5 @@
 
 </body>
 </html>
+
+

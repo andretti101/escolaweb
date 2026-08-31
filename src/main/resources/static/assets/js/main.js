@@ -16,12 +16,10 @@ let menu, animate;
       orientation: 'vertical',
       closeChildren: false
     });
-    // Change parameter to true if you want scroll animation
     window.Helpers.scrollToActive((animate = false));
     window.Helpers.mainMenu = menu;
   });
 
-  // Initialize menu togglers and bind click on each
   let menuToggler = document.querySelectorAll('.layout-menu-toggle');
   menuToggler.forEach(item => {
     item.addEventListener('click', event => {
@@ -50,7 +48,6 @@ let menu, animate;
   };
   if (document.getElementById('layout-menu')) {
     delay(document.getElementById('layout-menu'), function () {
-      // not for small screen
       if (!Helpers.isSmallScreen()) {
         document.querySelector('.layout-menu-toggle').classList.add('d-block');
       }
@@ -116,3 +113,51 @@ let menu, animate;
   // Auto update menu collapsed/expanded based on the themeConfig
   window.Helpers.setCollapsed(true, false);
 })();
+
+// Global Alert Override
+(function() {
+    window.originalAlert = window.alert;
+    window.alert = function(message, type = 'danger') {
+        let container = document.getElementById('alertContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'alertContainer';
+            container.style.position = 'fixed';
+            container.style.top = '20px';
+            container.style.right = '20px';
+            container.style.zIndex = '9999';
+            container.style.minWidth = '300px';
+            container.style.maxWidth = '500px';
+            document.body.appendChild(container);
+        }
+        
+        // Remove existing alerts in the container to avoid stacking too many
+        if (container.children.length > 3) {
+            container.removeChild(container.firstChild);
+        }
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show shadow-sm`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        container.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.classList.remove('show');
+                setTimeout(() => { if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); }, 150);
+            }
+        }, 5000);
+    };
+})();
+
+// Global Logout function
+window.logout = function() {
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('refresh_token');
+    window.location.href = '/login.html';
+};

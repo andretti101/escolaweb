@@ -5,9 +5,9 @@
     <meta charset="utf-8"/>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
-    <title>Edição de Matéria | Escola Web</title>
+    <title>Cadastro de Ano Acadêmico | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
-    <meta name="description" content="Formulário de edição de matérias"/>
+    <meta name="description" content="Formulário de cadastro de ano acadêmico"/>
     <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -24,10 +24,11 @@
 <body>
 <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
-        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
         <div class="layout-page">
             <div class="content-wrapper">
                 <div class="container-fluid flex-grow-1 container-p-y">
+
                     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
                         <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2"
                            href="javascript:void(0)">
@@ -35,60 +36,44 @@
                         </a>
                     </div>
 
-                    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Matérias /</span> Edição</h4>
+                    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Ano Acadêmico /</span> Cadastro</h4>
 
-                    <div id="loadingFormState" class="text-center py-5 d-none">
-                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span>
-                        </div>
-                        <p class="mt-2 text-muted">Carregando dados da matéria...</p>
-                    </div>
-
-                    <div id="errorFormState" class="text-center py-5 d-none">
-                        <i class="bx bx-error-circle fs-1 text-danger"></i>
-                        <p class="mt-2 text-muted mb-0" id="errorFormMessage">Erro ao carregar matéria.</p>
-                        <a href="/secretary/subjects.html" class="btn btn-outline-primary btn-sm mt-3">
-                            <i class="bx bx-arrow-back me-1"></i> Voltar para a lista
-                        </a>
-                    </div>
-
-                    <div class="row" id="formWrapper">
+                    <div class="row">
                         <div class="col-12">
                             <div class="card mb-4">
                                 <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">Dados da Matéria</h5>
+                                    <h5 class="mb-0">Dados do Ano Acadêmico</h5>
                                     <small class="text-muted float-end">* Campos obrigatórios</small>
                                 </div>
                                 <div class="card-body p-5">
-                                    <form id="subjectEditForm">
-                                        <input type="hidden" id="subjectId"/>
-
+                                    <form id="academicYearForm">
                                         <div class="row">
-                                            <div class="col-md-12 mb-3">
-                                                <label class="form-label" for="name">Nome da Matéria *</label>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label" for="year">Ano Letivo *</label>
                                                 <div class="input-group input-group-merge">
-                                                    <span class="input-group-text"><i class="bx bx-book"></i></span>
-                                                    <input type="text" class="form-control" id="name" name="name"
-                                                           placeholder="Ex: Matemática" required maxlength="100"/>
+                                                    <span class="input-group-text"><i class="bx bx-calendar"></i></span>
+                                                    <input type="number" class="form-control" id="year" name="year"
+                                                           placeholder="Ex: 2026" required min="2000" max="2100"/>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-12 mb-3">
-                                                <label class="form-label" for="description">Descrição</label>
-                                                <textarea class="form-control" id="description" name="description"
-                                                          rows="4"
-                                                          placeholder="Descrição opcional sobre a matéria..."></textarea>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label" for="startDate">Data de Início</label>
+                                                <input type="date" class="form-control" id="startDate"
+                                                       name="startDate"/>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label" for="endDate">Data de Término</label>
+                                                <input type="date" class="form-control" id="endDate" name="endDate"/>
                                             </div>
                                         </div>
 
                                         <div id="formMessage" class="mt-3 mb-3"></div>
 
                                         <div class="d-flex justify-content-end mt-4">
-                                            <a href="/secretary/subjects.html"
-                                               class="btn btn-outline-secondary me-2 btn-lg">Cancelar</a>
-                                            <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">Salvar
-                                                Alterações
+                                            <button type="reset" class="btn btn-outline-secondary me-2 btn-lg">Limpar
+                                            </button>
+                                            <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
+                                                Cadastrar Ano
                                             </button>
                                         </div>
                                     </form>
@@ -121,84 +106,44 @@
 <script src="/assets/js/main.js"></script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        const form = document.getElementById("subjectEditForm");
-        const formWrapper = document.getElementById("formWrapper");
-        const loadingState = document.getElementById("loadingFormState");
-        const errorState = document.getElementById("errorFormState");
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("academicYearForm");
         const btnSubmit = document.getElementById("btnSubmit");
         const formMessage = document.getElementById("formMessage");
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const subjectId = urlParams.get('id');
-
-        if (!subjectId) {
-            formWrapper.classList.add('d-none');
-            errorState.classList.remove('d-none');
-            document.getElementById('errorFormMessage').innerText = "ID da matéria não fornecido na URL.";
-            return;
-        }
-
-        const token = localStorage.getItem('jwt_token');
-
-        async function loadSubjectData() {
-            formWrapper.classList.add('d-none');
-            loadingState.classList.remove('d-none');
-            errorState.classList.add('d-none');
-            try {
-                const response = await fetch(`/api/subjects/${subjectId}`, {
-                    headers: {'Authorization': 'Bearer ' + (token || '')}
-                });
-                if (!response.ok) {
-                    if (response.status === 401 || response.status === 403) throw new Error("Acesso negado.");
-                    throw new Error("Matéria não encontrada ou erro no servidor.");
-                }
-                const data = await response.json();
-                document.getElementById('subjectId').value = data.id;
-                document.getElementById('name').value = data.name;
-                document.getElementById('description').value = data.description || '';
-                formWrapper.classList.remove('d-none');
-            } catch (error) {
-                errorState.classList.remove('d-none');
-                document.getElementById('errorFormMessage').innerText = error.message;
-            } finally {
-                loadingState.classList.add('d-none');
-            }
-        }
-
-        await loadSubjectData();
-
         if (!form) return;
 
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             formMessage.innerHTML = '';
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Salvando...';
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Cadastrando...';
 
             const payload = {
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value || null
+                year: parseInt(document.getElementById('year').value),
+                startDate: document.getElementById('startDate').value || null,
+                endDate: document.getElementById('endDate').value || null
             };
 
+            const token = localStorage.getItem('jwt_token');
             try {
-                const response = await fetch(`/api/subjects/${subjectId}`, {
-                    method: 'PUT',
+                const response = await fetch('/api/academic-years', {
+                    method: 'POST',
                     headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token || '')},
                     body: JSON.stringify(payload)
                 });
                 if (response.ok) {
-                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Matéria atualizada com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Ano acadêmico cadastrado com sucesso! Ele foi criado como <strong>inativo</strong>. A Direção poderá ativá-lo quando desejar.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                    form.reset();
                 } else {
-                    let errorMsg = 'Ocorreu um erro ao atualizar a matéria.';
+                    let errorMsg = 'Ocorreu um erro ao cadastrar o ano acadêmico.';
                     try {
                         const errorData = await response.json();
                         if (errorData.errors && Array.isArray(errorData.errors)) errorMsg = errorData.errors.map(err => err.defaultMessage || err.message).join('<br>');
                         else if (errorData.message) errorMsg = errorData.message;
                         else if (errorData.detail) errorMsg = errorData.detail;
                     } catch (parseError) {
-                        if (response.status === 403) errorMsg = "Acesso negado.";
-                        else if (response.status === 401) errorMsg = "Sessão expirada.";
+                        if (response.status === 403) errorMsg = "Acesso negado: apenas a Direção pode cadastrar anos acadêmicos.";
+                        else if (response.status === 401) errorMsg = "Sessão expirada. Faça login novamente.";
                     }
                     formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
                 }
@@ -206,12 +151,11 @@
                 formMessage.innerHTML = '<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Erro de conexão com o servidor.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
             } finally {
                 btnSubmit.disabled = false;
-                btnSubmit.innerText = 'Salvar Alterações';
+                btnSubmit.innerText = 'Cadastrar Ano';
             }
         });
     });
 </script>
-
 <script src="/js/load-sidebar.js"></script>
 </body>
 </html>

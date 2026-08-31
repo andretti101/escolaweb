@@ -8,6 +8,7 @@ import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.enums.AttendanceStatus;
 import com.andretti101.escolaweb.repository.AttendanceHistoryRepository;
 import com.andretti101.escolaweb.repository.AttendanceRepository;
+import com.andretti101.escolaweb.repository.EnrollmentRepository;
 import com.andretti101.escolaweb.repository.LessonRepository;
 import com.andretti101.escolaweb.service.AttendanceService;
 import com.andretti101.escolaweb.service.LessonService;
@@ -30,6 +31,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final AttendanceHistoryRepository attendanceHistoryRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final LessonRepository lessonRepository;
     private final LessonService lessonService;
     private final StudentService studentService;
@@ -49,6 +51,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                     "Attendance for student with id " + student.getId()
                             + " in lesson with id " + lesson.getId() + " is already registered.");
         }
+
+        validateActiveEnrollment(student, lesson.getTeacherClassSubject());
 
         attendance.setLesson(lesson);
         attendance.setStudent(student);
@@ -156,6 +160,15 @@ public class AttendanceServiceImpl implements AttendanceService {
     Attendance findAttendanceOrThrow(Integer id) {
         return attendanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Attendance not found with id: " + id));
+    }
+
+    private void validateActiveEnrollment(Student student, TeacherClassSubject tcs) {
+        if (!enrollmentRepository.existsByStudentAndClassRoomAndActiveTrue(student, tcs.getClassRoom())) {
+            throw new IllegalStateException(
+                    "Student with id " + student.getId()
+                    + " does not have an active enrollment in classroom with id "
+                    + tcs.getClassRoom().getId() + ".");
+        }
     }
 
     private Lesson resolveLesson(Lesson ref) {

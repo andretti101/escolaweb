@@ -15,7 +15,7 @@
 
     <script src="/js/auth-guard.js"></script>
 
-    <meta name="description" content="Listagem e gestão de professores"/>
+    <meta name="description" content="Listagem de professores"/>
     <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
 
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -37,7 +37,7 @@
 <body>
 <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
-        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
 
         <div class="layout-page">
             <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
@@ -72,9 +72,6 @@
                         <h4 class="fw-bold mb-0">
                             <span class="text-muted fw-light">Professores /</span> Listagem
                         </h4>
-                        <a href="/secretary/create/teacher.html" class="btn btn-primary">
-                            <i class="bx bx-plus me-1"></i> Cadastrar Professor
-                        </a>
                     </div>
 
                     <div class="card">
@@ -103,7 +100,6 @@
                                     <th>E-mail</th>
                                     <th>Adicionado em</th>
                                     <th>Status</th>
-                                    <th class="text-center">Ações</th>
                                 </tr>
                                 </thead>
                                 <tbody id="teachersTableBody">
@@ -121,9 +117,6 @@
                             <div id="emptyState" class="text-center py-5 d-none">
                                 <i class="bx bx-user-x fs-1 text-muted"></i>
                                 <p class="mt-2 text-muted mb-0">Nenhum professor encontrado.</p>
-                                <a href="/secretary/create/teacher.html" class="btn btn-primary btn-sm mt-3">
-                                    <i class="bx bx-plus me-1"></i> Cadastrar professor
-                                </a>
                             </div>
 
                             <div id="errorState" class="text-center py-5 d-none">
@@ -297,12 +290,6 @@
             const initial = getInitials(t.name);
             const colorClass = avatarColor(t.id);
 
-            const toggleAction = t.active
-                ? `<li><a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus(${t.id}, false)"><i class="bx bx-power-off me-1 text-warning"></i> Desativar</a></li>`
-                : `<li><a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus(${t.id}, true)"><i class="bx bx-check-circle me-1 text-success"></i> Ativar</a></li>
-                       <li><hr class="dropdown-divider"></li>
-                       <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteTeacher(${t.id})"><i class="bx bx-trash me-1"></i> Excluir do Sistema</a></li>`;
-
             return `
                     <tr class="${!t.active ? 'opacity-75 bg-lighter' : ''}">
                         <td>
@@ -319,65 +306,9 @@
                         <td>${escapeHtml(t.email)}</td>
                         <td>${formatDate(t.createdAt)}</td>
                         <td>${statusBadge}</td>
-                        <td class="text-center">
-                            <div class="dropdown">
-                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div class="dropdown-menu">
-                                    ${t.active ? `<li><a class="dropdown-item" href="/secretary/edit/teacher.html?id=${t.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>` : ''}
-                                    ${toggleAction}
-                                </div>
-                            </div>
-                        </td>
                     </tr>
                 `;
         }).join('');
-    }
-
-    async function toggleStatus(id, activate) {
-        const action = activate ? 'ativar' : 'desativar';
-        if (!confirm(`Tem certeza que deseja ${action} este professor?`)) return;
-
-        const endpoint = `/api/teachers/${id}/${activate ? 'activate' : 'deactivate'}`;
-        try {
-            const response = await fetch(endpoint, {
-                method: 'PUT',
-                headers: {'Authorization': `Bearer ${getToken()}`}
-            });
-
-            if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (response.ok) {
-                loadTeachers();
-            } else {
-                const err = await response.json().catch(() => null);
-                alert(`Erro ao ${action} professor: ${err?.message || 'Erro desconhecido'}`);
-            }
-        } catch (error) {
-            alert(`Erro de conexão ao tentar ${action} o professor.`);
-        }
-    }
-
-    async function deleteTeacher(id) {
-        if (!confirm('ATENÇÃO: Deseja realmente EXCLUIR DEFINITIVAMENTE este professor? Esta ação não pode ser desfeita.')) return;
-
-        try {
-            const response = await fetch(`/api/teachers/${id}`, {
-                method: 'DELETE',
-                headers: {'Authorization': `Bearer ${getToken()}`}
-            });
-
-            if (response.status === 401 || response.status === 403) return handleUnauthorized();
-
-            if (response.ok) {
-                loadTeachers();
-            } else {
-                const err = await response.json().catch(() => null);
-                alert(`Erro ao excluir professor: ${err?.message || 'Conflito de dados ou erro desconhecido.'}`);
-            }
-        } catch (error) {
-            alert('Erro de conexão ao tentar excluir o professor.');
-        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {

@@ -11,11 +11,11 @@
     <meta charset="utf-8"/>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
-    <title>Lista de Professores | Escola Web</title>
+    <title>Lista de Matérias | Escola Web</title>
 
     <script src="/js/auth-guard.js"></script>
 
-    <meta name="description" content="Listagem e gestão de professores"/>
+    <meta name="description" content="Listagem de matérias"/>
     <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
 
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -24,11 +24,9 @@
           rel="stylesheet"/>
 
     <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
-
     <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
     <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
     <link rel="stylesheet" href="/assets/css/demo.css"/>
-
     <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
 
     <script src="/assets/vendor/js/helpers.js"></script>
@@ -37,7 +35,7 @@
 <body>
 <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
-        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
 
         <div class="layout-page">
             <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
@@ -48,18 +46,12 @@
                     </a>
                 </div>
                 <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                    <!-- Busca Navbar -->
                     <div class="navbar-nav align-items-center w-100">
                         <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
                             <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
-                            <input
-                                    type="text"
-                                    class="form-control border-0 shadow-none px-0 w-100"
-                                    placeholder="Buscar professor por nome ou e-mail..."
-                                    aria-label="Buscar professor"
-                                    id="globalSearch"
-                                    style="min-width: 350px;"
-                            />
+                            <input type="text" class="form-control border-0 shadow-none px-0 w-100"
+                                   placeholder="Buscar matéria por nome..."
+                                   aria-label="Buscar matéria" id="globalSearch" style="min-width: 350px;"/>
                         </div>
                     </div>
                 </div>
@@ -70,28 +62,25 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold mb-0">
-                            <span class="text-muted fw-light">Professores /</span> Listagem
+                            <span class="text-muted fw-light">Matérias /</span> Listagem
                         </h4>
-                        <a href="/secretary/create/teacher.html" class="btn btn-primary">
-                            <i class="bx bx-plus me-1"></i> Cadastrar Professor
-                        </a>
                     </div>
 
                     <div class="card">
                         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-                            <h5 class="mb-0">Professores Cadastrados</h5>
+                            <h5 class="mb-0">Matérias Cadastradas</h5>
 
                             <div class="btn-group" role="group">
                                 <input type="radio" class="btn-check" name="statusFilter" id="filterActive"
                                        value="active" checked/>
-                                <label class="btn btn-outline-success btn-sm" for="filterActive">Ativos</label>
+                                <label class="btn btn-outline-success btn-sm" for="filterActive">Ativas</label>
 
                                 <input type="radio" class="btn-check" name="statusFilter" id="filterInactive"
                                        value="inactive"/>
-                                <label class="btn btn-outline-danger btn-sm" for="filterInactive">Inativos</label>
+                                <label class="btn btn-outline-danger btn-sm" for="filterInactive">Inativas</label>
 
                                 <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all"/>
-                                <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
+                                <label class="btn btn-outline-primary btn-sm" for="filterAll">Todas</label>
                             </div>
                         </div>
 
@@ -99,37 +88,31 @@
                             <table class="table table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Professor</th>
-                                    <th>E-mail</th>
-                                    <th>Adicionado em</th>
+                                    <th>Matéria</th>
+                                    <th>Descrição</th>
+                                    <th>Adicionada em</th>
                                     <th>Status</th>
-                                    <th class="text-center">Ações</th>
                                 </tr>
                                 </thead>
-                                <tbody id="teachersTableBody">
-                                <!-- Preenchido via JavaScript -->
-                                </tbody>
+                                <tbody id="subjectsTableBody"></tbody>
                             </table>
 
                             <div id="loadingState" class="text-center py-5">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Carregando...</span>
                                 </div>
-                                <p class="mt-2 text-muted">Carregando professores...</p>
+                                <p class="mt-2 text-muted">Carregando matérias...</p>
                             </div>
 
                             <div id="emptyState" class="text-center py-5 d-none">
-                                <i class="bx bx-user-x fs-1 text-muted"></i>
-                                <p class="mt-2 text-muted mb-0">Nenhum professor encontrado.</p>
-                                <a href="/secretary/create/teacher.html" class="btn btn-primary btn-sm mt-3">
-                                    <i class="bx bx-plus me-1"></i> Cadastrar professor
-                                </a>
+                                <i class="bx bx-book-open fs-1 text-muted"></i>
+                                <p class="mt-2 text-muted mb-0">Nenhuma matéria encontrada.</p>
                             </div>
 
                             <div id="errorState" class="text-center py-5 d-none">
                                 <i class="bx bx-error-circle fs-1 text-danger"></i>
-                                <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar professores.</p>
-                                <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadTeachers()">
+                                <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar matérias.</p>
+                                <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadSubjects()">
                                     <i class="bx bx-refresh me-1"></i> Tentar novamente
                                 </button>
                             </div>
@@ -167,7 +150,7 @@
 <script src="/js/load-sidebar.js"></script>
 
 <script>
-    let allTeachers = [];
+    let allSubjects = [];
     let statusFilter = 'active';
     let searchTerm = '';
 
@@ -179,27 +162,25 @@
         if (!dateStr) return '—';
         try {
             const date = new Date(dateStr);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
+            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
         } catch (e) {
             return dateStr;
         }
     }
 
     function getInitials(name) {
-        if (!name) return 'P';
+        if (!name) return 'M';
         return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
     }
 
     function escapeHtml(str) {
         if (!str) return '';
-        return str.toString()
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
+        return str.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function truncate(str, max) {
+        if (!str) return '—';
+        return str.length > max ? str.substring(0, max) + '…' : str;
     }
 
     const avatarColors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-warning', 'bg-label-danger', 'bg-label-secondary'];
@@ -214,8 +195,8 @@
         window.location.href = '/login.html';
     }
 
-    async function loadTeachers() {
-        const tableBody = document.getElementById('teachersTableBody');
+    async function loadSubjects() {
+        const tableBody = document.getElementById('subjectsTableBody');
         const loadingState = document.getElementById('loadingState');
         const emptyState = document.getElementById('emptyState');
         const errorState = document.getElementById('errorState');
@@ -226,15 +207,14 @@
         errorState.classList.add('d-none');
 
         try {
-            const response = await fetch('/api/teachers?activeOnly=false', {
+            const response = await fetch('/api/subjects?activeOnly=false', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
 
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
             if (!response.ok) throw new Error('Erro na resposta do servidor');
 
-            const data = await response.json();
-            allTeachers = Array.isArray(data) ? data : [];
+            allSubjects = await response.json();
             applyFilters();
         } catch (error) {
             console.error(error);
@@ -244,19 +224,16 @@
     }
 
     function applyFilters() {
-        let filtered = allTeachers;
+        let filtered = allSubjects;
 
-        if (statusFilter === 'active') {
-            filtered = filtered.filter(t => t.active);
-        } else if (statusFilter === 'inactive') {
-            filtered = filtered.filter(t => !t.active);
-        }
+        if (statusFilter === 'active') filtered = filtered.filter(s => s.active);
+        else if (statusFilter === 'inactive') filtered = filtered.filter(s => !s.active);
 
         if (searchTerm.trim()) {
             const term = searchTerm.toLowerCase().trim();
-            filtered = filtered.filter(t =>
-                (t.name && t.name.toLowerCase().includes(term)) ||
-                (t.email && t.email.toLowerCase().includes(term))
+            filtered = filtered.filter(s =>
+                (s.name && s.name.toLowerCase().includes(term)) ||
+                (s.description && s.description.toLowerCase().includes(term))
             );
         }
 
@@ -271,15 +248,15 @@
         renderTable(filtered);
     }
 
-    function renderTable(teachers) {
-        const tableBody = document.getElementById('teachersTableBody');
+    function renderTable(subjects) {
+        const tableBody = document.getElementById('subjectsTableBody');
         const loadingState = document.getElementById('loadingState');
         const emptyState = document.getElementById('emptyState');
         const recordCount = document.getElementById('recordCount');
 
         loadingState.classList.add('d-none');
 
-        if (teachers.length === 0) {
+        if (subjects.length === 0) {
             tableBody.innerHTML = '';
             emptyState.classList.remove('d-none');
             recordCount.textContent = '0 registros';
@@ -287,114 +264,46 @@
         }
 
         emptyState.classList.add('d-none');
-        recordCount.textContent = `${teachers.length} professor${teachers.length !== 1 ? 'es' : ''} listado${teachers.length !== 1 ? 's' : ''}`;
+        recordCount.textContent = `${subjects.length} matéria${subjects.length !== 1 ? 's' : ''} listada${subjects.length !== 1 ? 's' : ''}`;
 
-        tableBody.innerHTML = teachers.map(t => {
-            const statusBadge = t.active
-                ? '<span class="badge bg-label-success">Ativo</span>'
-                : '<span class="badge bg-label-danger">Inativo</span>';
+        tableBody.innerHTML = subjects.map(s => {
+            const statusBadge = s.active
+                ? '<span class="badge bg-label-success">Ativa</span>'
+                : '<span class="badge bg-label-danger">Inativa</span>';
 
-            const initial = getInitials(t.name);
-            const colorClass = avatarColor(t.id);
-
-            const toggleAction = t.active
-                ? `<li><a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus(${t.id}, false)"><i class="bx bx-power-off me-1 text-warning"></i> Desativar</a></li>`
-                : `<li><a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus(${t.id}, true)"><i class="bx bx-check-circle me-1 text-success"></i> Ativar</a></li>
-                       <li><hr class="dropdown-divider"></li>
-                       <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteTeacher(${t.id})"><i class="bx bx-trash me-1"></i> Excluir do Sistema</a></li>`;
+            const initial = getInitials(s.name);
+            const colorClass = avatarColor(s.id);
 
             return `
-                    <tr class="${!t.active ? 'opacity-75 bg-lighter' : ''}">
+                    <tr class="${!s.active ? 'opacity-75 bg-lighter' : ''}">
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="avatar avatar-sm me-3">
                                     <span class="avatar-initial rounded-circle ${colorClass}">${initial}</span>
                                 </div>
-                                <div class="d-flex flex-column">
-                                    <span class="fw-semibold lh-1 text-heading">${escapeHtml(t.name)}</span>
-                                    <small class="text-muted mt-1">${escapeHtml(t.email)}</small>
-                                </div>
+                                <span class="fw-semibold text-heading">${escapeHtml(s.name)}</span>
                             </div>
                         </td>
-                        <td>${escapeHtml(t.email)}</td>
-                        <td>${formatDate(t.createdAt)}</td>
+                        <td><small class="text-muted">${escapeHtml(truncate(s.description, 60))}</small></td>
+                        <td>${formatDate(s.createdAt)}</td>
                         <td>${statusBadge}</td>
-                        <td class="text-center">
-                            <div class="dropdown">
-                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div class="dropdown-menu">
-                                    ${t.active ? `<li><a class="dropdown-item" href="/secretary/edit/teacher.html?id=${t.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>` : ''}
-                                    ${toggleAction}
-                                </div>
-                            </div>
-                        </td>
                     </tr>
                 `;
         }).join('');
     }
 
-    async function toggleStatus(id, activate) {
-        const action = activate ? 'ativar' : 'desativar';
-        if (!confirm(`Tem certeza que deseja ${action} este professor?`)) return;
-
-        const endpoint = `/api/teachers/${id}/${activate ? 'activate' : 'deactivate'}`;
-        try {
-            const response = await fetch(endpoint, {
-                method: 'PUT',
-                headers: {'Authorization': `Bearer ${getToken()}`}
-            });
-
-            if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (response.ok) {
-                loadTeachers();
-            } else {
-                const err = await response.json().catch(() => null);
-                alert(`Erro ao ${action} professor: ${err?.message || 'Erro desconhecido'}`);
-            }
-        } catch (error) {
-            alert(`Erro de conexão ao tentar ${action} o professor.`);
-        }
-    }
-
-    async function deleteTeacher(id) {
-        if (!confirm('ATENÇÃO: Deseja realmente EXCLUIR DEFINITIVAMENTE este professor? Esta ação não pode ser desfeita.')) return;
-
-        try {
-            const response = await fetch(`/api/teachers/${id}`, {
-                method: 'DELETE',
-                headers: {'Authorization': `Bearer ${getToken()}`}
-            });
-
-            if (response.status === 401 || response.status === 403) return handleUnauthorized();
-
-            if (response.ok) {
-                loadTeachers();
-            } else {
-                const err = await response.json().catch(() => null);
-                alert(`Erro ao excluir professor: ${err?.message || 'Conflito de dados ou erro desconhecido.'}`);
-            }
-        } catch (error) {
-            alert('Erro de conexão ao tentar excluir o professor.');
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-        const radios = document.querySelectorAll('input[name="statusFilter"]');
-        radios.forEach(r => {
-            r.addEventListener('change', (e) => {
+        document.querySelectorAll('input[name="statusFilter"]').forEach(r => {
+            r.addEventListener('change', e => {
                 statusFilter = e.target.value;
                 applyFilters();
             });
         });
-
         document.getElementById('globalSearch').addEventListener('input', e => {
             searchTerm = e.target.value;
             applyFilters();
         });
-
-        loadTeachers();
+        loadSubjects();
     });
 </script>
 </body>

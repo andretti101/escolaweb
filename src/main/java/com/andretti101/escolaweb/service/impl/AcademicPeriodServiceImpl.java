@@ -96,6 +96,18 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             throw new IllegalStateException("Academic period with id " + id + " is already closed.");
         }
 
+        if (period.getEndDate() == null) {
+            throw new IllegalStateException(
+                    "Cannot close period '" + period.getName()
+                            + "': the end date must be defined before closing.");
+        }
+        if (java.time.LocalDate.now().isBefore(period.getEndDate())) {
+            throw new IllegalStateException(
+                    "Cannot close period '" + period.getName()
+                            + "': the end date (" + period.getEndDate()
+                            + ") has not passed yet.");
+        }
+
         validateMinimumAssessments(period);
 
         period.setClosed(true);

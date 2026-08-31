@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Turmas | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Gestão de Turmas"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <style>
+        .inactive-row {
+            opacity: 0.65;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <!-- Sidebar Direção -->
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2"
+                           href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Turmas /</span> Listagem</h4>
+                        <!-- Sem botão de cadastrar -->
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                            <h5 class="m-0">Turmas Cadastradas</h5>
+                            <div class="d-flex flex-column flex-sm-row gap-2">
+                                <select id="yearFilter" class="form-select form-select-sm" style="min-width: 150px;">
+                                    <option value="all">Todos os Anos</option>
+                                    <!-- Options via JS -->
+                                </select>
+                                <select id="statusFilter" class="form-select form-select-sm" style="min-width: 150px;">
+                                    <option value="all">Todas as Turmas</option>
+                                    <option value="active" selected>Somente Ativas</option>
+                                    <option value="inactive">Somente Inativas</option>
+                                </select>
+                                <div class="input-group input-group-sm" style="max-width: 250px;">
+                                    <span class="input-group-text"><i class="bx bx-search"></i></span>
+                                    <input type="text" id="searchInput" class="form-control"
+                                           placeholder="Buscar turma..."/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="alertContainer" class="px-4 pt-2"></div>
+
+                        <div class="table-responsive text-nowrap">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Nome / Código</th>
+                                    <th>Ano Acadêmico</th>
+                                    <th>Turno</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                        <span class="ms-2">Carregando turmas...</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">©
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+
+<script>
+    const jwtToken = localStorage.getItem('jwt_token');
+    let classroomsData = [];
+
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe.toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    const shiftMap = {
+        'MORNING': 'Matutino',
+        'AFTERNOON': 'Vespertino',
+        'EVENING': 'Noturno',
+        'FULL_TIME': 'Integral'
+    };
+
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+        setTimeout(() => {
+            container.innerHTML = '';
+        }, 5000);
+    }
+
+    async function loadYears() {
+        try {
+            const res = await fetch('/api/academic-years', {
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            if (res.ok) {
+                const years = await res.json();
+                const filter = document.getElementById('yearFilter');
+                years.sort((a, b) => b.year - a.year).forEach(y => {
+                    const opt = document.createElement('option');
+                    opt.value = y.id;
+                    opt.textContent = y.year + (y.active ? ' (Ativo)' : '');
+                    filter.appendChild(opt);
+                });
+            }
+        } catch (e) {
+            console.error("Erro ao carregar anos:", e);
+        }
+    }
+
+    async function loadClassrooms() {
+        try {
+            const response = await fetch('/api/classrooms', {
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            if (response.ok) {
+                classroomsData = await response.json();
+                renderTable();
+            } else {
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Erro ao carregar dados.</td></tr>';
+            }
+        } catch (error) {
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Falha de conexão.</td></tr>';
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        const yearFilter = document.getElementById('yearFilter').value;
+
+        let filtered = classroomsData.filter(c => {
+            const nameMatch = (c.name || '').toLowerCase().includes(searchTerm);
+            const shiftMatch = (shiftMap[c.shift] || '').toLowerCase().includes(searchTerm);
+            const matchSearch = nameMatch || shiftMatch;
+            const matchStatus = statusFilter === 'all' ? true : (statusFilter === 'active' ? c.active : !c.active);
+            const matchYear = yearFilter === 'all' ? true : (c.academicYearId == yearFilter);
+            return matchSearch && matchStatus && matchYear;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhuma turma encontrada.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(c => {
+            const shiftLabel = shiftMap[c.shift] || c.shift || 'N/A';
+            const badgeClass = c.active ? 'bg-label-success' : 'bg-label-secondary';
+            const badgeText = c.active ? 'Ativa' : 'Inativa';
+            const academicYearText = c.academicYear || c.academicYearId || '-';
+
+            return `
+                <tr class="${c.active ? '' : 'inactive-row'}">
+                    <td><strong>${escapeHtml(c.name)}</strong></td>
+                    <td>${academicYearText}</td>
+                    <td><span class="badge bg-label-info">${shiftLabel}</span></td>
+                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderTable);
+    document.getElementById('statusFilter').addEventListener('change', renderTable);
+    document.getElementById('yearFilter').addEventListener('change', renderTable);
+
+    // Initial load
+    loadYears().then(loadClassrooms);
+</script>
+<script src="/js/load-sidebar.js"></script>
+</body>
+</html>
+
+

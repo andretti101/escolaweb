@@ -1,10 +1,10 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
-        <a href="/secretary/dashboard.html" class="app-brand-link">
+        <a href="/principal/dashboard.html" class="app-brand-link">
           <span class="app-brand-logo demo">
             <img src="/assets/img/favicon/favicon_backup.ico?v=4" alt="Logo" style="width: 45px; height: auto; object-fit: contain;">
           </span>
-            <span class="app-brand-text demo menu-text fw-bolder ms-2 text-capitalize">Secretaria</span>
+            <span class="app-brand-text demo menu-text fw-bolder ms-2 text-capitalize">Direção</span>
         </a>
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
             <i class="bx bx-chevron-left bx-sm align-middle"></i>
@@ -16,9 +16,9 @@
     <ul class="menu-inner py-1">
         <!-- Dashboard -->
         <li class="menu-item">
-            <a href="/secretary/dashboard.html" class="menu-link">
+            <a href="/principal/dashboard.html" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                <div data-i18n="Página Principal">Página Principal</div>
+                <div data-i18n="Analytics">Painel da Direção</div>
             </a>
         </li>
 
@@ -34,13 +34,9 @@
                 <div data-i18n="Alunos">Alunos</div>
             </a>
             <ul class="menu-sub">
+
                 <li class="menu-item">
-                    <a href="/secretary/create/student.html" class="menu-link">
-                        <div data-i18n="Cadastrar aluno">Cadastrar aluno</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="/secretary/students.html" class="menu-link">
+                    <a href="/principal/students.html" class="menu-link">
                         <div data-i18n="Listar alunos">Listar alunos</div>
                     </a>
                 </li>
@@ -54,13 +50,9 @@
                 <div data-i18n="Professores">Professores</div>
             </a>
             <ul class="menu-sub">
+
                 <li class="menu-item">
-                    <a href="/secretary/create/teacher.html" class="menu-link">
-                        <div data-i18n="Cadastrar professor">Cadastrar professor</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="/secretary/teachers.html" class="menu-link">
+                    <a href="/principal/teachers.html" class="menu-link">
                         <div data-i18n="Listar professores">Listar professores</div>
                     </a>
                 </li>
@@ -74,13 +66,9 @@
                 <div data-i18n="Direção">Direção</div>
             </a>
             <ul class="menu-sub">
+
                 <li class="menu-item">
-                    <a href="/secretary/create/principal.html" class="menu-link">
-                        <div data-i18n="Criar perfil">Criar perfil</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="/secretary/principals.html" class="menu-link">
+                    <a href="/principal/principals.html" class="menu-link">
                         <div data-i18n="Listar direção">Listar direção</div>
                     </a>
                 </li>
@@ -94,13 +82,9 @@
                 <div data-i18n="Secretaria">Secretaria</div>
             </a>
             <ul class="menu-sub">
+
                 <li class="menu-item">
-                    <a href="/secretary/create/secretary.html" class="menu-link">
-                        <div data-i18n="Criar novo perfil">Criar novo perfil</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="/secretary/secretaries.html" class="menu-link">
+                    <a href="/principal/secretaries.html" class="menu-link">
                         <div data-i18n="Listar secretários">Listar secretários</div>
                     </a>
                 </li>
@@ -119,13 +103,9 @@
                 <div data-i18n="Turmas">Turmas</div>
             </a>
             <ul class="menu-sub">
+
                 <li class="menu-item">
-                    <a href="/secretary/create/classroom.html" class="menu-link">
-                        <div data-i18n="Criar turma">Criar turma</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="/secretary/classrooms.html" class="menu-link">
+                    <a href="/principal/classrooms.html" class="menu-link">
                         <div data-i18n="Listar turmas">Listar turmas</div>
                     </a>
                 </li>
@@ -139,13 +119,9 @@
                 <div data-i18n="Matérias">Matérias</div>
             </a>
             <ul class="menu-sub">
+
                 <li class="menu-item">
-                    <a href="/secretary/create/subject.html" class="menu-link">
-                        <div data-i18n="Cadastrar matérias">Cadastrar matérias</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="/secretary/subjects.html" class="menu-link">
+                    <a href="/principal/subjects.html" class="menu-link">
                         <div data-i18n="Listar matérias">Listar matérias</div>
                     </a>
                 </li>
@@ -159,9 +135,13 @@
                 <div data-i18n="Períodos Acadêmicos">Períodos Acadêmicos</div>
             </a>
             <ul class="menu-sub">
-
                 <li class="menu-item">
-                    <a href="/secretary/academic-periods.html" class="menu-link">
+                    <a href="/principal/create/academic-period.html" class="menu-link">
+                        <div data-i18n="Cadastrar período">Cadastrar período</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/principal/academic-periods.html" class="menu-link">
                         <div data-i18n="Listar períodos">Listar períodos</div>
                     </a>
                 </li>
@@ -175,15 +155,19 @@
                 <div data-i18n="Ano Acadêmico">Ano Acadêmico</div>
             </a>
             <ul class="menu-sub">
-
                 <li class="menu-item">
-                    <a href="/secretary/academic-years.html" class="menu-link">
+                    <a href="/principal/create/academic-year.html" class="menu-link">
+                        <div data-i18n="Cadastrar ano">Cadastrar ano</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/principal/academic-years.html" class="menu-link">
                         <div data-i18n="Listar anos">Listar anos</div>
                     </a>
                 </li>
             </ul>
         </li>
-        
+
         <!-- Seção: Sistema -->
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Sistema</span>
@@ -191,12 +175,12 @@
 
         <!-- Configurações da escola -->
         <li class="menu-item">
-            <a href="/secretary/school-settings.html" class="menu-link">
+            <a href="/principal/school-settings.html" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-cog"></i>
                 <div data-i18n="Configurações da escola">Configurações da escola</div>
             </a>
         </li>
-        
+
         <!-- Seção: Sessão -->
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Sessão</span>

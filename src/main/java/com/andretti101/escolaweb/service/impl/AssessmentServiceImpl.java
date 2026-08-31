@@ -30,8 +30,9 @@ public class AssessmentServiceImpl implements AssessmentService {
         TeacherClassSubject tcs = resolveTcs(assessment.getTeacherClassSubject());
         AcademicPeriod period = resolvePeriod(assessment.getPeriod());
 
+        validateCrossAcademicYear(tcs, period);
         validatePeriodOpen(period);
-        validateDate(assessment);
+        validateDate(assessment, period);
 
         validateMaxAssessments(tcs, period);
 
@@ -51,8 +52,9 @@ public class AssessmentServiceImpl implements AssessmentService {
         TeacherClassSubject tcs = resolveTcs(incoming.getTeacherClassSubject());
         AcademicPeriod period = resolvePeriod(incoming.getPeriod());
 
+        validateCrossAcademicYear(tcs, period);
         validatePeriodOpen(period);
-        validateDate(incoming);
+        validateDate(incoming, period);
 
         boolean tcsChanging = !existing.getTeacherClassSubject().getId().equals(tcs.getId());
         boolean periodChanging = !existing.getPeriod().getId().equals(period.getId());
@@ -154,9 +156,28 @@ public class AssessmentServiceImpl implements AssessmentService {
         }
     }
 
-    private void validateDate(Assessment assessment) {
+    private void validateDate(Assessment assessment, AcademicPeriod period) {
         if (assessment.getDate() == null) {
             throw new IllegalArgumentException("Assessment date is required.");
+        }
+        if (period.getStartDate() != null && assessment.getDate().isBefore(period.getStartDate())) {
+            throw new IllegalArgumentException("A data da avaliação (" + assessment.getDate() 
+                    + ") não pode ser anterior à data de início do período (" + period.getStartDate() + ").");
+        }
+        if (period.getEndDate() != null && assessment.getDate().isAfter(period.getEndDate())) {
+            throw new IllegalArgumentException("A data da avaliação (" + assessment.getDate() 
+                    + ") não pode ser posterior à data de término do período (" + period.getEndDate() + ").");
+        }
+    }
+
+    private void validateCrossAcademicYear(TeacherClassSubject tcs, AcademicPeriod period) {
+        if (tcs.getClassRoom().getAcademicYear() == null || period.getAcademicYear() == null) {
+            return;
+        }
+        if (!tcs.getClassRoom().getAcademicYear().getId().equals(period.getAcademicYear().getId())) {
+            throw new IllegalStateException("Conflito de Ano Letivo: A turma pertence ao ano '" 
+                    + tcs.getClassRoom().getAcademicYear().getYear() 
+                    + "', mas o período escolhido pertence a outro ano letivo.");
         }
     }
 }

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Períodos Acadêmicos | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+        <div class="layout-page">
+            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+                 id="layout-navbar">
+                <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                    <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)"><i class="bx bx-menu bx-sm"></i></a>
+                </div>
+                <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                    <div class="navbar-nav align-items-center w-100">
+                        <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
+                            <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
+                            <input type="text" class="form-control border-0 shadow-none px-0 w-100"
+                                   placeholder="Buscar período por nome..." aria-label="Buscar" id="globalSearch"
+                                   style="min-width: 300px;"/>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Períodos Acadêmicos /</span> Listagem
+                        </h4>
+                        <a href="/principal/create/academic-period.html" class="btn btn-primary">
+                            <i class="bx bx-plus me-1"></i> Cadastrar Período
+                        </a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <h5 class="mb-0">Períodos Cadastrados</h5>
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <!-- Filtro por Ano -->
+                                <select class="form-select form-select-sm" id="yearFilter" style="min-width: 180px;">
+                                    <option value="all">Todos os anos</option>
+                                </select>
+                                <!-- Filtro por Status -->
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterOpen"
+                                           value="open" checked/>
+                                    <label class="btn btn-outline-success btn-sm" for="filterOpen">Abertos</label>
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterClosed"
+                                           value="closed"/>
+                                    <label class="btn btn-outline-danger btn-sm" for="filterClosed">Fechados</label>
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll"
+                                           value="all"/>
+                                    <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Período</th>
+                                    <th>Ano Acadêmico</th>
+                                    <th>Início</th>
+                                    <th>Término</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                                </thead>
+                                <tbody id="periodsTableBody"></tbody>
+                            </table>
+                            <div id="loadingState" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Carregando períodos...</p>
+                            </div>
+                            <div id="emptyState" class="text-center py-5 d-none">
+                                <i class="bx bx-time-five fs-1 text-muted"></i>
+                                <p class="mt-2 text-muted mb-0">Nenhum período encontrado.</p>
+                                <a href="/principal/create/academic-period.html" class="btn btn-primary btn-sm mt-3"><i
+                                        class="bx bx-plus me-1"></i> Cadastrar</a>
+                            </div>
+                            <div id="errorState" class="text-center py-5 d-none">
+                                <i class="bx bx-error-circle fs-1 text-danger"></i>
+                                <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar.</p>
+                                <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadPeriods()"><i
+                                        class="bx bx-refresh me-1"></i> Tentar novamente
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-footer"><small class="text-muted" id="recordCount"></small></div>
+                    </div>
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">©
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script src="/js/load-sidebar.js"></script>
+
+<script>
+    let allPeriods = [];
+    let statusFilter = 'open';
+    let yearFilter = 'all';
+    let searchTerm = '';
+
+    function getToken() {
+        return localStorage.getItem('jwt_token') || '';
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        try {
+            const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
+            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function handleUnauthorized() {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login.html';
+    }
+
+    async function loadYearFilter() {
+        try {
+            const response = await fetch('/api/academic-years', {
+                headers: {'Authorization': `Bearer ${getToken()}`}
+            });
+            if (response.ok) {
+                const years = await response.json();
+                const yearSelect = document.getElementById('yearFilter');
+                years.sort((a, b) => b.year - a.year);
+                years.forEach(y => {
+                    const opt = document.createElement('option');
+                    opt.value = y.id;
+                    opt.textContent = y.active ? `${y.year} (Ativo)` : `${y.year}`;
+                    yearSelect.appendChild(opt);
+                });
+            }
+        } catch (e) { /* silently fail */
+        }
+    }
+
+    async function loadPeriods() {
+        const tableBody = document.getElementById('periodsTableBody');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const errorState = document.getElementById('errorState');
+        tableBody.innerHTML = '';
+        loadingState.classList.remove('d-none');
+        emptyState.classList.add('d-none');
+        errorState.classList.add('d-none');
+
+        try {
+            const response = await fetch('/api/academic-periods', {
+                headers: {'Authorization': `Bearer ${getToken()}`}
+            });
+            if (response.status === 401 || response.status === 403) return handleUnauthorized();
+            if (!response.ok) throw new Error('Erro na resposta do servidor');
+            allPeriods = await response.json();
+            applyFilters();
+        } catch (error) {
+            console.error(error);
+            loadingState.classList.add('d-none');
+            errorState.classList.remove('d-none');
+        }
+    }
+
+    function applyFilters() {
+        let filtered = allPeriods;
+
+        if (statusFilter === 'open') filtered = filtered.filter(p => !p.closed);
+        else if (statusFilter === 'closed') filtered = filtered.filter(p => p.closed);
+
+        if (yearFilter !== 'all') {
+            filtered = filtered.filter(p => String(p.academicYearId) === yearFilter);
+        }
+
+        if (searchTerm.trim()) {
+            const term = searchTerm.toLowerCase().trim();
+            filtered = filtered.filter(p => p.name && p.name.toLowerCase().includes(term));
+        }
+
+        if (statusFilter === 'all') {
+            filtered.sort((a, b) => {
+                if (!a.closed && b.closed) return -1;
+                if (a.closed && !b.closed) return 1;
+                return 0;
+            });
+        }
+
+        renderTable(filtered);
+    }
+
+    function renderTable(periods) {
+        const tableBody = document.getElementById('periodsTableBody');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const recordCount = document.getElementById('recordCount');
+        loadingState.classList.add('d-none');
+
+        if (periods.length === 0) {
+            tableBody.innerHTML = '';
+            emptyState.classList.remove('d-none');
+            recordCount.textContent = '0 registros';
+            return;
+        }
+        emptyState.classList.add('d-none');
+        recordCount.textContent = `${periods.length} período${periods.length !== 1 ? 's' : ''} listado${periods.length !== 1 ? 's' : ''}`;
+
+        tableBody.innerHTML = periods.map(p => {
+            const statusBadge = p.closed
+                ? '<span class="badge bg-label-danger"><i class="bx bx-lock-alt me-1"></i>Fechado</span>'
+                : '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i>Aberto</span>';
+
+            const avatarClass = p.closed ? 'bg-label-danger' : 'bg-label-info';
+
+            return `
+                    <tr class="${p.closed ? 'opacity-75 bg-lighter' : ''}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm me-3">
+                                    <span class="avatar-initial rounded-circle ${avatarClass}"><i class="bx bx-time-five"></i></span>
+                                </div>
+                                <span class="fw-semibold text-heading">${escapeHtml(p.name)}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-label-primary">${escapeHtml(String(p.academicYear))}</span></td>
+                        <td>${formatDate(p.startDate)}</td>
+                        <td>${formatDate(p.endDate)}</td>
+                        <td>${statusBadge}</td>
+                        <td class="text-center">
+                            <div class="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    ${!p.closed ? `
+                                        <li><a class="dropdown-item" href="/secretary/edit/academic-period.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="closePeriod(${p.id})"><i class="bx bx-lock-alt me-1 text-warning"></i> Fechar Período</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deletePeriod(${p.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
+                                    ` : '<li><span class="dropdown-item text-muted"><i class="bx bx-lock-alt me-1"></i> Período fechado</span></li>'}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+        }).join('');
+    }
+
+    async function closePeriod(id) {
+        if (!confirm('ATENÇÃO: Deseja FECHAR este período acadêmico? Esta ação é IRREVERSÍVEL.\n\nO sistema verificará se:\n• A data de término já passou\n• O número mínimo de avaliações foi postado para cada professor')) return;
+        try {
+            const response = await fetch(`/api/academic-periods/${id}/close`, {
+                method: 'PUT', headers: {'Authorization': `Bearer ${getToken()}`}
+            });
+            if (response.status === 403) {
+                alert('Acesso negado: apenas a Direção pode fechar períodos acadêmicos.');
+                return;
+            }
+            if (response.ok) {
+                loadPeriods();
+            } else {
+                const err = await response.json().catch(() => null);
+                alert(`Não foi possível fechar o período:\n\n${err?.message || 'Erro desconhecido.'}`);
+            }
+        } catch (error) {
+            alert('Erro de conexão.');
+        }
+    }
+
+    async function deletePeriod(id) {
+        if (!confirm('Deseja EXCLUIR este período? Esta ação não pode ser desfeita.')) return;
+        try {
+            const response = await fetch(`/api/academic-periods/${id}`, {
+                method: 'DELETE', headers: {'Authorization': `Bearer ${getToken()}`}
+            });
+            if (response.status === 403) {
+                alert('Acesso negado: apenas a Direção pode excluir períodos.');
+                return;
+            }
+            if (response.ok) {
+                loadPeriods();
+            } else {
+                const err = await response.json().catch(() => null);
+                alert(`Erro ao excluir: ${err?.message || 'Este período possui avaliações vinculadas.'}`);
+            }
+        } catch (error) {
+            alert('Erro de conexão.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadYearFilter();
+
+        document.querySelectorAll('input[name="statusFilter"]').forEach(r => {
+            r.addEventListener('change', e => {
+                statusFilter = e.target.value;
+                applyFilters();
+            });
+        });
+        document.getElementById('yearFilter').addEventListener('change', e => {
+            yearFilter = e.target.value;
+            applyFilters();
+        });
+        document.getElementById('globalSearch').addEventListener('input', e => {
+            searchTerm = e.target.value;
+            applyFilters();
+        });
+
+        loadPeriods();
+    });
+</script>
+</body>
+</html>
+
+

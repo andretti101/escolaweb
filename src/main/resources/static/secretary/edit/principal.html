@@ -18,7 +18,7 @@
 
     <meta name="description" content="Formulário de edição de diretores para o sistema escolar"/>
 
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
 
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -69,7 +69,7 @@
                         </div>
                         <p class="mt-2 text-muted">Carregando dados do diretor...</p>
                     </div>
-                    
+
                     <div id="errorFormState" class="text-center py-5 d-none">
                         <i class="bx bx-error-circle fs-1 text-danger"></i>
                         <p class="mt-2 text-muted mb-0" id="errorFormMessage">Erro ao carregar diretor.</p>
@@ -89,9 +89,9 @@
 
                                 <div class="card-body p-5">
                                     <form id="principalEditForm">
-                                        
+
                                         <!-- ID Oculto -->
-                                        <input type="hidden" id="principalId" />
+                                        <input type="hidden" id="principalId"/>
 
                                         <div class="row">
                                             <div class="col-md-12 mb-3">
@@ -149,7 +149,9 @@
                                                         <i class="bx bx-hide" id="togglePasswordIcon"></i>
                                                     </span>
                                                 </div>
-                                                <div class="form-text">Preencha apenas se desejar alterar a senha do diretor.</div>
+                                                <div class="form-text">Preencha apenas se desejar alterar a senha do
+                                                    diretor.
+                                                </div>
                                             </div>
                                         </div>
 
@@ -157,7 +159,8 @@
                                         <div id="formMessage" class="mt-3 mb-3"></div>
 
                                         <div class="d-flex justify-content-end mt-4">
-                                            <a href="/secretary/principals.html" class="btn btn-outline-secondary me-2 btn-lg">Cancelar</a>
+                                            <a href="/secretary/principals.html"
+                                               class="btn btn-outline-secondary me-2 btn-lg">Cancelar</a>
                                             <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
                                                 Salvar Alterações
                                             </button>
@@ -175,7 +178,8 @@
                     <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">
                             ©
-                            <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
                         </div>
                     </div>
                 </footer>
@@ -200,10 +204,10 @@
         const formWrapper = document.getElementById("formWrapper");
         const loadingState = document.getElementById("loadingFormState");
         const errorState = document.getElementById("errorFormState");
-        
+
         const btnSubmit = document.getElementById("btnSubmit");
         const formMessage = document.getElementById("formMessage");
-        
+
         const urlParams = new URLSearchParams(window.location.search);
         const principalId = urlParams.get('id');
 
@@ -237,13 +241,13 @@
                 }
 
                 const data = await response.json();
-                
+
                 document.getElementById('principalId').value = data.id;
                 document.getElementById('name').value = data.name;
                 document.getElementById('email').value = data.email;
-                
+
                 formWrapper.classList.remove('d-none');
-                
+
             } catch (error) {
                 errorState.classList.remove('d-none');
                 document.getElementById('errorFormMessage').innerText = error.message;
@@ -281,7 +285,7 @@
                 });
 
                 if (response.ok) {
-                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible" role="alert">Diretor atualizado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Diretor atualizado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
                     document.getElementById('password').value = '';
                 } else {
                     let errorMsg = 'Ocorreu um erro ao atualizar o diretor.';
@@ -301,10 +305,10 @@
                             errorMsg = "Sessão expirada ou não autenticada. Faça login novamente.";
                         }
                     }
-                    formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+                    formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
                 }
             } catch (error) {
-                formMessage.innerHTML = '<div class="alert alert-danger alert-dismissible" role="alert">Erro de conexão com o servidor.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                formMessage.innerHTML = '<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Erro de conexão com o servidor.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
             } finally {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = 'Salvar Alterações';
@@ -317,3 +321,5 @@
 
 </body>
 </html>
+
+

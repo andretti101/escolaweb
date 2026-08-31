@@ -5,9 +5,8 @@
     <meta charset="utf-8"/>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
-    <title>Edição de Matéria | Escola Web</title>
+    <title>Edição de Ano Acadêmico | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
-    <meta name="description" content="Formulário de edição de matérias"/>
     <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -35,57 +34,51 @@
                         </a>
                     </div>
 
-                    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Matérias /</span> Edição</h4>
+                    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Ano Acadêmico /</span> Edição</h4>
 
                     <div id="loadingFormState" class="text-center py-5 d-none">
                         <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span>
                         </div>
-                        <p class="mt-2 text-muted">Carregando dados da matéria...</p>
+                        <p class="mt-2 text-muted">Carregando dados do ano...</p>
                     </div>
-
                     <div id="errorFormState" class="text-center py-5 d-none">
                         <i class="bx bx-error-circle fs-1 text-danger"></i>
-                        <p class="mt-2 text-muted mb-0" id="errorFormMessage">Erro ao carregar matéria.</p>
-                        <a href="/secretary/subjects.html" class="btn btn-outline-primary btn-sm mt-3">
-                            <i class="bx bx-arrow-back me-1"></i> Voltar para a lista
-                        </a>
+                        <p class="mt-2 text-muted mb-0" id="errorFormMessage">Erro ao carregar.</p>
+                        <a href="/principal/academic-years.html" class="btn btn-outline-primary btn-sm mt-3"><i
+                                class="bx bx-arrow-back me-1"></i> Voltar</a>
                     </div>
 
                     <div class="row" id="formWrapper">
                         <div class="col-12">
                             <div class="card mb-4">
                                 <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">Dados da Matéria</h5>
-                                    <small class="text-muted float-end">* Campos obrigatórios</small>
+                                    <h5 class="mb-0">Dados do Ano Acadêmico</h5>
+                                    <small class="text-muted">* Campos obrigatórios</small>
                                 </div>
                                 <div class="card-body p-5">
-                                    <form id="subjectEditForm">
-                                        <input type="hidden" id="subjectId"/>
-
+                                    <form id="editForm">
+                                        <input type="hidden" id="yearId"/>
                                         <div class="row">
-                                            <div class="col-md-12 mb-3">
-                                                <label class="form-label" for="name">Nome da Matéria *</label>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label" for="year">Ano Letivo *</label>
                                                 <div class="input-group input-group-merge">
-                                                    <span class="input-group-text"><i class="bx bx-book"></i></span>
-                                                    <input type="text" class="form-control" id="name" name="name"
-                                                           placeholder="Ex: Matemática" required maxlength="100"/>
+                                                    <span class="input-group-text"><i class="bx bx-calendar"></i></span>
+                                                    <input type="number" class="form-control" id="year" required
+                                                           min="2000" max="2100"/>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-12 mb-3">
-                                                <label class="form-label" for="description">Descrição</label>
-                                                <textarea class="form-control" id="description" name="description"
-                                                          rows="4"
-                                                          placeholder="Descrição opcional sobre a matéria..."></textarea>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label" for="startDate">Data de Início</label>
+                                                <input type="date" class="form-control" id="startDate"/>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label class="form-label" for="endDate">Data de Término</label>
+                                                <input type="date" class="form-control" id="endDate"/>
                                             </div>
                                         </div>
-
                                         <div id="formMessage" class="mt-3 mb-3"></div>
-
                                         <div class="d-flex justify-content-end mt-4">
-                                            <a href="/secretary/subjects.html"
+                                            <a href="/principal/academic-years.html"
                                                class="btn btn-outline-secondary me-2 btn-lg">Cancelar</a>
                                             <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">Salvar
                                                 Alterações
@@ -97,7 +90,6 @@
                         </div>
                     </div>
                 </div>
-
                 <footer class="content-footer footer bg-footer-theme">
                     <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">©
@@ -122,41 +114,36 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", async () => {
-        const form = document.getElementById("subjectEditForm");
+        const form = document.getElementById("editForm");
         const formWrapper = document.getElementById("formWrapper");
         const loadingState = document.getElementById("loadingFormState");
         const errorState = document.getElementById("errorFormState");
         const btnSubmit = document.getElementById("btnSubmit");
         const formMessage = document.getElementById("formMessage");
+        const yearId = new URLSearchParams(window.location.search).get('id');
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const subjectId = urlParams.get('id');
-
-        if (!subjectId) {
+        if (!yearId) {
             formWrapper.classList.add('d-none');
             errorState.classList.remove('d-none');
-            document.getElementById('errorFormMessage').innerText = "ID da matéria não fornecido na URL.";
+            document.getElementById('errorFormMessage').innerText = "ID do ano não fornecido na URL.";
             return;
         }
-
         const token = localStorage.getItem('jwt_token');
 
-        async function loadSubjectData() {
+        async function loadData() {
             formWrapper.classList.add('d-none');
             loadingState.classList.remove('d-none');
             errorState.classList.add('d-none');
             try {
-                const response = await fetch(`/api/subjects/${subjectId}`, {
+                const response = await fetch(`/api/academic-years/${yearId}`, {
                     headers: {'Authorization': 'Bearer ' + (token || '')}
                 });
-                if (!response.ok) {
-                    if (response.status === 401 || response.status === 403) throw new Error("Acesso negado.");
-                    throw new Error("Matéria não encontrada ou erro no servidor.");
-                }
+                if (!response.ok) throw new Error(response.status === 403 ? "Acesso negado." : "Ano não encontrado.");
                 const data = await response.json();
-                document.getElementById('subjectId').value = data.id;
-                document.getElementById('name').value = data.name;
-                document.getElementById('description').value = data.description || '';
+                document.getElementById('yearId').value = data.id;
+                document.getElementById('year').value = data.year;
+                document.getElementById('startDate').value = data.startDate || '';
+                document.getElementById('endDate').value = data.endDate || '';
                 formWrapper.classList.remove('d-none');
             } catch (error) {
                 errorState.classList.remove('d-none');
@@ -166,10 +153,9 @@
             }
         }
 
-        await loadSubjectData();
+        await loadData();
 
         if (!form) return;
-
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             formMessage.innerHTML = '';
@@ -177,33 +163,32 @@
             btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Salvando...';
 
             const payload = {
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value || null
+                year: parseInt(document.getElementById('year').value),
+                startDate: document.getElementById('startDate').value || null,
+                endDate: document.getElementById('endDate').value || null
             };
-
             try {
-                const response = await fetch(`/api/subjects/${subjectId}`, {
+                const response = await fetch(`/api/academic-years/${yearId}`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token || '')},
                     body: JSON.stringify(payload)
                 });
                 if (response.ok) {
-                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Matéria atualizada com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                    formMessage.innerHTML = '<div class="alert alert-success alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Ano acadêmico atualizado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
                 } else {
-                    let errorMsg = 'Ocorreu um erro ao atualizar a matéria.';
+                    let errorMsg = 'Erro ao atualizar.';
                     try {
                         const errorData = await response.json();
                         if (errorData.errors && Array.isArray(errorData.errors)) errorMsg = errorData.errors.map(err => err.defaultMessage || err.message).join('<br>');
                         else if (errorData.message) errorMsg = errorData.message;
                         else if (errorData.detail) errorMsg = errorData.detail;
-                    } catch (parseError) {
-                        if (response.status === 403) errorMsg = "Acesso negado.";
-                        else if (response.status === 401) errorMsg = "Sessão expirada.";
+                    } catch (_) {
+                        if (response.status === 403) errorMsg = "Acesso negado: apenas a Direção pode editar anos acadêmicos.";
                     }
                     formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
                 }
             } catch (error) {
-                formMessage.innerHTML = '<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Erro de conexão com o servidor.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                formMessage.innerHTML = '<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Erro de conexão.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
             } finally {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = 'Salvar Alterações';
@@ -211,7 +196,6 @@
         });
     });
 </script>
-
 <script src="/js/load-sidebar.js"></script>
 </body>
 </html>

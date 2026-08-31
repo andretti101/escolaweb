@@ -10,7 +10,7 @@
     <script src="/js/auth-guard.js"></script>
 
     <meta name="description" content="Configurações gerais da escola"/>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
 
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -29,7 +29,7 @@
 <body>
 <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
-        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
 
         <div class="layout-page">
             <div class="content-wrapper">
@@ -43,14 +43,14 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold mb-0">
-                            <span class="text-muted fw-light">Visualização /</span> Configurações da Escola
+                            <span class="text-muted fw-light">Administração /</span> Configurações da Escola
                         </h4>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card mb-4">
-                                <h5 class="card-header border-bottom">Informações Gerais (Somente Leitura)</h5>
+                                <h5 class="card-header border-bottom">Informações Gerais</h5>
 
                                 <div class="card-body mt-4">
                                     <div id="alertContainer"></div>
@@ -59,25 +59,28 @@
                                         <div class="row">
                                             <!-- Informações da Instituição -->
                                             <div class="col-md-6 mb-3">
-                                                <label for="schoolName" class="form-label">Nome da Escola</label>
-                                                <input type="text" class="form-control bg-white" id="schoolName"
-                                                       name="schoolName" disabled/>
+                                                <label for="schoolName" class="form-label">Nome da Escola <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="schoolName"
+                                                       name="schoolName" maxlength="150" required
+                                                       placeholder="Ex: Escola Estadual Machado de Assis"/>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label for="email" class="form-label">E-mail de Contato</label>
-                                                <input type="email" class="form-control bg-white" id="email"
-                                                       name="email" disabled/>
+                                                <label for="email" class="form-label">E-mail de Contato <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="email" class="form-control" id="email" name="email"
+                                                       maxlength="150" required placeholder="contato@escola.com"/>
                                             </div>
 
                                             <div class="col-md-6 mb-3">
                                                 <label for="phone" class="form-label">Telefone</label>
-                                                <input type="text" class="form-control bg-white" id="phone" name="phone"
-                                                       disabled/>
+                                                <input type="text" class="form-control" id="phone" name="phone"
+                                                       maxlength="20" placeholder="(11) 99999-9999"/>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label for="address" class="form-label">Endereço</label>
-                                                <input type="text" class="form-control bg-white" id="address"
-                                                       name="address" disabled/>
+                                                <input type="text" class="form-control" id="address" name="address"
+                                                       maxlength="255" placeholder="Rua das Flores, 123 - Centro"/>
                                             </div>
 
                                             <div class="col-12 mt-4 mb-3 border-top pt-4">
@@ -86,35 +89,43 @@
                                             </div>
 
                                             <div class="col-md-4 mb-3">
-                                                <label for="periodType" class="form-label">Divisão do Ano Letivo</label>
-                                                <select id="periodType" class="form-select bg-white" disabled>
+                                                <label for="periodType" class="form-label">Divisão do Ano Letivo <span
+                                                        class="text-danger">*</span></label>
+                                                <select id="periodType" class="form-select" required>
                                                     <option value="BIMESTER">Bimestre</option>
                                                     <option value="TRIMESTER">Trimestre</option>
                                                     <option value="QUADRIMESTER">Quadrimestre</option>
                                                     <option value="SEMESTER">Semestre</option>
                                                     <option value="ANNUAL">Anual</option>
                                                 </select>
+                                                <div class="form-text">Define o padrão de lançamentos.</div>
                                             </div>
 
                                             <div class="col-md-4 mb-3">
-                                                <label for="minimumGrade" class="form-label">Média Mínima para
-                                                    Aprovação</label>
+                                                <label for="minimumGrade" class="form-label">Média Mínima para Aprovação
+                                                    <span class="text-danger">*</span></label>
                                                 <div class="input-group">
-                                                    <input type="number" class="form-control bg-white" id="minimumGrade"
-                                                           disabled/>
+                                                    <input type="number" class="form-control" id="minimumGrade" min="0"
+                                                           max="10" step="0.1" required/>
                                                     <span class="input-group-text">/ 10</span>
                                                 </div>
                                             </div>
 
                                             <div class="col-md-4 mb-3">
-                                                <label for="minimumAttendance" class="form-label">Frequência Mínima
-                                                    (%)</label>
+                                                <label for="minimumAttendance" class="form-label">Frequência Mínima (%)
+                                                    <span class="text-danger">*</span></label>
                                                 <div class="input-group">
-                                                    <input type="number" class="form-control bg-white"
-                                                           id="minimumAttendance" disabled/>
+                                                    <input type="number" class="form-control" id="minimumAttendance"
+                                                           min="0" max="100" step="0.01" required/>
                                                     <span class="input-group-text">%</span>
                                                 </div>
                                             </div>
+
+                                        </div>
+                                        <div class="mt-4 border-top pt-3 text-end">
+                                            <button type="submit" class="btn btn-primary" id="btnSalvar">
+                                                <i class="bx bx-save me-1"></i> Salvar Configurações
+                                            </button>
                                         </div>
                                     </form>
                                 </div>
@@ -175,7 +186,7 @@
                 document.getElementById('minimumGrade').value = data.minimumGrade || '6.0';
                 document.getElementById('minimumAttendance').value = data.minimumAttendance || '70.00';
             } else if (response.status === 404) {
-                showAlert('As configurações ainda não foram definidas pela Direção.', 'info');
+                // Settings not initialized yet, that's fine, show empty defaults
             } else {
                 showAlert('Erro ao carregar configurações atuais.', 'danger');
             }
@@ -184,7 +195,54 @@
         }
     }
 
+    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSalvar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Salvando...';
+
+        const payload = {
+            schoolName: document.getElementById('schoolName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            periodType: document.getElementById('periodType').value,
+            minimumGrade: parseFloat(document.getElementById('minimumGrade').value),
+            minimumAttendance: parseFloat(document.getElementById('minimumAttendance').value)
+        };
+
+        try {
+            const response = await fetch('/api/school-settings', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                showAlert('Configurações atualizadas com sucesso!', 'success');
+            } else {
+                const err = await response.json().catch(() => null);
+                let errMsg = err?.message || 'Erro ao salvar as configurações.';
+                if (err?.errors) {
+                    const msgs = Object.values(err.errors).flat();
+                    if (msgs.length) errMsg = msgs.join('<br>');
+                }
+                showAlert(errMsg, 'danger');
+            }
+        } catch (error) {
+            showAlert('Erro de conexão ao tentar salvar.', 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-save me-1"></i> Salvar Configurações';
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', loadSettings);
 </script>
 </body>
 </html>
+
+
