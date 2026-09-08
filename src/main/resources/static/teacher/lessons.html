@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Diário de Classe | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Listagem de aulas" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+            <div class="layout-page">
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)"><i class="bx bx-menu bx-sm"></i></a>
+                    </div>
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center w-100">
+                            <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
+                                <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
+                                <input type="text" class="form-control border-0 shadow-none px-0 w-100"
+                                       placeholder="Buscar por conteúdo ou turma..." aria-label="Buscar" id="globalSearch" style="min-width: 350px;" />
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Diário de Classe /</span> Aulas Registradas</h4>
+                            <a href="/teacher/create/lesson.html" class="btn btn-primary">
+                                <i class="bx bx-plus me-1"></i> Registrar Aula
+                            </a>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                <h5 class="mb-0">Minhas Aulas</h5>
+                                
+                                <div class="d-flex align-items-center gap-3">
+                                    <select id="periodFilter" class="form-select form-select-sm w-auto">
+                                        <option value="">Todos os Períodos</option>
+                                    </select>
+                                    <select id="classRoomFilter" class="form-select form-select-sm w-auto">
+                                        <option value="">Todas as Turmas</option>
+                                    </select>
+                                    <select id="subjectFilter" class="form-select form-select-sm w-auto">
+                                        <option value="">Todas as Matérias</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Período</th>
+                                            <th>Turma</th>
+                                            <th>Matéria</th>
+                                            <th>Conteúdo</th>
+                                            <th>Aulas (Qtd)</th>
+                                            <th class="text-center">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lessonsTableBody"></tbody>
+                                </table>
+                                <div id="loadingState" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div>
+                                    <p class="mt-2 text-muted">Carregando diário...</p>
+                                </div>
+                                <div id="emptyState" class="text-center py-5 d-none">
+                                    <i class="bx bx-book-open fs-1 text-muted"></i>
+                                    <p class="mt-2 text-muted mb-0">Nenhuma aula encontrada.</p>
+                                    <a href="/teacher/create/lesson.html" class="btn btn-primary btn-sm mt-3"><i class="bx bx-plus me-1"></i> Registrar Primeira Aula</a>
+                                </div>
+                                <div id="errorState" class="text-center py-5 d-none">
+                                    <i class="bx bx-error-circle fs-1 text-danger"></i>
+                                    <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar.</p>
+                                    <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadLessons()"><i class="bx bx-refresh me-1"></i> Tentar novamente</button>
+                                </div>
+                            </div>
+                            <div class="card-footer"><small class="text-muted" id="recordCount"></small></div>
+                        </div>
+                    </div>
+
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">© <script>document.write(new Date().getFullYear());</script> EscolaWEB</div>
+                        </div>
+                    </footer>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+
+    <script>
+        let allLessons = [];
+        let allPeriods = [];
+        let searchTerm = '';
+        let periodFilter = '';
+        let classRoomFilter = '';
+
+        let subjectFilter = '';
+
+        function getToken() { return localStorage.getItem('jwt_token') || ''; }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            try {
+                const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
+                return `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
+            } catch(e) { return dateStr; }
+        }
+
+        function getPeriodName(dateStr) {
+            if (!dateStr) return '-';
+            const lDate = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
+            const p = allPeriods.find(p => {
+                const s = new Date(p.startDate + 'T00:00:00');
+                const e = new Date(p.endDate + 'T23:59:59');
+                return lDate >= s && lDate <= e;
+            });
+            return p ? p.name : '-';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function handleUnauthorized() {
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login.html';
+        }
+
+        async function loadFilters() {
+            try {
+                // Fetch periods
+                const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (periodRes.ok) {
+                    allPeriods = await periodRes.json();
+                    const pSelect = document.getElementById('periodFilter');
+                    allPeriods.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.academicYear} - ${p.name}`;
+                        pSelect.appendChild(opt);
+                    });
+                }
+                
+                // Fetch teacher's classrooms and subjects
+                const tcsRes = await fetch('/api/teacher-class-subjects', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (tcsRes.ok) {
+                    const myTcs = await tcsRes.json();
+                    const cSelect = document.getElementById('classRoomFilter');
+                    const sSelect = document.getElementById('subjectFilter');
+                    
+                    const addedClasses = new Set();
+                    const addedSubjects = new Set();
+                    
+                    myTcs.forEach(tcs => {
+                        if(!addedClasses.has(tcs.classRoomName)) {
+                            addedClasses.add(tcs.classRoomName);
+                            const opt = document.createElement('option');
+                            opt.value = tcs.classRoomName;
+                            opt.textContent = tcs.classRoomName;
+                            cSelect.appendChild(opt);
+                        }
+                        if(!addedSubjects.has(tcs.subjectName)) {
+                            addedSubjects.add(tcs.subjectName);
+                            const opt = document.createElement('option');
+                            opt.value = tcs.subjectName;
+                            opt.textContent = tcs.subjectName;
+                            sSelect.appendChild(opt);
+                        }
+                    });
+                }
+            } catch(e) { console.error('Erro ao carregar filtros', e); }
+        }
+
+        async function loadLessons() {
+            const tableBody = document.getElementById('lessonsTableBody');
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const errorState = document.getElementById('errorState');
+            tableBody.innerHTML = '';
+            loadingState.classList.remove('d-none');
+            emptyState.classList.add('d-none');
+            errorState.classList.add('d-none');
+
+            try {
+                const response = await fetch('/api/lessons', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (response.status === 401 || response.status === 403) return handleUnauthorized();
+                if (!response.ok) throw new Error('Erro na resposta do servidor');
+                allLessons = await response.json();
+                
+                // Sort by date descending (most recent first)
+                allLessons.sort((a, b) => new Date(b.lessonDate) - new Date(a.lessonDate));
+                
+                applyFilters();
+            } catch (error) {
+                console.error(error);
+                loadingState.classList.add('d-none');
+                errorState.classList.remove('d-none');
+            }
+        }
+
+        function applyFilters() {
+            let filtered = allLessons;
+            
+            if (classRoomFilter) {
+                filtered = filtered.filter(l => l.classRoomName === classRoomFilter);
+            }
+            
+            if (subjectFilter) {
+                filtered = filtered.filter(l => l.subjectName === subjectFilter);
+            }
+            
+            if (periodFilter) {
+                const selectedPeriod = allPeriods.find(p => String(p.id) === String(periodFilter));
+                if (selectedPeriod) {
+                    const pStart = new Date(selectedPeriod.startDate + 'T00:00:00');
+                    const pEnd = new Date(selectedPeriod.endDate + 'T23:59:59');
+                    filtered = filtered.filter(l => {
+                        const lDate = new Date(l.lessonDate + 'T12:00:00');
+                        return lDate >= pStart && lDate <= pEnd;
+                    });
+                }
+            }
+            
+            if (searchTerm.trim()) {
+                const term = searchTerm.trim().toLowerCase();
+                filtered = filtered.filter(l => 
+                    (l.content && l.content.toLowerCase().includes(term)) ||
+                    (l.classRoomName && l.classRoomName.toLowerCase().includes(term)) ||
+                    (l.subjectName && l.subjectName.toLowerCase().includes(term))
+                );
+            }
+            
+            renderTable(filtered);
+        }
+
+        function renderTable(lessons) {
+            const tableBody = document.getElementById('lessonsTableBody');
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const recordCount = document.getElementById('recordCount');
+            loadingState.classList.add('d-none');
+
+            if (lessons.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.classList.remove('d-none');
+                recordCount.textContent = '0 registros';
+                return;
+            }
+            emptyState.classList.add('d-none');
+            recordCount.textContent = `${lessons.length} aula${lessons.length !== 1 ? 's' : ''} listada${lessons.length !== 1 ? 's' : ''}`;
+
+            tableBody.innerHTML = lessons.map(l => {
+                const pName = getPeriodName(l.lessonDate);
+                return `
+                    <tr>
+                        <td><strong>${formatDate(l.lessonDate)}</strong></td>
+                        <td><span class="badge bg-label-secondary">${escapeHtml(pName)}</span></td>
+                        <td>${escapeHtml(l.classRoomName)}</td>
+                        <td>${escapeHtml(l.subjectName)}</td>
+                        <td><div class="text-truncate" style="max-width: 200px;" title="${escapeHtml(l.content)}">${escapeHtml(l.content)}</div></td>
+                        <td><span class="badge bg-label-info">${l.lessonCount} aula(s)</span></td>
+                        <td class="text-center">
+                            <div class="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/teacher/edit/lesson.html?id=${l.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteLesson(${l.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function deleteLesson(id) {
+            if (!confirm('ATENÇÃO: Deseja excluir definitivamente esta aula? A exclusão também removerá os registros de chamada vinculados a ela.')) return;
+            try {
+                const response = await fetch(`/api/lessons/${id}`, {
+                    method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (response.ok) { loadLessons(); }
+                else {
+                    const err = await response.json().catch(()=>null);
+                    alert(`Erro ao excluir: ${err?.message || 'A aula possui registros dependentes.'}`);
+                }
+            } catch (error) { alert('Erro de conexão.'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadFilters();
+            
+            document.getElementById('periodFilter').addEventListener('change', e => { periodFilter = e.target.value; applyFilters(); });
+            document.getElementById('classRoomFilter').addEventListener('change', e => { classRoomFilter = e.target.value; applyFilters(); });
+            document.getElementById('subjectFilter').addEventListener('change', e => { subjectFilter = e.target.value; applyFilters(); });
+            document.getElementById('globalSearch').addEventListener('input', e => { searchTerm = e.target.value; applyFilters(); });
+            
+            loadLessons();
+        });
+    </script>
+</body>
+</html>

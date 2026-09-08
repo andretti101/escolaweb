@@ -14,6 +14,8 @@ public record AssessmentResponseDTO(
         Integer teacherClassSubjectId,
         String subjectName,
         String teacherName,
+        Integer classRoomId,
+        String classRoomName,
         Integer periodId,
         String periodName,
         LocalDateTime createdAt,

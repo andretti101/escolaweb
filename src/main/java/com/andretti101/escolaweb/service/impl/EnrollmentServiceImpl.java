@@ -122,7 +122,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Transactional(readOnly = true)
     public List<Enrollment> findByClassRoom(Integer classRoomId) {
         ClassRoom classRoom = classRoomService.findById(classRoomId);
-        return enrollmentRepository.findByClassRoom(classRoom);
+        return enrollmentRepository.findByClassRoomOrderByStudentNameAsc(classRoom);
     }
 
     @Override
@@ -138,6 +138,28 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public Enrollment deactivate(Integer id) {
         Enrollment enrollment = findEnrollmentOrThrow(id);
         enrollment.setActive(false);
+        return enrollment;
+    }
+
+    @Override
+    @Transactional
+    public Enrollment transferClassroom(Integer enrollmentId, Integer newClassRoomId) {
+        Enrollment enrollment = findEnrollmentOrThrow(enrollmentId);
+        ClassRoom newClassRoom = classRoomService.findById(newClassRoomId);
+
+        if (!newClassRoom.isActive()) {
+            throw new IllegalStateException("Não é possível transferir o aluno para uma turma inativa.");
+        }
+        
+        if (enrollment.getClassRoom().getId().equals(newClassRoom.getId())) {
+            throw new IllegalStateException("O aluno já está matriculado nesta turma.");
+        }
+        
+        if (!enrollment.getClassRoom().getAcademicYear().getId().equals(newClassRoom.getAcademicYear().getId())) {
+             throw new IllegalStateException("A transferência só é permitida entre turmas do mesmo ano letivo.");
+        }
+        
+        enrollment.setClassRoom(newClassRoom);
         return enrollment;
     }
 

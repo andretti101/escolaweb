@@ -161,6 +161,8 @@ public class AssessmentController {
                 a.getTeacherClassSubject().getId(),
                 a.getTeacherClassSubject().getSubject().getName(),
                 a.getTeacherClassSubject().getTeacher().getName(),
+                a.getTeacherClassSubject().getClassRoom().getId(),
+                a.getTeacherClassSubject().getClassRoom().getName(),
                 a.getPeriod().getId(),
                 a.getPeriod().getName(),
                 a.getCreatedAt(),

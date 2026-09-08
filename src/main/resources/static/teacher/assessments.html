@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Avaliações e Notas - Professor</title>
+    <script src="/js/auth-guard.js"></script>
+    
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon_backup.ico" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+            
+            <div class="layout-page">
+                <!-- Navbar -->
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)"><i class="bx bx-menu bx-sm"></i></a>
+                    </div>
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center w-100">
+                            <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
+                                <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
+                                <input type="text" class="form-control border-0 shadow-none px-0 w-100"
+                                       placeholder="Buscar..." aria-label="Buscar" id="globalSearch" style="min-width: 350px;" />
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <!-- / Navbar -->
+                
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0">Avaliações e Notas</h4>
+                            <a href="/teacher/create/assessment.html" class="btn btn-primary">
+                                <i class="bx bx-plus me-1"></i> Nova Avaliação
+                            </a>
+                        </div>
+                        
+                        <div id="alertContainer"></div>
+
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-5">
+                                        <label class="form-label">Filtrar por Turma/Matéria</label>
+                                        <select id="tcsFilter" class="form-select" onchange="filterAssessments()">
+                                            <option value="">Todas as minhas turmas</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label">Filtrar por Período</label>
+                                        <select id="periodFilter" class="form-select" onchange="filterAssessments()">
+                                            <option value="">Todos os períodos</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">Limpar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="table-responsive" style="min-height: 250px;">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Título</th>
+                                            <th>Tipo</th>
+                                            <th>Turma e Matéria</th>
+                                            <th>Período Letivo</th>
+                                            <th class="text-center">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assessmentsTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">Carregando avaliações...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <footer class="content-footer footer theme-bg-footer">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">
+                                © <script>document.write(new Date().getFullYear());</script> EscolaWeb
+                            </div>
+                        </div>
+                    </footer>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+    
+    <script>
+        function getToken() { return localStorage.getItem('jwt_token') || ''; }
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            if(container) {
+                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                window.scrollTo(0,0);
+            } else {
+                alert(message);
+            }
+        }
+
+        let allAssessments = [];
+        let allPeriods = [];
+        let myTcsList = [];
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                showAlert('Avaliação e notas salvas com sucesso!', 'success');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            await loadFilters();
+            await loadAssessments();
+        });
+
+        async function loadFilters() {
+            try {
+                const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (periodRes.ok) {
+                    allPeriods = await periodRes.json();
+                    const pSelect = document.getElementById('periodFilter');
+                    allPeriods.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.academicYear} - ${p.name}`;
+                        pSelect.appendChild(opt);
+                    });
+                }
+                
+                const tcsRes = await fetch('/api/teacher-class-subjects', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (tcsRes.ok) {
+                    myTcsList = await tcsRes.json();
+                    const cSelect = document.getElementById('tcsFilter');
+                    myTcsList.forEach(tcs => {
+                        const opt = document.createElement('option');
+                        opt.value = tcs.id;
+                        opt.textContent = `${tcs.classRoomName} - ${tcs.subjectName}`;
+                        cSelect.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.error('Erro ao carregar filtros', e); }
+        }
+
+        async function loadAssessments() {
+            const tbody = document.getElementById('assessmentsTableBody');
+            try {
+                const res = await fetch('/api/assessments', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                
+                if (res.ok) {
+                    allAssessments = await res.json();
+                    allAssessments.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    renderTable(allAssessments);
+                } else {
+                    throw new Error('Falha na API');
+                }
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erro ao carregar as avaliações.</td></tr>';
+            }
+        }
+
+        function filterAssessments() {
+            const tcsFilter = document.getElementById('tcsFilter').value;
+            const periodFilter = document.getElementById('periodFilter').value;
+            
+            let filtered = [...allAssessments];
+            
+            if (tcsFilter) {
+                filtered = filtered.filter(a => String(a.teacherClassSubjectId) === String(tcsFilter));
+            }
+            if (periodFilter) {
+                filtered = filtered.filter(a => String(a.periodId) === String(periodFilter));
+            }
+            
+            renderTable(filtered);
+        }
+
+        function clearFilters() {
+            document.getElementById('tcsFilter').value = '';
+            document.getElementById('periodFilter').value = '';
+            renderTable(allAssessments);
+        }
+
+        function renderTable(assessments) {
+            const tbody = document.getElementById('assessmentsTableBody');
+            tbody.innerHTML = '';
+            
+            if (assessments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhuma avaliação encontrada.</td></tr>';
+                return;
+            }
+            
+            const typeLabels = {
+                'EXAM': '<span class="badge bg-label-primary">Prova</span>',
+                'ASSIGNMENT': '<span class="badge bg-label-success">Trabalho</span>',
+                'NOTEBOOK': '<span class="badge bg-label-warning">Caderno</span>'
+            };
+
+            assessments.forEach(ass => {
+                const parts = ass.date.split('-');
+                const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                const safeTitle = ass.title.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const typeHtml = typeLabels[ass.assessmentType] || ass.assessmentType;
+                
+                const period = allPeriods.find(p => p.id === ass.periodId);
+                const periodName = period ? `${period.academicYear} - ${period.name}` : `ID ${ass.periodId}`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td class="fw-semibold">${safeTitle}</td>
+                    <td>${typeHtml}</td>
+                    <td>${ass.classRoomName} - ${ass.subjectName}</td>
+                    <td>${periodName}</td>
+                    <td class="text-center">
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="/teacher/edit/assessment.html?id=${ass.id}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar Notas
+                                </a>
+                                <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteAssessment(${ass.id})">
+                                    <i class="bx bx-trash me-1"></i> Excluir Avaliação
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showConfirmModal(title, message, onConfirm) {
+            let modalEl = document.getElementById('customConfirmModal');
+            if (!modalEl) {
+                const modalHtml = `
+                <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="customConfirmModalTitle"></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p id="customConfirmModalMessage"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-danger" id="customConfirmModalBtn">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                modalEl = document.getElementById('customConfirmModal');
+            }
+            
+            document.getElementById('customConfirmModalTitle').textContent = title;
+            document.getElementById('customConfirmModalMessage').textContent = message;
+            
+            const confirmBtn = document.getElementById('customConfirmModalBtn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            const modal = new bootstrap.Modal(modalEl);
+            newBtn.addEventListener('click', () => {
+                modal.hide();
+                onConfirm();
+            });
+            modal.show();
+        }
+
+        function deleteAssessment(id) {
+            showConfirmModal('Excluir Avaliação', 'Tem certeza? Isso excluirá a avaliação e TODAS as notas lançadas para os alunos nesta avaliação. A exclusão é definitiva.', async () => {
+                try {
+                    const response = await fetch(`/api/assessments/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    
+                    if (response.ok) {
+                        showAlert('Avaliação excluída com sucesso!', 'success');
+                        loadAssessments();
+                    } else {
+                        const err = await response.json().catch(()=>null);
+                        showAlert(`Erro ao excluir: ${err?.message || 'Erro desconhecido.'}`, 'danger');
+                    }
+                } catch(error) {
+                    showAlert('Erro de rede ao tentar excluir.', 'danger');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

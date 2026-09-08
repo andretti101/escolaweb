@@ -105,3 +105,11 @@
   text-align: center;
   margin-top: 1rem;
 }
+/* Correção Global: Evitar que as tabelas responsivas cortem os menus dropdown */
+.table-responsive {
+    overflow: visible !important;
+}
+.table-responsive .dropdown-menu {
+    position: absolute !important;
+    z-index: 1050 !important;
+}

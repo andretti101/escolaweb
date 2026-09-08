@@ -55,7 +55,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
 
         existing.setName(incoming.getName());
         existing.setShift(incoming.getShift());
-        existing.setCreationYear(incoming.getCreationYear());
+        existing.setSchoolGrade(incoming.getSchoolGrade());
         existing.setAcademicYear(year);
 
         return classRoomRepository.save(existing);

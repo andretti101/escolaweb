@@ -133,9 +133,11 @@
                     const data = await response.json();
                     console.log("Dados recebidos do login:", data);
 
-                    // 1. Salva os tokens
+                    // 1. Salva os tokens e os dados
                     localStorage.setItem("jwt_token", data.accessToken);
                     localStorage.setItem("refresh_token", data.refreshToken);
+                    localStorage.setItem("user_id", data.userId);
+                    localStorage.setItem("user_name", data.name);
 
                     // 2. Lê a role
                     const userRole = String(data.role ?? "").toUpperCase();

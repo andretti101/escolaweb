@@ -129,14 +129,16 @@
                         </a>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                         <h4 class="fw-bold py-3 mb-0">
-                            <span class="text-muted fw-light">Turmas /</span>
-                            <span id="classroomNameTitle">Gerenciar Turma</span>
+                            <span class="text-muted fw-light">Administrativo /</span>
+                            <span id="classroomNameTitle">Relacionamentos da Turma</span>
                         </h4>
-                        <a href="/secretary/classrooms.html" class="btn btn-outline-secondary">
-                            <i class="bx bx-arrow-back me-1"></i> Voltar
-                        </a>
+                        <div class="d-flex align-items-center">
+                            <select id="globalClassroomSelect" class="form-select w-auto" style="min-width: 250px;">
+                                <option value="">Selecione uma turma...</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div id="alertContainer"></div>
@@ -167,35 +169,23 @@
                             <div class="card mb-4">
                                 <div class="card-header border-bottom d-flex justify-content-between align-items-center">
                                     <h5 class="m-0">Nova Matrícula</h5>
-                                    <small class="text-muted">Selecione um ou mais alunos</small>
+                                    <small class="text-muted">Busque e matricule rapidamente</small>
                                 </div>
                                 <div class="card-body pt-4">
-                                    <form id="enrollmentForm">
-                                        <div class="row g-3 align-items-end">
-                                            <div class="col-md-6">
-                                                <label class="form-label" for="studentSearch">Buscar Alunos</label>
-                                                <div class="search-select-container" id="studentSearchContainer">
-                                                    <input type="text" class="form-control search-select-input"
-                                                           id="studentSearch"
-                                                           placeholder="Digite o nome ou matrícula do aluno..."
-                                                           autocomplete="off"/>
-                                                    <div class="search-select-dropdown" id="studentDropdown"></div>
-                                                </div>
-                                                <div class="selected-tags" id="selectedStudentsTags"></div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label" for="enrollmentDate">Data da Matrícula</label>
-                                                <input type="date" class="form-control" id="enrollmentDate" required/>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <button type="submit" class="btn btn-primary w-100"
-                                                        id="btnSubmitEnrollment" disabled>
-                                                    <i class="bx bx-plus me-1"></i> Matricular <span
-                                                        id="enrollBtnCount"></span>
-                                                </button>
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label" for="enrollmentDate">Data da Matrícula</label>
+                                            <input type="date" id="enrollmentDate" class="form-control" required/>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <label class="form-label">Selecionar Aluno</label>
+                                            <div class="search-select-container" id="studentSearchContainer">
+                                                <input type="text" class="form-control search-select-input"
+                                                       id="studentSearch" placeholder="Buscar aluno por nome, matrícula ou e-mail..."/>
+                                                <div class="search-select-dropdown shadow-lg" id="studentDropdown" style="max-height: 350px;"></div>
                                             </div>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                             <!-- Tabela de Alunos -->
@@ -208,7 +198,7 @@
                                                style="width: 200px;"/>
                                     </div>
                                 </div>
-                                <div class="table-responsive text-nowrap">
+                                <div class="table-responsive" style="min-height: 250px;">
                                     <table class="table table-hover">
                                         <thead>
                                         <tr>
@@ -287,7 +277,8 @@
                                                placeholder="Filtrar grade..." style="width: 200px;"/>
                                     </div>
                                 </div>
-                                <div class="table-responsive text-nowrap">
+                                <p class="text-muted small px-4 mb-2"><i class="bx bx-info-circle"></i> Mín. / Máx. refere-se à quantidade exigida de notas/avaliações que o professor deve lançar em cada período letivo.</p>
+                                <div class="table-responsive" style="min-height: 250px;">
                                     <table class="table table-hover">
                                         <thead>
                                         <tr>
@@ -326,6 +317,32 @@
     <div class="layout-overlay layout-menu-toggle"></div>
 </div>
 
+<!-- Modal Transferência -->
+<div class="modal fade" id="transferModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transferir Aluno de Turma</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Transferindo aluno(a): <strong id="transferStudentName"></strong></p>
+                <input type="hidden" id="transferEnrollmentId">
+                <div class="mb-3">
+                    <label class="form-label" for="newClassRoomSelect">Selecione a Nova Turma</label>
+                    <select class="form-select" id="newClassRoomSelect">
+                        <option value="">Carregando turmas...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmTransfer()" id="btnConfirmTransfer">Confirmar Transferência</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="/assets/vendor/libs/jquery/jquery.js"></script>
 <script src="/assets/vendor/libs/popper/popper.js"></script>
 <script src="/assets/vendor/js/bootstrap.js"></script>
@@ -343,8 +360,8 @@
     let allTeachers = [];
     let allSubjects = [];
     let enrolledStudentIds = new Set();
-    let selectedStudentIds = new Set();
     let allEnrollments = [];
+    let currentClassroom = null;
 
     function escapeHtml(unsafe) {
         if (!unsafe) return '';
@@ -361,8 +378,39 @@
     }
 
     if (!classRoomId) {
-        document.querySelector('.container-p-y').innerHTML = '<div class="alert alert-danger mt-4">ID da turma não fornecido. <a href="/secretary/classrooms.html">Voltar</a></div>';
-        throw new Error("No classRoomId provided");
+        document.getElementById('alertContainer').innerHTML = '<div class="alert alert-info mt-4">Por favor, selecione uma turma no menu acima para começar.</div>';
+        document.querySelector('.nav-pills').style.display = 'none';
+        document.querySelector('.tab-content').style.display = 'none';
+    } else {
+        document.querySelector('.nav-pills').style.display = 'flex';
+        document.querySelector('.tab-content').style.display = 'block';
+    }
+
+    async function loadGlobalClassrooms() {
+        try {
+            const res = await fetch(`/api/classrooms?activeOnly=true`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            if (res.ok) {
+                const classrooms = await res.json();
+                const select = document.getElementById('globalClassroomSelect');
+                classrooms.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = `${c.name} (${c.academicYear.year || c.academicYear})`;
+                    select.appendChild(opt);
+                });
+                if (classRoomId) select.value = classRoomId;
+                
+                select.addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        window.location.href = `/secretary/manage-classroom.html?id=${e.target.value}`;
+                    } else {
+                        window.location.href = `/secretary/manage-classroom.html`;
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error loading global classrooms', e);
+        }
     }
 
     document.getElementById('enrollmentDate').valueAsDate = new Date();
@@ -376,7 +424,8 @@
             const res = await fetch(`/api/classrooms/${classRoomId}`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
             if (res.ok) {
                 const c = await res.json();
-                document.getElementById('classroomNameTitle').textContent = `Gerenciar Turma: ${escapeHtml(c.name)} - ${escapeHtml(c.academicYearYear || c.academicYearId)}`;
+                currentClassroom = c;
+                document.getElementById('classroomNameTitle').textContent = `Gerenciar Turma: ${escapeHtml(c.name)}`;
             }
         } catch (e) {
         }
@@ -384,7 +433,7 @@
 
     async function loadStudents() {
         try {
-            const res = await fetch(`/api/students?activeOnly=true`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            const res = await fetch(`/api/students?unenrolledOnly=true`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
             if (res.ok) {
                 allStudents = (await res.json()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             }
@@ -424,11 +473,6 @@
                 const badge = document.getElementById('enrollmentCountBadge');
                 badge.textContent = allEnrollments.length;
                 badge.style.display = allEnrollments.length > 0 ? '' : 'none';
-                // Clear any selected students that are now enrolled
-                selectedStudentIds.forEach(id => {
-                    if (enrolledStudentIds.has(id)) selectedStudentIds.delete(id);
-                });
-                updateSelectedStudentsUI();
             } else {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar matrículas.</td></tr>';
             }
@@ -458,6 +502,9 @@
                 <td>${e.enrollmentDate ? e.enrollmentDate : '-'}</td>
                 <td><span class="badge ${e.active ? 'bg-label-success' : 'bg-label-secondary'}">${e.active ? 'Ativa' : 'Inativa'}</span></td>
                 <td>
+                    <button class="btn btn-sm btn-icon text-primary" onclick="openTransferModal(${e.id}, '${escapeHtml(e.studentName || '')}')" title="Transferir de Turma">
+                        <i class="bx bx-transfer"></i>
+                    </button>
                     <button class="btn btn-sm btn-icon ${e.active ? 'text-warning' : 'text-success'}" onclick="toggleEnrollment(${e.id}, ${!e.active})" title="${e.active ? 'Desativar' : 'Ativar'}">
                         <i class="bx ${e.active ? 'bx-block' : 'bx-check'}"></i>
                     </button>
@@ -528,6 +575,8 @@
     studentSearch.addEventListener('focus', () => renderStudentDropdown(studentSearch.value));
     studentSearch.addEventListener('input', () => renderStudentDropdown(studentSearch.value));
 
+    // Keep dropdown open even if clicked outside? 
+    // Usually it's better to close if clicking entirely outside the container.
     document.addEventListener('click', (e) => {
         if (!document.getElementById('studentSearchContainer').contains(e.target)) {
             studentDropdown.classList.remove('show');
@@ -547,66 +596,71 @@
         }
 
         if (filtered.length === 0) {
-            studentDropdown.innerHTML = `<div class="no-results">${q ? 'Nenhum aluno encontrado' : 'Todos os alunos já estão matriculados'}</div>`;
+            studentDropdown.innerHTML = `<div class="no-results">${q ? 'Nenhum aluno encontrado' : 'Todos os alunos desta lista já estão matriculados'}</div>`;
         } else {
             studentDropdown.innerHTML = filtered.slice(0, 50).map(s => {
-                const checked = selectedStudentIds.has(s.id);
                 return `<div class="dropdown-item" data-id="${s.id}">
-                    <input type="checkbox" class="form-check-input" ${checked ? 'checked' : ''}/>
-                    <div>
-                        <strong>${escapeHtml(s.name)}</strong>
-                        <br/><small class="text-muted">${escapeHtml(s.registrationNumber || '')}${s.email ? ' · ' + escapeHtml(s.email) : ''}</small>
+                    <div class="d-flex align-items-center w-100">
+                        <i class="bx bx-user-plus text-primary me-2 fs-4"></i>
+                        <div>
+                            <strong>${escapeHtml(s.name)}</strong>
+                            <br/><small class="text-muted">${escapeHtml(s.registrationNumber || '')}${s.email ? ' · ' + escapeHtml(s.email) : ''}</small>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
 
             if (filtered.length > 50) {
-                studentDropdown.innerHTML += `<div class="no-results">Mostrando 50 de ${filtered.length} — refine a busca</div>`;
+                studentDropdown.innerHTML += `<div class="no-results border-top mt-2 pt-2 text-center text-muted"><small>Mostrando 50 de ${filtered.length} — refine a busca para ver mais</small></div>`;
             }
         }
         studentDropdown.classList.add('show');
     }
 
-    studentDropdown.addEventListener('click', (e) => {
+    studentDropdown.addEventListener('click', async (e) => {
         const item = e.target.closest('.dropdown-item');
         if (!item || item.classList.contains('disabled')) return;
+        
         const id = parseInt(item.dataset.id);
-        if (selectedStudentIds.has(id)) {
-            selectedStudentIds.delete(id);
-        } else {
-            selectedStudentIds.add(id);
-        }
-        renderStudentDropdown(studentSearch.value);
-        updateSelectedStudentsUI();
-    });
-
-    function updateSelectedStudentsUI() {
-        const tagsEl = document.getElementById('selectedStudentsTags');
-        const btn = document.getElementById('btnSubmitEnrollment');
-        const countSpan = document.getElementById('enrollBtnCount');
-
-        if (selectedStudentIds.size === 0) {
-            tagsEl.innerHTML = '';
-            btn.disabled = true;
-            countSpan.textContent = '';
-        } else {
-            tagsEl.innerHTML = Array.from(selectedStudentIds).map(id => {
-                const s = allStudents.find(st => st.id === id);
-                return `<span class="selected-tag">
-                    ${escapeHtml(s ? s.name : '#' + id)}
-                    <span class="remove-tag" data-id="${id}">&times;</span>
-                </span>`;
-            }).join('');
-            btn.disabled = false;
-            countSpan.textContent = `(${selectedStudentIds.size})`;
-        }
-    }
-
-    document.getElementById('selectedStudentsTags').addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-tag')) {
-            selectedStudentIds.delete(parseInt(e.target.dataset.id));
-            updateSelectedStudentsUI();
-            renderStudentDropdown(studentSearch.value);
+        const originalHtml = item.innerHTML;
+        
+        // Show loading state inline
+        item.classList.add('disabled', 'bg-light');
+        item.innerHTML = `<div class="d-flex align-items-center w-100 text-muted">
+            <span class="spinner-border spinner-border-sm text-primary me-3"></span>
+            <strong>Matriculando...</strong>
+        </div>`;
+        
+        try {
+            const dateInput = document.getElementById('enrollmentDate');
+            if (!dateInput.value) dateInput.valueAsDate = new Date();
+            const date = dateInput.value;
+            
+            const res = await fetch('/api/enrollments', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken || ''}`},
+                body: JSON.stringify({studentId: id, classRoomId: parseInt(classRoomId), enrollmentDate: date})
+            });
+            
+            if (res.ok) {
+                showAlert('Aluno matriculado com sucesso!', 'success');
+                // Adiciona localmente para a lista parar de mostrar e chama loadEnrollments em background
+                enrolledStudentIds.add(id);
+                renderStudentDropdown(studentSearch.value);
+                
+                // Atualiza a tabela geral em background
+                loadEnrollments();
+                studentSearch.focus();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showAlert(err.message || err.detail || 'Erro ao matricular', 'danger');
+                item.innerHTML = originalHtml;
+                item.classList.remove('disabled', 'bg-light');
+            }
+        } catch (ex) {
+            showAlert('Erro de conexão.', 'danger');
+            item.innerHTML = originalHtml;
+            item.classList.remove('disabled', 'bg-light');
         }
     });
 
@@ -681,53 +735,6 @@
     // ══════════════════════════════════════════════════════════
     // FORM HANDLERS
     // ══════════════════════════════════════════════════════════
-
-    document.getElementById('enrollmentForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (selectedStudentIds.size === 0) return;
-
-        const btn = document.getElementById('btnSubmitEnrollment');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Matriculando...';
-
-        const date = document.getElementById('enrollmentDate').value;
-        const ids = Array.from(selectedStudentIds);
-        let success = 0, errors = [];
-
-        for (const studentId of ids) {
-            try {
-                const res = await fetch('/api/enrollments', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken || ''}`},
-                    body: JSON.stringify({studentId, classRoomId: parseInt(classRoomId), enrollmentDate: date})
-                });
-                if (res.ok) {
-                    success++;
-                } else {
-                    const err = await res.json();
-                    const student = allStudents.find(s => s.id === studentId);
-                    errors.push(`${student ? student.name : '#' + studentId}: ${err.message || err.detail || 'Erro'}`);
-                }
-            } catch (ex) {
-                errors.push(`Erro de conexão para aluno #${studentId}`);
-            }
-        }
-
-        if (success > 0) {
-            showAlert(`${success} aluno(s) matriculado(s) com sucesso!${errors.length > 0 ? ` (${errors.length} erro(s))` : ''}`, errors.length > 0 ? 'warning' : 'success');
-        }
-        if (errors.length > 0 && success === 0) {
-            showAlert(errors.join('<br/>'), 'danger');
-        }
-
-        selectedStudentIds.clear();
-        updateSelectedStudentsUI();
-        studentSearch.value = '';
-        await loadEnrollments();
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bx bx-plus me-1"></i> Matricular <span id="enrollBtnCount"></span>';
-    });
 
     document.getElementById('tcsForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -846,13 +853,90 @@
     };
 
     // ══════════════════════════════════════════════════════════
+    // TRANSFER STUDENT LOGIC
+    // ══════════════════════════════════════════════════════════
+    let transferModalInstance = null;
+
+    window.openTransferModal = async (enrollmentId, studentName) => {
+        document.getElementById('transferEnrollmentId').value = enrollmentId;
+        document.getElementById('transferStudentName').textContent = studentName;
+        
+        if (!transferModalInstance) {
+            transferModalInstance = new bootstrap.Modal(document.getElementById('transferModal'));
+        }
+        transferModalInstance.show();
+
+        const select = document.getElementById('newClassRoomSelect');
+        select.innerHTML = '<option value="">Carregando turmas...</option>';
+
+        try {
+            const res = await fetch(`/api/classrooms?activeOnly=true`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            if (res.ok) {
+                const classrooms = await res.json();
+                const filtered = classrooms.filter(c => 
+                    c.id !== parseInt(classRoomId) && 
+                    currentClassroom && 
+                    c.academicYearId === currentClassroom.academicYearId
+                );
+                
+                if (filtered.length === 0) {
+                    select.innerHTML = '<option value="">Nenhuma outra turma encontrada para este ano letivo.</option>';
+                } else {
+                    select.innerHTML = '<option value="">Selecione a turma destino</option>' + 
+                        filtered.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+                }
+            }
+        } catch (e) {
+            select.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+        }
+    };
+
+    window.confirmTransfer = async () => {
+        const enrollmentId = document.getElementById('transferEnrollmentId').value;
+        const newClassRoomId = document.getElementById('newClassRoomSelect').value;
+
+        if (!newClassRoomId) {
+            alert('Por favor, selecione uma turma de destino.');
+            return;
+        }
+
+        const btn = document.getElementById('btnConfirmTransfer');
+        btn.disabled = true;
+        btn.innerHTML = 'Transferindo...';
+
+        try {
+            const res = await fetch(`/api/enrollments/${enrollmentId}/transfer?newClassRoomId=${newClassRoomId}`, {
+                method: 'POST',
+                headers: {'Authorization': `Bearer ${jwtToken || ''}`}
+            });
+            
+            if (res.ok) {
+                transferModalInstance.hide();
+                showAlert("Aluno transferido com sucesso!", "success");
+                loadEnrollments();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showAlert(err.message || "Erro ao transferir aluno.", "danger");
+            }
+        } catch (e) {
+            showAlert("Erro de conexão.", "danger");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Confirmar Transferência';
+        }
+    };
+
+    // ══════════════════════════════════════════════════════════
     // INIT
     // ══════════════════════════════════════════════════════════
 
     async function init() {
-        loadClassroomDetails();
-        await Promise.all([loadStudents(), loadTeachers(), loadSubjects()]);
-        await Promise.all([loadEnrollments(), loadTCS()]);
+        await loadGlobalClassrooms();
+        if (classRoomId) {
+            await loadClassroomDetails();
+            await Promise.all([loadStudents(), loadTeachers(), loadSubjects()]);
+            await Promise.all([loadEnrollments(), loadTCS()]);
+        }
     }
 
     init();

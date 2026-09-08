@@ -60,6 +60,6 @@ public class Grade implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "grade", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "grade", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GradeHistory> history;
 }

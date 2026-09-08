@@ -15,4 +15,5 @@ public interface EnrollmentService {
     List<Enrollment> findByClassRoom(Integer classRoomId);
     Enrollment activate(Integer id);
     Enrollment deactivate(Integer id);
+    Enrollment transferClassroom(Integer enrollmentId, Integer newClassRoomId);
 }

@@ -281,7 +281,7 @@
                                 </button>
                                 <div class="dropdown-menu">
                                     ${!p.closed ? `
-                                        <li><a class="dropdown-item" href="/secretary/edit/academic-period.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
+                                        <li><a class="dropdown-item" href="/principal/edit/academic-period.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
                                         <li><a class="dropdown-item" href="javascript:void(0);" onclick="closePeriod(${p.id})"><i class="bx bx-lock-alt me-1 text-warning"></i> Fechar Período</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deletePeriod(${p.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
@@ -294,46 +294,116 @@
         }).join('');
     }
 
-    async function closePeriod(id) {
-        if (!confirm('ATENÇÃO: Deseja FECHAR este período acadêmico? Esta ação é IRREVERSÍVEL.\n\nO sistema verificará se:\n• A data de término já passou\n• O número mínimo de avaliações foi postado para cada professor')) return;
-        try {
-            const response = await fetch(`/api/academic-periods/${id}/close`, {
-                method: 'PUT', headers: {'Authorization': `Bearer ${getToken()}`}
-            });
-            if (response.status === 403) {
-                alert('Acesso negado: apenas a Direção pode fechar períodos acadêmicos.');
-                return;
-            }
-            if (response.ok) {
-                loadPeriods();
-            } else {
-                const err = await response.json().catch(() => null);
-                alert(`Não foi possível fechar o período:\n\n${err?.message || 'Erro desconhecido.'}`);
-            }
-        } catch (error) {
-            alert('Erro de conexão.');
+    function showConfirmModal(title, message, onConfirm) {
+        let modalEl = document.getElementById('customConfirmModal');
+        if (!modalEl) {
+            const html = `
+            <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="customConfirmModalTitle"></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="customConfirmModalMessage" style="white-space: pre-wrap;"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" id="customConfirmModalBtn">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+            modalEl = document.getElementById('customConfirmModal');
         }
+        document.getElementById('customConfirmModalTitle').textContent = title;
+        document.getElementById('customConfirmModalMessage').textContent = message;
+        
+        const confirmBtn = document.getElementById('customConfirmModalBtn');
+        const newBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+        
+        const modal = new bootstrap.Modal(modalEl);
+        newBtn.addEventListener('click', () => {
+            modal.hide();
+            onConfirm();
+        });
+        modal.show();
     }
 
-    async function deletePeriod(id) {
-        if (!confirm('Deseja EXCLUIR este período? Esta ação não pode ser desfeita.')) return;
-        try {
-            const response = await fetch(`/api/academic-periods/${id}`, {
-                method: 'DELETE', headers: {'Authorization': `Bearer ${getToken()}`}
-            });
-            if (response.status === 403) {
-                alert('Acesso negado: apenas a Direção pode excluir períodos.');
-                return;
-            }
-            if (response.ok) {
-                loadPeriods();
-            } else {
-                const err = await response.json().catch(() => null);
-                alert(`Erro ao excluir: ${err?.message || 'Este período possui avaliações vinculadas.'}`);
-            }
-        } catch (error) {
-            alert('Erro de conexão.');
+    function showAlertModal(title, message) {
+        let modalEl = document.getElementById('customAlertModal');
+        if (!modalEl) {
+            const html = `
+            <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="customAlertModalTitle"></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="customAlertModalMessage" style="white-space: pre-wrap;"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+            modalEl = document.getElementById('customAlertModal');
         }
+        document.getElementById('customAlertModalTitle').textContent = title;
+        document.getElementById('customAlertModalMessage').textContent = message;
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    function closePeriod(id) {
+        showConfirmModal('Fechar Período', 'ATENÇÃO: Deseja FECHAR este período acadêmico? Esta ação é IRREVERSÍVEL.\n\nO sistema verificará se:\n• A data de término já passou\n• O número mínimo de avaliações foi postado para cada professor', async () => {
+            try {
+                const response = await fetch(`/api/academic-periods/${id}/close`, {
+                    method: 'PUT', headers: {'Authorization': `Bearer ${getToken()}`}
+                });
+                if (response.status === 403) {
+                    showAlertModal('Acesso Negado', 'Apenas a Direção pode fechar períodos acadêmicos.');
+                    return;
+                }
+                if (response.ok) {
+                    loadPeriods();
+                } else {
+                    const err = await response.json().catch(() => null);
+                    showAlertModal('Aviso', `Não foi possível fechar o período:\n\n${err?.message || 'Erro desconhecido.'}`);
+                }
+            } catch (error) {
+                showAlertModal('Erro', 'Erro de conexão.');
+            }
+        });
+    }
+
+    function deletePeriod(id) {
+        showConfirmModal('Atenção', 'Deseja EXCLUIR este período? Esta ação não pode ser desfeita.', async () => {
+            try {
+                const response = await fetch(`/api/academic-periods/${id}`, {
+                    method: 'DELETE', headers: {'Authorization': `Bearer ${getToken()}`}
+                });
+                if (response.status === 403) {
+                    showAlertModal('Acesso Negado', 'Apenas a Direção pode excluir períodos.');
+                    return;
+                }
+                if (response.ok) {
+                    loadPeriods();
+                } else {
+                    const err = await response.json().catch(() => null);
+                    showAlertModal('Erro', `Erro ao excluir: ${err?.message || 'Este período possui avaliações vinculadas.'}`);
+                }
+            } catch (error) {
+                showAlertModal('Erro', 'Erro de conexão.');
+            }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', async () => {

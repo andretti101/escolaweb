@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer> {
     List<Enrollment> findByStudent(Student student);
-    List<Enrollment> findByClassRoom(ClassRoom classRoom);
+    List<Enrollment> findByClassRoomOrderByStudentNameAsc(ClassRoom classRoom);
     List<Enrollment> findByStudentAndActiveTrue(Student student);
     List<Enrollment> findByActiveTrue();
     boolean existsByStudentAndClassRoom(Student student, ClassRoom classRoom);

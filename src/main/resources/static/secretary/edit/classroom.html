@@ -88,13 +88,31 @@
                                                 </select>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label" for="creationYear">Ano de Criação
-                                                    (Opcional)</label>
-                                                <div class="input-group input-group-merge">
-                                                    <span class="input-group-text"><i class="bx bx-calendar"></i></span>
-                                                    <input type="number" class="form-control" id="creationYear"
-                                                           name="creationYear"/>
-                                                </div>
+                                                <label class="form-label" for="schoolGrade">Série</label>
+                                                <select class="form-select" id="schoolGrade">
+                                                    <option value="" selected>Sem série definida</option>
+                                                    <optgroup label="Pré-Escola">
+                                                        <option value="PRE_1">Pré-Escola 1</option>
+                                                        <option value="PRE_2">Pré-Escola 2</option>
+                                                        <option value="PRE_3">Pré-Escola 3</option>
+                                                    </optgroup>
+                                                    <optgroup label="Ensino Fundamental">
+                                                        <option value="FUNDAMENTAL_1">1º Ano Fundamental</option>
+                                                        <option value="FUNDAMENTAL_2">2º Ano Fundamental</option>
+                                                        <option value="FUNDAMENTAL_3">3º Ano Fundamental</option>
+                                                        <option value="FUNDAMENTAL_4">4º Ano Fundamental</option>
+                                                        <option value="FUNDAMENTAL_5">5º Ano Fundamental</option>
+                                                        <option value="FUNDAMENTAL_6">6º Ano Fundamental</option>
+                                                        <option value="FUNDAMENTAL_7">7º Ano Fundamental</option>
+                                                        <option value="FUNDAMENTAL_8">8º Ano Fundamental</option>
+                                                        <option value="FUNDAMENTAL_9">9º Ano Fundamental</option>
+                                                    </optgroup>
+                                                    <optgroup label="Ensino Médio">
+                                                        <option value="MEDIO_1">1º Ano Médio</option>
+                                                        <option value="MEDIO_2">2º Ano Médio</option>
+                                                        <option value="MEDIO_3">3º Ano Médio</option>
+                                                    </optgroup>
+                                                </select>
                                             </div>
                                         </div>
                                         <div id="formMessage" class="mt-3 mb-3"></div>
@@ -177,8 +195,8 @@
 
                 document.getElementById('name').value = loadedClassroom.name;
                 document.getElementById('shift').value = loadedClassroom.shift;
-                if (loadedClassroom.creationYear) {
-                    document.getElementById('creationYear').value = loadedClassroom.creationYear;
+                if (loadedClassroom.schoolGrade) {
+                    document.getElementById('schoolGrade').value = loadedClassroom.schoolGrade;
                 }
 
                 // Set year select
@@ -207,7 +225,7 @@
                 name: document.getElementById('name').value,
                 academicYearId: parseInt(yearSelect.value),
                 shift: document.getElementById('shift').value,
-                creationYear: document.getElementById('creationYear').value ? parseInt(document.getElementById('creationYear').value) : null
+                schoolGrade: document.getElementById('schoolGrade').value || null
             };
 
             try {

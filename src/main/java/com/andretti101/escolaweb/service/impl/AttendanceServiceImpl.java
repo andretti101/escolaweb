@@ -76,7 +76,6 @@ public class AttendanceServiceImpl implements AttendanceService {
         AttendanceStatus previous = existing.getStatus();
 
         existing.setStatus(incoming.getStatus());
-        existing.setNotes(incoming.getNotes());
 
         if (previous != incoming.getStatus()) {
             recordHistory(existing, previous, existing.getStatus());

@@ -292,7 +292,7 @@
                     let errorMsg = 'Ocorreu um erro ao atualizar o professor.';
                     try {
                         const errorData = await response.json();
-                        if (errorData.errors && Array.isArray(errorData.errors)) {
+                        if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
                             errorMsg = errorData.errors.map(err => err.defaultMessage || err.message).join('<br>');
                         } else if (errorData.message) {
                             errorMsg = errorData.message;

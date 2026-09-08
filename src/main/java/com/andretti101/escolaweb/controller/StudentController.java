@@ -40,10 +40,18 @@ public class StudentController {
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<List<StudentResponseDTO>> findAll(
-            @RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
-        List<Student> students = activeOnly
-                ? studentService.findAllActive()
-                : studentService.findAll();
+            @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
+            @RequestParam(required = false, defaultValue = "false") boolean unenrolledOnly) {
+        
+        List<Student> students;
+        if (unenrolledOnly) {
+            students = studentService.findAllActiveUnenrolled();
+        } else if (activeOnly) {
+            students = studentService.findAllActive();
+        } else {
+            students = studentService.findAll();
+        }
+        
         return ResponseEntity.ok(students.stream().map(this::toResponse).toList());
     }
 

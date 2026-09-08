@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.dto.request;
 
+import com.andretti101.escolaweb.model.enums.SchoolGrade;
 import com.andretti101.escolaweb.model.enums.Shift;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +18,6 @@ public record ClassRoomRequestDTO(
         @NotNull(message = "O turno é obrigatório.")
         Shift shift,
 
-        Integer creationYear
+        SchoolGrade schoolGrade
 
 ) {}

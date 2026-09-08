@@ -69,15 +69,23 @@ public class EnrollmentController {
     }
 
     @GetMapping("/classroom/{classRoomId}")
-    @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<EnrollmentResponseDTO>> findByClassRoom(@PathVariable Integer classRoomId) {
         if (authenticatedUserService.isTeacher()) {
-            Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
+            com.andretti101.escolaweb.model.entity.Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
             boolean teachesInClassroom = teacherClassSubjectService.findByTeacher(teacher.getId())
                     .stream()
                     .anyMatch(tcs -> tcs.getClassRoom().getId().equals(classRoomId));
             if (!teachesInClassroom) {
-                return ResponseEntity.ok(List.of());
+                return ResponseEntity.ok(java.util.List.of());
+            }
+        } else if (authenticatedUserService.isStudent()) {
+            com.andretti101.escolaweb.model.entity.Student student = authenticatedUserService.getAuthenticatedStudent();
+            boolean enrolledInClassroom = enrollmentService.findByStudent(student.getId())
+                    .stream()
+                    .anyMatch(e -> e.getClassRoom().getId().equals(classRoomId));
+            if (!enrolledInClassroom) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
             }
         }
         return ResponseEntity.ok(
@@ -111,6 +119,14 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<EnrollmentResponseDTO> deactivate(@PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(enrollmentService.deactivate(id)));
+    }
+
+    @PostMapping("/{id}/transfer")
+    @PreAuthorize("hasRole('SECRETARY')")
+    public ResponseEntity<EnrollmentResponseDTO> transfer(
+            @PathVariable Integer id,
+            @RequestParam Integer newClassRoomId) {
+        return ResponseEntity.ok(toResponse(enrollmentService.transferClassroom(id, newClassRoomId)));
     }
 
     // ── Mapping

@@ -1,6 +1,6 @@
 package com.andretti101.escolaweb.dto.request;
 
-import com.andretti101.escolaweb.model.enums.AttendanceStatus;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record AttendanceRequestDTO(
@@ -11,9 +11,7 @@ public record AttendanceRequestDTO(
         @NotNull(message = "A aula é obrigatória.")
         Integer lessonId,
 
-        @NotNull(message = "O status da presença é obrigatório.")
-        AttendanceStatus status,
-
-        String notes
+        @NotBlank(message = "O status da presença é obrigatório.")
+        String status
 
 ) {}

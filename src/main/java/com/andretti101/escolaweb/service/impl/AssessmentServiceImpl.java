@@ -80,11 +80,6 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         validatePeriodOpen(assessment.getPeriod());
 
-        if (gradeRepository.existsByAssessment(assessment)) {
-            throw new IllegalStateException(
-                    "Cannot delete assessment with id " + id + " because it has grades registered.");
-        }
-
         assessmentRepository.deleteById(id);
     }
 
@@ -123,10 +118,10 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         if (current >= tcs.getMaxAssessmentsPerPeriod()) {
             throw new IllegalStateException(
-                    "The maximum number of assessments (" + tcs.getMaxAssessmentsPerPeriod()
-                            + ") for subject '" + tcs.getSubject().getName()
-                            + "' in classroom '" + tcs.getClassRoom().getName()
-                            + "' has already been reached for period '" + period.getName() + "'.");
+                    "O número máximo de avaliações (" + tcs.getMaxAssessmentsPerPeriod()
+                            + ") para a matéria '" + tcs.getSubject().getName()
+                            + "' na turma '" + tcs.getClassRoom().getName()
+                            + "' já foi atingido no período '" + period.getName() + "'.");
         }
     }
 
@@ -160,13 +155,17 @@ public class AssessmentServiceImpl implements AssessmentService {
         if (assessment.getDate() == null) {
             throw new IllegalArgumentException("Assessment date is required.");
         }
+        
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String formattedAssessmentDate = assessment.getDate().format(formatter);
+        
         if (period.getStartDate() != null && assessment.getDate().isBefore(period.getStartDate())) {
-            throw new IllegalArgumentException("A data da avaliação (" + assessment.getDate() 
-                    + ") não pode ser anterior à data de início do período (" + period.getStartDate() + ").");
+            throw new IllegalArgumentException("A data da avaliação (" + formattedAssessmentDate 
+                    + ") não pode ser anterior à data de início do período (" + period.getStartDate().format(formatter) + ").");
         }
         if (period.getEndDate() != null && assessment.getDate().isAfter(period.getEndDate())) {
-            throw new IllegalArgumentException("A data da avaliação (" + assessment.getDate() 
-                    + ") não pode ser posterior à data de término do período (" + period.getEndDate() + ").");
+            throw new IllegalArgumentException("A data da avaliação (" + formattedAssessmentDate 
+                    + ") não pode ser posterior à data de término do período (" + period.getEndDate().format(formatter) + ").");
         }
     }
 

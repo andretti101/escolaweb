@@ -176,6 +176,21 @@ public class GradeServiceImpl implements GradeService {
         Student student = grade.getStudent();
         SchoolSettings settings = schoolSettingsService.findSettings();
 
+        List<Grade> allGrades = gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs);
+        long periodsWithGrades = allGrades.stream()
+                .filter(g -> g.getAssessment() != null && g.getAssessment().getPeriod() != null)
+                .map(g -> g.getAssessment().getPeriod().getId())
+                .distinct()
+                .count();
+
+        int divisor = getDivisorForPeriodType(settings.getPeriodType());
+
+        // Só consolida Aprovado/Reprovado quando todos os períodos mínimos (ex: 4 bimestres) tiverem notas.
+        if (periodsWithGrades < divisor) {
+            grade.setStudentSituation(StudentSituation.PENDING);
+            return;
+        }
+
         BigDecimal average = calculateAverage(student.getId(), tcs.getId());
         BigDecimal frequency = attendanceService.calculateFrequency(student.getId(), tcs.getId());
 
