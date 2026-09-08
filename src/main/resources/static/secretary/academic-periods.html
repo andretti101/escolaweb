@@ -204,7 +204,7 @@
 
             // Sort by academic year descending, then period start date ascending
             allPeriods.sort((a, b) => {
-                if (a.academicYear.year !== b.academicYear.year) return b.academicYear.year - a.academicYear.year;
+                if (a.academicYear !== b.academicYear) return b.academicYear - a.academicYear;
                 return new Date(a.startDate) - new Date(b.startDate);
             });
 
@@ -219,10 +219,10 @@
     function applyFilters() {
         let filtered = allPeriods;
 
-        if (statusFilter === 'open') filtered = filtered.filter(p => p.status === 'OPEN');
-        else if (statusFilter === 'closed') filtered = filtered.filter(p => p.status === 'CLOSED');
+        if (statusFilter === 'open') filtered = filtered.filter(p => !p.closed);
+        else if (statusFilter === 'closed') filtered = filtered.filter(p => p.closed);
 
-        if (yearFilter) filtered = filtered.filter(p => String(p.academicYear.id) === String(yearFilter));
+        if (yearFilter) filtered = filtered.filter(p => String(p.academicYearId) === String(yearFilter));
 
         if (searchTerm.trim()) {
             const term = searchTerm.trim().toLowerCase();
@@ -249,14 +249,14 @@
         recordCount.textContent = `${periods.length} período${periods.length !== 1 ? 's' : ''} listado${periods.length !== 1 ? 's' : ''}`;
 
         tableBody.innerHTML = periods.map(p => {
-            const statusBadge = p.status === 'OPEN'
+            const statusBadge = !p.closed
                 ? '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i> Aberto</span>'
                 : '<span class="badge bg-label-secondary"><i class="bx bx-lock-alt me-1"></i> Fechado</span>';
 
             return `
-                    <tr class="${p.status === 'CLOSED' ? 'table-light text-muted' : ''}">
-                        <td><span class="fw-semibold">${escapeHtml(p.name)}</span></td>
-                        <td>${escapeHtml(String(p.academicYear.year))}</td>
+                    <tr class="${p.closed ? 'table-light text-muted' : ''}">
+                        <td class="fw-semibold">${escapeHtml(p.name)}</td>
+                        <td>${escapeHtml(String(p.academicYear))}</td>
                         <td>${formatDate(p.startDate)}</td>
                         <td>${formatDate(p.endDate)}</td>
                         <td>${statusBadge}</td>

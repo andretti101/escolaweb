@@ -11,7 +11,11 @@ public record AttendanceResponseDTO(
         String studentName,
         Integer lessonId,
         LocalDate lessonDate,
+        String subjectName,
+        String periodName,
+        Integer lessonCount,
         AttendanceStatus status,
-        String notes,
+        String lessonContent,
+        String lessonNotes,
         LocalDateTime createdAt
 ) {}

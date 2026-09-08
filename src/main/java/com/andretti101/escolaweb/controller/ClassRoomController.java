@@ -86,7 +86,7 @@ public class ClassRoomController {
         ClassRoom classRoom = new ClassRoom();
         classRoom.setName(dto.name());
         classRoom.setShift(dto.shift());
-        classRoom.setCreationYear(dto.creationYear());
+        classRoom.setSchoolGrade(dto.schoolGrade());
         classRoom.setAcademicYear(year);
         return classRoom;
     }
@@ -96,7 +96,7 @@ public class ClassRoomController {
                 c.getId(),
                 c.getName(),
                 c.getShift(),
-                c.getCreationYear(),
+                c.getSchoolGrade(),
                 c.getAcademicYear().getId(),
                 c.getAcademicYear().getYear(),
                 c.isActive(),

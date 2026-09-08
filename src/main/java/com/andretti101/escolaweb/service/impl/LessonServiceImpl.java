@@ -19,6 +19,7 @@ public class LessonServiceImpl implements LessonService {
 
     private final LessonRepository lessonRepository;
     private final AttendanceRepository attendanceRepository;
+    private final com.andretti101.escolaweb.repository.AttendanceHistoryRepository attendanceHistoryRepository;
     private final TeacherClassSubjectService teacherClassSubjectService;
 
     @Override
@@ -58,9 +59,14 @@ public class LessonServiceImpl implements LessonService {
     public void delete(Integer id) {
         Lesson lesson = findLessonOrThrow(id);
 
-        if (attendanceRepository.existsByLesson(lesson)) {
-            throw new IllegalStateException(
-                    "Cannot delete lesson with id " + id + " because it has attendance records.");
+        List<com.andretti101.escolaweb.model.entity.Attendance> attendances = attendanceRepository.findByLesson(lesson);
+        if (!attendances.isEmpty()) {
+            for (com.andretti101.escolaweb.model.entity.Attendance attendance : attendances) {
+                if (attendance.getHistory() != null && !attendance.getHistory().isEmpty()) {
+                    attendanceHistoryRepository.deleteAll(attendance.getHistory());
+                }
+            }
+            attendanceRepository.deleteAll(attendances);
         }
 
         lessonRepository.deleteById(id);

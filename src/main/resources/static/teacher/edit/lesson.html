@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Editar Aula | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Edição de aulas e chamadas" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <style>
+        .attendance-radio:checked + label { border-color: var(--bs-primary); font-weight: bold; }
+        .attendance-radio-present:checked + label { background-color: rgba(113, 221, 55, 0.1); color: #71dd37; border-color: #71dd37; }
+        .attendance-radio-absent:checked + label { background-color: rgba(255, 62, 29, 0.1); color: #ff3e1d; border-color: #ff3e1d; }
+        .attendance-radio-justified:checked + label { background-color: rgba(255, 171, 0, 0.1); color: #ffab00; border-color: #ffab00; }
+    </style>
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+            <div class="layout-page">
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                            <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2" href="javascript:void(0)">
+                                <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                            </a>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Diário de Classe /</span> Editar Aula</h4>
+                            <a href="/teacher/lessons.html" class="btn btn-outline-secondary">
+                                <i class="bx bx-arrow-back me-1"></i> Voltar
+                            </a>
+                        </div>
+
+                        <div id="alertContainer"></div>
+
+                        <div class="card mb-4" id="mainCard">
+                            <h5 class="card-header border-bottom">Dados da Aula</h5>
+                            <div class="card-body mt-4">
+                                <form id="lessonForm">
+                                    <input type="hidden" id="lessonId" />
+                                    <input type="hidden" id="tcsId" />
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Turma / Matéria</label>
+                                            <input type="text" class="form-control bg-light" id="tcsDisplay" disabled />
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="lessonDate" class="form-label">Data da Aula <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control" id="lessonDate" required />
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="lessonCount" class="form-label">Qtd. de Aulas <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="lessonCount" min="1" max="6" required />
+                                            <div class="form-text">Multiplicador de faltas no dia.</div>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="content" class="form-label">Conteúdo Lecionado <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="content" rows="2" required></textarea>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="notes" class="form-label">Observações da Aula (Opcional)</label>
+                                            <textarea class="form-control" id="notes" rows="1"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <!-- Lista de Chamada Section -->
+                                    <div id="attendanceSection" class="mt-4 pt-4 border-top">
+                                        <h5 class="mb-3 d-flex align-items-center"><i class="bx bx-list-check me-2 text-primary"></i> Lista de Chamada Cadastrada</h5>
+                                        <div class="table-responsive text-nowrap">
+                                            <table class="table table-bordered table-hover">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Aluno</th>
+                                                        <th class="text-center" style="width: 350px;">Status de Presença</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="studentsTableBody">
+                                                    <!-- Attendances render here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 text-end">
+                                        <button type="submit" class="btn btn-primary" id="btnSave">
+                                            <i class="bx bx-save me-1"></i> Atualizar Aula e Chamada
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">© <script>document.write(new Date().getFullYear());</script> EscolaWEB</div>
+                        </div>
+                    </footer>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+
+    <script>
+        let currentAttendances = [];
+
+        function getToken() { return localStorage.getItem('jwt_token') || ''; }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+            window.scrollTo(0,0);
+        }
+
+        async function loadLessonData(id) {
+            try {
+                const res = await fetch(`/api/lessons/${id}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (!res.ok) throw new Error('Erro ao carregar os dados da aula.');
+                const lesson = await res.json();
+                
+                document.getElementById('lessonId').value = lesson.id;
+                document.getElementById('tcsId').value = lesson.teacherClassSubjectId;
+                document.getElementById('tcsDisplay').value = `${lesson.classRoomName} - (Seu vínculo)`;
+                document.getElementById('lessonDate').value = lesson.lessonDate;
+                document.getElementById('lessonCount').value = lesson.lessonCount;
+                document.getElementById('content').value = lesson.content || '';
+                document.getElementById('notes').value = lesson.notes || '';
+                
+                await loadAttendances(lesson.id);
+            } catch(e) {
+                showAlert(e.message, 'danger');
+                document.getElementById('mainCard').style.display = 'none';
+            }
+        }
+
+        async function loadAttendances(lessonId) {
+            try {
+                const res = await fetch(`/api/attendances/lesson/${lessonId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (!res.ok) throw new Error('Erro ao carregar a chamada.');
+                currentAttendances = await res.json();
+                const tbody = document.getElementById('studentsTableBody');
+                let html = '';
+                
+                currentAttendances.sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+                if (currentAttendances.length === 0) {
+                    html = '<tr><td colspan="2" class="text-center text-muted">Nenhum registro de chamada encontrado para esta aula.</td></tr>';
+                } else {
+                    currentAttendances.forEach(att => {
+                        const safeName = att.studentName.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        const pChecked = att.status === 'PRESENT' ? 'checked' : '';
+                        const aChecked = att.status === 'ABSENT' ? 'checked' : '';
+                        const jChecked = att.status === 'JUSTIFIED_ABSENCE' || att.status === 'EXCUSED' || att.status === 'JUSTIFIED' ? 'checked' : '';
+                        
+                        html += `
+                            <tr>
+                                <td class="align-middle fw-semibold">${safeName}</td>
+                                <td>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <input type="radio" class="btn-check attendance-radio attendance-radio-present" name="attendance_${att.id}" id="present_${att.id}" value="PRESENT" ${pChecked} autocomplete="off">
+                                        <label class="btn btn-outline-success btn-sm" for="present_${att.id}"><i class="bx bx-check me-1"></i> Presente</label>
+
+                                        <input type="radio" class="btn-check attendance-radio attendance-radio-absent" name="attendance_${att.id}" id="absent_${att.id}" value="ABSENT" ${aChecked} autocomplete="off">
+                                        <label class="btn btn-outline-danger btn-sm" for="absent_${att.id}"><i class="bx bx-x me-1"></i> Falta</label>
+
+                                        <input type="radio" class="btn-check attendance-radio attendance-radio-justified" name="attendance_${att.id}" id="justified_${att.id}" value="JUSTIFIED_ABSENCE" ${jChecked} autocomplete="off">
+                                        <label class="btn btn-outline-warning btn-sm" for="justified_${att.id}"><i class="bx bx-info-circle me-1"></i> Justificada</label>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                tbody.innerHTML = html;
+            } catch (error) {
+                showAlert(error.message, 'danger');
+            }
+        }
+
+        document.getElementById('lessonForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSave');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Atualizando...';
+            
+            try {
+                const lessonId = document.getElementById('lessonId').value;
+                const lessonPayload = {
+                    lessonDate: document.getElementById('lessonDate').value,
+                    content: document.getElementById('content').value,
+                    notes: document.getElementById('notes').value,
+                    teacherClassSubjectId: parseInt(document.getElementById('tcsId').value),
+                    lessonCount: parseInt(document.getElementById('lessonCount').value)
+                };
+
+                const lessonRes = await fetch(`/api/lessons/${lessonId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                    body: JSON.stringify(lessonPayload)
+                });
+
+                if (!lessonRes.ok) {
+                    const err = await lessonRes.json().catch(()=>null);
+                    throw new Error(err?.message || 'Erro ao atualizar os dados da aula.');
+                }
+                
+                // 2. Update Attendances
+                const attendancePromises = currentAttendances.map(att => {
+                    const status = document.querySelector(`input[name="attendance_${att.id}"]:checked`).value;
+                    if (status === att.status) return Promise.resolve(); // no change needed
+                    
+                    const attPayload = {
+                        studentId: att.studentId,
+                        lessonId: parseInt(lessonId),
+                        status: status
+                    };
+                    return fetch(`/api/attendances/${att.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                        body: JSON.stringify(attPayload)
+                    });
+                });
+
+                await Promise.all(attendancePromises);
+
+                window.location.href = '/teacher/lessons.html?success=true';
+            } catch(error) {
+                showAlert(error.message, 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bx bx-save me-1"></i> Atualizar Aula e Chamada';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (id) {
+                loadLessonData(id);
+            } else {
+                showAlert('ID da aula não fornecido.', 'danger');
+                document.getElementById('mainCard').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

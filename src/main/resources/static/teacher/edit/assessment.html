@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Editar Notas - Professor</title>
+    <script src="/js/auth-guard.js"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon_backup.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+            <div class="layout-page">
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)"><i class="bx bx-menu bx-sm"></i></a>
+                    </div>
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center w-100">
+                            <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
+                                <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
+                                <input type="text" class="form-control border-0 shadow-none px-0 w-100"
+                                       placeholder="Buscar..." aria-label="Buscar" id="globalSearch" style="min-width: 350px;" />
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Avaliações /</span> Editar Notas</h4>
+                            <a href="/teacher/assessments.html" class="btn btn-outline-secondary">
+                                <i class="bx bx-arrow-back me-1"></i> Voltar
+                            </a>
+                        </div>
+                        <div id="alertContainer"></div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card mb-4">
+                                    <h5 class="card-header border-bottom">1. Dados da Avaliação</h5>
+                                    <div class="card-body mt-3">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Turma e Matéria</label>
+                                                <input type="text" id="tcsDisplay" class="form-control" disabled />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Período Letivo</label>
+                                                <input type="text" id="periodDisplay" class="form-control" disabled />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label" for="assessmentType">Tipo *</label>
+                                                <select id="assessmentType" class="form-select" required>
+                                                    <option value="EXAM">Prova</option>
+                                                    <option value="ASSIGNMENT">Trabalho</option>
+                                                    <option value="NOTEBOOK">Caderno</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label" for="date">Data da Avaliação *</label>
+                                                <input type="date" id="date" class="form-control" required />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <label class="form-label" for="title">Título da Avaliação *</label>
+                                                <input type="text" id="title" class="form-control" required maxlength="100" />
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label" for="description">Descrição / Notas (Opcional)</label>
+                                                <textarea id="description" class="form-control" rows="2"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card" id="gradesSection">
+                                    <h5 class="card-header border-bottom d-flex justify-content-between align-items-center">
+                                        <span>2. Lançamento de Notas</span>
+                                        <span class="badge bg-label-info" id="studentCountBadge">Carregando...</span>
+                                    </h5>
+                                    <div class="card-body mt-3">
+                                        <div id="studentsLoading" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status"></div>
+                                            <div class="mt-2 text-muted">Carregando diário de alunos...</div>
+                                        </div>
+                                        <div class="table-responsive d-none" id="tableContainer">
+                                            <table class="table table-hover table-bordered">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Nome do Aluno</th>
+                                                        <th class="text-center" style="width: 250px;">Nota (0 a 10)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="studentsTableBody">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="mt-4 text-end">
+                                            <p class="text-muted small mb-2 text-start"><i class="bx bx-info-circle"></i> Deixe o campo em branco para alunos que não fizeram a prova.</p>
+                                            <button type="button" class="btn btn-primary btn-lg" id="btnSave" onclick="updateAssessmentAndGrades()" disabled>
+                                                <i class="bx bx-save me-1"></i> Atualizar Avaliação e Notas
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">
+                                © <script>document.write(new Date().getFullYear());</script> EscolaWeb
+                            </div>
+                        </div>
+                    </footer>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+    
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+    
+    <script>
+        function getToken() { return localStorage.getItem('jwt_token') || ''; }
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            if(container) {
+                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                window.scrollTo(0,0);
+            } else {
+                alert(message);
+            }
+        }
+
+        let assessmentId = null;
+        let currentAssessment = null;
+        let currentStudents = [];
+        let existingGrades = [];
+
+        document.addEventListener("DOMContentLoaded", async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            assessmentId = urlParams.get('id');
+            if (!assessmentId) {
+                showAlert('Avaliação não encontrada.', 'danger');
+                return;
+            }
+
+            await loadAssessmentData(assessmentId);
+        });
+
+        async function loadAssessmentData(id) {
+            try {
+                const res = await fetch(`/api/assessments/${id}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (!res.ok) throw new Error('Falha ao carregar avaliação.');
+                currentAssessment = await res.json();
+
+                document.getElementById('tcsDisplay').value = `${currentAssessment.classRoomName} - ${currentAssessment.subjectName}`;
+                
+                const pRes = await fetch(`/api/academic-periods/${currentAssessment.periodId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (pRes.ok) {
+                    const period = await pRes.json();
+                    document.getElementById('periodDisplay').value = `${period.academicYear} - ${period.name}`;
+                } else {
+                    document.getElementById('periodDisplay').value = `ID ${currentAssessment.periodId}`;
+                }
+
+                document.getElementById('date').value = currentAssessment.date;
+                document.getElementById('title').value = currentAssessment.title;
+                document.getElementById('assessmentType').value = currentAssessment.assessmentType;
+                document.getElementById('description').value = currentAssessment.description || '';
+
+                await loadGradesAndStudents();
+                
+            } catch(e) {
+                console.error(e);
+                showAlert('Erro ao carregar os dados da avaliação.', 'danger');
+            }
+        }
+
+        async function loadGradesAndStudents() {
+            try {
+                const gRes = await fetch(`/api/grades/assessment/${assessmentId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (gRes.ok) {
+                    existingGrades = await gRes.json();
+                }
+
+                const sRes = await fetch(`/api/enrollments/classroom/${currentAssessment.classRoomId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (sRes.ok) {
+                    const enrollments = await sRes.json();
+                    currentStudents = enrollments.filter(e => e.active).map(e => ({ id: e.studentId, name: e.studentName }));
+                    
+                    document.getElementById('studentCountBadge').textContent = `${currentStudents.length} alunos`;
+                    
+                    const tbody = document.getElementById('studentsTableBody');
+                    if (currentStudents.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">Nenhum aluno matriculado.</td></tr>';
+                    } else {
+                        renderGradesTable();
+                        document.getElementById('btnSave').disabled = false;
+                    }
+                }
+            } catch(e) {
+                console.error('Erro ao carregar alunos/notas', e);
+                document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="2" class="text-center text-danger">Erro ao carregar diário.</td></tr>';
+            } finally {
+                document.getElementById('studentsLoading').classList.add('d-none');
+                document.getElementById('tableContainer').classList.remove('d-none');
+            }
+        }
+
+        function renderGradesTable() {
+            const tbody = document.getElementById('studentsTableBody');
+            let html = '';
+            
+            const gradesMap = {};
+            existingGrades.forEach(g => { gradesMap[g.studentId] = g; });
+
+            currentStudents.forEach(s => {
+                const safeName = s.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const existingGrade = gradesMap[s.id];
+                const gradeValue = existingGrade ? existingGrade.value : '';
+                const currentLabel = gradeValue !== '' ? `<small class="text-muted d-block mt-1">Nota Atual: <strong>${Number(gradeValue).toFixed(1).replace('.', ',')}</strong></small>` : '<small class="text-muted d-block mt-1">Sem nota lançada</small>';
+                
+                html += `
+                    <tr>
+                        <td class="align-middle fw-semibold">${safeName}</td>
+                        <td class="text-center">
+                            <div class="w-75 mx-auto">
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control text-center fw-bold" 
+                                        name="grade_${s.id}" id="grade_${s.id}" 
+                                        data-grade-id="${existingGrade ? existingGrade.id : ''}"
+                                        value="${gradeValue}" step="0.1" min="0" max="10">
+                                </div>
+                                ${currentLabel}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        async function updateAssessmentAndGrades() {
+            const date = document.getElementById('date').value;
+            const title = document.getElementById('title').value;
+            const type = document.getElementById('assessmentType').value;
+            const description = document.getElementById('description').value;
+
+            if (!date || !title || !type) {
+                showAlert('Por favor, preencha todos os campos obrigatórios (*).', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('btnSave');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Atualizando...';
+
+            try {
+                const assessmentPayload = {
+                    title: title,
+                    description: description,
+                    date: date,
+                    assessmentType: type,
+                    teacherClassSubjectId: currentAssessment.teacherClassSubjectId,
+                    periodId: currentAssessment.periodId
+                };
+
+                const assRes = await fetch(`/api/assessments/${assessmentId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                    body: JSON.stringify(assessmentPayload)
+                });
+
+                if (!assRes.ok) {
+                    const err = await assRes.json().catch(()=>null);
+                    throw new Error(err?.message || 'Erro ao atualizar a avaliação.');
+                }
+
+                const gradePromises = [];
+                currentStudents.forEach(student => {
+                    const inputEl = document.getElementById(`grade_${student.id}`);
+                    const gradeInput = inputEl.value;
+                    const gradeId = inputEl.getAttribute('data-grade-id');
+
+                    if (gradeInput && gradeInput.trim() !== '') {
+                        const gradeVal = parseFloat(gradeInput.replace(',', '.'));
+                        
+                        if (gradeId) {
+                            gradePromises.push(
+                                fetch(`/api/grades/${gradeId}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                                    body: JSON.stringify({ value: gradeVal })
+                                })
+                            );
+                        } else {
+                            gradePromises.push(
+                                fetch('/api/grades', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                                    body: JSON.stringify({ studentId: student.id, assessmentId: assessmentId, value: gradeVal })
+                                })
+                            );
+                        }
+                    } else if (gradeId && gradeInput.trim() === '') {
+                        gradePromises.push(
+                            fetch(`/api/grades/${gradeId}`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${getToken()}` }
+                            })
+                        );
+                    }
+                });
+
+                await Promise.all(gradePromises);
+                
+                window.location.href = '/teacher/assessments.html?success=true';
+            } catch(error) {
+                showAlert(error.message, 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bx bx-save me-1"></i> Atualizar Avaliação e Notas';
+            }
+        }
+    </script>
+</body>
+</html>

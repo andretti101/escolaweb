@@ -11,6 +11,7 @@ public interface StudentService {
     Student findById(Integer id);
     List<Student> findAll();
     List<Student> findAllActive();
+    List<Student> findAllActiveUnenrolled();
     Student activate(Integer id);
     Student deactivate(Integer id);
 }

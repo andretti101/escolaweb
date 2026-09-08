@@ -93,19 +93,19 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         AcademicPeriod period = findPeriodOrThrow(id);
 
         if (period.isClosed()) {
-            throw new IllegalStateException("Academic period with id " + id + " is already closed.");
+            throw new IllegalStateException("O período acadêmico com id " + id + " já está fechado.");
         }
 
         if (period.getEndDate() == null) {
             throw new IllegalStateException(
-                    "Cannot close period '" + period.getName()
-                            + "': the end date must be defined before closing.");
+                    "Não foi possível fechar o período '" + period.getName()
+                            + "': a data de término deve ser definida antes do fechamento.");
         }
         if (java.time.LocalDate.now().isBefore(period.getEndDate())) {
             throw new IllegalStateException(
-                    "Cannot close period '" + period.getName()
-                            + "': the end date (" + period.getEndDate()
-                            + ") has not passed yet.");
+                    "Não foi possível fechar o período '" + period.getName()
+                            + "': a data de término (" + period.getEndDate()
+                            + ") ainda não foi atingida.");
         }
 
         validateMinimumAssessments(period);
@@ -121,15 +121,17 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
 
         for (TeacherClassSubject tcs : activeSubjects) {
             if (tcs.getMinAssessmentsPerPeriod() != null) {
-                long count = assessmentRepository.countByTeacherClassSubjectAndPeriod(tcs, period);
+                long assessmentCount = assessmentRepository.countByTeacherClassSubjectAndPeriod(tcs, period);
 
-                if (count < tcs.getMinAssessmentsPerPeriod()) {
+                if (assessmentCount < tcs.getMinAssessmentsPerPeriod()) {
                     throw new IllegalStateException(
-                            "Cannot close period '" + period.getName()
-                                    + "': subject '" + tcs.getSubject().getName()
-                                    + "' in classroom '" + tcs.getClassRoom().getName()
-                                    + "' has " + count + " assessment(s) but requires at least "
-                                    + tcs.getMinAssessmentsPerPeriod() + ".");
+                            String.format("Não foi possível fechar o período '%s': a matéria '%s' na '%s' possui apenas %d avaliação(ões), mas exige no mínimo %d.",
+                                    period.getName(),
+                                    tcs.getSubject().getName(),
+                                    tcs.getClassRoom().getName(),
+                                    assessmentCount,
+                                    tcs.getMinAssessmentsPerPeriod())
+                    );
                 }
             }
         }

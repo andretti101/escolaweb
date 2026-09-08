@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 3. Re-vincular o botão de fechar sidebar no mobile (já que a sidebar foi injetada agora)
+            // 3. Re-vincular o botão de fechar sidebar no mobile
             const menuTogglers = document.querySelectorAll('#layout-menu .layout-menu-toggle');
             menuTogglers.forEach(item => {
                 item.addEventListener('click', event => {
@@ -56,37 +56,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             });
-            // 4. Configurar funcionalidade de Sair (Logout)
-            const btnLogout = document.getElementById('btnLogout');
-            if (btnLogout) {
-                btnLogout.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    
-                    const token = localStorage.getItem('jwt_token');
-                    const refreshToken = localStorage.getItem('refresh_token');
-                    
-                    // Avisa a API para invalidar o refresh token (se existir)
-                    if (refreshToken) {
-                        try {
-                            await fetch('/auth/logout', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': token ? `Bearer ${token}` : ''
-                                },
-                                body: JSON.stringify({ refreshToken: refreshToken })
-                            });
-                        } catch (err) {
-                            console.error('Erro ao fazer logout na API', err);
-                        }
-                    }
-                    
-                    // Limpa os tokens locais e redireciona para o login
-                    localStorage.removeItem('jwt_token');
-                    localStorage.removeItem('refresh_token');
-                    window.location.href = '/login.html';
-                });
-            }
         })
         .catch(err => console.error('Erro ao carregar sidebar:', err));
 });
+
+setTimeout(() => {
+    // Populando os avatares da navbar
+    const userName = localStorage.getItem('user_name') || 'Usuário';
+    const initial = userName.charAt(0).toUpperCase();
+    
+    const avatarInitial = document.getElementById('dropdownAvatarInitial');
+    const avatarInitialInner = document.getElementById('dropdownAvatarInitialInner');
+    if (avatarInitial) avatarInitial.textContent = initial;
+    if (avatarInitialInner) avatarInitialInner.textContent = initial;
+    
+    const nameElem = document.getElementById('dropdownUserName');
+    if (nameElem) nameElem.textContent = userName;
+
+    // Vinculando botões de Logout
+    const logoutBtns = document.querySelectorAll('#btnLogout, #btnLogoutNavbar');
+    logoutBtns.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const rt = localStorage.getItem('refresh_token');
+                if(rt) {
+                    await fetch('/auth/logout', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({refreshToken: rt})
+                    });
+                }
+            } finally {
+                localStorage.clear();
+                window.location.href = '/login.html';
+            }
+        });
+    });
+}, 500);

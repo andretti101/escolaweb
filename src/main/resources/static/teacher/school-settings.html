@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Configurações da Escola | Escola Web</title>
+
+    <script src="/js/auth-guard.js"></script>
+
+    <meta name="description" content="Configurações gerais da escola"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4"/>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 rounded shadow-sm p-2"
+                           href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0">
+                            <span class="text-muted fw-light">Visualização /</span> Configurações da Escola
+                        </h4>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card mb-4">
+                                <h5 class="card-header border-bottom">Informações Gerais (Somente Leitura)</h5>
+
+                                <div class="card-body mt-4">
+                                    <div id="alertContainer"></div>
+
+                                    <form id="settingsForm">
+                                        <div class="row">
+                                            <!-- Informações da Instituição -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="schoolName" class="form-label">Nome da Escola</label>
+                                                <input type="text" class="form-control" id="schoolName"
+                                                       name="schoolName" disabled/>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="email" class="form-label">E-mail de Contato</label>
+                                                <input type="email" class="form-control" id="email"
+                                                       name="email" disabled/>
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label for="phone" class="form-label">Telefone</label>
+                                                <input type="text" class="form-control" id="phone" name="phone"
+                                                       disabled/>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="address" class="form-label">Endereço</label>
+                                                <input type="text" class="form-control" id="address"
+                                                       name="address" disabled/>
+                                            </div>
+
+                                            <div class="col-12 mt-4 mb-3 border-top pt-4">
+                                                <h6 class="fw-bold"><i class="bx bx-book-bookmark me-2"></i> Parâmetros
+                                                    Acadêmicos</h6>
+                                            </div>
+
+                                            <div class="col-md-4 mb-3">
+                                                <label for="periodType" class="form-label">Divisão do Ano Letivo</label>
+                                                <select id="periodType" class="form-select" disabled>
+                                                    <option value="BIMESTER">Bimestre</option>
+                                                    <option value="TRIMESTER">Trimestre</option>
+                                                    <option value="QUADRIMESTER">Quadrimestre</option>
+                                                    <option value="SEMESTER">Semestre</option>
+                                                    <option value="ANNUAL">Anual</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-4 mb-3">
+                                                <label for="minimumGrade" class="form-label">Média Mínima para
+                                                    Aprovação</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="minimumGrade"
+                                                           disabled/>
+                                                    <span class="input-group-text">/ 10</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4 mb-3">
+                                                <label for="minimumAttendance" class="form-label">Frequência Mínima
+                                                    (%)</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control"
+                                                           id="minimumAttendance" disabled/>
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">
+                            ©
+                            <script>document.write(new Date().getFullYear());</script>
+                            EscolaWEB
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+
+<script src="/js/load-sidebar.js"></script>
+
+<script>
+    function getToken() {
+        return localStorage.getItem('jwt_token') || '';
+    }
+
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+        window.scrollTo(0, 0);
+    }
+
+    async function loadSettings() {
+        try {
+            const response = await fetch('/api/school-settings', {
+                headers: {'Authorization': `Bearer ${getToken()}`}
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('schoolName').value = data.schoolName || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('address').value = data.address || '';
+                document.getElementById('periodType').value = data.periodType || 'TRIMESTER';
+                document.getElementById('minimumGrade').value = data.minimumGrade || '6.0';
+                document.getElementById('minimumAttendance').value = data.minimumAttendance || '70.00';
+            } else if (response.status === 404) {
+                showAlert('As configurações ainda não foram definidas pela Direção.', 'info');
+            } else {
+                showAlert('Erro ao carregar configurações atuais.', 'danger');
+            }
+        } catch (error) {
+            showAlert('Erro de conexão com o servidor.', 'danger');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSettings);
+</script>
+</body>
+</html>
+

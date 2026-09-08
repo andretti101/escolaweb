@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Meus Colegas | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+            <div class="layout-page">
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i>
+                        </a>
+                    </div>
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                            <span class="fs-4 fw-bold text-primary">Portal do Professor</span>
+                        </div>
+                    </div>
+                </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                            <h4 class="fw-bold mb-0">
+                                <span class="text-muted fw-light">Geral /</span> Meus Colegas
+                            </h4>
+                        </div>
+
+                        <div id="alertContainer"></div>
+
+                        <div class="card">
+                            <div class="card-header border-bottom">
+                                <h5 class="mb-0">Professores das Minhas Turmas</h5>
+                            </div>
+                            <div class="table-responsive text-nowrap">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Professor</th>
+                                            <th>Matérias</th>
+                                            <th>Turmas em Comum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="colleaguesTableBody">
+                                        <tr>
+                                            <td colspan="3" class="text-center py-5">
+                                                <div class="spinner-border text-primary" role="status"></div>
+                                                <div class="mt-2 text-muted">Carregando colegas...</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer border-top text-muted" id="colleaguesCount"></div>
+                        </div>
+                    </div>
+
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">
+                                © <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                            </div>
+                        </div>
+                    </footer>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+
+    <script>
+        const jwtToken = localStorage.getItem('jwt_token');
+        const teacherId = localStorage.getItem('user_id');
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        async function init() {
+            if (!jwtToken || !teacherId) return;
+            const tbody = document.getElementById('colleaguesTableBody');
+            
+            try {
+                // 1. Fetch own TCS
+                const myTcsRes = await fetch(`/api/teacher-class-subjects/teacher/${teacherId}`, {
+                    headers: {'Authorization': `Bearer ${jwtToken}`}
+                });
+                if (!myTcsRes.ok) throw new Error("Erro ao carregar próprias turmas");
+                const myTcs = await myTcsRes.json();
+                
+                if (myTcs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-5 text-muted">Você ainda não está alocado em nenhuma turma.</td></tr>';
+                    document.getElementById('colleaguesCount').textContent = '0 colegas';
+                    return;
+                }
+
+                // 2. Extract unique classrooms
+                const myClassRoomIds = [...new Set(myTcs.map(t => t.classRoomId))];
+                
+                // 3. Fetch all TCS for those classrooms
+                const promises = myClassRoomIds.map(classRoomId => 
+                    fetch(`/api/teacher-class-subjects/classroom/${classRoomId}`, {
+                        headers: {'Authorization': `Bearer ${jwtToken}`}
+                    }).then(res => res.json())
+                );
+                
+                const results = await Promise.all(promises);
+                // Flatten the arrays
+                const allTcs = results.flat();
+                
+                // 4. Group by Teacher
+                // colleagueMap: { teacherId: { name, subjects: Set, classrooms: Set } }
+                const colleagueMap = {};
+                
+                allTcs.forEach(tcs => {
+                    const tid = String(tcs.teacherId);
+                    if (!colleagueMap[tid]) {
+                        colleagueMap[tid] = {
+                            id: tid,
+                            name: tcs.teacherName,
+                            subjects: new Set(),
+                            classrooms: new Set()
+                        };
+                    }
+                    colleagueMap[tid].subjects.add(tcs.subjectName);
+                    colleagueMap[tid].classrooms.add(tcs.classRoomName);
+                });
+                
+                // Convert to array and sort
+                const colleaguesList = Object.values(colleagueMap);
+                colleaguesList.sort((a, b) => {
+                    if (a.id === String(teacherId)) return -1;
+                    if (b.id === String(teacherId)) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+                
+                // 5. Render
+                tbody.innerHTML = colleaguesList.map(c => {
+                    const isMe = c.id === String(teacherId);
+                    const rowClass = isMe ? 'table-primary' : '';
+                    const badge = isMe ? '<span class="badge bg-label-primary ms-2">Você</span>' : '';
+                    
+                    const subjectsHtml = Array.from(c.subjects).map(s => `<span class="badge bg-label-info me-1 mb-1">${escapeHtml(s)}</span>`).join('');
+                    const classroomsHtml = Array.from(c.classrooms).map(s => `<span class="badge bg-label-secondary me-1 mb-1">${escapeHtml(s)}</span>`).join('');
+                    
+                    return `
+                        <tr class="${rowClass}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-${isMe ? 'primary' : 'secondary'}">
+                                            <i class="bx bx-user"></i>
+                                        </span>
+                                    </div>
+                                    <span class="fw-bold">${escapeHtml(c.name)}</span> ${badge}
+                                </div>
+                            </td>
+                            <td style="max-width: 250px; white-space: normal;">${subjectsHtml}</td>
+                            <td style="max-width: 250px; white-space: normal;">${classroomsHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                document.getElementById('colleaguesCount').textContent = `${colleaguesList.length} professor(es) (incluindo você)`;
+
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-5 text-danger">Erro ao carregar colegas.</td></tr>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+

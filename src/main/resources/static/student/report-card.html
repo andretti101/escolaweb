@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boletim Final | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4" />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/student-sidebar.html"></div>
+            <div class="layout-page">
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i>
+                        </a>
+                    </div>
+
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <!-- Título da Navbar -->
+                        <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                            <span class="fs-4 fw-bold d-flex align-items-center">
+                                <i class="bx bxs-graduation fs-3 text-primary me-2"></i> 
+                                <span class="text-primary">Portal do Aluno</span>
+                            </span>
+                        </div>
+
+                        <!-- Avatar do Usuário -->
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitial">A</span>
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitialInner">A</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <span class="fw-semibold d-block" id="dropdownUserName">Aluno</span>
+                                                    <small class="text-muted">Estudante</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><div class="dropdown-divider"></div></li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" id="btnLogoutNavbar">
+                                            <i class="bx bx-power-off me-2 text-danger"></i>
+                                            <span class="align-middle text-danger">Sair</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Meu Desempenho /</span> Boletim Final</h4>
+
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                                <h5 class="mb-0">Resultado Consolidado</h5>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead id="reportHead">
+                                        <tr><th>Carregando...</th></tr>
+                                    </thead>
+                                    <tbody id="reportBody">
+                                        <tr><td><span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span> Aguarde...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+
+    <script>
+        const jwtToken = localStorage.getItem('jwt_token');
+        const studentId = localStorage.getItem('user_id');
+
+        async function loadReportCard() {
+            if (!studentId) return;
+
+            try {
+                const settingsRes = await fetch('/api/school-settings', { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                if (!settingsRes.ok) throw new Error('Falha ao obter regras da escola');
+                const settings = await settingsRes.json();
+                
+                const minGrade = settings.minimumGrade || 7.0;
+                
+                const gradesRes = await fetch(`/api/grades/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                if (!gradesRes.ok) throw new Error('Falha ao obter notas');
+                const grades = await gradesRes.json();
+
+                let divisor = 4; // Padrão
+                if(settings.periodType === 'BIMESTER') divisor = 4;
+                else if(settings.periodType === 'TRIMESTER') divisor = 3;
+                else if(settings.periodType === 'QUADRIMESTER') divisor = 3;
+                else if(settings.periodType === 'SEMESTER') divisor = 2;
+
+                const matrix = {};
+                const periodNames = new Set();
+
+                grades.forEach(g => {
+                    if(!g.subjectName || !g.periodName) return;
+                    periodNames.add(g.periodName);
+                    
+                    if(!matrix[g.subjectName]) matrix[g.subjectName] = { periods: {} };
+                    if(!matrix[g.subjectName].periods[g.periodName]) matrix[g.subjectName].periods[g.periodName] = [];
+                    
+                    matrix[g.subjectName].periods[g.periodName].push(g.value);
+                });
+
+                const sortedPeriods = Array.from(periodNames).sort();
+                
+                const thead = document.getElementById('reportHead');
+                thead.innerHTML = `
+                    <tr class="table-primary">
+                        <th>Disciplina</th>
+                        ${sortedPeriods.map(p => `<th>${p}</th>`).join('')}
+                        <th>Média Final</th>
+                        <th>Situação</th>
+                    </tr>
+                `;
+
+                const tbody = document.getElementById('reportBody');
+                let html = '';
+
+                for(const [subj, data] of Object.entries(matrix)) {
+                    let rowHtml = `<td><strong>${subj}</strong></td>`;
+                    let sumAverages = 0;
+                    let periodsWithGrades = 0;
+
+                    sortedPeriods.forEach(p => {
+                        const vals = data.periods[p];
+                        if(vals && vals.length > 0) {
+                            const avg = vals.reduce((a,b)=>a+b, 0) / vals.length;
+                            sumAverages += avg;
+                            periodsWithGrades++;
+                            rowHtml += `<td>${avg.toFixed(1)}</td>`;
+                        } else {
+                            rowHtml += `<td class="text-muted">-</td>`;
+                        }
+                    });
+
+                    let situationHtml = '<span class="badge bg-label-secondary">Pendente</span>';
+                    let finalAvgHtml = '<span class="text-muted">-</span>';
+
+                    if (periodsWithGrades === divisor) {
+                        const finalAvg = sumAverages / divisor;
+                        finalAvgHtml = `<strong>${finalAvg.toFixed(1)}</strong>`;
+
+                        if (finalAvg >= minGrade) {
+                            situationHtml = '<span class="badge bg-label-success">Aprovado</span>';
+                        } else {
+                            situationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
+                        }
+                    }
+
+                    rowHtml += `<td>${finalAvgHtml}</td><td>${situationHtml}</td>`;
+                    html += `<tr>${rowHtml}</tr>`;
+                }
+                
+                if (Object.keys(matrix).length === 0) {
+                    html = `<tr><td colspan="${sortedPeriods.length + 3}" class="text-center text-muted">Nenhuma nota encontrada.</td></tr>`;
+                }
+
+                tbody.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                document.getElementById('reportHead').innerHTML = '<tr><td class="text-danger">Erro de conexão</td></tr>';
+            }
+        }
+        
+        loadReportCard();
+    </script>
+</body>
+</html>

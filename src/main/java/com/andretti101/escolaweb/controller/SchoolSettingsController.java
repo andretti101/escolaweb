@@ -22,7 +22,7 @@ public class SchoolSettingsController {
     private final SchoolSettingsService schoolSettingsService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY', 'TEACHER', 'STUDENT')")
     public ResponseEntity<SchoolSettingsResponseDTO> getSettings() {
         return ResponseEntity.ok(toResponse(schoolSettingsService.findSettings()));
     }

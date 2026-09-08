@@ -314,12 +314,21 @@ public class GlobalExceptionHandler {
 
         log.warn("Data integrity violation on {}: {}", request.getRequestURI(), rootCause);
 
+        String userMessage = "Conflito de dados: registro duplicado ou violação de integridade. Verifique se o recurso já existe.";
+        
+        if (rootCause != null) {
+            if (rootCause.contains("enrollment") || rootCause.contains("uk3vna4k5oncxyxln26gmj708i2")) {
+                userMessage = "Já existe um aluno cadastrado com este número de matrícula.";
+            } else if (rootCause.contains("email")) {
+                userMessage = "Já existe um usuário cadastrado com este endereço de e-mail.";
+            }
+        }
+
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ApiErrorResponse.of(
                         HttpStatus.CONFLICT,
-                        "Conflito de dados: registro duplicado ou violação de integridade. "
-                                + "Verifique se o recurso já existe.",
+                        userMessage,
                         request.getRequestURI()));
     }
 

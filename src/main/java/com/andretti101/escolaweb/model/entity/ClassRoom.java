@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.model.entity;
 
+import com.andretti101.escolaweb.model.enums.SchoolGrade;
 import com.andretti101.escolaweb.model.enums.Shift;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -34,8 +35,9 @@ public class ClassRoom implements Serializable {
     @Column(name = "number", nullable = false, length = 20)
     private String name;
 
-    @Column(name = "creation_year")
-    private Integer creationYear;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "school_grade", length = 30)
+    private SchoolGrade schoolGrade;
 
     @NotNull(message = "O turno é obrigatório.")
     @Enumerated(EnumType.STRING)

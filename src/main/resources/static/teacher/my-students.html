@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Desempenho da Turma | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+            <div class="layout-page">
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i>
+                        </a>
+                    </div>
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                            <span class="fs-4 fw-bold text-primary">Portal do Professor</span>
+                        </div>
+                    </div>
+                </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                            <h4 class="fw-bold mb-0">
+                                <span class="text-muted fw-light">Acadêmico /</span> Desempenho da Turma
+                            </h4>
+                            <div class="d-flex align-items-center">
+                                <label for="tcsSelect" class="form-label me-2 mb-0 text-nowrap">Selecione a Turma/Matéria:</label>
+                                <select id="tcsSelect" class="form-select w-auto" style="min-width: 250px;">
+                                    <option value="">Carregando...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="alertContainer"></div>
+
+                        <div class="card">
+                            <div class="table-responsive text-nowrap">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Aluno</th>
+                                            <th>Notas</th>
+                                            <th>Média</th>
+                                            <th>Presenças</th>
+                                            <th>Faltas</th>
+                                            <th>F. Justificadas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentsTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-5 text-muted">
+                                                Selecione uma turma acima.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer border-top text-muted" id="studentsCount"></div>
+                        </div>
+                    </div>
+
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">
+                                © <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                            </div>
+                        </div>
+                    </footer>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+
+    <script>
+        const jwtToken = localStorage.getItem('jwt_token');
+        const teacherId = localStorage.getItem('user_id');
+        let teacherClassSubjects = [];
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        async function init() {
+            if (!jwtToken || !teacherId) return;
+            try {
+                const res = await fetch(`/api/teacher-class-subjects/teacher/${teacherId}`, {
+                    headers: {'Authorization': `Bearer ${jwtToken}`}
+                });
+                if (res.ok) {
+                    teacherClassSubjects = await res.json();
+                    teacherClassSubjects.sort((a, b) => a.classRoomName.localeCompare(b.classRoomName));
+                    const select = document.getElementById('tcsSelect');
+                    select.innerHTML = '<option value="">Selecione...</option>';
+                    teacherClassSubjects.forEach(tcs => {
+                        const opt = document.createElement('option');
+                        opt.value = tcs.id;
+                        opt.textContent = `${tcs.classRoomName} - ${tcs.subjectName}`;
+                        select.appendChild(opt);
+                    });
+                    
+                    select.addEventListener('change', (e) => {
+                        if (e.target.value) {
+                            loadStudentsPerformance(parseInt(e.target.value));
+                        } else {
+                            document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Selecione uma turma acima.</td></tr>';
+                            document.getElementById('studentsCount').textContent = '';
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadStudentsPerformance(tcsId) {
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted">Carregando desempenho...</div></td></tr>';
+            
+            const tcs = teacherClassSubjects.find(t => t.id === tcsId);
+            if (!tcs) return;
+
+            try {
+                const enrollmentsRes = await fetch(`/api/enrollments/classroom/${tcs.classRoomId}`, {
+                    headers: {'Authorization': `Bearer ${jwtToken}`}
+                });
+                let enrollments = await enrollmentsRes.json();
+                enrollments = enrollments.filter(e => e.active);
+                enrollments.sort((a, b) => a.studentName.localeCompare(b.studentName));
+                
+                if (enrollments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Nenhum aluno ativo nesta turma.</td></tr>';
+                    document.getElementById('studentsCount').textContent = '0 alunos';
+                    return;
+                }
+
+                const promises = enrollments.map(async (enr) => {
+                    const studentId = enr.studentId;
+                    
+                    const gradesRes = await fetch(`/api/grades/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                    let grades = gradesRes.ok ? await gradesRes.json() : [];
+                    grades = grades.filter(g => g.tcsId === tcsId || g.subjectName === tcs.subjectName);
+                    
+                    const attRes = await fetch(`/api/attendances/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                    let attendances = attRes.ok ? await attRes.json() : [];
+                    attendances = attendances.filter(a => a.subjectName === tcs.subjectName);
+
+                    let presences = 0;
+                    let absences = 0;
+                    let justified = 0;
+                    
+                    attendances.forEach(a => {
+                        const val = a.lessonCount || 1;
+                        if (a.status === 'PRESENT') presences += val;
+                        else if (a.status === 'ABSENT') absences += val;
+                        else if (a.status === 'JUSTIFIED_ABSENCE' || a.status === 'EXCUSED') justified += val;
+                    });
+                    
+                    let totalGrade = 0;
+                    grades.forEach(g => totalGrade += (g.value || 0));
+                    let avg = grades.length > 0 ? (totalGrade / grades.length).toFixed(1) : '-';
+                    
+                    let gradesListHtml = '';
+                    if (grades.length === 0) {
+                        gradesListHtml = '<span class="text-muted small">Sem notas</span>';
+                    } else {
+                        const groupedGrades = {};
+                        grades.forEach(g => {
+                            const pName = g.periodName || 'Sem Período';
+                            if (!groupedGrades[pName]) groupedGrades[pName] = [];
+                            groupedGrades[pName].push(g);
+                        });
+                        
+                        for (const pName in groupedGrades) {
+                            const periodGrades = groupedGrades[pName];
+                            const badgesHtml = periodGrades.map(g => `<span class="badge bg-label-primary me-1 mb-1" title="${escapeHtml(g.assessmentTitle)}">${Number(g.value).toFixed(1)}</span>`).join('');
+                            gradesListHtml += `<div class="mb-2"><span class="d-block small fw-bold text-muted mb-1" style="font-size: 0.75rem;">${escapeHtml(pName)}</span>${badgesHtml}</div>`;
+                        }
+                    }
+                    
+                    return {
+                        studentName: enr.studentName,
+                        gradesHtml: gradesListHtml,
+                        avg,
+                        presences,
+                        absences,
+                        justified
+                    };
+                });
+
+                const results = await Promise.all(promises);
+                
+                tbody.innerHTML = results.map(r => `
+                    <tr>
+                        <td class="fw-bold">${escapeHtml(r.studentName)}</td>
+                        <td style="max-width: 250px; white-space: normal;">${r.gradesHtml}</td>
+                        <td class="fw-semibold">${r.avg}</td>
+                        <td><span class="badge bg-label-success">${r.presences}</span></td>
+                        <td><span class="badge bg-label-danger">${r.absences}</span></td>
+                        <td><span class="badge bg-label-warning">${r.justified}</span></td>
+                    </tr>
+                `).join('');
+                
+                document.getElementById('studentsCount').textContent = `${results.length} aluno(s)`;
+
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-danger">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+

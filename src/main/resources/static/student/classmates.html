@@ -1,0 +1,249 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Meus Colegas - Aluno</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Listagem de anos acadêmicos"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/student-sidebar.html"></div>
+        <div class="layout-page">
+            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
+                <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                    <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                        <i class="bx bx-menu bx-sm"></i>
+                    </a>
+                </div>
+
+                <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                    <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                        <span class="fs-4 fw-bold d-flex align-items-center">
+                            <i class="bx bxs-graduation fs-3 text-primary me-2"></i> 
+                            <span class="text-primary">Portal do Aluno</span>
+                        </span>
+                    </div>
+
+                    <ul class="navbar-nav flex-row align-items-center ms-auto">
+                        <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                            <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                <div class="avatar avatar-online">
+                                    <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitial">A</span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="avatar avatar-online">
+                                                    <span class="avatar-initial rounded-circle bg-label-primary" id="menuAvatarInitial">A</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <span class="fw-semibold d-block" id="userNameDisplay">Carregando...</span>
+                                                <small class="text-muted" id="userRoleDisplay">Aluno</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li><div class="dropdown-divider"></div></li>
+                                <li>
+                                    <a class="dropdown-item" id="btnLogout" href="javascript:void(0);">
+                                        <i class="bx bx-power-off me-2"></i>
+                                        <span class="align-middle">Sair</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold mb-0">
+                                <span class="text-muted fw-light">Turma /</span> Meus Colegas
+                            </h4>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header border-bottom">
+                                <h5 class="mb-0" id="classroomTitle">Minha Turma</h5>
+                            </div>
+                            
+                            <div class="table-responsive text-nowrap">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome do Aluno</th>
+                                            <th>Data de Matrícula</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="classmatesTableBody">
+                                        <tr>
+                                            <td colspan="3" class="text-center py-5">
+                                                <div class="spinner-border text-primary" role="status"></div>
+                                                <div class="mt-2 text-muted">Carregando colegas...</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer border-top text-muted" id="classmatesCount"></div>
+                        </div>
+                    </div>
+
+                    <footer class="content-footer footer bg-footer-theme">
+                        <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                            <div class="mb-2 mb-md-0">
+                                © <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                            </div>
+                        </div>
+                    </footer>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+
+    <script>
+        const jwtToken = localStorage.getItem('jwt_token');
+        const studentId = localStorage.getItem('user_id');
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe.toString()
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            try {
+                const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
+                return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        async function init() {
+            if (!jwtToken || !studentId) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                // 1. Get student's enrollment
+                const myEnrollmentsRes = await fetch(`/api/enrollments/student/${studentId}`, {
+                    headers: {'Authorization': `Bearer ${jwtToken}`}
+                });
+                
+                if (!myEnrollmentsRes.ok) throw new Error('Falha ao carregar matrículas');
+                
+                const myEnrollments = await myEnrollmentsRes.json();
+                const activeEnrollment = myEnrollments.find(e => e.active);
+                
+                const tbody = document.getElementById('classmatesTableBody');
+                
+                if (!activeEnrollment) {
+                    document.getElementById('classroomTitle').textContent = 'Nenhuma turma ativa encontrada';
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-5 text-muted">Você não está matriculado em nenhuma turma ativa no momento.</td></tr>`;
+                    return;
+                }
+                
+                document.getElementById('classroomTitle').textContent = `Turma: ${escapeHtml(activeEnrollment.classRoomName)}`;
+                
+                // 2. Get classmates
+                const classmatesRes = await fetch(`/api/enrollments/classroom/${activeEnrollment.classRoomId}`, {
+                    headers: {'Authorization': `Bearer ${jwtToken}`}
+                });
+                
+                if (!classmatesRes.ok) throw new Error('Falha ao carregar colegas');
+                
+                let classmates = await classmatesRes.json();
+                
+                // Filter active only and sort alphabetically
+                classmates = classmates.filter(e => e.active);
+                classmates.sort((a, b) => (a.studentName || '').localeCompare(b.studentName || ''));
+                
+                document.getElementById('classmatesCount').textContent = `${classmates.length} aluno(s) nesta turma`;
+                
+                if (classmates.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-5 text-muted">Nenhum colega encontrado nesta turma.</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = classmates.map(c => {
+                    const isMe = String(c.studentId) === String(studentId);
+                    const rowClass = isMe ? 'table-primary' : '';
+                    const badge = isMe ? '<span class="badge bg-label-primary ms-2">Você</span>' : '';
+                    
+                    return `
+                        <tr class="${rowClass}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-${isMe ? 'primary' : 'secondary'}">
+                                            <i class="bx bx-user"></i>
+                                        </span>
+                                    </div>
+                                    <span class="fw-bold">${escapeHtml(c.studentName)}</span> ${badge}
+                                </div>
+                            </td>
+                            <td>${formatDate(c.enrollmentDate)}</td>
+                            <td><span class="badge bg-label-success">Ativo</span></td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error(error);
+                document.getElementById('classmatesTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center py-5 text-danger">
+                            <i class="bx bx-error-circle fs-1 mb-2"></i>
+                            <br>
+                            Ocorreu um erro ao carregar os dados da turma.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

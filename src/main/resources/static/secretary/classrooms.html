@@ -71,7 +71,7 @@
 
                         <div id="alertContainer" class="px-4 pt-2"></div>
 
-                        <div class="table-responsive text-nowrap">
+                        <div class="table-responsive" style="min-height: 250px;">
                             <table class="table table-hover">
                                 <thead>
                                 <tr>
@@ -252,10 +252,8 @@
             let actionsHtml = '';
             if (window.isSecretary) {
                 let editBtn = '';
-                let manageBtn = '';
                 if (c.active) {
                     editBtn = `<a class="dropdown-item" href="/secretary/edit/classroom.html?id=${c.id}"><i class="bx bx-edit-alt me-1"></i> Editar Dados</a>`;
-                    manageBtn = `<a class="dropdown-item text-primary" href="/secretary/manage-classroom.html?id=${c.id}"><i class="bx bx-cog me-1"></i> Gerenciar (Alunos/Grade)</a>`;
                 }
 
                 actionsHtml = `
@@ -264,7 +262,6 @@
                             <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
                         <div class="dropdown-menu">
-                            ${manageBtn}
                             ${editBtn}
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item ${actionColor}" href="javascript:void(0);" onclick="toggleStatus(${c.id}, ${!c.active})">

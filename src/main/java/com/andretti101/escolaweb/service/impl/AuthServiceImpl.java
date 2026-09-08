@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenProvider.generateToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.create(user);
 
-        return buildResponse(accessToken, refreshToken.getToken(), userDetails);
+        return buildResponse(accessToken, refreshToken.getToken(), userDetails, user);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
 
         String accessToken = jwtTokenProvider.generateToken(userDetails);
 
-        return buildResponse(accessToken, newRefreshToken.getToken(), userDetails);
+        return buildResponse(accessToken, newRefreshToken.getToken(), userDetails, newRefreshToken.getUser());
     }
 
     @Override
@@ -158,7 +158,7 @@ public class AuthServiceImpl implements AuthService {
     // ── Private helpers
 
     private AuthResponseDTO buildResponse(
-            String accessToken, String refreshToken, UserDetails userDetails) {
+            String accessToken, String refreshToken, UserDetails userDetails, User user) {
 
         String role = userDetails.getAuthorities().stream()
                 .findFirst()
@@ -169,8 +169,10 @@ public class AuthServiceImpl implements AuthService {
                 accessToken,
                 refreshToken,
                 "Bearer",
-                userDetails.getUsername(),
+                user.getEmail(),
+                user.getName(),
                 role,
+                user.getId(),
                 jwtTokenProvider.getExpiration(),
                 jwtTokenProvider.getRefreshExpiration());
     }

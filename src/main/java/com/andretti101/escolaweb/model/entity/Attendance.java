@@ -45,9 +45,6 @@ public class Attendance implements Serializable {
     @Column(nullable = false, length = 20)
     private AttendanceStatus status;
 
-    @Column(columnDefinition = "TEXT")
-    private String notes;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

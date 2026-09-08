@@ -7,6 +7,7 @@ import com.andretti101.escolaweb.model.entity.Lesson;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
+import com.andretti101.escolaweb.service.AcademicPeriodService;
 import com.andretti101.escolaweb.service.AttendanceService;
 import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.LessonService;
@@ -39,6 +40,8 @@ public class AttendanceController {
     private final AuthenticatedUserService authenticatedUserService;
     private final LessonService lessonService;
     private final TeacherClassSubjectService teacherClassSubjectService;
+
+    private final AcademicPeriodService academicPeriodService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
@@ -163,20 +166,44 @@ public class AttendanceController {
         Attendance attendance = new Attendance();
         attendance.setStudent(student);
         attendance.setLesson(lesson);
-        attendance.setStatus(dto.status());
-        attendance.setNotes(dto.notes());
+        
+        // Handle variations of frontend justified status
+        if ("JUSTIFIED".equalsIgnoreCase(dto.status()) || "EXCUSED".equalsIgnoreCase(dto.status())) {
+            attendance.setStatus(com.andretti101.escolaweb.model.enums.AttendanceStatus.JUSTIFIED_ABSENCE);
+        } else {
+            attendance.setStatus(com.andretti101.escolaweb.model.enums.AttendanceStatus.valueOf(dto.status().toUpperCase()));
+        }
+        
         return attendance;
     }
 
     private AttendanceResponseDTO toResponse(Attendance a) {
+        String pName = "-";
+        java.time.LocalDate d = a.getLesson().getLessonDate();
+        if (d != null) {
+            var periods = academicPeriodService.findAll();
+            for (var p : periods) {
+                if (p.getStartDate() != null && p.getEndDate() != null) {
+                    if (!d.isBefore(p.getStartDate()) && !d.isAfter(p.getEndDate())) {
+                        pName = p.getName();
+                        break;
+                    }
+                }
+            }
+        }
+
         return new AttendanceResponseDTO(
                 a.getId(),
                 a.getStudent().getId(),
                 a.getStudent().getName(),
                 a.getLesson().getId(),
                 a.getLesson().getLessonDate(),
+                a.getLesson().getTeacherClassSubject().getSubject().getName(),
+                pName,
+                a.getLesson().getLessonCount() != null ? a.getLesson().getLessonCount().getValue() : 1,
                 a.getStatus(),
-                a.getNotes(),
+                a.getLesson().getContent(),
+                a.getLesson().getNotes(),
                 a.getCreatedAt()
         );
     }

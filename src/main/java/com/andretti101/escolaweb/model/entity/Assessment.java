@@ -65,6 +65,6 @@ public class Assessment implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Grade> grades;
 }

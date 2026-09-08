@@ -78,6 +78,12 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Student> findAllActiveUnenrolled() {
+        return studentRepository.findActiveUnenrolled();
+    }
+
+    @Override
     @Transactional
     public Student activate(Integer id) {
         Student student = findStudentOrThrow(id);
