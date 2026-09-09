@@ -7,7 +7,7 @@
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
     <title>Períodos Acadêmicos | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
@@ -47,9 +47,17 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Períodos Acadêmicos /</span> Listagem
                         </h4>
-                        <a href="/principal/create/academic-period.html" class="btn btn-primary">
-                            <i class="bx bx-plus me-1"></i> Cadastrar Período
-                        </a>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="generatePeriods()">
+                                <i class="bx bx-cog me-1"></i> Gerar Períodos
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="openNextPeriod()">
+                                <i class="bx bx-right-arrow-alt me-1"></i> Abrir Próximo
+                            </button>
+                            <a href="/principal/create/academic-period.html" class="btn btn-outline-secondary">
+                                <i class="bx bx-plus me-1"></i> Manual
+                            </a>
+                        </div>
                     </div>
 
                     <div class="card">
@@ -149,7 +157,7 @@
         if (!dateStr) return '—';
         try {
             const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
-            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
         } catch (e) {
             return dateStr;
         }
@@ -203,6 +211,23 @@
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
             if (!response.ok) throw new Error('Erro na resposta do servidor');
             allPeriods = await response.json();
+
+            // Computed Status
+            allPeriods.sort((a, b) => a.id - b.id);
+            const yearOpenFound = {};
+            allPeriods.forEach(p => {
+                if (p.closed) {
+                    p.computedStatus = 'fechado';
+                } else {
+                    if (!yearOpenFound[p.academicYearId]) {
+                        p.computedStatus = 'aberto';
+                        yearOpenFound[p.academicYearId] = true;
+                    } else {
+                        p.computedStatus = 'pendente';
+                    }
+                }
+            });
+
             applyFilters();
         } catch (error) {
             console.error(error);
@@ -254,11 +279,18 @@
         recordCount.textContent = `${periods.length} período${periods.length !== 1 ? 's' : ''} listado${periods.length !== 1 ? 's' : ''}`;
 
         tableBody.innerHTML = periods.map(p => {
-            const statusBadge = p.closed
-                ? '<span class="badge bg-label-danger"><i class="bx bx-lock-alt me-1"></i>Fechado</span>'
-                : '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i>Aberto</span>';
-
-            const avatarClass = p.closed ? 'bg-label-danger' : 'bg-label-info';
+            let statusBadge = '';
+            let avatarClass = '';
+            if (p.computedStatus === 'fechado') {
+                statusBadge = '<span class="badge bg-label-danger"><i class="bx bx-lock-alt me-1"></i>Fechado</span>';
+                avatarClass = 'bg-label-danger';
+            } else if (p.computedStatus === 'aberto') {
+                statusBadge = '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i>Aberto</span>';
+                avatarClass = 'bg-label-success';
+            } else {
+                statusBadge = '<span class="badge bg-label-warning"><i class="bx bx-time me-1"></i>Pendente</span>';
+                avatarClass = 'bg-label-warning';
+            }
 
             return `
                     <tr class="${p.closed ? 'opacity-75 bg-lighter' : ''}">
@@ -282,7 +314,6 @@
                                 <div class="dropdown-menu">
                                     ${!p.closed ? `
                                         <li><a class="dropdown-item" href="/principal/edit/academic-period.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="closePeriod(${p.id})"><i class="bx bx-lock-alt me-1 text-warning"></i> Fechar Período</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deletePeriod(${p.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
                                     ` : '<li><span class="dropdown-item text-muted"><i class="bx bx-lock-alt me-1"></i> Período fechado</span></li>'}
@@ -399,6 +430,66 @@
                 } else {
                     const err = await response.json().catch(() => null);
                     showAlertModal('Erro', `Erro ao excluir: ${err?.message || 'Este período possui avaliações vinculadas.'}`);
+                }
+            } catch (error) {
+                showAlertModal('Erro', 'Erro de conexão.');
+            }
+        });
+    }
+
+    function getSelectedYearId() {
+        if (yearFilter !== 'all') {
+            return yearFilter;
+        }
+        const yearSelect = document.getElementById('yearFilter');
+        for (const opt of yearSelect.options) {
+            if (opt.textContent.includes('(Ativo)')) return opt.value;
+        }
+        return null;
+    }
+
+    function generatePeriods() {
+        const yearId = getSelectedYearId();
+        if (!yearId) {
+            showAlertModal('Aviso', 'Selecione um Ano Acadêmico no filtro ou ative um ano letivo antes de gerar os períodos.');
+            return;
+        }
+        showConfirmModal('Gerar Períodos', 'Deseja gerar os períodos automaticamente para este ano letivo?', async () => {
+            try {
+                const response = await fetch(`/api/academic-periods/generate/${yearId}`, {
+                    method: 'POST', headers: {'Authorization': `Bearer ${getToken()}`}
+                });
+                if (response.ok) {
+                    showAlertModal('Sucesso', 'Períodos gerados com sucesso!');
+                    loadPeriods();
+                } else {
+                    const err = await response.json().catch(() => null);
+                    showAlertModal('Aviso', `Não foi possível gerar os períodos:\n\n${err?.message || 'Erro desconhecido.'}`);
+                }
+            } catch (error) {
+                showAlertModal('Erro', 'Erro de conexão.');
+            }
+        });
+    }
+
+    function openNextPeriod() {
+        const yearId = getSelectedYearId();
+        if (!yearId) {
+            showAlertModal('Aviso', 'Selecione um Ano Acadêmico no filtro ou ative um ano letivo antes de prosseguir.');
+            return;
+        }
+        showConfirmModal('Abrir Próximo Período', 'Atenção: O sistema validará notas e prazos para tentar FECHAR o período atual e ABRIR o próximo.\n\nDeseja continuar?', async () => {
+            try {
+                const response = await fetch(`/api/academic-periods/open-next/${yearId}`, {
+                    method: 'PUT', headers: {'Authorization': `Bearer ${getToken()}`}
+                });
+                if (response.ok) {
+                    const nextPeriod = await response.json();
+                    showAlertModal('Sucesso', `Período "${nextPeriod.name}" aberto com sucesso!`);
+                    loadPeriods();
+                } else {
+                    const err = await response.json().catch(() => null);
+                    showAlertModal('Aviso', `A transição foi bloqueada:\n\n${err?.message || 'Erro desconhecido.'}`);
                 }
             } catch (error) {
                 showAlertModal('Erro', 'Erro de conexão.');

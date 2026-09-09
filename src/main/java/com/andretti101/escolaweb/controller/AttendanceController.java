@@ -66,7 +66,8 @@ public class AttendanceController {
                     .toList();
         }
 
-        return ResponseEntity.ok(attendances.stream().map(this::toResponse).toList());
+        final var cachedPeriods = academicPeriodService.findAll();
+        return ResponseEntity.ok(attendances.stream().map(a -> toResponse(a, cachedPeriods)).toList());
     }
 
     @GetMapping("/{id}")
@@ -85,8 +86,9 @@ public class AttendanceController {
             Lesson lesson = lessonService.findById(lessonId);
             authenticatedUserService.enforceTeacherOwnership(lesson.getTeacherClassSubject());
         }
+        final var cachedPeriods = academicPeriodService.findAll();
         return ResponseEntity.ok(
-                attendanceService.findByLesson(lessonId).stream().map(this::toResponse).toList()
+                attendanceService.findByLesson(lessonId).stream().map(a -> toResponse(a, cachedPeriods)).toList()
         );
     }
 
@@ -104,7 +106,8 @@ public class AttendanceController {
                     .toList();
         }
 
-        return ResponseEntity.ok(attendances.stream().map(this::toResponse).toList());
+        final var cachedPeriods = academicPeriodService.findAll();
+        return ResponseEntity.ok(attendances.stream().map(a -> toResponse(a, cachedPeriods)).toList());
     }
 
     @GetMapping("/frequency/student/{studentId}/tcs/{tcsId}")
@@ -178,10 +181,14 @@ public class AttendanceController {
     }
 
     private AttendanceResponseDTO toResponse(Attendance a) {
+        return toResponse(a, null);
+    }
+
+    private AttendanceResponseDTO toResponse(Attendance a, List<com.andretti101.escolaweb.model.entity.AcademicPeriod> cachedPeriods) {
         String pName = "-";
         java.time.LocalDate d = a.getLesson().getLessonDate();
         if (d != null) {
-            var periods = academicPeriodService.findAll();
+            var periods = cachedPeriods != null ? cachedPeriods : academicPeriodService.findAll();
             for (var p : periods) {
                 if (p.getStartDate() != null && p.getEndDate() != null) {
                     if (!d.isBefore(p.getStartDate()) && !d.isAfter(p.getEndDate())) {

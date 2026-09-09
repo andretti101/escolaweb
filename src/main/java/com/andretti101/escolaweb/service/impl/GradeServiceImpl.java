@@ -147,14 +147,13 @@ public class GradeServiceImpl implements GradeService {
             BigDecimal periodSum = periodGrades.stream()
                     .map(Grade::getValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal periodAvg = periodSum.divide(BigDecimal.valueOf(periodGrades.size()), 2, RoundingMode.HALF_UP);
+            BigDecimal periodAvg = periodSum.divide(BigDecimal.valueOf(periodGrades.size()), 4, RoundingMode.HALF_UP);
             sumOfPeriodAverages = sumOfPeriodAverages.add(periodAvg);
         }
 
-        SchoolSettings settings = schoolSettingsService.findSettings();
-        int divisor = getDivisorForPeriodType(settings.getPeriodType());
+        int periodsWithGrades = gradesByPeriod.size();
 
-        return sumOfPeriodAverages.divide(BigDecimal.valueOf(divisor), 2, RoundingMode.HALF_UP);
+        return sumOfPeriodAverages.divide(BigDecimal.valueOf(periodsWithGrades), 2, RoundingMode.CEILING);
     }
 
     private int getDivisorForPeriodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType type) {
@@ -162,7 +161,7 @@ public class GradeServiceImpl implements GradeService {
         switch (type) {
             case BIMESTER: return 4;
             case TRIMESTER: return 3;
-            case QUADRIMESTER: return 3; // Um ano tem 3 quadrimestres
+            case QUADRIMESTER: return 3;
             case SEMESTER: return 2;
             case ANNUAL: return 1;
             default: return 1;
@@ -185,9 +184,8 @@ public class GradeServiceImpl implements GradeService {
 
         int divisor = getDivisorForPeriodType(settings.getPeriodType());
 
-        // Só consolida Aprovado/Reprovado quando todos os períodos mínimos (ex: 4 bimestres) tiverem notas.
         if (periodsWithGrades < divisor) {
-            grade.setStudentSituation(StudentSituation.PENDING);
+            allGrades.forEach(g -> g.setStudentSituation(StudentSituation.PENDING));
             return;
         }
 
@@ -197,10 +195,11 @@ public class GradeServiceImpl implements GradeService {
         boolean approvedByGrade = average.compareTo(settings.getMinimumGrade()) >= 0;
         boolean approvedByFrequency = frequency.compareTo(settings.getMinimumAttendance()) >= 0;
 
-        grade.setStudentSituation(
-                approvedByGrade && approvedByFrequency
-                        ? StudentSituation.APPROVED
-                        : StudentSituation.FAILED);
+        StudentSituation situation = approvedByGrade && approvedByFrequency
+                ? StudentSituation.APPROVED
+                : StudentSituation.FAILED;
+
+        allGrades.forEach(g -> g.setStudentSituation(situation));
     }
 
     private void recordHistory(Grade grade, BigDecimal previousValue, BigDecimal newValue) {

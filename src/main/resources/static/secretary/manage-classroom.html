@@ -8,7 +8,7 @@
     <title>Gerenciar Turma | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
     <meta name="description" content="Gerenciamento de Matrículas e Grade de Aulas da Turma"/>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
@@ -486,15 +486,14 @@
         let data = allEnrollments;
         if (filter) {
             const q = filter.toLowerCase();
-            data = data.filter(e => (e.studentName || '').toLowerCase().includes(q));
+            data = data.filter(e => (e.studentName || '').toLowerCase().includes(q) || (e.studentRegistrationNumber || '').toLowerCase().includes(q));
         }
         if (data.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">${filter ? 'Nenhum aluno encontrado.' : 'Nenhum aluno matriculado nesta turma.'}</td></tr>`;
             return;
         }
         tbody.innerHTML = data.map(e => {
-            const student = allStudents.find(s => s.id === e.studentId);
-            const regNumber = student ? student.registrationNumber : '';
+            const regNumber = e.studentRegistrationNumber || '';
             return `
             <tr>
                 <td><strong>${escapeHtml(e.studentName || e.studentId)}</strong></td>

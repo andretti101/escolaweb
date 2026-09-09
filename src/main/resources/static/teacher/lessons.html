@@ -6,7 +6,7 @@
     <title>Diário de Classe | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
     <meta name="description" content="Listagem de aulas" />
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
@@ -310,18 +310,90 @@
             }).join('');
         }
 
-        async function deleteLesson(id) {
-            if (!confirm('ATENÇÃO: Deseja excluir definitivamente esta aula? A exclusão também removerá os registros de chamada vinculados a ela.')) return;
-            try {
-                const response = await fetch(`/api/lessons/${id}`, {
-                    method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` }
-                });
-                if (response.ok) { loadLessons(); }
-                else {
-                    const err = await response.json().catch(()=>null);
-                    alert(`Erro ao excluir: ${err?.message || 'A aula possui registros dependentes.'}`);
+        function showConfirmModal(title, message, onConfirm) {
+            let modalEl = document.getElementById('customConfirmModal');
+            if (!modalEl) {
+                const html = `
+                <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="customConfirmModalTitle"></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p id="customConfirmModalMessage" style="white-space: pre-wrap;"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-danger" id="customConfirmModalBtn">Excluir</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                document.body.insertAdjacentHTML('beforeend', html);
+                modalEl = document.getElementById('customConfirmModal');
+            }
+            document.getElementById('customConfirmModalTitle').textContent = title;
+            document.getElementById('customConfirmModalMessage').textContent = message;
+            
+            const confirmBtn = document.getElementById('customConfirmModalBtn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            const modal = new bootstrap.Modal(modalEl);
+            newBtn.addEventListener('click', () => {
+                modal.hide();
+                onConfirm();
+            });
+            modal.show();
+        }
+
+        function showAlertModal(title, message) {
+            let modalEl = document.getElementById('customAlertModal');
+            if (!modalEl) {
+                const html = `
+                <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="customAlertModalTitle"></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p id="customAlertModalMessage" style="white-space: pre-wrap;"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                document.body.insertAdjacentHTML('beforeend', html);
+                modalEl = document.getElementById('customAlertModal');
+            }
+            document.getElementById('customAlertModalTitle').textContent = title;
+            document.getElementById('customAlertModalMessage').textContent = message;
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        function deleteLesson(id) {
+            showConfirmModal('Excluir Aula', 'ATENÇÃO: Deseja excluir definitivamente esta aula?\n\nA exclusão também removerá os registros de chamada vinculados a ela.', async () => {
+                try {
+                    const response = await fetch(`/api/lessons/${id}`, {
+                        method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    if (response.ok) { 
+                        loadLessons(); 
+                    } else {
+                        const err = await response.json().catch(()=>null);
+                        showAlertModal('Erro', `Erro ao excluir: ${err?.message || 'A aula possui registros dependentes.'}`);
+                    }
+                } catch (error) { 
+                    showAlertModal('Erro', 'Erro de conexão.'); 
                 }
-            } catch (error) { alert('Erro de conexão.'); }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', async () => {

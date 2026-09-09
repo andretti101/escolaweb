@@ -6,7 +6,7 @@
     <title>Registrar Aula | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
     <meta name="description" content="Registro de aulas e chamadas" />
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
@@ -232,6 +232,16 @@
         document.getElementById('lessonForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnSave');
+
+            // Validação: garantir que todos os alunos possuem status de presença
+            for (const student of currentStudents) {
+                const selected = document.querySelector(`input[name="attendance_${student.id}"]:checked`);
+                if (!selected) {
+                    showAlert(`Aluno "${student.name}" não possui status de presença definido. Marque Presente, Falta ou Justificada para todos os alunos.`, 'danger');
+                    return;
+                }
+            }
+
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Salvando...';
             
