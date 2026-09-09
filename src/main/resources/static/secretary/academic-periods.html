@@ -8,7 +8,7 @@
     <title>Períodos Acadêmicos | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
     <meta name="description" content="Listagem de períodos acadêmicos"/>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
@@ -146,7 +146,7 @@
         if (!dateStr) return '—';
         try {
             const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
-            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
         } catch (e) {
             return dateStr;
         }
@@ -202,10 +202,20 @@
             if (!response.ok) throw new Error('Erro na resposta do servidor');
             allPeriods = await response.json();
 
-            // Sort by academic year descending, then period start date ascending
-            allPeriods.sort((a, b) => {
-                if (a.academicYear !== b.academicYear) return b.academicYear - a.academicYear;
-                return new Date(a.startDate) - new Date(b.startDate);
+            // Computed Status
+            allPeriods.sort((a, b) => a.id - b.id);
+            const yearOpenFound = {};
+            allPeriods.forEach(p => {
+                if (p.closed) {
+                    p.computedStatus = 'fechado';
+                } else {
+                    if (!yearOpenFound[p.academicYearId]) {
+                        p.computedStatus = 'aberto';
+                        yearOpenFound[p.academicYearId] = true;
+                    } else {
+                        p.computedStatus = 'pendente';
+                    }
+                }
             });
 
             applyFilters();
@@ -249,9 +259,14 @@
         recordCount.textContent = `${periods.length} período${periods.length !== 1 ? 's' : ''} listado${periods.length !== 1 ? 's' : ''}`;
 
         tableBody.innerHTML = periods.map(p => {
-            const statusBadge = !p.closed
-                ? '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i> Aberto</span>'
-                : '<span class="badge bg-label-secondary"><i class="bx bx-lock-alt me-1"></i> Fechado</span>';
+            let statusBadge = '';
+            if (p.computedStatus === 'fechado') {
+                statusBadge = '<span class="badge bg-label-secondary"><i class="bx bx-lock-alt me-1"></i> Fechado</span>';
+            } else if (p.computedStatus === 'aberto') {
+                statusBadge = '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i> Aberto</span>';
+            } else {
+                statusBadge = '<span class="badge bg-label-warning"><i class="bx bx-time me-1"></i> Pendente</span>';
+            }
 
             return `
                     <tr class="${p.closed ? 'table-light text-muted' : ''}">

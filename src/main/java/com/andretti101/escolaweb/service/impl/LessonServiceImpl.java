@@ -50,6 +50,7 @@ public class LessonServiceImpl implements LessonService {
         existing.setContent(incoming.getContent());
         existing.setNotes(incoming.getNotes());
         existing.setTeacherClassSubject(tcs);
+        existing.setLessonCount(incoming.getLessonCount());
 
         return existing;
     }

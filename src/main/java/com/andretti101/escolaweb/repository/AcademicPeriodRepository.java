@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface AcademicPeriodRepository extends JpaRepository<AcademicPeriod, Integer> {
     List<AcademicPeriod> findByAcademicYear(AcademicYear academicYear);
+    List<AcademicPeriod> findByAcademicYearOrderByIdAsc(AcademicYear academicYear);
     boolean existsByAcademicYear(AcademicYear academicYear);
 }

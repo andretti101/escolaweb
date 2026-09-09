@@ -7,7 +7,7 @@
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
     <title>Cadastro de Período Acadêmico | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
@@ -66,11 +66,11 @@
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label" for="startDate">Data de Início</label>
-                                                <input type="date" class="form-control" id="startDate"/>
+                                                <input type="text" class="form-control date-mask" id="startDate" placeholder="DD/MM" maxlength="5"/>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label" for="endDate">Data de Término</label>
-                                                <input type="date" class="form-control" id="endDate"/>
+                                                <input type="text" class="form-control date-mask" id="endDate" placeholder="DD/MM" maxlength="5"/>
                                             </div>
                                         </div>
 
@@ -143,6 +143,23 @@
 
         if (!form) return;
 
+        // Date Mask DD/MM
+        document.querySelectorAll('.date-mask').forEach(input => {
+            input.addEventListener('input', function (e) {
+                let v = this.value.replace(/\D/g, '');
+                if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2, 4);
+                this.value = v;
+            });
+        });
+
+        function parseDate(dateStr) {
+            if (!dateStr || dateStr.length !== 5) return null;
+            const parts = dateStr.split('/');
+            if (parts.length !== 2) return null;
+            const yearStr = yearSelect.options[yearSelect.selectedIndex].text.substring(0, 4);
+            return `${yearStr}-${parts[1]}-${parts[0]}`;
+        }
+
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             formMessage.innerHTML = '';
@@ -152,8 +169,8 @@
             const payload = {
                 academicYearId: parseInt(yearSelect.value),
                 name: document.getElementById('name').value,
-                startDate: document.getElementById('startDate').value || null,
-                endDate: document.getElementById('endDate').value || null
+                startDate: parseDate(document.getElementById('startDate').value),
+                endDate: parseDate(document.getElementById('endDate').value)
             };
 
             try {

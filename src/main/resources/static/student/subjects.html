@@ -1,14 +1,14 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
       data-assets-path="/assets/" data-template="vertical-menu-template-free">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
-    <title>Minhas MatÃ©rias - Aluno</title>
+    <title>Minhas Matérias - Aluno</title>
     <script src="/js/auth-guard.js"></script>
-    <meta name="description" content="Listagem de anos acadÃªmicos"/>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=3"/>
+    <meta name="description" content="Listagem de anos acadêmicos"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
@@ -81,7 +81,7 @@
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="fw-bold mb-0">
-                                <span class="text-muted fw-light">Turma /</span> Minhas MatÃ©rias
+                                <span class="text-muted fw-light">Turma /</span> Minhas Matérias
                             </h4>
                         </div>
 
@@ -94,17 +94,17 @@
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>MatÃ©ria</th>
-                                            <th>Professor ResponsÃ¡vel</th>
-                                            <th>AvaliaÃ§Ãµes MÃ­nimas (por PerÃ­odo)</th>
-                                            <th>AvaliaÃ§Ãµes MÃ¡ximas</th>
+                                            <th>Matéria</th>
+                                            <th>Professor Responsável</th>
+                                            <th>Avaliações Mínimas (por Período)</th>
+                                            <th>Avaliações Máximas</th>
                                         </tr>
                                     </thead>
                                     <tbody id="subjectsTableBody">
                                         <tr>
                                             <td colspan="4" class="text-center py-5">
                                                 <div class="spinner-border text-primary" role="status"></div>
-                                                <div class="mt-2 text-muted">Carregando matÃ©rias...</div>
+                                                <div class="mt-2 text-muted">Carregando matérias...</div>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -117,7 +117,7 @@
                     <footer class="content-footer footer bg-footer-theme">
                         <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                             <div class="mb-2 mb-md-0">
-                                Â© <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                                © <script>document.write(new Date().getFullYear());</script> EscolaWEB
                             </div>
                         </div>
                     </footer>
@@ -162,7 +162,7 @@
                     headers: {'Authorization': `Bearer ${jwtToken}`}
                 });
                 
-                if (!myEnrollmentsRes.ok) throw new Error('Falha ao carregar matrÃ­culas');
+                if (!myEnrollmentsRes.ok) throw new Error('Falha ao carregar matrículas');
                 
                 const myEnrollments = await myEnrollmentsRes.json();
                 const activeEnrollment = myEnrollments.find(e => e.active);
@@ -171,7 +171,7 @@
                 
                 if (!activeEnrollment) {
                     document.getElementById('classroomTitle').textContent = 'Nenhuma turma ativa encontrada';
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted">VocÃª nÃ£o estÃ¡ matriculado em nenhuma turma ativa no momento.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted">Você não está matriculado em nenhuma turma ativa no momento.</td></tr>`;
                     return;
                 }
                 
@@ -182,15 +182,15 @@
                     headers: {'Authorization': `Bearer ${jwtToken}`}
                 });
                 
-                if (!subjectsRes.ok) throw new Error('Falha ao carregar matÃ©rias');
+                if (!subjectsRes.ok) throw new Error('Falha ao carregar matérias');
                 
                 let subjects = await subjectsRes.json();
                 subjects.sort((a, b) => (a.subjectName || '').localeCompare(b.subjectName || ''));
                 
-                document.getElementById('subjectsCount').textContent = `${subjects.length} matÃ©ria(s) nesta turma`;
+                document.getElementById('subjectsCount').textContent = `${subjects.length} matéria(s) nesta turma`;
                 
                 if (subjects.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted">Nenhuma matÃ©ria vinculada a esta turma ainda.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted">Nenhuma matéria vinculada a esta turma ainda.</td></tr>`;
                     return;
                 }
                 
@@ -226,7 +226,7 @@
                         <td colspan="4" class="text-center py-5 text-danger">
                             <i class="bx bx-error-circle fs-1 mb-2"></i>
                             <br>
-                            Ocorreu um erro ao carregar as matÃ©rias da turma.
+                            Ocorreu um erro ao carregar as matérias da turma.
                         </td>
                     </tr>
                 `;

@@ -7,6 +7,7 @@ public record EnrollmentResponseDTO(
         Integer id,
         Integer studentId,
         String studentName,
+        String studentRegistrationNumber,
         Integer classRoomId,
         String classRoomName,
         Integer academicYear,

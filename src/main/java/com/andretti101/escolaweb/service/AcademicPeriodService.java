@@ -12,4 +12,6 @@ public interface AcademicPeriodService {
     List<AcademicPeriod> findAll();
     List<AcademicPeriod> findByAcademicYear(Integer academicYearId);
     AcademicPeriod close(Integer id);
+    List<AcademicPeriod> generatePeriodsForYear(Integer academicYearId);
+    AcademicPeriod openNextPeriod(Integer academicYearId);
 }

@@ -1,11 +1,11 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Boletim Final | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=4" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5" />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
     <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
@@ -26,7 +26,7 @@
                     </div>
 
                     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                        <!-- T√≠tulo da Navbar -->
+                        <!-- TÌtulo da Navbar -->
                         <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
                             <span class="fs-4 fw-bold d-flex align-items-center">
                                 <i class="bx bxs-graduation fs-3 text-primary me-2"></i> 
@@ -34,7 +34,7 @@
                             </span>
                         </div>
 
-                        <!-- Avatar do Usu√°rio -->
+                        <!-- Avatar do Usu·rio -->
                         <ul class="navbar-nav flex-row align-items-center ms-auto">
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -124,7 +124,7 @@
                 if (!gradesRes.ok) throw new Error('Falha ao obter notas');
                 const grades = await gradesRes.json();
 
-                let divisor = 4; // Padr√£o
+                let divisor = 4; // Padr„o
                 if(settings.periodType === 'BIMESTER') divisor = 4;
                 else if(settings.periodType === 'TRIMESTER') divisor = 3;
                 else if(settings.periodType === 'QUADRIMESTER') divisor = 3;
@@ -150,8 +150,8 @@
                     <tr class="table-primary">
                         <th>Disciplina</th>
                         ${sortedPeriods.map(p => `<th>${p}</th>`).join('')}
-                        <th>M√©dia Final</th>
-                        <th>Situa√ß√£o</th>
+                        <th>MÈdia Final</th>
+                        <th>SituaÁ„o</th>
                     </tr>
                 `;
 
@@ -200,7 +200,7 @@
                 tbody.innerHTML = html;
             } catch (e) {
                 console.error(e);
-                document.getElementById('reportHead').innerHTML = '<tr><td class="text-danger">Erro de conex√£o</td></tr>';
+                document.getElementById('reportHead').innerHTML = '<tr><td class="text-danger">Erro de conex„o</td></tr>';
             }
         }
         

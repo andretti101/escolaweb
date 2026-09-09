@@ -68,6 +68,22 @@ public class AcademicPeriodController {
         return ResponseEntity.noContent().build();
     }
 
+    // ── Ciclo de Vida
+
+    @PostMapping("/generate/{yearId}")
+    @PreAuthorize("hasRole('PRINCIPAL')")
+    public ResponseEntity<List<AcademicPeriodResponseDTO>> generatePeriodsForYear(@PathVariable Integer yearId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                academicPeriodService.generatePeriodsForYear(yearId).stream().map(this::toResponse).toList()
+        );
+    }
+
+    @PutMapping("/open-next/{yearId}")
+    @PreAuthorize("hasRole('PRINCIPAL')")
+    public ResponseEntity<AcademicPeriodResponseDTO> openNextPeriod(@PathVariable Integer yearId) {
+        return ResponseEntity.ok(toResponse(academicPeriodService.openNextPeriod(yearId)));
+    }
+
     // ── Mapping
 
     private AcademicPeriod toEntity(AcademicPeriodRequestDTO dto) {

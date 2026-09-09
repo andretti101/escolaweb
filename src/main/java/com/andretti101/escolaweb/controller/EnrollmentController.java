@@ -150,6 +150,7 @@ public class EnrollmentController {
                 e.getId(),
                 e.getStudent().getId(),
                 e.getStudent().getName(),
+                e.getStudent().getRegistrationNumber(),
                 e.getClassRoom().getId(),
                 e.getClassRoom().getName(),
                 e.getClassRoom().getAcademicYear().getYear(),
