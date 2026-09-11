@@ -2,15 +2,16 @@
 <html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
       data-assets-path="/assets/" data-template="vertical-menu-template-free">
 <head>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta charset="utf-8"/>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
-    <title>Configurações da Escola | Escola Web</title>
+    <title>ConfiguraÃ§Ãµes da Escola | Escola Web</title>
 
     <script src="/js/auth-guard.js"></script>
 
-    <meta name="description" content="Configurações gerais da escola"/>
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
+    <meta name="description" content="ConfiguraÃ§Ãµes gerais da escola"/>
+    
 
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -43,21 +44,21 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold mb-0">
-                            <span class="text-muted fw-light">Visualização /</span> Configurações da Escola
+                            <span class="text-muted fw-light">VisualizaÃ§Ã£o /</span> ConfiguraÃ§Ãµes da Escola
                         </h4>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card mb-4">
-                                <h5 class="card-header border-bottom">Informações Gerais (Somente Leitura)</h5>
+                                <h5 class="card-header border-bottom">InformaÃ§Ãµes Gerais (Somente Leitura)</h5>
 
                                 <div class="card-body mt-4">
                                     <div id="alertContainer"></div>
 
                                     <form id="settingsForm">
                                         <div class="row">
-                                            <!-- Informações da Instituição -->
+                                            <!-- InformaÃ§Ãµes da InstituiÃ§Ã£o -->
                                             <div class="col-md-6 mb-3">
                                                 <label for="schoolName" class="form-label">Nome da Escola</label>
                                                 <input type="text" class="form-control" id="schoolName"
@@ -75,18 +76,18 @@
                                                        disabled/>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label for="address" class="form-label">Endereço</label>
+                                                <label for="address" class="form-label">EndereÃ§o</label>
                                                 <input type="text" class="form-control" id="address"
                                                        name="address" disabled/>
                                             </div>
 
                                             <div class="col-12 mt-4 mb-3 border-top pt-4">
-                                                <h6 class="fw-bold"><i class="bx bx-book-bookmark me-2"></i> Parâmetros
-                                                    Acadêmicos</h6>
+                                                <h6 class="fw-bold"><i class="bx bx-book-bookmark me-2"></i> ParÃ¢metros
+                                                    AcadÃªmicos</h6>
                                             </div>
 
                                             <div class="col-md-4 mb-3">
-                                                <label for="periodType" class="form-label">Divisão do Ano Letivo</label>
+                                                <label for="periodType" class="form-label">DivisÃ£o do Ano Letivo</label>
                                                 <select id="periodType" class="form-select" disabled>
                                                     <option value="BIMESTER">Bimestre</option>
                                                     <option value="TRIMESTER">Trimestre</option>
@@ -97,8 +98,8 @@
                                             </div>
 
                                             <div class="col-md-4 mb-3">
-                                                <label for="minimumGrade" class="form-label">Média Mínima para
-                                                    Aprovação</label>
+                                                <label for="minimumGrade" class="form-label">MÃ©dia MÃ­nima para
+                                                    AprovaÃ§Ã£o</label>
                                                 <div class="input-group">
                                                     <input type="number" class="form-control" id="minimumGrade"
                                                            disabled/>
@@ -107,7 +108,7 @@
                                             </div>
 
                                             <div class="col-md-4 mb-3">
-                                                <label for="minimumAttendance" class="form-label">Frequência Mínima
+                                                <label for="minimumAttendance" class="form-label">FrequÃªncia MÃ­nima
                                                     (%)</label>
                                                 <div class="input-group">
                                                     <input type="number" class="form-control"
@@ -126,10 +127,8 @@
                 <footer class="content-footer footer bg-footer-theme">
                     <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">
-                            ©
-                            <script>document.write(new Date().getFullYear());</script>
-                            EscolaWEB
-                        </div>
+                                Copyright Â© 2026 EscolaWEB. Todos os direitos reservados.
+                            </div>
                     </div>
                 </footer>
                 <div class="content-backdrop fade"></div>
@@ -175,12 +174,12 @@
                 document.getElementById('minimumGrade').value = data.minimumGrade || '6.0';
                 document.getElementById('minimumAttendance').value = data.minimumAttendance || '70.00';
             } else if (response.status === 404) {
-                showAlert('As configurações ainda não foram definidas pela Direção.', 'info');
+                showAlert('As configuraÃ§Ãµes ainda nÃ£o foram definidas pela DireÃ§Ã£o.', 'info');
             } else {
-                showAlert('Erro ao carregar configurações atuais.', 'danger');
+                showAlert('Erro ao carregar configuraÃ§Ãµes atuais.', 'danger');
             }
         } catch (error) {
-            showAlert('Erro de conexão com o servidor.', 'danger');
+            showAlert('Erro de conexÃ£o com o servidor.', 'danger');
         }
     }
 

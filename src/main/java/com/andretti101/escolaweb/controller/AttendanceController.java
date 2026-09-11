@@ -123,6 +123,14 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceService.calculateFrequency(studentId, tcsId));
     }
 
+    @GetMapping("/report/student/{studentId}")
+    @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
+    public ResponseEntity<com.andretti101.escolaweb.dto.response.StudentAttendanceReportDTO> getStudentAttendanceReport(
+            @PathVariable Integer studentId) {
+        authenticatedUserService.enforceStudentOwnership(studentId);
+        return ResponseEntity.ok(attendanceService.getStudentAttendanceReport(studentId));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<AttendanceResponseDTO> update(
