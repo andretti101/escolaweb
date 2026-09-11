@@ -124,28 +124,105 @@ public class AttendanceServiceImpl implements AttendanceService {
         TeacherClassSubject tcs = teacherClassSubjectService.findById(teacherClassSubjectId);
 
         List<Lesson> lessons = lessonRepository.findByTeacherClassSubject(tcs);
-
         if (lessons.isEmpty()) {
             return BigDecimal.valueOf(100);
         }
-        int totalSlots = lessons.stream()
-                .mapToInt(lesson -> lesson.getLessonCount().getValue())
-                .sum();
 
-        Map<Integer, Integer> slotsByLessonId = lessons.stream()
-                .collect(Collectors.toMap(Lesson::getId, l -> l.getLessonCount().getValue()));
+        List<Attendance> attendances = attendanceRepository.findByStudent(student).stream()
+                .filter(a -> a.getLesson().getTeacherClassSubject().getId().equals(teacherClassSubjectId))
+                .toList();
 
-        int absentSlots = attendanceRepository
-                .findByLessonInAndStudentAndStatus(lessons, student, AttendanceStatus.ABSENT)
-                .stream()
-                .mapToInt(a -> slotsByLessonId.getOrDefault(a.getLesson().getId(), 1))
-                .sum();
+        int presencaValida = 0;
+        int faltasNaoJustificadas = 0;
 
-        return BigDecimal.valueOf(totalSlots - absentSlots)
-                .divide(BigDecimal.valueOf(totalSlots), 4, RoundingMode.HALF_UP)
+        for (Attendance a : attendances) {
+            int count = a.getLesson().getLessonCount() != null ? a.getLesson().getLessonCount().getValue() : 1;
+            if (a.getStatus() == AttendanceStatus.PRESENT || a.getStatus() == AttendanceStatus.JUSTIFIED_ABSENCE) {
+                presencaValida += count;
+            } else if (a.getStatus() == AttendanceStatus.ABSENT) {
+                faltasNaoJustificadas += count;
+            }
+        }
+
+        int totalAulas = presencaValida + faltasNaoJustificadas;
+        if (totalAulas == 0) {
+            return BigDecimal.valueOf(100);
+        }
+
+        return BigDecimal.valueOf(presencaValida)
+                .divide(BigDecimal.valueOf(totalAulas), 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.andretti101.escolaweb.dto.response.StudentAttendanceReportDTO getStudentAttendanceReport(Integer studentId) {
+        Student student = studentService.findById(studentId);
+        List<Attendance> attendances = attendanceRepository.findByStudent(student);
+
+        Map<String, Integer> validPresencePerSubject = new java.util.HashMap<>();
+        Map<String, Integer> unjustifiedAbsencesPerSubject = new java.util.HashMap<>();
+
+        int totalValidPresence = 0;
+        int totalUnjustifiedAbsences = 0;
+
+        for (Attendance a : attendances) {
+            String subjectName = a.getLesson().getTeacherClassSubject().getSubject().getName();
+            int count = a.getLesson().getLessonCount() != null ? a.getLesson().getLessonCount().getValue() : 1;
+
+            if (a.getStatus() == AttendanceStatus.PRESENT || a.getStatus() == AttendanceStatus.JUSTIFIED_ABSENCE) {
+                validPresencePerSubject.put(subjectName, validPresencePerSubject.getOrDefault(subjectName, 0) + count);
+                totalValidPresence += count;
+            } else if (a.getStatus() == AttendanceStatus.ABSENT) {
+                unjustifiedAbsencesPerSubject.put(subjectName, unjustifiedAbsencesPerSubject.getOrDefault(subjectName, 0) + count);
+                totalUnjustifiedAbsences += count;
+            }
+        }
+
+        Map<String, Integer> absencesPerSubject = new java.util.HashMap<>(unjustifiedAbsencesPerSubject);
+        Map<String, BigDecimal> frequencyPerSubject = new java.util.HashMap<>();
+
+        java.util.Set<String> allSubjects = new java.util.HashSet<>();
+        allSubjects.addAll(validPresencePerSubject.keySet());
+        allSubjects.addAll(unjustifiedAbsencesPerSubject.keySet());
+
+        for (String subject : allSubjects) {
+            int valid = validPresencePerSubject.getOrDefault(subject, 0);
+            int unjustified = unjustifiedAbsencesPerSubject.getOrDefault(subject, 0);
+            int total = valid + unjustified;
+
+            BigDecimal freq;
+            if (total == 0) {
+                freq = BigDecimal.valueOf(100);
+            } else {
+                freq = BigDecimal.valueOf(valid)
+                        .divide(BigDecimal.valueOf(total), 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .setScale(2, RoundingMode.HALF_UP);
+            }
+            frequencyPerSubject.put(subject, freq);
+        }
+
+        int overallTotal = totalValidPresence + totalUnjustifiedAbsences;
+        BigDecimal generalFrequency;
+        if (overallTotal == 0) {
+            generalFrequency = BigDecimal.valueOf(100);
+        } else {
+            generalFrequency = BigDecimal.valueOf(totalValidPresence)
+                    .divide(BigDecimal.valueOf(overallTotal), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return new com.andretti101.escolaweb.dto.response.StudentAttendanceReportDTO(
+                studentId,
+                generalFrequency,
+                absencesPerSubject,
+                frequencyPerSubject
+        );
+    }
+
 
     private void recordHistory(Attendance attendance, AttendanceStatus previous, AttendanceStatus current) {
         AttendanceHistory history = AttendanceHistory.builder()

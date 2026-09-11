@@ -14,4 +14,5 @@ public interface AttendanceService {
     List<Attendance> findByLesson(Integer lessonId);
     List<Attendance> findByStudent(Integer studentId);
     BigDecimal calculateFrequency(Integer studentId, Integer teacherClassSubjectId);
+    com.andretti101.escolaweb.dto.response.StudentAttendanceReportDTO getStudentAttendanceReport(Integer studentId);
 }

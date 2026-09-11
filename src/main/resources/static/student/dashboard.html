@@ -93,8 +93,8 @@
                                 <div class="card bg-primary text-white">
                                     <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
                                         <div>
-                                            <h3 class="text-white mb-2" id="welcomeMessage">Olá, Aluno!</h3>
-                                            <p class="mb-0 text-white-50">Bem-vindo(a) ao seu portal acadêmico. Aqui você acompanha seu desempenho, faltas e boletim em tempo real.</p>
+                                            <h3 class="text-white mb-2" id="welcomeMessage">OlÃ¡, Aluno!</h3>
+                                            <p class="mb-0 text-white-50">Bem-vindo(a) ao seu portal acadÃªmico. Aqui vocÃª acompanha seu desempenho, faltas e boletim em tempo real.</p>
                                         </div>
                                         <div>
                                             <img src="/assets/img/illustrations/man-with-laptop-light.png" alt="Aluno" class="d-none d-sm-block" height="120" />
@@ -114,20 +114,20 @@
                                             <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-certification fs-3"></i></span>
                                         </div>
                                         <h5 class="card-title mb-2">Boletim Escolar</h5>
-                                        <p class="text-muted mb-0">Consulte suas notas e avaliações lançadas pelos professores.</p>
+                                        <p class="text-muted mb-0">Consulte suas notas e avaliaÃ§Ãµes lanÃ§adas pelos professores.</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Ver Frequência -->
+                            <!-- Ver FrequÃªncia -->
                             <div class="col-md-6 col-lg-6 mb-4">
                                 <div class="card h-100 card-hover cursor-pointer" onclick="window.location.href='/student/attendances.html'">
                                     <div class="card-body text-center">
                                         <div class="avatar avatar-md mx-auto mb-3">
                                             <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-check-shield fs-3"></i></span>
                                         </div>
-                                        <h5 class="card-title mb-2">Frequência e Faltas</h5>
-                                        <p class="text-muted mb-0">Acompanhe sua presença nas aulas e evite reprovação por falta.</p>
+                                        <h5 class="card-title mb-2">FrequÃªncia e Faltas</h5>
+                                        <p class="text-muted mb-0">Acompanhe sua presenÃ§a nas aulas e evite reprovaÃ§Ã£o por falta.</p>
                                     </div>
                                 </div>
                             </div>
@@ -137,7 +137,7 @@
                     <footer class="content-footer footer bg-footer-theme">
                         <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                             <div class="mb-2 mb-md-0">
-                                © <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                                Â© <script>document.write(new Date().getFullYear());</script> EscolaWEB
                             </div>
                         </div>
                     </footer>
@@ -160,7 +160,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const userName = localStorage.getItem('user_name') || 'Estudante';
             const firstName = userName.split(' ')[0];
-            document.getElementById('welcomeMessage').textContent = \Olá, \!\;
+            document.getElementById('welcomeMessage').textContent = `OlÃ¡, ${firstName}!`;
             
             const initial = firstName.charAt(0).toUpperCase();
             const initialElem = document.getElementById('dropdownAvatarInitial');
