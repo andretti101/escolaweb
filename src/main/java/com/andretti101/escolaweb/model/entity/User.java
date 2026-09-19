@@ -61,6 +61,9 @@ public abstract class User implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "last_read_announcements")
+    private LocalDateTime lastReadAnnouncements;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private java.util.List<PasswordResetToken> passwordResetTokens;
 }

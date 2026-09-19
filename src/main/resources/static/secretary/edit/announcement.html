@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Editar Aviso | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Editar Aviso"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <style>
+        .search-select-container { position: relative; }
+        .search-select-input { cursor: text; }
+        .search-select-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; z-index: 1050;
+            max-height: 250px; overflow-y: auto; background: #fff;
+            border: 1px solid #d9dee3; border-top: none; border-radius: 0 0 .375rem .375rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1); display: none;
+        }
+        .search-select-dropdown.show { display: block; }
+        .search-select-dropdown .dropdown-item {
+            padding: .5rem .75rem; cursor: pointer; font-size: .875rem;
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .search-select-dropdown .dropdown-item:hover { background: #f5f5f9; }
+        .search-select-dropdown .dropdown-item.disabled { color: #a1acb8; cursor: default; pointer-events: none; }
+        .search-select-dropdown .no-results { padding: .75rem; text-align: center; color: #a1acb8; font-size: .875rem; }
+        .selected-tags { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .5rem; }
+        .selected-tag {
+            display: inline-flex; align-items: center; gap: .25rem;
+            background: #e7e7ff; color: #696cff; border-radius: .25rem;
+            padding: .15rem .5rem; font-size: .8125rem;
+        }
+        .selected-tag .remove-tag { cursor: pointer; font-weight: bold; line-height: 1; }
+        .selected-tag .remove-tag:hover { color: #ff3e1d; }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+                    
+                    <h4 class="fw-bold py-3 mb-4">
+                        <span class="text-muted fw-light">Mural de Recados /</span> Editar Aviso
+                    </h4>
+
+                    <div class="row">
+                        <div class="col-xxl">
+                            <div class="card mb-4">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="mb-0">Editar Aviso</h5>
+                                    <a href="/secretary/announcements.html" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bx bx-arrow-back"></i> Voltar
+                                    </a>
+                                </div>
+                                <div class="card-body">
+                                    <div id="alert-container"></div>
+                                    <form id="edit-form" onsubmit="return false;">
+                                        <div class="row mb-3">
+                                            <label class="col-sm-2 col-form-label" for="title">Título *</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" id="title" required maxlength="100" placeholder="Ex: Reunião de Pais" />
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label class="col-sm-2 col-form-label" for="eventDate">Data do Evento</label>
+                                            <div class="col-sm-4">
+                                                <input type="date" class="form-control" id="eventDate" />
+                                                <div class="form-text">Deixe em branco se for apenas um recado sem data específica.</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <label class="col-sm-2 col-form-label">Destinatários</label>
+                                            <div class="col-sm-10">
+                                                <div class="form-check form-check-inline mt-2">
+                                                    <input class="form-check-input" type="radio" name="targetAudience" id="targetStudents" value="students" checked />
+                                                    <label class="form-check-label" for="targetStudents">Alunos (Turmas)</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="targetAudience" id="targetTeachers" value="teachers" />
+                                                    <label class="form-check-label" for="targetTeachers">Professores</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3" id="classRoomsWrapper">
+                                            <label class="col-sm-2 col-form-label">Turmas *</label>
+                                            <div class="col-sm-10">
+                                                <div class="search-select-container">
+                                                    <input type="text" class="form-control search-select-input" id="classroom-search" placeholder="Buscar ou selecionar turmas..." autocomplete="off">
+                                                    <div class="search-select-dropdown" id="classroom-dropdown"></div>
+                                                </div>
+                                                <div class="selected-tags" id="selected-classrooms-tags"></div>
+                                                <div class="form-text">Quais turmas devem receber este aviso?</div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <label class="col-sm-2 col-form-label" for="message">Mensagem *</label>
+                                            <div class="col-sm-10">
+                                                <textarea id="message" class="form-control" required maxlength="200" rows="3" placeholder="Digite o conteúdo do aviso aqui..."></textarea>
+                                                <div class="form-text d-flex justify-content-between">
+                                                    <span>Mensagem do aviso (máx. 200 caracteres).</span>
+                                                    <span id="char-counter">0 / 200</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row justify-content-end">
+                                            <div class="col-sm-10">
+                                                <button type="submit" class="btn btn-primary" id="save-btn">
+                                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="save-spinner"></span>
+                                                    Salvar Alterações
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">
+                            Copyright © 2026 EscolaWEB. Todos os direitos reservados.
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script src="/js/load-sidebar.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("jwt_token");
+    if (!token) {
+        window.location.href = "/login.html";
+        return;
+    }
+    
+    const loggedInUserId = parseInt(localStorage.getItem("user_id"));
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const announcementId = urlParams.get('id');
+    
+    if (!announcementId) {
+        window.location.href = "/secretary/announcements.html";
+        return;
+    }
+    
+    // UI Elements
+    const form = document.getElementById("edit-form");
+    const titleInput = document.getElementById("title");
+    const eventDateInput = document.getElementById("eventDate");
+    const messageInput = document.getElementById("message");
+    const charCounter = document.getElementById("char-counter");
+    const saveBtn = document.getElementById("save-btn");
+    const saveSpinner = document.getElementById("save-spinner");
+    const alertContainer = document.getElementById("alert-container");
+    
+    // Classroom Select Elements
+    const searchInput = document.getElementById("classroom-search");
+    const dropdown = document.getElementById("classroom-dropdown");
+    const tagsContainer = document.getElementById("selected-classrooms-tags");
+    
+    let allClassrooms = [];
+    let selectedClassrooms = [];
+    
+    // Functions
+    function translateShift(shift) {
+        switch(shift) {
+            case 'MORNING': return 'Matutino';
+            case 'AFTERNOON': return 'Vespertino';
+            case 'NIGHT': 
+            case 'EVENING': return 'Noturno';
+            case 'FULL_TIME': return 'Integral';
+            default: return shift || '';
+        }
+    }
+    
+    function showAlert(message, type) {
+        alertContainer.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' +
+            message +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+            '</div>';
+        
+        if (type === 'success') {
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 3000);
+        }
+    }
+    
+    // Update char counter
+    messageInput.addEventListener("input", function() {
+        const len = this.value.length;
+        charCounter.textContent = len + " / 200";
+    });
+    
+    // Load classrooms
+    async function loadClassrooms() {
+        try {
+            const response = await fetch('/api/classrooms?activeOnly=true', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (response.ok) {
+                allClassrooms = await response.json();
+                  if (allClassrooms) allClassrooms.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            }
+        } catch(e) {
+            console.error("Error loading classrooms:", e);
+        }
+    }
+    
+    // Load Announcement Data
+    async function loadAnnouncement() {
+        try {
+            const response = await fetch('/api/announcements/' + announcementId, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            
+            if (!response.ok) {
+                throw new Error("Aviso não encontrado");
+            }
+            
+            const data = await response.json();
+            
+            // Check ownership
+            if (data.authorId !== loggedInUserId) {
+                showAlert("Você não tem permissão para editar este aviso, pois não é o autor dele.", "danger");
+                form.querySelectorAll('input, textarea, button').forEach(el => el.disabled = true);
+                return;
+            }
+            
+            
+    const targetStudents = document.getElementById("targetStudents");
+    const targetTeachers = document.getElementById("targetTeachers");
+    const classRoomsWrapper = document.getElementById("classRoomsWrapper");
+
+    if (targetStudents && targetTeachers) {
+        targetStudents.addEventListener("change", () => classRoomsWrapper.classList.remove("d-none"));
+        targetTeachers.addEventListener("change", () => classRoomsWrapper.classList.add("d-none"));
+    }
+    
+    // Prefill form
+            titleInput.value = data.title || '';
+            if (data.eventDate) {
+                eventDateInput.value = data.eventDate;
+            }
+            messageInput.value = data.message || '';
+            messageInput.dispatchEvent(new Event('input')); // trigger char counter
+            
+            // Prefill selected classrooms
+            
+            if (data.targetTeachers) {
+                targetTeachers.checked = true;
+                classRoomsWrapper.classList.add("d-none");
+            }
+            if (data.classRooms && data.classRooms.length > 0) {
+                // Find matching classrooms from loaded list to get full label details
+                selectedClassrooms = data.classRooms.map(cr => {
+                    const fullCr = allClassrooms.find(c => c.id === cr.id);
+                    if (fullCr) {
+                        return {
+                            id: fullCr.id,
+                            label: fullCr.name + ' - ' + translateShift(fullCr.shift) + ' (' + fullCr.academicYear + ')'
+                        };
+                    }
+                    return { id: cr.id, label: cr.name };
+                });
+                renderTags();
+            }
+            
+        } catch (error) {
+            showAlert(error.message, "danger");
+            form.querySelectorAll('input, textarea, button').forEach(el => el.disabled = true);
+        }
+    }
+    
+    // Render Dropdown
+    function renderDropdown(query = '') {
+        const q = query.toLowerCase().trim();
+        const available = allClassrooms.filter(c => {
+            const isSelected = selectedClassrooms.some(sel => sel.id === c.id);
+            if (isSelected) return false;
+            
+            const label = c.name + ' - ' + translateShift(c.shift) + ' (' + c.academicYear + ')';
+            return label.toLowerCase().includes(q);
+        });
+        
+        dropdown.innerHTML = '';
+        
+        if (available.length === 0) {
+            dropdown.innerHTML = '<div class="no-results">Nenhuma turma encontrada</div>';
+        } else {
+            if (available.length > 1 && q === '') {
+                const selectAllItem = document.createElement('div');
+                selectAllItem.className = 'dropdown-item fw-bold text-primary';
+                selectAllItem.innerHTML = '<i class="bx bx-check-double"></i> Selecionar todas';
+                selectAllItem.addEventListener('click', () => {
+                    available.forEach(c => {
+                        selectedClassrooms.push({
+                            id: c.id,
+                            label: c.name + ' - ' + translateShift(c.shift) + ' (' + c.academicYear + ')'
+                        });
+                    });
+                    searchInput.value = '';
+                    dropdown.classList.remove('show');
+                    renderTags();
+                });
+                dropdown.appendChild(selectAllItem);
+            }
+            
+            available.forEach(c => {
+                const label = c.name + ' - ' + translateShift(c.shift) + ' (' + c.academicYear + ')';
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.textContent = label;
+                item.addEventListener('click', () => {
+                    selectedClassrooms.push({ id: c.id, label: label });
+                    searchInput.value = '';
+                    dropdown.classList.remove('show');
+                    renderTags();
+                });
+                dropdown.appendChild(item);
+            });
+        }
+    }
+    
+    // Render Tags
+    function renderTags() {
+        tagsContainer.innerHTML = '';
+        selectedClassrooms.forEach((c, index) => {
+            const tag = document.createElement('div');
+            tag.className = 'selected-tag';
+            tag.innerHTML = '<span>' + c.label + '</span><span class="remove-tag" data-idx="' + index + '">&times;</span>';
+            tagsContainer.appendChild(tag);
+        });
+        
+        document.querySelectorAll('.remove-tag').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+                selectedClassrooms.splice(idx, 1);
+                renderTags();
+                if (dropdown.classList.contains('show')) {
+                    renderDropdown(searchInput.value);
+                }
+            });
+        });
+    }
+    
+    // Dropdown events
+    searchInput.addEventListener('focus', () => {
+        renderDropdown(searchInput.value);
+        dropdown.classList.add('show');
+    });
+    
+    searchInput.addEventListener('input', (e) => {
+        renderDropdown(e.target.value);
+        dropdown.classList.add('show');
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target) && !tagsContainer.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+    
+    // Form submission
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        if (selectedClassrooms.length === 0 && (!targetTeachers || !targetTeachers.checked)) {
+            showAlert("Selecione pelo menos uma turma.", "warning");
+            return;
+        }
+        
+        const payload = {
+            title: titleInput.value.trim(),
+            message: messageInput.value.trim().replace(/(?:\r?\n\s*){2,}/g, '\n'),
+            eventDate: eventDateInput.value ? eventDateInput.value : null,
+            classRoomIds: (targetTeachers && targetTeachers.checked) ? [] : selectedClassrooms.map(c => c.id),
+            targetTeachers: targetTeachers && targetTeachers.checked
+        };
+        
+        saveBtn.disabled = true;
+        saveSpinner.classList.remove("d-none");
+        
+        try {
+            const response = await fetch('/api/announcements/' + announcementId, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+                showAlert("Aviso atualizado com sucesso!", "success");
+            } else {
+                let errorMsg = "Erro ao atualizar aviso.";
+                try {
+                    const errData = await response.json();
+                    errorMsg = errData.message || errorMsg;
+                } catch(e) {}
+                showAlert(errorMsg, "danger");
+            }
+        } catch(error) {
+            showAlert("Erro de conexão.", "danger");
+        } finally {
+            saveBtn.disabled = false;
+            saveSpinner.classList.add("d-none");
+        }
+    });
+    
+    // Init flow: load classrooms first, then load announcement so we can match classroom names properly
+    loadClassrooms().then(() => {
+        loadAnnouncement();
+    });
+});
+</script>
+</body>
+</html>

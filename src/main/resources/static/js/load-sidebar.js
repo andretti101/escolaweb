@@ -56,41 +56,59 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             });
+
+            
+            // 4. Check for unread announcements
+            const token = localStorage.getItem("jwt_token");
+            if (token) {
+                fetch('/api/announcements/has-unread', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                .then(r => r.json())
+                .then(hasUnread => {
+                    if (hasUnread && !window.location.pathname.includes('announcements.html')) {
+                        const recadosDiv = document.querySelector('[data-i18n="Mural de Recados"]');
+                        if (recadosDiv) {
+                            recadosDiv.innerHTML += ' <span style="display:inline-block; width:8px; height:8px; background-color:#696cff; border-radius:50%; margin-left:8px; vertical-align:middle;"></span>';
+                        }
+                    }
+                })
+                .catch(e => console.error('Erro ao verificar avisos:', e));
+            }
+
+            // 5. Sessão e Logout movidos para DENTRO do then (remove race condition)
+            const userName = localStorage.getItem('user_name') || 'Usuário';
+            const initial = userName.charAt(0).toUpperCase();
+            
+            const avatarInitial = document.getElementById('dropdownAvatarInitial');
+            const avatarInitialInner = document.getElementById('dropdownAvatarInitialInner');
+            if (avatarInitial) avatarInitial.textContent = initial;
+            if (avatarInitialInner) avatarInitialInner.textContent = initial;
+            
+            const nameElem = document.getElementById('dropdownUserName');
+            if (nameElem) nameElem.textContent = userName;
+
+            // Vinculando botões de Logout
+            const logoutBtns = document.querySelectorAll('#btnLogout, #btnLogoutNavbar');
+            logoutBtns.forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    try {
+                        const rt = localStorage.getItem('refresh_token');
+                        if(rt) {
+                            await fetch('/auth/logout', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({refreshToken: rt})
+                            });
+                        }
+                    } finally {
+                        localStorage.clear();
+                        window.location.href = '/login.html';
+                    }
+                });
+            });
         })
         .catch(err => console.error('Erro ao carregar sidebar:', err));
 });
 
-setTimeout(() => {
-    // Populando os avatares da navbar
-    const userName = localStorage.getItem('user_name') || 'Usuário';
-    const initial = userName.charAt(0).toUpperCase();
-    
-    const avatarInitial = document.getElementById('dropdownAvatarInitial');
-    const avatarInitialInner = document.getElementById('dropdownAvatarInitialInner');
-    if (avatarInitial) avatarInitial.textContent = initial;
-    if (avatarInitialInner) avatarInitialInner.textContent = initial;
-    
-    const nameElem = document.getElementById('dropdownUserName');
-    if (nameElem) nameElem.textContent = userName;
-
-    // Vinculando botões de Logout
-    const logoutBtns = document.querySelectorAll('#btnLogout, #btnLogoutNavbar');
-    logoutBtns.forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                const rt = localStorage.getItem('refresh_token');
-                if(rt) {
-                    await fetch('/auth/logout', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({refreshToken: rt})
-                    });
-                }
-            } finally {
-                localStorage.clear();
-                window.location.href = '/login.html';
-            }
-        });
-    });
-}, 500);
