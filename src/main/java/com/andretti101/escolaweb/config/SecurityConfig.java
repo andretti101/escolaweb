@@ -58,7 +58,8 @@ public class SecurityConfig {
                                 "/components/**",
                                 "/js/**",
                                 "/libs/**",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/ws-chat/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
