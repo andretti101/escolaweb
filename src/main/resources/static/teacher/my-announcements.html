@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Mural de Recados | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Mural de Recados"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <style>
+        .card-announcement { border-radius: 12px; transition: box-shadow 0.3s ease-in-out; }
+        .card-announcement:hover { box-shadow: 0 .25rem 1rem rgba(161,172,184,.45); }
+        .border-left-primary { border-left: 4px solid #696cff !important; }
+        .border-left-success { border-left: 4px solid #71dd37 !important; }
+        .border-left-warning { border-left: 4px solid #ffab00 !important; }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+                    
+                    <h4 class="fw-bold py-3 mb-4">
+                        <span class="text-muted fw-light">Mural de Recados /</span> Meus Recados
+                    </h4>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">Avisos e Eventos</h5>
+                        <a href="/teacher/create/announcement.html" class="btn btn-primary">
+                            <i class="bx bx-plus me-1"></i> Novo Aviso
+                        </a>
+                    </div>
+
+                    <!-- Avisos Fixados --> <div id="fixed-section" style="display: none; margin-bottom: 3rem;"> <h5 class="fw-bold text-primary mb-3"><i class="bx bx-pin me-2"></i>Avisos Fixados</h5> <div class="row mb-5" id="fixed-container"></div> <hr class="my-5" /> </div> <div class="row" id="upcoming-container">
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="past-section" style="display: none; margin-top: 3rem;">
+                        <h5 class="mb-4 text-muted">Eventos Passados</h5>
+                        <div class="row" id="past-container"></div>
+                    </div>
+
+                </div>
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">
+                            Copyright © 2026 EscolaWEB. Todos os direitos reservados.
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    const token = localStorage.getItem("jwt_token");
+    if (!token) {
+        window.location.href = "/index.html";
+        return;
+    }
+    
+    const userId = parseInt(localStorage.getItem("user_id"));
+
+    try {
+        const url = window.location.pathname.includes('my-announcements') ? '/api/announcements/my-announcements' : '/api/announcements/my-teaching-classrooms';
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) { const text = await response.text(); throw new Error(`Status ${response.status}: ${text}`); }
+        const announcements = await response.json();
+        fetch('/api/announcements/mark-read', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }).catch(console.error);
+        
+        announcements.sort((a, b) => {
+            if (!a.eventDate) return 1;
+            if (!b.eventDate) return -1;
+            return new Date(a.eventDate) - new Date(b.eventDate);
+        });
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        const fixedList = [];
+        const upcomingList = [];
+        const pastList = [];
+        announcements.forEach(a => {
+            if (!a.eventDate) {
+                fixedList.push(a);
+                return;
+            }
+            const eDate = new Date(a.eventDate + "T00:00:00");
+            const parsedDate = isNaN(eDate) ? new Date(a.eventDate) : eDate;
+            if (parsedDate < today) pastList.push(a);
+            else upcomingList.push(a);
+        });
+
+        const renderCards = (list, containerId) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (list.length === 0) {
+                container.innerHTML = `<div class="col-12"><p class="text-muted">Nenhum recado encontrado.</p></div>`;
+                return;
+            }
+
+            list.forEach(item => {
+                let borderClass = 'border-left-primary';
+                const role = item.authorRole ? item.authorRole.toUpperCase() : '';
+                if (role.includes('SECRETARIA') || role.includes('SECRETARY')) borderClass = 'border-left-success';
+                else if (role.includes('DIRECAO') || role.includes('PRINCIPAL')) borderClass = 'border-left-warning';
+                else if (role.includes('PROFESSOR') || role.includes('TEACHER')) borderClass = 'border-left-primary';
+
+                let classNames = 'Todas as Turmas';
+                if (item.targetTeachers) {
+                    classNames = 'Professores';
+                } else if (item.classRooms && item.classRooms.length > 0) {
+                    classNames = item.classRooms.map(c => c.name).join(', ');
+                }
+
+                const eventDateStr = item.eventDate 
+                    ? new Date(item.eventDate).toLocaleDateString('pt-BR') 
+                    : 'Sem data';
+
+                const canEdit = item.authorId === userId;
+                const editButtonHtml = canEdit ? `<a href="/teacher/edit/announcement.html?id=${item.id}" class="btn btn-sm btn-icon btn-outline-primary" title="Editar"><i class="bx bx-pencil"></i></a> <a href="javascript:void(0);" onclick="deleteAnnouncement(${item.id})" class="btn btn-sm btn-icon btn-outline-danger ms-1" title="Excluir"><i class="bx bx-trash"></i></a>` : '';
+
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card card-announcement h-100 ${borderClass}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">${item.title}</h5>
+                                    <div class="flex-shrink-0 text-nowrap ms-2">${editButtonHtml}</div>
+                                </div>
+                                <p class="card-text text-muted mb-2"><i class="bx bx-calendar-event me-1"></i> Data: ${eventDateStr}</p>
+                                <p class="card-text mb-3" style="white-space: pre-wrap;">${(item.message || "").replace(/(?:\r?\n\s*){2,}/g, "\n")}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                    <small class="text-muted"><i class="bx bx-user me-1"></i> ${item.authorName || 'Desconhecido'}</small>
+                                    <span class="badge bg-label-secondary text-wrap" style="max-width: 60%;"><i class="bx bx-group me-1"></i> ${classNames}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        };
+
+        renderCards(upcomingList, 'upcoming-container'); const fixedSection = document.getElementById('fixed-section'); if (fixedList.length > 0) { fixedSection.style.display = 'block'; renderCards(fixedList, 'fixed-container'); } else { fixedSection.style.display = 'none'; }
+        const pastSection = document.getElementById('past-section');
+        if (pastList.length > 0) {
+            pastSection.style.display = 'block';
+            renderCards(pastList, 'past-container');
+        } else {
+            pastSection.style.display = 'none';
+        }
+
+    } catch (error) {
+        console.error(error);
+        document.getElementById('upcoming-container').innerHTML = `<div class="col-12"><div class="alert alert-danger">Erro ao carregar avisos.</div></div>`;
+    }
+});
+
+function showConfirmModal(title, message, onConfirm) {
+    let modalEl = document.getElementById('customConfirmModal');
+    if (!modalEl) {
+        const html = `
+        <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="customConfirmModalTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="customConfirmModalMessage" style="white-space: pre-wrap;"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="customConfirmModalBtn">Excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+        modalEl = document.getElementById('customConfirmModal');
+    }
+    document.getElementById('customConfirmModalTitle').textContent = title;
+    document.getElementById('customConfirmModalMessage').textContent = message;
+    
+    const confirmBtn = document.getElementById('customConfirmModalBtn');
+    const newBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+    
+    const modal = new bootstrap.Modal(modalEl);
+    newBtn.addEventListener('click', () => {
+        modal.hide();
+        onConfirm();
+    });
+    modal.show();
+}
+
+window.deleteAnnouncement = function(id) {
+    showConfirmModal("Excluir Aviso", "Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita.", async () => {
+        try {
+            const token = localStorage.getItem("jwt_token");
+            const response = await fetch('/api/announcements/' + id, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert("Erro ao excluir o aviso.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao excluir o aviso.");
+        }
+    });
+};
+</script>
+
+<script src="/js/load-sidebar.js"></script>
+</body>
+</html>

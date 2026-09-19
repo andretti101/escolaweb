@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Mural de Recados | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Mural de Recados"/>
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <style>
+        .card-announcement { border-radius: 12px; transition: box-shadow 0.3s ease-in-out; }
+        .card-announcement:hover { box-shadow: 0 .25rem 1rem rgba(161,172,184,.45); }
+        .border-left-primary { border-left: 4px solid #696cff !important; }
+        .border-left-success { border-left: 4px solid #71dd37 !important; }
+        .border-left-warning { border-left: 4px solid #ffab00 !important; }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+                    
+                    <h4 class="fw-bold py-3 mb-4">
+                        <span class="text-muted fw-light">Mural de Recados /</span> Listagem
+                    </h4>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">Avisos e Eventos</h5>
+                        <a href="/secretary/create/announcement.html" class="btn btn-primary">
+                            <i class="bx bx-plus me-1"></i> Novo Aviso
+                        </a>
+                    </div>
+
+                    <div class="row mb-4"><div class="col-md-4"><select id="filterAuthor" class="form-select"><option value="">Todos os Autores</option></select></div><div class="col-md-4"><select id="filterClassroom" class="form-select"><option value="">Todas as Turmas</option></select></div><div class="col-md-4"><select id="filterTarget" class="form-select"><option value="">Todos os Destinatários</option><option value="false">Turmas</option><option value="true">Professores</option></select></div></div><!-- Avisos Fixados --> <div id="fixed-section" style="display: none; margin-bottom: 3rem;"> <h5 class="fw-bold text-primary mb-3"><i class="bx bx-pin me-2"></i>Avisos Fixados</h5> <div class="row mb-5" id="fixed-container"></div> <hr class="my-5" /> </div> <div class="row" id="upcoming-container">
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="past-section" style="display: none; margin-top: 3rem;">
+                        <h5 class="mb-4 text-muted">Eventos Passados</h5>
+                        <div class="row" id="past-container"></div>
+                    </div>
+
+                </div>
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">
+                            Copyright © 2026 EscolaWEB. Todos os direitos reservados.
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script>
+
+        let currentPage = 0;
+        let totalPages = 1;
+        const pageSize = 50; 
+        
+        async function loadFilters() {
+            const token = localStorage.getItem("jwt_token");
+            try {
+                const [teachersRes, principalsRes, secretariesRes, classRoomsRes] = await Promise.all([
+                    fetch('/api/teachers?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
+                    fetch('/api/principals?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
+                    fetch('/api/secretaries?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
+                    fetch('/api/classrooms?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } })
+                ]);
+                
+                
+                if (classRoomsRes.ok) {
+                    const classRooms = await classRoomsRes.json();
+                    if (classRooms) classRooms.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    const classroomSelect = document.getElementById('filterClassroom');
+                    if (classroomSelect) {
+                        classRooms.forEach(c => {
+                            classroomSelect.insertAdjacentHTML('beforeend', '<option value="' + c.id + '">' + c.name + '</option>');
+                        });
+                    }
+                }
+                let allAuthors = [];
+                if (teachersRes.ok) allAuthors = allAuthors.concat(await teachersRes.json());
+                if (principalsRes.ok) allAuthors = allAuthors.concat(await principalsRes.json());
+                if (secretariesRes.ok) allAuthors = allAuthors.concat(await secretariesRes.json());
+                
+                const uniqueAuthors = [];
+                const seenIds = new Set();
+                allAuthors.forEach(a => {
+                    if (!seenIds.has(a.id)) {
+                        seenIds.add(a.id);
+                        uniqueAuthors.push(a);
+                    }
+                });
+                
+                uniqueAuthors.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                
+                const authorSelect = document.getElementById('filterAuthor');
+                if (authorSelect) {
+                    uniqueAuthors.forEach(u => {
+                        authorSelect.insertAdjacentHTML('beforeend', '<option value="' + u.id + '">' + u.name + '</option>');
+                    });
+                }
+            } catch (e) { console.error("Erro ao carregar filtros", e); }
+        }
+
+        async function fetchAnnouncements(page) {
+            const token = localStorage.getItem("jwt_token");
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            const authorId = document.getElementById('filterAuthor')?.value || '';
+            const classRoomId = document.getElementById('filterClassroom')?.value || '';
+            const targetTeachers = document.getElementById('filterTarget')?.value || '';
+            
+            let url = '/api/announcements?page=' + page + '&size=' + pageSize;
+            if (authorId) url += '&authorId=' + authorId;
+            if (classRoomId) url += '&classRoomId=' + classRoomId;
+            if (targetTeachers !== '') url += '&targetTeachers=' + targetTeachers;
+
+            try {
+                document.getElementById('upcoming-container').innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>';
+                
+                const response = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+                if (!response.ok) throw new Error('Falha ao buscar avisos');
+                
+                
+                const pageData = await response.json();
+                const announcements = pageData.content;
+                
+                // FALLBACK: extrair turmas dos avisos renderizados, caso o /api/classrooms falhe
+                const classroomSelect = document.getElementById('filterClassroom');
+                if (classroomSelect) {
+                    announcements.forEach(a => {
+                        if (a.classRooms) {
+                            a.classRooms.forEach(c => {
+                                if (!classroomSelect.querySelector('option[value="' + c.id + '"]')) {
+                                    classroomSelect.insertAdjacentHTML('beforeend', '<option value="' + c.id + '">' + c.name + '</option>');
+                                }
+                            });
+                        }
+                    });
+                }
+
+                currentPage = pageData.number;
+                totalPages = pageData.totalPages;
+                
+                const fixedList = [];
+                const upcomingList = [];
+                const pastList = [];
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                announcements.forEach(a => {
+                    if (!a.eventDate) {
+                        fixedList.push(a);
+                        return;
+                    }
+                    const eDate = new Date(a.eventDate + "T00:00:00");
+                    const parsedDate = isNaN(eDate) ? new Date(a.eventDate) : eDate;
+                    if (parsedDate < today) pastList.push(a);
+                    else upcomingList.push(a);
+                });
+                
+                renderCards(upcomingList, 'upcoming-container');
+                
+                const fixedSection = document.getElementById('fixed-section');
+                if (fixedList.length > 0) {
+                    fixedSection.style.display = 'block';
+                    renderCards(fixedList, 'fixed-container');
+                } else {
+                    fixedSection.style.display = 'none';
+                }
+                
+                const pastSection = document.getElementById('past-section');
+                if (pastList.length > 0) {
+                    pastSection.style.display = 'block';
+                    renderCards(pastList, 'past-container');
+                } else {
+                    pastSection.style.display = 'none';
+                }
+                
+                renderPagination();
+                
+            } catch (error) {
+                console.error(error);
+                document.getElementById('upcoming-container').innerHTML = '<div class="col-12"><div class="alert alert-danger">Erro ao carregar avisos.</div></div>';
+            }
+        }
+        
+        function renderPagination() {
+            let pagContainer = document.getElementById('pagination-container');
+            if (!pagContainer) {
+                pagContainer = document.createElement('div');
+                pagContainer.id = 'pagination-container';
+                pagContainer.className = 'd-flex justify-content-center mt-5 mb-5';
+                document.getElementById('past-section').parentNode.appendChild(pagContainer);
+            }
+            
+            if (totalPages <= 1) {
+                pagContainer.innerHTML = '';
+                return;
+            }
+            
+            let html = '<nav aria-label="Page navigation"><ul class="pagination pagination-lg">';
+            
+            html += '<li class="page-item ' + (currentPage === 0 ? 'disabled' : '') + '">';
+            html += '<a class="page-link" href="javascript:void(0);" onclick="fetchAnnouncements(' + (currentPage - 1) + ')"><i class="tf-icon bx bx-chevron-left"></i></a></li>';
+                     
+            for (let i = 0; i < totalPages; i++) {
+                html += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '">';
+                html += '<a class="page-link" href="javascript:void(0);" onclick="fetchAnnouncements(' + i + ')">' + (i + 1) + '</a></li>';
+            }
+            
+            html += '<li class="page-item ' + (currentPage === totalPages - 1 ? 'disabled' : '') + '">';
+            html += '<a class="page-link" href="javascript:void(0);" onclick="fetchAnnouncements(' + (currentPage + 1) + ')"><i class="tf-icon bx bx-chevron-right"></i></a></li>';
+                     
+            html += '</ul></nav>';
+            pagContainer.innerHTML = html;
+        }
+
+        const renderCards = (list, containerId) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (list.length === 0) {
+                container.innerHTML = '<div class="col-12"><p class="text-muted">Nenhum recado encontrado.</p></div>';
+                return;
+            }
+
+            let htmlString = '';
+            list.forEach(item => {
+                let borderClass = 'border-left-primary';
+                const role = item.authorRole ? item.authorRole.toUpperCase() : '';
+                if (role.includes('SECRETARIA') || role.includes('SECRETARY')) borderClass = 'border-left-success';
+                else if (role.includes('DIRECAO') || role.includes('PRINCIPAL')) borderClass = 'border-left-warning';
+                else if (role.includes('PROFESSOR') || role.includes('TEACHER')) borderClass = 'border-left-primary';
+
+                let classNames = 'Todas as Turmas';
+                if (item.targetTeachers) {
+                    classNames = 'Professores';
+                } else if (item.classRooms && item.classRooms.length > 0) {
+                    classNames = item.classRooms.map(c => c.name).join(', ');
+                }
+
+                const eventDateStr = item.eventDate 
+                    ? new Date(item.eventDate + "T00:00:00").toLocaleDateString('pt-BR') 
+                    : 'Sem data';
+
+                let userIdStr = '';
+                try {
+                    const token = localStorage.getItem('jwt_token');
+                    if (token) {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        userIdStr = payload.userId;
+                    }
+                } catch(e) {}
+                
+                const canEdit = item.authorId == userIdStr;
+                const editUrlPrefix = window.location.pathname.startsWith('/secretary') ? '/secretary' : '/principal';
+                const editButtonHtml = canEdit ? '<a href="' + editUrlPrefix + '/edit/announcement.html?id=' + item.id + '" class="btn btn-sm btn-icon btn-outline-primary" title="Editar"><i class="bx bx-pencil"></i></a> <a href="javascript:void(0);" onclick="deleteAnnouncement(' + item.id + ')" class="btn btn-sm btn-icon btn-outline-danger ms-1" title="Excluir"><i class="bx bx-trash"></i></a>' : '';
+
+                htmlString += '<div class="col-md-6 col-lg-4 mb-4">' +
+                        '<div class="card card-announcement h-100 ' + borderClass + '">' +
+                            '<div class="card-body">' +
+                                '<div class="d-flex justify-content-between align-items-start mb-2">' +
+                                    '<h5 class="card-title mb-0">' + item.title + '</h5>' +
+                                    '<div class="flex-shrink-0 text-nowrap ms-2">' + editButtonHtml + '</div>' +
+                                '</div>' +
+                                '<p class="card-text text-muted mb-2"><i class="bx bx-calendar-event me-1"></i> Data: ' + eventDateStr + '</p>' +
+                                '<p class="card-text mb-3" style="white-space: pre-wrap;">' + (item.message || "").replace(/(?:\r?\n\s*){2,}/g, "\n") + '</p>' +
+                                '<div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">' +
+                                    '<small class="text-muted"><i class="bx bx-user me-1"></i> ' + (item.authorName || 'Desconhecido') + '</small>' +
+                                    '<span class="badge bg-label-secondary text-wrap" style="max-width: 60%;"><i class="bx bx-group me-1"></i> ' + classNames + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+            });
+            container.innerHTML = htmlString;
+        };
+
+        window.fetchAnnouncements = fetchAnnouncements;
+        window.deleteAnnouncement = async function(id) {
+            if (confirm('Tem certeza que deseja excluir este aviso?')) {
+                try {
+                    const token = localStorage.getItem('jwt_token');
+                    const response = await fetch('/api/announcements/' + id, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (response.ok) {
+                        fetchAnnouncements(currentPage);
+                    } else {
+                        alert('Erro ao excluir aviso.');
+                    }
+                } catch (e) { console.error(e); }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFilters().then(() => fetchAnnouncements(0));
+            
+            const authorSelect = document.getElementById('filterAuthor');
+            const classroomSelect = document.getElementById('filterClassroom');
+            if (authorSelect) authorSelect.addEventListener('change', () => fetchAnnouncements(0));
+            if (classroomSelect) classroomSelect.addEventListener('change', () => fetchAnnouncements(0));
+            const targetSelect = document.getElementById('filterTarget');
+            if (targetSelect) targetSelect.addEventListener('change', () => fetchAnnouncements(0));
+        });
+</script>
+<script src="/js/load-sidebar.js"></script>
+</body>
+</html>
