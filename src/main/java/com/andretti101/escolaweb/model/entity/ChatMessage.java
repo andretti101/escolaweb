@@ -25,8 +25,7 @@ public class ChatMessage implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "O conteúdo da mensagem é obrigatório.")
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @CreationTimestamp
@@ -42,4 +41,20 @@ public class ChatMessage implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classroom_id", nullable = false)
     private ClassRoom classroom;
+
+    @Column(name = "is_edited", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean isEdited = false;
+
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean isDeleted = false;
+
+    @Column(name = "deleted_by_admin", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean deletedByAdmin = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "replied_to_id", nullable = true)
+    private ChatMessage repliedTo;
 }

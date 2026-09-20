@@ -74,6 +74,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 })
                 .catch(e => console.error('Erro ao verificar avisos:', e));
+
+                // 4.1. Check for unread chat messages (Inicial)
+                fetch('/api/chat/unread-status', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                .then(r => r.json())
+                .then(status => {
+                    if (status.hasUnreadMessages && !window.location.pathname.includes('chat.html')) {
+                        const chatDiv = document.querySelector('[data-i18n="Chat da Turma"]');
+                        if (chatDiv && !chatDiv.innerHTML.includes('background-color:#696cff')) {
+                            chatDiv.innerHTML += ' <span style="display:inline-block; width:8px; height:8px; background-color:#696cff; border-radius:50%; margin-left:8px; vertical-align:middle;"></span>';
+                        }
+                    }
+                })
+                .catch(e => console.error('Erro ao verificar chat não lido:', e));
+
+                // 4.2. Injetar Conexão WebSocket Global (Tempo Real)
+                if (typeof SockJS === 'undefined') {
+                    const sockjsScript = document.createElement('script');
+                    sockjsScript.src = "https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js";
+                    document.body.appendChild(sockjsScript);
+                    
+                    const stompScript = document.createElement('script');
+                    stompScript.src = "https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js";
+                    document.body.appendChild(stompScript);
+                    
+                    const globalNotifScript = document.createElement('script');
+                    globalNotifScript.src = "/js/global-notifications.js";
+                    
+                    // Espera os scripts principais carregarem
+                    stompScript.onload = () => {
+                        document.body.appendChild(globalNotifScript);
+                    };
+                } else {
+                    const globalNotifScript = document.createElement('script');
+                    globalNotifScript.src = "/js/global-notifications.js";
+                    document.body.appendChild(globalNotifScript);
+                }
             }
 
             // 5. Sessão e Logout movidos para DENTRO do then (remove race condition)
