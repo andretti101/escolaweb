@@ -14,4 +14,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmailAndIdNot(String email, Integer id);
     List<User> findByActiveTrue();
     List<User> findByActiveFalse();
+
+    @org.springframework.data.jpa.repository.Query("SELECT s.id FROM Student s JOIN s.enrollments e WHERE e.classRoom.id = :classroomId AND e.active = true")
+    List<Integer> findStudentIdsByClassroomId(@org.springframework.data.repository.query.Param("classroomId") Integer classroomId);
 }

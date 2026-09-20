@@ -45,4 +45,16 @@ public class Student extends User {
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Grade> grades;
+
+    @Column(name = "is_chat_blocked")
+    @Builder.Default
+    private Boolean isChatBlocked = false;
+
+    public boolean isChatBlocked() {
+        return isChatBlocked != null && isChatBlocked;
+    }
+
+    public void setChatBlocked(boolean chatBlocked) {
+        this.isChatBlocked = chatBlocked;
+    }
 }

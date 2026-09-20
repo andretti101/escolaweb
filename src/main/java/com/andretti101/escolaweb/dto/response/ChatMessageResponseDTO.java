@@ -19,5 +19,16 @@ public class ChatMessageResponseDTO {
     private Integer senderId;
     private String senderName;
     private Integer classroomId;
+    
+    // Novas propriedades (Enhancements)
+    private boolean isEdited;
+    private boolean isDeleted;
+    private boolean deletedByAdmin;
+    private String senderRole;
+    
+    // Dados de resposta a outra mensagem
+    private Integer repliedToId;
+    private String repliedToContent;
+    private String repliedToSenderName;
 
 }

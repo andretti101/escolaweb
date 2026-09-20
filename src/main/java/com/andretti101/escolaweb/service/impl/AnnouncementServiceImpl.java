@@ -202,10 +202,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional(readOnly = true)
     public boolean hasUnreadAnnouncements(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow();
-        if (user.getLastReadAnnouncements() == null) return true;
         
         UserRole role = user.getRole();
-        java.time.LocalDateTime lastRead = user.getLastReadAnnouncements();
+        java.time.LocalDateTime lastRead = user.getLastReadAnnouncements() != null 
+                ? user.getLastReadAnnouncements() 
+                : java.time.LocalDateTime.MIN;
         
         if (role == UserRole.STUDENT) {
             Student student = studentService.findById(userId);

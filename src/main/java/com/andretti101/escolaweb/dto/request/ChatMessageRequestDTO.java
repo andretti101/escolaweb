@@ -15,4 +15,6 @@ public class ChatMessageRequestDTO {
     @NotBlank(message = "O conteúdo da mensagem não pode ser vazio.")
     private String content;
 
+    private Integer repliedToId;
+
 }
