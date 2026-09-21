@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Sala dos Professores | Escola Web</title>
+    
+    <script src="/js/auth-guard.js"></script>
+
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+
+    <!-- Importando SockJS e STOMP via CDN -->
+    <script type="module" src="https://unpkg.com/emoji-picker-element@1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <style>
+        .chat-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 180px);
+            background-color: #f5f5f9;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .chat-header {
+            background-color: #696cff;
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #f5f5f9; 
+        }
+        .chat-message { 
+            max-width: 75%;
+            padding: 6px 7px 8px 9px;
+            border-radius: 10px;
+            position: relative;
+            font-size: 14px;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .chat-message.sent {
+            align-self: flex-end;
+            background-color: #696cff;
+            color: #ffffff;
+            border-top-right-radius: 0;
+        }
+        .chat-message.received {
+            align-self: flex-start;
+            background-color: #ffffff;
+            color: #566a7f;
+            border-top-left-radius: 0;
+        }
+        .chat-message.received .author {
+            font-size: 12px;
+            font-weight: 600;
+            color: #696cff;
+            margin-bottom: 2px;
+            display: block; width: 100%;
+        }
+        .chat-message.sent .author {
+            display: none;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            padding: 15px;
+            background-color: #ffffff;
+            border-top: 1px solid #d9dee3;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-input-area input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #d9dee3;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.15s ease-in-out;
+        }
+        .chat-input-area input:focus {
+            border-color: #696cff;
+        }
+        .chat-input-area button {
+            background-color: #696cff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .chat-input-area button:hover {
+            background-color: #5f61e6;
+        }
+            .chat-input-container {
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            border-top: 1px solid #d9dee3;
+            position: relative;
+        }
+        .reply-preview-container {
+            display: none;
+            padding: 10px 15px;
+            background-color: #f0f2f5;
+            border-bottom: 1px solid #d9dee3;
+            border-left: 4px solid #696cff;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .reply-preview-content {
+            font-size: 13px;
+            color: #566a7f;
+            display: flex;
+            flex-direction: column;
+        }
+        .reply-preview-content strong { color: #696cff; }
+        .reply-preview-close { cursor: pointer; color: #a1acb8; font-size: 18px; }
+        .reply-preview-close:hover { color: #566a7f; }
+        .chat-btn {
+            background-color: #696cff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .chat-btn.emoji-btn {
+            background-color: transparent;
+            color: #a1acb8;
+            font-size: 20px;
+        }
+        .chat-btn.emoji-btn:hover { color: #696cff; }
+        .chat-btn:hover:not(.emoji-btn) { background-color: #5f61e6; }
+                        .message-actions {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%) scale(0.95);
+            display: flex;
+            gap: 4px;
+            background: transparent;
+            padding: 0;
+            border-radius: 4px;
+            box-shadow: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chat-message:hover .message-actions { 
+            opacity: 1; 
+            visibility: visible;
+            transform: translateY(-50%) scale(1);
+        }
+.chat-message.sent .message-actions {
+            right: 100%;
+            margin-right: 8px;
+        }
+        .chat-message.received .message-actions {
+            left: 100%;
+            margin-left: 8px;
+        }
+        .action-btn { 
+            background: #ffffff; 
+            border: 1px solid #d9dee3; 
+            color: #a1acb8; 
+            cursor: pointer; 
+            padding: 6px 10px; 
+            font-size: 16px; 
+            border-radius: 6px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .action-btn:hover { color: #696cff; background: #f5f5f9; }
+        
+        .replied-box strong { display: block; width: 100%; margin-bottom: 2px; font-size: 11px; }
+        
+            .chat-message .msg-content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: flex-end;
+        }
+        .chat-message .msg-text {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding-right: 10px;
+            margin-bottom: 2px;
+        }
+        .chat-message .time-container {
+            flex: 0 0 auto;
+            margin-left: auto;
+            font-size: 11px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            line-height: 1;
+        }
+        .chat-message .time-text {
+            line-height: 1;
+        }
+        .chat-message .edited-badge {
+            font-style: italic;
+            opacity: 0.8;
+            font-size: 10px;
+        }
+        .replied-box {
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin: -2px -2px 4px -2px;
+            border-left: 4px solid #696cff;
+            font-size: 12px;
+            color: inherit;
+            opacity: 0.95;
+            display: block; width: 100%;
+        }
+        .chat-message.sent .replied-box {
+            border-left-color: #ffffff;
+            background-color: rgba(255,255,255,0.15);
+        }
+        .deleted-msg {
+            color: inherit;
+            font-style: italic;
+            opacity: 0.7;
+            display: flex; align-items: center; gap: 4px; flex: 1 1 auto; padding-right: 10px;
+        }
+            #emojiPickerContainer {
+            position: absolute;
+            bottom: 75px;
+            left: 15px;
+            z-index: 1000;
+        }
+            .unread-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 15px 0;
+            color: #696cff;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.8;
+            width: 100%;
+        }
+        .unread-divider::before,
+        .unread-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #696cff;
+        }
+        .unread-divider::before { margin-right: 1em; }
+        .unread-divider::after { margin-left: 1em; }
+    </style>
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
+
+            <div class="layout-page">
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i>
+                        </a>
+                    </div>
+                                        <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                            <span class="fs-4 fw-bold">
+                                <i class="bx bxs-group fs-3 text-primary me-2 icon-pulse"></i> 
+                                <span class="text-primary">Sala dos Professores</span>
+                            </span>
+                        </div>
+
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitial">A</span>
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitialInner">A</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <span class="fw-semibold d-block" id="dropdownUserName">Carregando...</span>
+                                                    <small class="text-muted" id="dropdownUserRole">Usu&aacute;rio</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><div class="dropdown-divider"></div></li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" id="btnLogoutNavbar">
+                                            <i class="bx bx-power-off me-2 text-danger"></i>
+                                            <span class="align-middle text-danger">Sair</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        
+                        <div class="chat-wrapper">
+                                                          <div class="chat-header d-flex justify-content-between align-items-center w-100">
+                                  <div class="d-flex align-items-center gap-2">
+                                      <i class='bx bxs-group fs-3'></i>
+                                      <span id="chatTitle">Sala dos Professores</span>
+                                  </div>
+                                  <div class="d-flex align-items-center gap-3">
+                                      <span class="badge bg-white text-primary d-none d-md-inline-block shadow-sm">
+                                          <i class='bx bx-broadcast me-1 icon-pulse'></i> Ao Vivo
+                                      </span>
+                                      <button type="button" class="btn btn-sm btn-light text-primary d-flex align-items-center gap-1 shadow-sm fw-bold" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMembers" onclick="loadMembers()">
+                                          <i class='bx bx-group'></i> Ver Membros
+                                      </button>
+                                  </div>
+                              </div>
+                            
+                            <div class="chat-history" id="chatHistory">
+                                <!-- As mensagens serÃ£o injetadas aqui pelo JavaScript -->
+                            </div>
+                            
+                                                        <div class="chat-input-container">
+                                <div id="replyPreviewContainer" class="reply-preview-container">
+                                    <div class="reply-preview-content">
+                                        <strong id="replyPreviewName">Autor</strong>
+                                        <span id="replyPreviewText">Texto</span>
+                                    </div>
+                                    <div id="replyPreviewClose" class="reply-preview-close"><i class='bx bx-x'></i></div>
+                                </div>
+                                <emoji-picker id="emojiPickerContainer" class="light" style="display: none;"></emoji-picker>
+                                <div class="chat-input-area">
+                                    <button id="btnEmoji" class="chat-btn emoji-btn" type="button"><i class='bx bx-smile'></i></button>
+                                    <input type="text" id="messageInput" placeholder="Digite sua mensagem..." autocomplete="off" />
+                                    <button id="btnSend" class="chat-btn" type="button"><i class='bx bxs-send'></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+    
+    <!-- LÃ³gica do Chat (Fase 2 do Frontend) -->
+    <script src="/js/chat.js"></script>
+    <!-- Offcanvas Members -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMembers" aria-labelledby="offcanvasMembersLabel">
+      <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasMembersLabel" class="offcanvas-title">Membros da Turma</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body" style="padding: 0;">
+        <ul class="list-group list-group-flush" id="membersList">
+            <!-- Injetado via JS -->
+            <li class="list-group-item text-center text-muted">Carregando...</li>
+        </ul>
+      </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

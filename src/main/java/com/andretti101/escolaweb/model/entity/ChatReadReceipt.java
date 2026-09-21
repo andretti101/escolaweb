@@ -24,8 +24,13 @@ public class ChatReadReceipt {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "classroom_id", nullable = false)
+    @JoinColumn(name = "classroom_id", nullable = true)
     private ClassRoom classroom;
+
+    @Column(name = "is_global_teacher_chat", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean isGlobalTeacherChat = false;
+
 
     @Column(name = "last_read_message_id", nullable = false)
     private Integer lastReadMessageId;

@@ -16,4 +16,18 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
     
     @org.springframework.data.jpa.repository.Query("SELECT COUNT(m) FROM ChatMessage m WHERE m.classroom.id = :classroomId AND m.id > :lastReadId AND m.sender.id != :userId AND m.isDeleted = false")
     long countUnreadMessages(@org.springframework.data.repository.query.Param("classroomId") Integer classroomId, @org.springframework.data.repository.query.Param("lastReadId") Integer lastReadId, @org.springframework.data.repository.query.Param("userId") Integer userId);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
+    List<ChatMessage> findByIsGlobalTeacherChatTrueOrderByTimestampAsc();
+
+    java.util.Optional<ChatMessage> findFirstByIsGlobalTeacherChatTrueOrderByTimestampDesc();
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(m) FROM ChatMessage m WHERE m.isGlobalTeacherChat = true AND m.id > :lastReadId AND m.sender.id != :userId AND m.isDeleted = false")
+    long countUnreadGlobalTeacherMessages(@org.springframework.data.repository.query.Param("lastReadId") Integer lastReadId, @org.springframework.data.repository.query.Param("userId") Integer userId);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
+    List<ChatMessage> findTop50ByClassroom_IdOrderByTimestampDesc(Integer classroomId);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
+    List<ChatMessage> findTop50ByIsGlobalTeacherChatTrueOrderByTimestampDesc();
 }

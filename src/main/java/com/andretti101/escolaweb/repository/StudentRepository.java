@@ -13,4 +13,7 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     
     @Query("SELECT s FROM Student s WHERE s.active = true AND s.id NOT IN (SELECT e.student.id FROM Enrollment e)")
     List<Student> findActiveUnenrolled();
+
+    @Query("SELECT s FROM Student s JOIN s.enrollments e WHERE e.classRoom.id = :classroomId AND e.active = true")
+    List<Student> findByClassroomId(@org.springframework.data.repository.query.Param("classroomId") Integer classroomId);
 }

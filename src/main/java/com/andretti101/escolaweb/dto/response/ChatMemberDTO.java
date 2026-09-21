@@ -14,4 +14,5 @@ public class ChatMemberDTO {
     private String name;
     private String registrationNumber; // Only for admins
     private Boolean isBlocked; // Only for admins
+    private String email; // Para professores
 }

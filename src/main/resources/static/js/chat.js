@@ -70,6 +70,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (btnSend) btnSend.innerHTML = "<i class='bx bxs-send'></i>";
     }
 
+    const isTeacher = payloadString.includes("TEACHER");
+
+    let isGlobalTeacherView = window.location.pathname.includes('/teacher/chat.html');
+
     if (isStudent) {
         fetch('/api/enrollments/student/' + userId, { headers: { 'Authorization': 'Bearer ' + token } })
         .then(res => { if (!res.ok) throw new Error("N&atilde;o autorizado"); return res.json(); })
@@ -80,10 +84,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (chatTitle) chatTitle.textContent = active.classRoomName || "Turma " + currentClassroomId;
                 connectAndSubscribe();
             } else {
-                showError("Acesso negado: VocÃª nÃ£o possui matrÃ­cula ativa.");
+                showError("Acesso negado: Voc&ecirc; n&atilde;o possui matr&iacute;cula ativa.");
             }
         })
-        .catch(err => showError("Erro ao buscar matrÃ­cula."));
+        .catch(err => showError("Erro ao buscar matr&iacute;cula."));
+    } else if (isTeacher && isGlobalTeacherView) {
+        currentClassroomId = 'TEACHERS';
+        if (chatTitle) chatTitle.textContent = "Sala dos Professores";
+        connectAndSubscribe();
     } else if (isSecretary) {
         fetch('/api/classrooms', { headers: { 'Authorization': 'Bearer ' + token } })
         .then(res => res.json())
@@ -151,7 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function subscribeToRoom(classroomId) {
-        currentSubscription = stompClient.subscribe('/topic/classroom/' + classroomId, function(messageOutput) {
+        const topic = classroomId === 'TEACHERS' ? '/topic/teachers' : '/topic/classroom/' + classroomId;
+        currentSubscription = stompClient.subscribe(topic, function(messageOutput) {
             const message = JSON.parse(messageOutput.body);
             handleIncomingMessage(message);
         }, { 'Authorization': 'Bearer ' + token });
@@ -160,7 +169,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function loadHistory() {
         if (!currentClassroomId) return;
-        fetch('/api/chat/classroom/' + currentClassroomId + '/history', { headers: { 'Authorization': 'Bearer ' + token } })
+        const historyUrl = currentClassroomId === 'TEACHERS' 
+            ? '/api/chat/teachers/history' 
+            : '/api/chat/classroom/' + currentClassroomId + '/history';
+            
+        fetch(historyUrl, { headers: { 'Authorization': 'Bearer ' + token } })
         .then(response => { if (!response.ok) throw new Error(); return response.json(); })
         .then(data => {
             if(!chatHistory) return;
@@ -192,7 +205,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (messages.length > 0) {
                 const latestMsgId = Math.max(...messages.map(m => m.id));
                 if (latestMsgId > lastReadId) {
-                    fetch('/api/chat/read/' + currentClassroomId + '?messageId=' + latestMsgId, {
+                    const readUrl = currentClassroomId === 'TEACHERS'
+                        ? '/api/chat/teachers/read?messageId=' + latestMsgId
+                        : '/api/chat/read/' + currentClassroomId + '?messageId=' + latestMsgId;
+                    fetch(readUrl, {
                         method: 'POST',
                         headers: { 'Authorization': 'Bearer ' + token }
                     });
@@ -255,7 +271,8 @@ document.addEventListener("DOMContentLoaded", () => {
             statusHtml = isPending ? "<i class='bx bx-time-five ms-1'></i>" : "<i class='bx bx-check ms-1'></i>";
         }
 
-        let editedText = message.isEdited && !isMsgDeleted ? "<small class='text-muted me-1'>(editado)</small>" : "";
+        const isMsgEdited = message.isEdited || message.edited;
+        let editedText = isMsgEdited && !isMsgDeleted ? "<small class='me-1' style='opacity: 0.8;'>Editada</small>" : "";
 
         let replyHtml = "";
         if (message.repliedToId && !isMsgDeleted) {
@@ -349,13 +366,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (currentEditId) {
             const editRequest = { content: content };
-            stompClient.send('/app/classroom/' + currentClassroomId + '/edit/' + currentEditId, {}, JSON.stringify(editRequest));
+            const editDest = currentClassroomId === 'TEACHERS'
+                ? '/app/teachers/edit/' + currentEditId
+                : '/app/classroom/' + currentClassroomId + '/edit/' + currentEditId;
+            stompClient.send(editDest, {}, JSON.stringify(editRequest));
         } else {
             const chatMessageRequest = { 
                 content: content,
                 repliedToId: currentReplyId
             };
-            stompClient.send('/app/classroom/' + currentClassroomId + '/send', {}, JSON.stringify(chatMessageRequest));
+            const sendDest = currentClassroomId === 'TEACHERS'
+                ? '/app/teachers/send'
+                : '/app/classroom/' + currentClassroomId + '/send';
+            stompClient.send(sendDest, {}, JSON.stringify(chatMessageRequest));
         }
 
         messageInput.value = "";
@@ -369,7 +392,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const membersList = document.getElementById('membersList');
         if(membersList) membersList.innerHTML = '<li class="list-group-item text-center text-muted">Carregando...</li>';
 
-        fetch('/api/chat/classrooms/' + currentClassroomId + '/members', {
+        const offcanvasLabel = document.getElementById('offcanvasMembersLabel');
+        if (offcanvasLabel) {
+            offcanvasLabel.textContent = currentClassroomId === 'TEACHERS' ? 'Membros do Corpo Docente' : 'Membros da Turma';
+        }
+
+        const membersUrl = currentClassroomId === 'TEACHERS' 
+            ? '/api/chat/teachers/members' 
+            : '/api/chat/classrooms/' + currentClassroomId + '/members';
+
+        fetch(membersUrl, {
             headers: { 'Authorization': 'Bearer ' + token }
         })
         .then(response => response.json())
@@ -381,13 +413,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 li.className = "list-group-item d-flex justify-content-between align-items-center";
                 
                 let infoHtml = '<div><strong>' + member.name + '</strong>';
-                if (member.registrationNumber) {
+                if (currentClassroomId === 'TEACHERS' && member.email) {
+                    infoHtml += '<br><small class="text-muted">' + member.email + '</small>';
+                } else if (member.registrationNumber) {
                     infoHtml += '<br><small class="text-muted">Matr&iacute;cula: ' + member.registrationNumber + '</small>';
                 }
                 infoHtml += '</div>';
 
                 let actionHtml = "";
-                if (isAdmin && member.registrationNumber) {
+                if (currentClassroomId !== 'TEACHERS' && isAdmin && member.registrationNumber) {
                     const btnClass = member.isBlocked ? "btn-success" : "btn-warning";
                     const btnIcon = member.isBlocked ? "bx-check-circle" : "bx-block";
                     const btnTitle = member.isBlocked ? "Desbloquear Chat" : "Bloquear Chat";
@@ -487,7 +521,10 @@ document.addEventListener("DOMContentLoaded", () => {
             modalEl = document.getElementById('deleteWarningModal');
             document.getElementById('btnConfirmDelete').addEventListener('click', () => {
                 if (messageToDeleteId && stompClient && currentClassroomId) {
-                    stompClient.send('/app/classroom/' + currentClassroomId + '/delete/' + messageToDeleteId, {}, "");
+                    const deleteDest = currentClassroomId === 'TEACHERS'
+                        ? '/app/teachers/delete/' + messageToDeleteId
+                        : '/app/classroom/' + currentClassroomId + '/delete/' + messageToDeleteId;
+                    stompClient.send(deleteDest, {}, "");
                 }
                 const bsModal = bootstrap.Modal.getInstance(modalEl);
                 bsModal.hide();
