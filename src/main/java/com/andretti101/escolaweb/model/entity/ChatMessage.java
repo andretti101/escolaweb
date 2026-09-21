@@ -37,10 +37,14 @@ public class ChatMessage implements Serializable {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
-    @NotNull(message = "A turma é obrigatória.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "classroom_id", nullable = false)
+    @JoinColumn(name = "classroom_id", nullable = true)
     private ClassRoom classroom;
+
+    @Column(name = "is_global_teacher_chat", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean isGlobalTeacherChat = false;
+
 
     @Column(name = "is_edited", nullable = false, columnDefinition = "boolean default false")
     @Builder.Default

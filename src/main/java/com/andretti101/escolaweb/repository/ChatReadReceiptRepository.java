@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ChatReadReceiptRepository extends JpaRepository<ChatReadReceipt, Integer> {
     Optional<ChatReadReceipt> findByUserIdAndClassroomId(Integer userId, Integer classroomId);
+    Optional<ChatReadReceipt> findByUserIdAndIsGlobalTeacherChatTrue(Integer userId);
 }

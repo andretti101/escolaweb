@@ -27,6 +27,8 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
 
+    private final com.andretti101.escolaweb.repository.TeacherClassSubjectRepository teacherClassSubjectRepository;
+
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -51,28 +53,33 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 throw new IllegalArgumentException("Usuário não autenticado no WebSocket.");
             }
             String destination = accessor.getDestination();
-            if (destination != null && destination.startsWith("/topic/classroom/")) {
-                String roomIdStr = destination.substring("/topic/classroom/".length());
-                Integer roomId = Integer.parseInt(roomIdStr);
-
+            
+            if (destination != null) {
                 User user = userRepository.findByEmail(principal.getName())
                         .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-                // DIRETORIA ou SECRETARIA possuem acesso livre
-                if (user.getRole() == UserRole.SECRETARY || user.getRole() == UserRole.PRINCIPAL) {
-                    return message;
-                }
-
-                // Se for Aluno, valida a matrícula
-                if (user.getRole() == UserRole.STUDENT) {
-                    boolean enrolled = enrollmentRepository.existsByStudent_IdAndClassRoom_IdAndActiveTrue(user.getId(), roomId);
-                    if (!enrolled) {
-                        throw new IllegalArgumentException("Acesso negado: Aluno não matriculado nesta turma.");
+                if (destination.startsWith("/topic/teachers")) {
+                    if (user.getRole() == UserRole.STUDENT) {
+                        throw new IllegalArgumentException("Acesso negado: Alunos não podem acessar o chat dos professores.");
                     }
-                } else {
-                    // Para outras roles não listadas (ex: TEACHER) que tentarem, lançar erro 
-                    // (O prompt especificou apenas Aluno ou DIRETORIA/SECRETARIA)
-                    throw new IllegalArgumentException("Acesso negado: Perfil não autorizado para o chat da turma.");
+                } else if (destination.startsWith("/topic/classroom/")) {
+                    String roomIdStr = destination.substring("/topic/classroom/".length());
+                    Integer roomId = Integer.parseInt(roomIdStr);
+
+                    // DIRETORIA ou SECRETARIA possuem acesso livre
+                    if (user.getRole() == UserRole.SECRETARY || user.getRole() == UserRole.PRINCIPAL) {
+                        return message;
+                    }
+
+                    // Se for Aluno, valida a matrícula
+                    if (user.getRole() == UserRole.STUDENT) {
+                        boolean enrolled = enrollmentRepository.existsByStudent_IdAndClassRoom_IdAndActiveTrue(user.getId(), roomId);
+                        if (!enrolled) {
+                            throw new IllegalArgumentException("Acesso negado: Aluno não matriculado nesta turma.");
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Acesso negado: Perfil não autorizado para o chat da turma.");
+                    }
                 }
             }
         }

@@ -65,7 +65,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if (!classRoomRepository.existsById(classroomId)) {
             throw new EntityNotFoundException("Turma não encontrada. ID: " + classroomId);
         }
-        List<ChatMessage> messages = chatMessageRepository.findByClassroom_IdOrderByTimestampAsc(classroomId);
+        List<ChatMessage> messages = chatMessageRepository.findTop50ByClassroom_IdOrderByTimestampDesc(classroomId);
+        java.util.Collections.reverse(messages);
         
         List<Integer> tempHiddenIds = new java.util.ArrayList<>();
         try {
@@ -94,6 +95,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             throw new org.springframework.security.access.AccessDeniedException("Você só pode editar suas próprias mensagens.");
         }
 
+        User sender = message.getSender();
+        if (sender instanceof com.andretti101.escolaweb.model.entity.Student && 
+            ((com.andretti101.escolaweb.model.entity.Student) sender).isChatBlocked()) {
+            throw new IllegalArgumentException("Você foi bloqueado e não pode editar mensagens.");
+        }
+
         if (message.isDeleted()) {
             throw new IllegalArgumentException("Não é possível editar uma mensagem excluída.");
         }
@@ -117,6 +124,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             throw new org.springframework.security.access.AccessDeniedException("Você não tem permissão para excluir esta mensagem.");
         }
 
+        if (isAuthor && !isAdmin) {
+            User sender = message.getSender();
+            if (sender instanceof com.andretti101.escolaweb.model.entity.Student && 
+                ((com.andretti101.escolaweb.model.entity.Student) sender).isChatBlocked()) {
+                throw new IllegalArgumentException("Você foi bloqueado e não pode excluir mensagens.");
+            }
+        }
+
         message.setContent(""); // Limpa o texto original
         message.setDeleted(true);
         message.setDeletedByAdmin(!isAuthor && isAdmin);
@@ -132,7 +147,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .timestamp(message.getTimestamp())
                 .senderId(message.getSender().getId())
                 .senderName(message.getSender().getName())
-                .classroomId(message.getClassroom().getId())
+                .classroomId(message.getClassroom() != null ? message.getClassroom().getId() : null)
                 .isEdited(message.isEdited())
                 .isDeleted(message.isDeleted())
                 .deletedByAdmin(message.isDeletedByAdmin())
@@ -241,5 +256,111 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     .message(message)
                     .build());
         }
+    }
+
+    @Override
+    @Transactional
+    public ChatMessageResponseDTO saveGlobalTeacherMessage(Integer senderId, String content, Integer repliedToId) {
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado. ID: " + senderId));
+
+        if (!(sender.getRole() == com.andretti101.escolaweb.model.enums.UserRole.TEACHER ||
+              sender.getRole() == com.andretti101.escolaweb.model.enums.UserRole.SECRETARY ||
+              sender.getRole() == com.andretti101.escolaweb.model.enums.UserRole.PRINCIPAL)) {
+            throw new org.springframework.security.access.AccessDeniedException("Você não tem permissão para enviar mensagens neste chat global.");
+        }
+
+        ChatMessage message = ChatMessage.builder()
+                .classroom(null)
+                .sender(sender)
+                .content(content)
+                .isGlobalTeacherChat(true)
+                .isEdited(false)
+                .isDeleted(false)
+                .deletedByAdmin(false)
+                .build();
+
+        if (repliedToId != null) {
+            ChatMessage repliedToMessage = chatMessageRepository.findById(repliedToId)
+                    .orElse(null);
+            message.setRepliedTo(repliedToMessage);
+        }
+
+        ChatMessage savedMessage = chatMessageRepository.save(message);
+        return mapToResponseDTO(savedMessage);
+    }
+
+    @Override
+    @Transactional
+    public void markGlobalTeacherAsRead(Integer userId, Integer messageId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        com.andretti101.escolaweb.model.entity.ChatReadReceipt receipt = chatReadReceiptRepository
+                .findByUserIdAndIsGlobalTeacherChatTrue(userId)
+                .orElse(com.andretti101.escolaweb.model.entity.ChatReadReceipt.builder()
+                        .user(user)
+                        .classroom(null)
+                        .isGlobalTeacherChat(true)
+                        .build());
+
+        if (receipt.getLastReadMessageId() == null || messageId > receipt.getLastReadMessageId()) {
+            receipt.setLastReadMessageId(messageId);
+            receipt.setLastReadAt(java.time.LocalDateTime.now());
+            chatReadReceiptRepository.save(receipt);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getGlobalTeacherLastReadMessageId(Integer userId) {
+        try {
+            return chatReadReceiptRepository.findByUserIdAndIsGlobalTeacherChatTrue(userId)
+                    .map(com.andretti101.escolaweb.model.entity.ChatReadReceipt::getLastReadMessageId)
+                    .orElse(0);
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar read receipts do chat dos professores: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponseDTO> getGlobalTeacherHistory(Integer userId) {
+        List<ChatMessage> messages = chatMessageRepository.findTop50ByIsGlobalTeacherChatTrueOrderByTimestampDesc();
+        java.util.Collections.reverse(messages);
+        
+        List<Integer> tempHiddenIds = new java.util.ArrayList<>();
+        try {
+            tempHiddenIds = chatHiddenMessageRepository.findByUserId(userId).stream()
+                    .map(h -> h.getMessage().getId())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar mensagens ocultas: " + e.getMessage());
+        }
+        
+        final List<Integer> finalHiddenIds = tempHiddenIds;
+
+        return messages.stream()
+                .filter(m -> !finalHiddenIds.contains(m.getId()))
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasUnreadGlobalTeacherMessages(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                
+        if (user.getRole() == com.andretti101.escolaweb.model.enums.UserRole.TEACHER ||
+            user.getRole() == com.andretti101.escolaweb.model.enums.UserRole.SECRETARY ||
+            user.getRole() == com.andretti101.escolaweb.model.enums.UserRole.PRINCIPAL) {
+            
+            Integer lastRead = getGlobalTeacherLastReadMessageId(userId);
+            long unreadCount = chatMessageRepository.countUnreadGlobalTeacherMessages(lastRead, userId);
+            return unreadCount > 0;
+        }
+        return false;
     }
 }

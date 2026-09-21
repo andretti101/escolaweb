@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Monitoramento de Chat | Secretaria | Escola Web</title>
+    <title>Sala dos Professores | Escola Web</title>
     
     <script src="/js/auth-guard.js"></script>
 
@@ -43,7 +43,7 @@
             font-weight: 600;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 10px;
         }
         .chat-history {
             flex-grow: 1;
@@ -284,37 +284,12 @@
         }
         .unread-divider::before { margin-right: 1em; }
         .unread-divider::after { margin-left: 1em; }
-
-        /* Estilos do Select do Header */
-        .header-select {
-            background-color: rgba(255, 255, 255, 0.15) !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            border-radius: 20px;
-            padding: 4px 30px 4px 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header-select:hover, .header-select:focus {
-            background-color: rgba(255, 255, 255, 0.25) !important;
-            border-color: #ffffff !important;
-            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-            outline: none;
-        }
-        .header-select option {
-            color: #435971 !important;
-            background-color: #ffffff !important;
-            font-weight: 500;
-        }
     </style>
 </head>
 <body>
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
-            <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+            <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
 
             <div class="layout-page">
                 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
@@ -327,7 +302,7 @@
                         <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
                             <span class="fs-4 fw-bold">
                                 <i class="bx bxs-group fs-3 text-primary me-2 icon-pulse"></i> 
-                                <span class="text-primary">Monitoramento de Chat</span>
+                                <span class="text-primary">Sala dos Professores</span>
                             </span>
                         </div>
 
@@ -371,27 +346,23 @@
                     <div class="container-xxl flex-grow-1 container-p-y">
                         
                         <div class="chat-wrapper">
-                            <div class="chat-header d-flex justify-content-between align-items-center w-100">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class='bx bxs-buildings fs-3'></i>
-                                    <select id="classroomSelect" class="form-select form-select-sm header-select" style="width: auto;">
-                                        <option value="">Selecione uma turma...</option>
-                                        <option value="TEACHERS">Sala dos Professores</option>
-                                    </select>
-                                    <span class="badge bg-warning text-dark ms-2 fw-bold d-none d-sm-inline-block shadow-sm">Modo Supervisão</span>
-                                </div>
-                                <div class="d-flex align-items-center gap-3">
-                                    <span class="badge bg-white text-primary d-none d-md-inline-block shadow-sm">
-                                        <i class='bx bx-radar me-1 icon-pulse'></i> Monitoramento Ativo
-                                    </span>
-                                    <button type="button" class="btn btn-sm btn-light text-primary d-flex align-items-center gap-1 shadow-sm fw-bold" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMembers" onclick="loadMembers()">
-                                        <i class='bx bx-group'></i> Ver Membros
-                                    </button>
-                                </div>
-                            </div>
+                                                          <div class="chat-header d-flex justify-content-between align-items-center w-100">
+                                  <div class="d-flex align-items-center gap-2">
+                                      <i class='bx bxs-group fs-3'></i>
+                                      <span id="chatTitle">Sala dos Professores</span>
+                                  </div>
+                                  <div class="d-flex align-items-center gap-3">
+                                      <span class="badge bg-white text-primary d-none d-md-inline-block shadow-sm">
+                                          <i class='bx bx-broadcast me-1 icon-pulse'></i> Ao Vivo
+                                      </span>
+                                      <button type="button" class="btn btn-sm btn-light text-primary d-flex align-items-center gap-1 shadow-sm fw-bold" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMembers" onclick="loadMembers()">
+                                          <i class='bx bx-group'></i> Ver Membros
+                                      </button>
+                                  </div>
+                              </div>
                             
                             <div class="chat-history" id="chatHistory">
-                                <!-- As mensagens serão injetadas aqui pelo JavaScript -->
+                                <!-- As mensagens serÃ£o injetadas aqui pelo JavaScript -->
                             </div>
                             
                                                         <div class="chat-input-container">
@@ -425,10 +396,10 @@
     <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="/assets/vendor/js/menu.js"></script>
     <script src="/assets/js/main.js"></script>
-    <!-- Custom scripts -->
     <script src="/js/load-sidebar.js"></script>
+    
+    <!-- LÃ³gica do Chat (Fase 2 do Frontend) -->
     <script src="/js/chat.js"></script>
-
     <!-- Offcanvas Members -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMembers" aria-labelledby="offcanvasMembersLabel">
       <div class="offcanvas-header border-bottom">

@@ -17,4 +17,10 @@ public interface ChatMessageService {
     List<Integer> getUsersToNotify(Integer classroomId, Integer senderId);
     void hideMessage(Integer messageId, Integer userId);
     List<ChatMessageResponseDTO> getHistoryByClassroomId(Integer classroomId, Integer userId);
+
+    ChatMessageResponseDTO saveGlobalTeacherMessage(Integer senderId, String content, Integer repliedToId);
+    void markGlobalTeacherAsRead(Integer userId, Integer messageId);
+    Integer getGlobalTeacherLastReadMessageId(Integer userId);
+    List<ChatMessageResponseDTO> getGlobalTeacherHistory(Integer userId);
+    boolean hasUnreadGlobalTeacherMessages(Integer userId);
 }
