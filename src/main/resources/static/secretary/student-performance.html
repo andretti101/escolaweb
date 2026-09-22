@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Desempenho do Aluno | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+            <div class="layout-page">
+                            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
+                <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                    <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                        <i class="bx bx-menu bx-sm"></i>
+                    </a>
+                </div>
+                <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                    <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                        <span class="fs-4 fw-bold">
+                            <span class="text-primary">Consultar Desempenho</span>
+                        </span>
+                    </div>
+                    <ul class="navbar-nav flex-row align-items-center ms-auto">
+                        <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                            <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                <div class="avatar avatar-online">
+                                    <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitial">A</span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="avatar avatar-online">
+                                                    <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitialInner">A</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <span class="fw-semibold d-block" id="dropdownUserName">Usuário</span>
+                                                <small class="text-muted">Painel</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li><div class="dropdown-divider"></div></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="javascript:void(0);" id="btnLogoutNavbar">
+                                        <i class="bx bx-power-off me-2"></i>
+                                        <span class="align-middle">Sair</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Alunos /</span> Desempenho <span id="studentNameTitle"></span></h4>
+                            <a href="students.html" class="btn btn-outline-secondary">
+                                <i class="bx bx-arrow-back me-1"></i> Voltar
+                            </a>
+                        </div>
+
+                        
+<div class="nav-align-top mb-4">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-boletim" aria-controls="navs-boletim" aria-selected="true">Boletim Consolidado</button>
+        </li>
+        <li class="nav-item">
+            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-notas" aria-controls="navs-notas" aria-selected="false">Consultar Notas</button>
+        </li>
+        <li class="nav-item">
+            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-faltas" aria-controls="navs-faltas" aria-selected="false">Consultar Faltas</button>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="navs-boletim" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead id="reportHead">
+                        <tr><th>Carregando...</th></tr>
+                    </thead>
+                    <tbody id="reportBody">
+                        <tr><td><span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span> Aguarde...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="navs-notas" role="tabpanel">
+            <!-- Filtro de Período -->
+            <div class="card mb-4 mt-3">
+                <div class="card-body">
+                    <div class="row justify-content-center text-center">
+                        <div class="col-md-6 col-lg-4">
+                            <label for="periodSelect" class="form-label text-uppercase fw-bold text-muted small mb-3">Selecione o Período Acadêmico</label>
+                            <select id="periodSelect" class="form-select form-select-lg">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matérias do Período -->
+            <div id="subjectsContainerNotes" class="row mb-4 d-none justify-content-center text-center">
+                <div class="col-12"><h5 class="mb-3 text-muted fw-bold">Disciplinas</h5></div>
+                <div id="subjectsListNotes" class="d-flex flex-column gap-3 col-12 col-md-8 col-lg-6 mx-auto"></div>
+            </div>
+
+            <!-- Tabela de Notas Oculta -->
+            <div id="gradesTableContainer" class="card d-none">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                    <h5 class="mb-0">Notas de <span id="currentSubjectNameNotes" class="text-primary"></span></h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Avaliação</th>
+                                <th>Tipo</th>
+                                <th>Data Lançamento</th>
+                                <th>Nota</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="editNotesBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="navs-faltas" role="tabpanel">
+            <!-- Filtro de Tipo -->
+            <div class="card mb-4 mt-3">
+                <div class="card-body">
+                    <div class="row justify-content-center text-center">
+                        <div class="col-md-6 col-lg-4">
+                            <label for="typeSelect" class="form-label text-uppercase fw-bold text-muted small mb-3">O que deseja visualizar?</label>
+                            <select id="typeSelect" class="form-select form-select-lg">
+                                <option value="PRESENT" selected>Presenças</option>
+                                <option value="ABSENT">Faltas Injustificadas</option>
+                                <option value="JUSTIFIED_ABSENCE">Faltas Justificadas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matérias -->
+            <div id="subjectsContainer" class="row mb-4 d-none justify-content-center text-center">
+                <div class="col-12"><h5 class="mb-3 text-muted fw-bold">Disciplinas e Contagem</h5></div>
+                <div id="subjectsList" class="d-flex flex-column gap-3 col-12 col-md-8 col-lg-6 mx-auto"></div>
+            </div>
+
+            <!-- Tabela de Faltas Oculta -->
+            <div id="attendanceTableContainer" class="card d-none">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                    <h5 class="mb-0">Histórico de <span id="currentSubjectName" class="text-primary"></span></h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data da Aula</th>
+                                <th>Período</th>
+                                <th>Qtd. de Aulas</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    </div>
+
+    
+                    
+<!-- Modal para Editar Nota -->
+<div class="modal fade" id="modalEditGrade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Nota</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editGradeId">
+        <div class="mb-3">
+          <label class="form-label">Avaliação</label>
+          <input type="text" class="form-control" id="editGradeTitle" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Nova Nota</label>
+          <input type="number" class="form-control" id="editGradeValue" step="0.1" min="0" max="10">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveGrade()">Salvar Nota</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Editar Falta -->
+<div class="modal fade" id="modalEditAttendance" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Frequência</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editAttendanceId">
+        <input type="hidden" id="editAttendanceLessonId">
+        <div class="mb-3">
+          <label class="form-label">Data da Aula</label>
+          <input type="text" class="form-control" id="editAttendanceDate" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Novo Status</label>
+          <select class="form-select" id="editAttendanceStatus">
+            <option value="PRESENT">Presente</option>
+            <option value="ABSENT">Falta</option>
+            <option value="EXCUSED">Falta Justificada</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveAttendance()">Salvar Frequência</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+
+    <script>
+        const jwtToken = localStorage.getItem('jwt_token');
+        const urlParams = new URLSearchParams(window.location.search);
+        const studentId = urlParams.get('studentId') || localStorage.getItem('user_id');
+
+        let allGrades = [];
+        let allAttendances = [];
+
+        async function loadReportCard() {
+            if (!studentId) return;
+            try {
+                const studentRes = await fetch(`/api/students/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                if (studentRes.ok) {
+                    const studentData = await studentRes.json();
+                    document.getElementById('studentNameTitle').textContent = `- ${studentData.name}`;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar nome do aluno', e);
+            }
+
+            if (!studentId) return;
+
+            try {
+                const settingsRes = await fetch('/api/school-settings', { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                if (!settingsRes.ok) throw new Error('Falha ao obter regras da escola');
+                const settings = await settingsRes.json();
+                
+                const minGrade = settings.minimumGrade || 7.0;
+                
+                const gradesResP = fetch(`/api/grades/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                const attendanceResP = fetch(`/api/attendances/report/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                
+                const [gradesRes, attendanceRes] = await Promise.all([gradesResP, attendanceResP]);
+                
+                if (!gradesRes.ok) throw new Error('Falha ao obter notas');
+                const grades = await gradesRes.json();
+                
+                let attendanceReport = { absencesPerSubject: {}, generalFrequency: 100 };
+                if (attendanceRes.ok) {
+                    attendanceReport = await attendanceRes.json();
+                }
+
+                let divisor = 4; // Padrão
+                if(settings.periodType === 'BIMESTER') divisor = 4;
+                else if(settings.periodType === 'TRIMESTER') divisor = 3;
+                else if(settings.periodType === 'QUADRIMESTER') divisor = 3;
+                else if(settings.periodType === 'SEMESTER') divisor = 2;
+
+                const matrix = {};
+                const periodNames = new Set();
+
+                grades.forEach(g => {
+                    if(!g.subjectName || !g.periodName) return;
+                    periodNames.add(g.periodName);
+                    
+                    if(!matrix[g.subjectName]) matrix[g.subjectName] = { periods: {} };
+                    if(!matrix[g.subjectName].periods[g.periodName]) matrix[g.subjectName].periods[g.periodName] = [];
+                    
+                    matrix[g.subjectName].periods[g.periodName].push(g.value);
+                });
+
+                const sortedPeriods = Array.from(periodNames).sort();
+                
+                const thead = document.getElementById('reportHead');
+                thead.innerHTML = `
+                    <tr class="table-primary">
+                        <th>Disciplina</th>
+                        ${sortedPeriods.map(p => `<th>${p}</th>`).join('')}
+                        <th>Média Final</th>
+                        <th>Faltas</th>
+                        <th>Situação</th>
+                    </tr>
+                `;
+
+                const tbody = document.getElementById('reportBody');
+                let html = '';
+
+                for(const [subj, data] of Object.entries(matrix)) {
+                    let rowHtml = `<td><strong>${subj}</strong></td>`;
+                    let sumAverages = 0;
+                    let periodsWithGrades = 0;
+
+                    sortedPeriods.forEach(p => {
+                        const vals = data.periods[p];
+                        if(vals && vals.length > 0) {
+                            const avg = vals.reduce((a,b)=>a+b, 0) / vals.length;
+                            sumAverages += avg;
+                            periodsWithGrades++;
+                            rowHtml += `<td>${avg.toFixed(1)}</td>`;
+                        } else {
+                            rowHtml += `<td class="text-muted">-</td>`;
+                        }
+                    });
+
+                    let situationHtml = '<span class="badge bg-label-secondary">Pendente</span>';
+                    let finalAvgHtml = '<span class="text-muted">-</span>';
+
+                    if (periodsWithGrades === divisor) {
+                        const finalAvg = sumAverages / divisor;
+                        finalAvgHtml = `<strong>${finalAvg.toFixed(1)}</strong>`;
+
+                        if (finalAvg >= minGrade) {
+                            situationHtml = '<span class="badge bg-label-success">Aprovado</span>';
+                        } else {
+                            situationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
+                        }
+                    }
+
+                    const absences = attendanceReport.absencesPerSubject[subj] || 0;
+
+                    rowHtml += `<td>${finalAvgHtml}</td><td>${absences}</td><td>${situationHtml}</td>`;
+                    html += `<tr>${rowHtml}</tr>`;
+                }
+                
+                if (Object.keys(matrix).length === 0) {
+                    html = `<tr><td colspan="${sortedPeriods.length + 4}" class="text-center text-muted">Nenhuma nota encontrada.</td></tr>`;
+                }
+
+                // Add general frequency footer row
+                const minFreq = settings.minimumAttendance || 75.0;
+                const isGeneralApproved = attendanceReport.generalFrequency >= minFreq;
+                const freqSituationHtml = isGeneralApproved 
+                    ? '<span class="badge bg-label-success">APROVADO</span>' 
+                    : '<span class="badge bg-label-danger">REPROVADO</span>';
+
+                if (Object.keys(matrix).length > 0) {
+                    html += `
+                        <tr>
+                            <td colspan="${sortedPeriods.length + 4}" class="text-end fw-bold">
+                                Frequência Geral Escolar: ${attendanceReport.generalFrequency}% ${freqSituationHtml}
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                tbody.innerHTML = html;
+                // Inicializa a aba de notas
+                if (grades && grades.length > 0) {
+                    allGrades = grades.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                } else {
+                    allGrades = [];
+                }
+                buildPeriodDropdown();
+
+                
+                // Busca as faltas detalhadas
+                try {
+                    const absRes = await fetch(`/api/attendances/student/${studentId}`, { headers: {"Authorization": `Bearer ${jwtToken}`} });
+                    if (absRes.ok) {
+                        allAttendances = (await absRes.json()).sort((a, b) => new Date(b.lessonDate) - new Date(a.lessonDate));
+                        setupDropdown();
+                    }
+                } catch(e) {
+                    console.error("Erro ao carregar lista de faltas", e);
+                }
+
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('reportHead').innerHTML = '<tr><td class="text-danger">Erro de conexão</td></tr>';
+            }
+        }
+        
+        let gradeModal, attendanceModal;
+        document.addEventListener("DOMContentLoaded", () => {
+            gradeModal = new bootstrap.Modal(document.getElementById("modalEditGrade"));
+            attendanceModal = new bootstrap.Modal(document.getElementById("modalEditAttendance"));
+        });
+
+        function openGradeModal(id, title, value) {
+            document.getElementById("editGradeId").value = id;
+            document.getElementById("editGradeTitle").value = title || "";
+            document.getElementById("editGradeValue").value = value !== null ? value : "";
+            gradeModal.show();
+        }
+
+        async function saveGrade() {
+            const id = document.getElementById("editGradeId").value;
+            const value = document.getElementById("editGradeValue").value;
+            if(!value) return alert("Insira uma nota");
+            try {
+                const res = await fetch(`/api/grades/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `Bearer ${jwtToken}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ value: parseFloat(value) })
+                });
+                if(res.ok) {
+                    gradeModal.hide();
+                    loadReportCard();
+                } else {
+                    alert("Erro ao salvar nota");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        
+        
+        let selectedPeriodNotes = null;
+        let selectedSubjectNotes = null;
+
+        function buildPeriodDropdown() {
+            const select = document.getElementById('periodSelect');
+            if(!select) return;
+            const periods = [...new Set(allGrades.filter(g => g.periodName).map(g => g.periodName))].sort();
+            
+            if (periods.length === 0) {
+                select.innerHTML = '<option value="">Nenhuma nota encontrada</option>';
+                return;
+            }
+
+            select.innerHTML = periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+
+            if (selectedPeriodNotes && periods.includes(selectedPeriodNotes)) {
+                select.value = selectedPeriodNotes;
+            } else {
+                select.value = periods[0];
+                selectedPeriodNotes = periods[0];
+            }
+            
+            showSubjectsForPeriod();
+
+            if (selectedSubjectNotes) {
+                showGradesForSubject(selectedSubjectNotes);
+            }
+
+            select.onchange = (e) => {
+                selectedPeriodNotes = e.target.value;
+                selectedSubjectNotes = null; // reset subject on period change
+                document.getElementById('gradesTableContainer').classList.add('d-none');
+                if (selectedPeriodNotes) {
+                    showSubjectsForPeriod();
+                } else {
+                    document.getElementById('subjectsContainerNotes').classList.add('d-none');
+                }
+            };
+        }
+
+        function showSubjectsForPeriod() {
+            const container = document.getElementById('subjectsContainerNotes');
+            const list = document.getElementById('subjectsListNotes');
+            
+            const gradesInPeriod = allGrades.filter(g => g.periodName === selectedPeriodNotes);
+            const subjects = [...new Set(gradesInPeriod.map(g => g.subjectName))].sort();
+
+            list.innerHTML = subjects.map(subj => `
+                <button type="button" class="btn btn-outline-primary btn-lg w-100" onclick="showGradesForSubject('${escapeHtml(subj)}')">
+                    ${escapeHtml(subj)}
+                </button>
+            `).join('');
+
+            container.classList.remove('d-none');
+        }
+
+        function showGradesForSubject(subject) {
+            selectedSubjectNotes = subject;
+            document.getElementById('currentSubjectNameNotes').textContent = subject;
+            
+            const tbody = document.getElementById('editNotesBody');
+            const gradesForSubj = allGrades.filter(g => g.periodName === selectedPeriodNotes && g.subjectName === subject);
+
+            const typeMap = {
+                'EXAM': 'Prova',
+                'ASSIGNMENT': 'Trabalho',
+                'PROJECT': 'Projeto',
+                'PRESENTATION': 'Apresentação'
+            };
+
+            if (gradesForSubj.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
+            } else {
+                tbody.innerHTML = gradesForSubj.map(g => `
+                    <tr>
+                        <td><strong>${escapeHtml(g.assessmentTitle)}</strong></td>
+                        <td><span class="badge bg-label-info">${escapeHtml(typeMap[g.assessmentType] || g.assessmentType)}</span></td>
+                        <td>${new Date(g.createdAt).toLocaleDateString('pt-BR')}</td>
+                        <td><strong>${g.value != null ? Number(g.value).toFixed(1) : '-'}</strong></td>
+                        <td><button class="btn btn-sm btn-outline-primary" onclick="openGradeModal(${g.id}, '${escapeHtml(g.assessmentTitle)}', ${g.value !== null ? g.value : ''}); event.stopPropagation();"><i class="bx bx-edit-alt"></i></button></td>
+                    </tr>
+                `).join('');
+            }
+
+            document.getElementById('gradesTableContainer').classList.remove('d-none');
+        }
+
+        
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        let selectedType = null;
+        let selectedSubjectAttendance = null;
+
+        function setupDropdown() {
+            const select = document.getElementById('typeSelect');
+            if(!select) return;
+            
+            if (!selectedType) {
+                select.value = 'PRESENT';
+                selectedType = 'PRESENT';
+            } else {
+                select.value = selectedType;
+            }
+            
+            showSubjectsForType();
+
+            if (selectedSubjectAttendance) {
+                showAttendanceForSubject(selectedSubjectAttendance);
+            }
+            
+            select.onchange = (e) => {
+                selectedType = e.target.value;
+                selectedSubjectAttendance = null; // reset subject on type change
+                document.getElementById('attendanceTableContainer').classList.add('d-none');
+                
+                if (selectedType) {
+                    showSubjectsForType();
+                } else {
+                    document.getElementById('subjectsContainer').classList.add('d-none');
+                }
+            };
+        }
+
+        function showSubjectsForType() {
+            const container = document.getElementById('subjectsContainer');
+            const list = document.getElementById('subjectsList');
+            
+            const filtered = allAttendances.filter(a => a.status === selectedType);
+            
+            const counts = {};
+            filtered.forEach(a => {
+                if(!counts[a.subjectName]) counts[a.subjectName] = 0;
+                counts[a.subjectName] += (a.lessonCount || 1);
+            });
+
+            const subjects = Object.keys(counts).sort();
+
+            if (subjects.length === 0) {
+                list.innerHTML = `<p class="text-muted w-100">Nenhum registro encontrado para esse tipo.</p>`;
+            } else {
+                let badgeClass = 'bg-primary';
+                if(selectedType === 'ABSENT') badgeClass = 'bg-danger';
+                if(selectedType === 'EXCUSED' || selectedType === 'JUSTIFIED_ABSENCE') badgeClass = 'bg-warning text-dark';
+                if(selectedType === 'PRESENT') badgeClass = 'bg-success';
+
+                list.innerHTML = subjects.map(subj => `
+                    <button type="button" class="btn btn-outline-primary btn-lg w-100 d-flex justify-content-between align-items-center" onclick="showAttendanceForSubject('${escapeHtml(subj)}')">
+                        ${escapeHtml(subj)}
+                        <span class="badge ${badgeClass} rounded-pill fs-6">${counts[subj]}</span>
+                    </button>
+                `).join('');
+            }
+
+            container.classList.remove('d-none');
+        }
+
+        function showAttendanceForSubject(subject) {
+            selectedSubjectAttendance = subject;
+            document.getElementById('currentSubjectName').textContent = subject;
+            
+            const tbody = document.getElementById('attendanceTableBody');
+            const records = allAttendances.filter(a => a.status === selectedType && a.subjectName === subject);
+
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum registro encontrado.</td></tr>';
+            } else {
+                tbody.innerHTML = records.map((a, index) => {
+                    const rowId = `details_${index}`;
+                    const periodDisplay = a.periodName && a.periodName !== '-' ? a.periodName : 'Ano Vigente';
+                    
+                    return `
+                    <tr class="cursor-pointer" data-bs-toggle="collapse" data-bs-target="#${rowId}" aria-expanded="false" aria-controls="${rowId}">
+                        <td><strong>${formatDate(a.lessonDate)}</strong> <i class="bx bx-chevron-down text-muted ms-1"></i></td>
+                        <td>${escapeHtml(periodDisplay)}</td>
+                        <td><span class="badge bg-label-secondary">${a.lessonCount || 1} aula(s)</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="openAttendanceModal(${a.id}, ${a.lessonId}, '${a.lessonDate}', '${a.status}'); event.stopPropagation();"><i class="bx bx-edit-alt"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="p-0 border-0">
+                            <div class="collapse" id="${rowId}">
+                                <div class="p-3 bg-light rounded m-2">
+                                    <div class="mb-2">
+                                        <strong><i class="bx bx-book-content me-1"></i> Conteúdo da Aula:</strong>
+                                        <p class="mb-1 ms-4 text-muted">${escapeHtml(a.lessonContent || 'Sem registro de conteúdo')}</p>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong><i class="bx bx-message-alt-detail me-1"></i> Observações da Aula:</strong>
+                                        <p class="mb-1 ms-4 text-muted">${escapeHtml(a.lessonNotes || 'Sem observações gerais')}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `}).join('');
+            }
+
+            document.getElementById('attendanceTableContainer').classList.remove('d-none');
+        }
+
+        function openAttendanceModal(id, lessonId, date, status) {
+            document.getElementById("editAttendanceId").value = id;
+            document.getElementById("editAttendanceLessonId").value = lessonId;
+            document.getElementById("editAttendanceDate").value = formatDate(date) || "";
+            document.getElementById("editAttendanceStatus").value = status || "PRESENT";
+            attendanceModal.show();
+        }
+
+
+        async function saveAttendance() {
+            const id = document.getElementById("editAttendanceId").value;
+            const lessonId = document.getElementById("editAttendanceLessonId").value;
+            const status = document.getElementById("editAttendanceStatus").value;
+            try {
+                const res = await fetch(`/api/attendances/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `Bearer ${jwtToken}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ 
+                        studentId: parseInt(studentId),
+                        lessonId: parseInt(lessonId),
+                        status: status
+                    })
+                });
+                if(res.ok) {
+                    attendanceModal.hide();
+                    loadReportCard();
+                } else {
+                    alert("Erro ao salvar frequência");
+                }
+            } catch(e) { console.error(e); }
+        }
+        
+        loadReportCard();
+    </script>
+</body>
+</html>

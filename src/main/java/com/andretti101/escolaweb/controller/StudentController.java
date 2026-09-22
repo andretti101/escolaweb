@@ -105,6 +105,11 @@ public class StudentController {
     }
 
     private StudentResponseDTO toResponse(Student s) {
+        String className = s.getEnrollments() != null ? s.getEnrollments().stream()
+                .filter(com.andretti101.escolaweb.model.entity.Enrollment::isActive)
+                .map(e -> e.getClassRoom().getName())
+                .findFirst().orElse("-") : "-";
+
         return new StudentResponseDTO(
                 s.getId(),
                 s.getName(),
@@ -114,7 +119,8 @@ public class StudentController {
                 s.getRegistrationNumber(),
                 s.getBirthDate(),
                 s.isActive(),
-                s.getCreatedAt()
+                s.getCreatedAt(),
+                className
         );
     }
 }
