@@ -135,13 +135,21 @@ public class AttendanceController {
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<AttendanceResponseDTO> update(
             @PathVariable Integer id,
-            @Valid @RequestBody AttendanceRequestDTO dto) {
+            @Valid @RequestBody com.andretti101.escolaweb.dto.request.AttendanceUpdateRequestDTO dto) {
         if (authenticatedUserService.isTeacher()) {
             Attendance existing = attendanceService.findById(id);
             authenticatedUserService.enforceTeacherOwnership(
                     existing.getLesson().getTeacherClassSubject());
         }
-        Attendance updated = attendanceService.update(id, toEntity(dto));
+        
+        Attendance incoming = new Attendance();
+        if ("JUSTIFIED".equalsIgnoreCase(dto.status()) || "EXCUSED".equalsIgnoreCase(dto.status())) {
+            incoming.setStatus(com.andretti101.escolaweb.model.enums.AttendanceStatus.JUSTIFIED_ABSENCE);
+        } else {
+            incoming.setStatus(com.andretti101.escolaweb.model.enums.AttendanceStatus.valueOf(dto.status().toUpperCase()));
+        }
+
+        Attendance updated = attendanceService.update(id, incoming);
         return ResponseEntity.ok(toResponse(updated));
     }
 

@@ -58,7 +58,7 @@
                                     type="text"
                                     id="globalSearch"
                                     class="form-control border-0 shadow-none px-0 w-100"
-                                    placeholder="Buscar por nome, e-mail ou matrícula..."
+                                    placeholder="Buscar por nome, e-mail, matrícula ou turma..."
                                     aria-label="Buscar aluno"
                                     style="min-width: 350px;"
                             />
@@ -83,8 +83,11 @@
                         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
                             <h5 class="mb-0">Alunos Cadastrados</h5>
 
-                            <!-- Filtros de status -->
-                            <div class="btn-group" role="group">
+                            <div class="d-flex align-items-center gap-3">
+                                <select id="classFilter" class="form-select form-select-sm" style="width: auto;">
+                                    <option value="all">Todas as Turmas</option>
+                                </select>
+                                <div class="btn-group" role="group">
                                 <input type="radio" class="btn-check" name="statusFilter" id="filterActive"
                                        value="active" checked/>
                                 <label class="btn btn-outline-success btn-sm" for="filterActive">Ativos</label>
@@ -95,6 +98,7 @@
 
                                 <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all"/>
                                 <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
+                                </div>
                             </div>
                         </div>
 
@@ -107,6 +111,8 @@
                                     <th>Nascimento</th>
                                     <th>Telefone</th>
                                     <th>Status</th>
+                                    <th class="text-center">Turma</th>
+                                    <th class="text-center">Ação</th>
                                 </tr>
                                 </thead>
                                 <tbody id="studentsTableBody">
@@ -258,6 +264,12 @@
             ? '<span class="badge bg-label-success">Ativo</span>'
             : '<span class="badge bg-label-secondary">Inativo</span>'}
             </td>
+            <td class="text-center">${escapeHtml(student.className) || '-'}</td>
+            <td class="text-center">
+              <a href="/principal/student-performance.html?studentId=${student.id}" class="btn btn-sm btn-icon btn-outline-primary" title="Ver Desempenho">
+                <i class="bx bx-bar-chart-alt-2"></i>
+              </a>
+            </td>
           </tr>
         `).join('');
     }
@@ -272,6 +284,8 @@
             .replace(/"/g, '&quot;');
     }
 
+    let classFilter = 'all';
+
     function applyFilters() {
         let result = allStudents;
 
@@ -281,16 +295,40 @@
             result = result.filter(s => !s.active);
         }
 
+        if (classFilter !== 'all') {
+            result = result.filter(s => String(s.className) === String(classFilter));
+        }
+
         if (searchTerm.trim()) {
             const term = searchTerm.trim().toLowerCase();
             result = result.filter(s =>
                 (s.name || '').toLowerCase().includes(term) ||
                 (s.email || '').toLowerCase().includes(term) ||
-                (s.registrationNumber || '').toLowerCase().includes(term)
+                (s.registrationNumber || '').toLowerCase().includes(term) ||
+                String(s.className || '').toLowerCase().includes(term)
             );
         }
 
         renderTable(result);
+    }
+
+    
+    function populateClassDropdown() {
+        const select = document.getElementById('classFilter');
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = '<option value="all">Todas as Turmas</option>';
+        const classes = [...new Set(allStudents.map(s => s.className).filter(c => c && c !== '-'))].sort();
+        classes.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            select.appendChild(opt);
+        });
+        if (classes.includes(currentVal)) {
+            select.value = currentVal;
+            classFilter = currentVal;
+        }
     }
 
     async function loadStudents() {
@@ -327,6 +365,7 @@
                 if (!a.active && b.active) return 1;
                 return 0;
             });
+            populateClassDropdown();
             applyFilters();
 
         } catch (error) {
@@ -344,6 +383,15 @@
                 applyFilters();
             });
         });
+
+        
+        const classFilterSelect = document.getElementById('classFilter');
+        if (classFilterSelect) {
+            classFilterSelect.addEventListener('change', e => {
+                classFilter = e.target.value;
+                applyFilters();
+            });
+        }
 
         document.getElementById('globalSearch').addEventListener('input', e => {
             searchTerm = e.target.value;

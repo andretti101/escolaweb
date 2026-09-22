@@ -9,6 +9,10 @@ import java.util.List;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Integer> {
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"enrollments", "enrollments.classRoom"})
+    List<Student> findAll();
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"enrollments", "enrollments.classRoom"})
     List<Student> findByActiveTrue();
     
     @Query("SELECT s FROM Student s WHERE s.active = true AND s.id NOT IN (SELECT e.student.id FROM Enrollment e)")

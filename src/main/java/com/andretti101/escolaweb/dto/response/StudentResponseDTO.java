@@ -12,5 +12,6 @@ public record StudentResponseDTO(
         String registrationNumber,
         LocalDate birthDate,
         boolean active,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String className
 ) {}
