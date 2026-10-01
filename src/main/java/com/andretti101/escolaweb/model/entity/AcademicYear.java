@@ -40,6 +40,16 @@ public class AcademicYear implements Serializable {
     @Column(nullable = false)
     private boolean active = false;
 
+    @Column(name = "minimum_grade")
+    private java.math.BigDecimal minimumGrade;
+
+    @Column(name = "minimum_attendance")
+    private java.math.BigDecimal minimumAttendance;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "period_type")
+    private com.andretti101.escolaweb.model.enums.AcademicPeriodType periodType;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

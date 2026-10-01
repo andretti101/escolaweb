@@ -155,7 +155,12 @@
         async function init() {
             if (!studentId) return;
             try {
-                const res = await fetch(`/api/attendances/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                let activeYear = null;
+                const yrRes = await fetch('/api/academic-years/active', { headers: {'Authorization': 'Bearer ' + jwtToken} });
+                if (yrRes.ok) activeYear = await yrRes.json();
+                const queryYear = activeYear ? '?yearId=' + activeYear.id : '';
+
+                const res = await fetch(`/api/attendances/student/${studentId}` + queryYear, { headers: {'Authorization': `Bearer ${jwtToken}`} });
                 if (res.ok) {
                     allAttendances = (await res.json()).sort((a, b) => new Date(b.lessonDate) - new Date(a.lessonDate));
                     setupDropdown();

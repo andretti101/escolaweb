@@ -12,4 +12,7 @@ public interface AcademicPeriodRepository extends JpaRepository<AcademicPeriod, 
     List<AcademicPeriod> findByAcademicYear(AcademicYear academicYear);
     List<AcademicPeriod> findByAcademicYearOrderByIdAsc(AcademicYear academicYear);
     boolean existsByAcademicYear(AcademicYear academicYear);
+
+    @org.springframework.data.jpa.repository.Query("SELECT CASE WHEN COUNT(p) = 0 THEN false ELSE (COUNT(CASE WHEN p.closed = false THEN 1 END) = 0) END FROM AcademicPeriod p WHERE p.academicYear = :year")
+    boolean areAllPeriodsClosed(@org.springframework.data.repository.query.Param("year") AcademicYear year);
 }

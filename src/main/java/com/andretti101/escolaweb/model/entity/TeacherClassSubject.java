@@ -49,6 +49,10 @@ public class TeacherClassSubject implements Serializable {
     @Column(name = "max_assessments_per_period")
     private Integer maxAssessmentsPerPeriod;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean active = true;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

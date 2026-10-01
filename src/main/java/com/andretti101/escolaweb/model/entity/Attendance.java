@@ -45,6 +45,10 @@ public class Attendance implements Serializable {
     @Column(nullable = false, length = 20)
     private AttendanceStatus status;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean active = true;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

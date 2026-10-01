@@ -19,4 +19,8 @@ public interface TeacherClassSubjectRepository extends JpaRepository<TeacherClas
     boolean existsByClassRoom(ClassRoom classRoom);
     boolean existsBySubject(Subject subject);
     boolean existsByTeacher_IdAndClassRoom_Id(Integer teacherId, Integer classRoomId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE TeacherClassSubject t SET t.active = false WHERE t.classRoom.academicYear = :year AND t.active = true")
+    int deactivateAllByAcademicYear(@org.springframework.data.repository.query.Param("year") com.andretti101.escolaweb.model.entity.AcademicYear academicYear);
 }

@@ -28,7 +28,7 @@ public class SchoolSettingsController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('PRINCIPAL')")
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<SchoolSettingsResponseDTO> update(@Valid @RequestBody SchoolSettingsRequestDTO dto) {
         SchoolSettings updated = schoolSettingsService.update(toEntity(dto));
         return ResponseEntity.ok(toResponse(updated));
@@ -42,9 +42,8 @@ public class SchoolSettingsController {
         settings.setAddress(dto.address());
         settings.setPhone(dto.phone());
         settings.setEmail(dto.email());
-        settings.setMinimumGrade(dto.minimumGrade());
-        settings.setMinimumAttendance(dto.minimumAttendance());
-        settings.setPeriodType(dto.periodType());
+        // Sensitive fields (minimumGrade, minimumAttendance, periodType) are intentionally NOT mapped
+        // They should only be updated by the AcademicYearConclusionService
         return settings;
     }
 

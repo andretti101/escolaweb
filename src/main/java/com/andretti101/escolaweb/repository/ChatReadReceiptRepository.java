@@ -10,4 +10,8 @@ import java.util.Optional;
 public interface ChatReadReceiptRepository extends JpaRepository<ChatReadReceipt, Integer> {
     Optional<ChatReadReceipt> findByUserIdAndClassroomId(Integer userId, Integer classroomId);
     Optional<ChatReadReceipt> findByUserIdAndIsGlobalTeacherChatTrue(Integer userId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM ChatReadReceipt c WHERE c.isGlobalTeacherChat = false")
+    void deleteAllNonGlobal();
 }

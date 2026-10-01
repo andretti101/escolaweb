@@ -15,7 +15,7 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"enrollments", "enrollments.classRoom"})
     List<Student> findByActiveTrue();
     
-    @Query("SELECT s FROM Student s WHERE s.active = true AND s.id NOT IN (SELECT e.student.id FROM Enrollment e)")
+    @Query("SELECT s FROM Student s WHERE s.active = true AND s.id NOT IN (SELECT e.student.id FROM Enrollment e WHERE e.active = true)")
     List<Student> findActiveUnenrolled();
 
     @Query("SELECT s FROM Student s JOIN s.enrollments e WHERE e.classRoom.id = :classroomId AND e.active = true")

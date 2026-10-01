@@ -52,6 +52,7 @@ public class LessonController {
             Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
             List<Lesson> myLessons = teacherClassSubjectService.findByTeacher(teacher.getId())
                     .stream()
+                    .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
                     .flatMap(tcs -> lessonService.findByTeacherClassSubject(tcs.getId()).stream())
                     .toList();
             return ResponseEntity.ok(myLessons.stream().map(this::toResponse).toList());
@@ -75,6 +76,9 @@ public class LessonController {
         if (authenticatedUserService.isTeacher()) {
             TeacherClassSubject tcs = teacherClassSubjectService.findById(tcsId);
             authenticatedUserService.enforceTeacherOwnership(tcs);
+            if (!tcs.getClassRoom().getAcademicYear().isActive()) {
+                return ResponseEntity.ok(java.util.List.of());
+            }
         }
         return ResponseEntity.ok(
                 lessonService.findByTeacherClassSubject(tcsId).stream().map(this::toResponse).toList()

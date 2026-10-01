@@ -138,8 +138,8 @@
                                 <th>Tipo</th>
                                 <th>Data Lançamento</th>
                                 <th>Nota</th>
-                                <th>Ação</th>
-                            </tr>
+<th>Ações</th>
+</tr>
                         </thead>
                         <tbody id="editNotesBody">
                         </tbody>
@@ -183,8 +183,8 @@
                                 <th>Data da Aula</th>
                                 <th>Período</th>
                                 <th>Qtd. de Aulas</th>
-                                <th>Ação</th>
-                            </tr>
+<th>Ações</th>
+</tr>
                         </thead>
                         <tbody id="attendanceTableBody">
                         </tbody>
@@ -200,65 +200,6 @@
 
     
                     
-<!-- Modal para Editar Nota -->
-<div class="modal fade" id="modalEditGrade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Editar Nota</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="editGradeId">
-        <div class="mb-3">
-          <label class="form-label">Avaliação</label>
-          <input type="text" class="form-control" id="editGradeTitle" readonly>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Nova Nota</label>
-          <input type="number" class="form-control" id="editGradeValue" step="0.1" min="0" max="10">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="saveGrade()">Salvar Nota</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal para Editar Falta -->
-<div class="modal fade" id="modalEditAttendance" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Editar Frequência</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="editAttendanceId">
-        <input type="hidden" id="editAttendanceLessonId">
-        <div class="mb-3">
-          <label class="form-label">Data da Aula</label>
-          <input type="text" class="form-control" id="editAttendanceDate" readonly>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Novo Status</label>
-          <select class="form-select" id="editAttendanceStatus">
-            <option value="PRESENT">Presente</option>
-            <option value="ABSENT">Falta</option>
-            <option value="EXCUSED">Falta Justificada</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" onclick="saveAttendance()">Salvar Frequência</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 </div>
                     <div class="content-backdrop fade"></div>
                 </div>
@@ -305,8 +246,20 @@
                 
                 const minGrade = settings.minimumGrade || 7.0;
                 
-                const gradesResP = fetch(`/api/grades/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
-                const attendanceResP = fetch(`/api/attendances/report/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                let activeYear = null;
+                try {
+                    const yr = await fetch('/api/academic-years', { headers: {'Authorization': 'Bearer ' + jwtToken} });
+                    if (yr.ok) {
+                        const allY = await yr.json();
+                        activeYear = allY.find(y => y.active);
+                    }
+                } catch (e) { showAlert('Erro ao carregar dados do servidor', 'danger'); }
+                const queryYear = activeYear ? '?yearId=' + activeYear.id : '';
+                
+                const gradesResP = fetch(`/api/grades/student/${studentId}` + queryYear, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+
+                
+                const attendanceResP = fetch(`/api/attendances/report/student/${studentId}` + queryYear, { headers: {'Authorization': `Bearer ${jwtToken}`} });
                 
                 const [gradesRes, attendanceRes] = await Promise.all([gradesResP, attendanceResP]);
                 
@@ -318,100 +271,94 @@
                     attendanceReport = await attendanceRes.json();
                 }
 
-                let divisor = 4; // Padrão
-                if(settings.periodType === 'BIMESTER') divisor = 4;
-                else if(settings.periodType === 'TRIMESTER') divisor = 3;
-                else if(settings.periodType === 'QUADRIMESTER') divisor = 3;
-                else if(settings.periodType === 'SEMESTER') divisor = 2;
-
-                const matrix = {};
-                const periodNames = new Set();
-
-                grades.forEach(g => {
-                    if(!g.subjectName || !g.periodName) return;
-                    periodNames.add(g.periodName);
-                    
-                    if(!matrix[g.subjectName]) matrix[g.subjectName] = { periods: {} };
-                    if(!matrix[g.subjectName].periods[g.periodName]) matrix[g.subjectName].periods[g.periodName] = [];
-                    
-                    matrix[g.subjectName].periods[g.periodName].push(g.value);
-                });
-
-                const sortedPeriods = Array.from(periodNames).sort();
                 
-                const thead = document.getElementById('reportHead');
-                thead.innerHTML = `
-                    <tr class="table-primary">
-                        <th>Disciplina</th>
-                        ${sortedPeriods.map(p => `<th>${p}</th>`).join('')}
-                        <th>Média Final</th>
-                        <th>Faltas</th>
-                        <th>Situação</th>
-                    </tr>
-                `;
+                
+                
+                if (activeYear) {
+                    const rcRes = await fetch(`/api/report-cards/student/${studentId}/year/${activeYear.id}`, { headers: {'Authorization': 'Bearer ' + jwtToken} });
+                    if (rcRes.ok) {
+                        const rc = await rcRes.json();
+                        const periodNames = new Set();
+                        rc.subjects.forEach(s => s.periodGrades.forEach(pg => periodNames.add(pg.periodName)));
+                        const sortedPeriods = Array.from(periodNames).sort();
+                        
+                        const thead = document.getElementById('reportHead');
+                        thead.innerHTML = `
+                            <tr class="table-primary">
+                                <th>Disciplina</th>
+                                ${sortedPeriods.map(p => `<th>${p}</th>`).join('')}
+                                <th>Média Final</th>
+                                <th>Faltas</th>
+                                <th>Situação</th>
+                            </tr>
+                        `;
 
-                const tbody = document.getElementById('reportBody');
-                let html = '';
+                        const tbody = document.getElementById('reportBody');
+                        let html = '';
 
-                for(const [subj, data] of Object.entries(matrix)) {
-                    let rowHtml = `<td><strong>${subj}</strong></td>`;
-                    let sumAverages = 0;
-                    let periodsWithGrades = 0;
+                        rc.subjects.forEach(s => {
+                            let rowHtml = `<td><strong>${s.subjectName}</strong></td>`;
+                            sortedPeriods.forEach(p => {
+                                const pg = s.periodGrades.find(x => x.periodName === p);
+                                if(pg && pg.average != null) {
+                                    rowHtml += `<td>${pg.average.toFixed(1)}</td>`;
+                                } else {
+                                    rowHtml += `<td class="text-muted">-</td>`;
+                                }
+                            });
 
-                    sortedPeriods.forEach(p => {
-                        const vals = data.periods[p];
-                        if(vals && vals.length > 0) {
-                            const avg = vals.reduce((a,b)=>a+b, 0) / vals.length;
-                            sumAverages += avg;
-                            periodsWithGrades++;
-                            rowHtml += `<td>${avg.toFixed(1)}</td>`;
-                        } else {
-                            rowHtml += `<td class="text-muted">-</td>`;
-                        }
-                    });
-
-                    let situationHtml = '<span class="badge bg-label-secondary">Pendente</span>';
-                    let finalAvgHtml = '<span class="text-muted">-</span>';
-
-                    if (periodsWithGrades === divisor) {
-                        const finalAvg = sumAverages / divisor;
+                            let finalAvgHtml = `<span class="text-muted">-</span>`;
+                    let gradesCount = s.periodGrades.filter(pg => pg.average != null).length;
+                    if (gradesCount === rc.totalPeriods) {
+                        let sumAverages = s.periodGrades.reduce((acc, pg) => acc + (pg.average || 0), 0);
+                        let finalAvg = (!rc.totalPeriods || rc.totalPeriods === 0) ? 0 : sumAverages / rc.totalPeriods;
                         finalAvgHtml = `<strong>${finalAvg.toFixed(1)}</strong>`;
-
-                        if (finalAvg >= minGrade) {
-                            situationHtml = '<span class="badge bg-label-success">Aprovado</span>';
-                        } else {
-                            situationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
-                        }
                     }
 
-                    const absences = attendanceReport.absencesPerSubject[subj] || 0;
+                            let situationHtml = '<span class="badge bg-label-secondary">PENDENTE</span>';
+                            if (s.situation === 'APPROVED') situationHtml = '<span class="badge bg-label-success">APROVADO</span>';
+                            else if (s.situation === 'FAILED') situationHtml = '<span class="badge bg-label-danger">REPROVADO</span>';
 
-                    rowHtml += `<td>${finalAvgHtml}</td><td>${absences}</td><td>${situationHtml}</td>`;
-                    html += `<tr>${rowHtml}</tr>`;
+                            const absences = (attendanceReport && attendanceReport.absencesPerSubject) 
+                                            ? (attendanceReport.absencesPerSubject[s.subjectName] || 0) 
+                                            : 0;
+
+                            rowHtml += `<td>${finalAvgHtml}</td><td>${absences}</td><td>${situationHtml}</td>`;
+                            html += `<tr>${rowHtml}</tr>`;
+                        });
+                        
+                        if (rc.subjects.length === 0) {
+                            html = `<tr><td colspan="${sortedPeriods.length + 4}" class="text-center text-muted">Nenhuma nota encontrada.</td></tr>`;
+                        }
+
+                        const freq = rc.frequency.generalFrequency;
+                        const freqSituationHtml = rc.frequency.situation === 'APPROVED' 
+                            ? '<span class="badge bg-label-success">APROVADO</span>' 
+                            : '<span class="badge bg-label-danger">REPROVADO</span>';
+
+                        let generalSituationHtml = '<span class="badge bg-label-secondary">PENDENTE</span>';
+                        if(rc.generalSituation === 'APPROVED') generalSituationHtml = '<span class="badge bg-label-success">APROVADO</span>';
+                        else if(rc.generalSituation === 'FAILED') generalSituationHtml = '<span class="badge bg-label-danger">REPROVADO</span>';
+
+                        if (rc.subjects.length > 0) {
+                            html += `
+                                <tr>
+                                    <td colspan="${sortedPeriods.length + 4}" class="text-end fw-bold">
+                                        Frequência Geral Escolar: ${freq}% ${freqSituationHtml}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="${sortedPeriods.length + 4}" class="text-end fw-bold" style="font-size: 1.1em; background-color: rgba(105, 108, 255, 0.05);">
+                                        Situação Geral Escolar: ${generalSituationHtml}
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                        tbody.innerHTML = html;
+                    }
                 }
+
                 
-                if (Object.keys(matrix).length === 0) {
-                    html = `<tr><td colspan="${sortedPeriods.length + 4}" class="text-center text-muted">Nenhuma nota encontrada.</td></tr>`;
-                }
-
-                // Add general frequency footer row
-                const minFreq = settings.minimumAttendance || 75.0;
-                const isGeneralApproved = attendanceReport.generalFrequency >= minFreq;
-                const freqSituationHtml = isGeneralApproved 
-                    ? '<span class="badge bg-label-success">APROVADO</span>' 
-                    : '<span class="badge bg-label-danger">REPROVADO</span>';
-
-                if (Object.keys(matrix).length > 0) {
-                    html += `
-                        <tr>
-                            <td colspan="${sortedPeriods.length + 4}" class="text-end fw-bold">
-                                Frequência Geral Escolar: ${attendanceReport.generalFrequency}% ${freqSituationHtml}
-                            </td>
-                        </tr>
-                    `;
-                }
-
-                tbody.innerHTML = html;
                 // Inicializa a aba de notas
                 if (grades && grades.length > 0) {
                     allGrades = grades.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -423,7 +370,7 @@
                 
                 // Busca as faltas detalhadas
                 try {
-                    const absRes = await fetch(`/api/attendances/student/${studentId}`, { headers: {"Authorization": `Bearer ${jwtToken}`} });
+                    const absRes = await fetch(`/api/attendances/student/${studentId}` + queryYear, { headers: {"Authorization": `Bearer ${jwtToken}`} });
                     if (absRes.ok) {
                         allAttendances = (await absRes.json()).sort((a, b) => new Date(b.lessonDate) - new Date(a.lessonDate));
                         setupDropdown();
@@ -439,45 +386,13 @@
             }
         }
         
-        let gradeModal, attendanceModal;
-        document.addEventListener("DOMContentLoaded", () => {
-            gradeModal = new bootstrap.Modal(document.getElementById("modalEditGrade"));
-            attendanceModal = new bootstrap.Modal(document.getElementById("modalEditAttendance"));
-        });
+        
 
-        function openGradeModal(id, title, value) {
-            document.getElementById("editGradeId").value = id;
-            document.getElementById("editGradeTitle").value = title || "";
-            document.getElementById("editGradeValue").value = value !== null ? value : "";
-            gradeModal.show();
-        }
-
-        async function saveGrade() {
-            const id = document.getElementById("editGradeId").value;
-            const value = document.getElementById("editGradeValue").value;
-            if(!value) return alert("Insira uma nota");
-            try {
-                const res = await fetch(`/api/grades/${id}`, {
-                    method: "PUT",
-                    headers: {
-                        "Authorization": `Bearer ${jwtToken}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ value: parseFloat(value) })
-                });
-                if(res.ok) {
-                    gradeModal.hide();
-                    loadReportCard();
-                } else {
-                    alert("Erro ao salvar nota");
-                }
-            } catch(e) { console.error(e); }
-        }
+        
 
         
         
         let selectedPeriodNotes = null;
-        let selectedSubjectNotes = null;
 
         function buildPeriodDropdown() {
             const select = document.getElementById('periodSelect');
@@ -491,29 +406,19 @@
 
             select.innerHTML = periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
 
-            if (selectedPeriodNotes && periods.includes(selectedPeriodNotes)) {
-                select.value = selectedPeriodNotes;
-            } else {
-                select.value = periods[0];
-                selectedPeriodNotes = periods[0];
-            }
-            
+            select.value = periods[0];
+            selectedPeriodNotes = periods[0];
             showSubjectsForPeriod();
 
-            if (selectedSubjectNotes) {
-                showGradesForSubject(selectedSubjectNotes);
-            }
-
-            select.onchange = (e) => {
+            select.addEventListener('change', (e) => {
                 selectedPeriodNotes = e.target.value;
-                selectedSubjectNotes = null; // reset subject on period change
                 document.getElementById('gradesTableContainer').classList.add('d-none');
                 if (selectedPeriodNotes) {
                     showSubjectsForPeriod();
                 } else {
                     document.getElementById('subjectsContainerNotes').classList.add('d-none');
                 }
-            };
+            });
         }
 
         function showSubjectsForPeriod() {
@@ -533,7 +438,6 @@
         }
 
         function showGradesForSubject(subject) {
-            selectedSubjectNotes = subject;
             document.getElementById('currentSubjectNameNotes').textContent = subject;
             
             const tbody = document.getElementById('editNotesBody');
@@ -547,7 +451,7 @@
             };
 
             if (gradesForSubj.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
             } else {
                 tbody.innerHTML = gradesForSubj.map(g => `
                     <tr>
@@ -555,7 +459,7 @@
                         <td><span class="badge bg-label-info">${escapeHtml(typeMap[g.assessmentType] || g.assessmentType)}</span></td>
                         <td>${new Date(g.createdAt).toLocaleDateString('pt-BR')}</td>
                         <td><strong>${g.value != null ? Number(g.value).toFixed(1) : '-'}</strong></td>
-                        <td><button class="btn btn-sm btn-outline-primary" onclick="openGradeModal(${g.id}, '${escapeHtml(g.assessmentTitle)}', ${g.value !== null ? g.value : ''}); event.stopPropagation();"><i class="bx bx-edit-alt"></i></button></td>
+                        <td><button class="btn btn-sm btn-icon btn-outline-primary" onclick="openEditGradeModal(${g.id}, '${g.assessmentTitle}', ${g.value})"><i class="bx bx-edit-alt"></i></button></td>
                     </tr>
                 `).join('');
             }
@@ -576,28 +480,17 @@
         }
 
         let selectedType = null;
-        let selectedSubjectAttendance = null;
 
         function setupDropdown() {
             const select = document.getElementById('typeSelect');
             if(!select) return;
             
-            if (!selectedType) {
-                select.value = 'PRESENT';
-                selectedType = 'PRESENT';
-            } else {
-                select.value = selectedType;
-            }
-            
+            select.value = 'PRESENT';
+            selectedType = 'PRESENT';
             showSubjectsForType();
-
-            if (selectedSubjectAttendance) {
-                showAttendanceForSubject(selectedSubjectAttendance);
-            }
             
-            select.onchange = (e) => {
+            select.addEventListener('change', (e) => {
                 selectedType = e.target.value;
-                selectedSubjectAttendance = null; // reset subject on type change
                 document.getElementById('attendanceTableContainer').classList.add('d-none');
                 
                 if (selectedType) {
@@ -605,7 +498,7 @@
                 } else {
                     document.getElementById('subjectsContainer').classList.add('d-none');
                 }
-            };
+            });
         }
 
         function showSubjectsForType() {
@@ -642,14 +535,13 @@
         }
 
         function showAttendanceForSubject(subject) {
-            selectedSubjectAttendance = subject;
             document.getElementById('currentSubjectName').textContent = subject;
             
             const tbody = document.getElementById('attendanceTableBody');
             const records = allAttendances.filter(a => a.status === selectedType && a.subjectName === subject);
 
             if (records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum registro encontrado.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center">Nenhum registro encontrado.</td></tr>';
             } else {
                 tbody.innerHTML = records.map((a, index) => {
                     const rowId = `details_${index}`;
@@ -660,12 +552,10 @@
                         <td><strong>${formatDate(a.lessonDate)}</strong> <i class="bx bx-chevron-down text-muted ms-1"></i></td>
                         <td>${escapeHtml(periodDisplay)}</td>
                         <td><span class="badge bg-label-secondary">${a.lessonCount || 1} aula(s)</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="openAttendanceModal(${a.id}, ${a.lessonId}, '${a.lessonDate}', '${a.status}'); event.stopPropagation();"><i class="bx bx-edit-alt"></i></button>
-                        </td>
+                        
                     </tr>
                     <tr>
-                        <td colspan="4" class="p-0 border-0">
+                        <td colspan="3" class="p-0 border-0">
                             <div class="collapse" id="${rowId}">
                                 <div class="p-3 bg-light rounded m-2">
                                     <div class="mb-2">
@@ -686,42 +576,78 @@
             document.getElementById('attendanceTableContainer').classList.remove('d-none');
         }
 
-        function openAttendanceModal(id, lessonId, date, status) {
-            document.getElementById("editAttendanceId").value = id;
-            document.getElementById("editAttendanceLessonId").value = lessonId;
-            document.getElementById("editAttendanceDate").value = formatDate(date) || "";
-            document.getElementById("editAttendanceStatus").value = status || "PRESENT";
-            attendanceModal.show();
-        }
-
-
-        async function saveAttendance() {
-            const id = document.getElementById("editAttendanceId").value;
-            const lessonId = document.getElementById("editAttendanceLessonId").value;
-            const status = document.getElementById("editAttendanceStatus").value;
-            try {
-                const res = await fetch(`/api/attendances/${id}`, {
-                    method: "PUT",
-                    headers: {
-                        "Authorization": `Bearer ${jwtToken}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ 
-                        studentId: parseInt(studentId),
-                        lessonId: parseInt(lessonId),
-                        status: status
-                    })
-                });
-                if(res.ok) {
-                    attendanceModal.hide();
-                    loadReportCard();
-                } else {
-                    alert("Erro ao salvar frequência");
-                }
-            } catch(e) { console.error(e); }
-        }
+        
         
         loadReportCard();
     </script>
+
+<!-- Grade Modal -->
+<div class="modal fade" id="gradeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Lançar/Editar Nota</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="gradeForm">
+                    <input type="hidden" id="gradeTcsId">
+                    <input type="hidden" id="gradePeriodId">
+                    <input type="hidden" id="gradeAssessmentId">
+                    <input type="hidden" id="existingGradeId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Avaliação (Nome)</label>
+                        <input type="text" class="form-control" id="assessmentName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nota</label>
+                        <input type="number" step="0.01" min="0" max="10" class="form-control" id="gradeValue" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSaveGrade">Salvar Nota</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance Modal -->
+<div class="modal fade" id="attendanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Frequência</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="attendanceForm">
+                    <input type="hidden" id="attTcsId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Data da Aula</label>
+                        <input type="date" class="form-control" id="attDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Aulas dadas no dia</label>
+                        <input type="number" min="1" max="10" class="form-control" id="attCount" value="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Faltas do Aluno</label>
+                        <input type="number" min="0" max="10" class="form-control" id="attMissed" value="0" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSaveAttendance">Registrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
+

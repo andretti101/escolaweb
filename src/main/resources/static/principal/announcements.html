@@ -96,7 +96,7 @@
                     fetch('/api/teachers?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
                     fetch('/api/principals?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
                     fetch('/api/secretaries?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
-                    fetch('/api/classrooms?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } })
+                    fetch('/api/classrooms', { headers: { 'Authorization': 'Bearer ' + token } })
                 ]);
                 
                 

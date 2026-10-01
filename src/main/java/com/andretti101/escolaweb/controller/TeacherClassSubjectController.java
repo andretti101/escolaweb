@@ -47,7 +47,9 @@ public class TeacherClassSubjectController {
             Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
             return ResponseEntity.ok(
                     teacherClassSubjectService.findByTeacher(teacher.getId())
-                            .stream().map(this::toResponse).toList()
+                            .stream()
+                            .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
+                            .map(this::toResponse).toList()
             );
         }
         return ResponseEntity.ok(
@@ -67,10 +69,11 @@ public class TeacherClassSubjectController {
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER')")
     public ResponseEntity<List<TeacherClassSubjectResponseDTO>> findByTeacher(@PathVariable Integer teacherId) {
         if (authenticatedUserService.isTeacher()) {
-            Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
-            if (!teacher.getId().equals(teacherId)) {
-                return ResponseEntity.ok(List.of());
-            }
+            return ResponseEntity.ok(
+                    teacherClassSubjectService.findByTeacher(teacherId).stream()
+                            .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
+                            .map(this::toResponse).toList()
+            );
         }
         return ResponseEntity.ok(
                 teacherClassSubjectService.findByTeacher(teacherId).stream().map(this::toResponse).toList()
@@ -80,6 +83,13 @@ public class TeacherClassSubjectController {
     @GetMapping("/classroom/{classRoomId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<TeacherClassSubjectResponseDTO>> findByClassRoom(@PathVariable Integer classRoomId) {
+        if (authenticatedUserService.isTeacher()) {
+            return ResponseEntity.ok(
+                    teacherClassSubjectService.findByClassRoom(classRoomId).stream()
+                            .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
+                            .map(this::toResponse).toList()
+            );
+        }
         return ResponseEntity.ok(
                 teacherClassSubjectService.findByClassRoom(classRoomId).stream().map(this::toResponse).toList()
         );

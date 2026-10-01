@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const authUserId = localStorage.getItem("user_id");
             const [response, tcsResponse] = await Promise.all([
-                fetch('/api/classrooms?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
+                fetch('/api/classrooms', { headers: { 'Authorization': 'Bearer ' + token } }),
                 fetch('/api/teacher-class-subjects/teacher/' + authUserId, { headers: { 'Authorization': 'Bearer ' + token } })
             ]);
             
@@ -427,3 +427,4 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+

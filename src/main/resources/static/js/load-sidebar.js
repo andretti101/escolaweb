@@ -20,7 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             menuLinks.forEach(link => {
                 const href = link.getAttribute('href');
-                if (href && href !== 'javascript:void(0);' && currentPath.endsWith(href)) {
+                let isActive = currentPath.endsWith(href);
+                if (currentPath.includes('student-performance.html') && href.includes('students.html')) {
+                    isActive = true;
+                }
+                
+                if (href && href !== 'javascript:void(0);' && isActive) {
                     const menuItem = link.closest('.menu-item');
                     if (menuItem) menuItem.classList.add('active');
 

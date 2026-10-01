@@ -14,4 +14,7 @@ public interface ClassRoomRepository extends JpaRepository<ClassRoom, Integer> {
     List<ClassRoom> findByActiveTrue();
     boolean existsByAcademicYear(AcademicYear academicYear);
     boolean existsByAcademicYearAndName(AcademicYear academicYear, String name);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE ClassRoom c SET c.active = false WHERE c.academicYear = :year AND c.active = true")
+    int deactivateAllByAcademicYear(@org.springframework.data.repository.query.Param("year") AcademicYear academicYear);
 }

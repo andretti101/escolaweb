@@ -1,8 +1,10 @@
 package com.andretti101.escolaweb.controller;
 
 import com.andretti101.escolaweb.dto.request.AcademicYearRequestDTO;
+import com.andretti101.escolaweb.dto.request.YearConclusionRequestDTO;
 import com.andretti101.escolaweb.dto.response.AcademicYearResponseDTO;
 import com.andretti101.escolaweb.model.entity.AcademicYear;
+import com.andretti101.escolaweb.service.AcademicYearConclusionService;
 import com.andretti101.escolaweb.service.AcademicYearService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/academic-years")
@@ -19,6 +22,7 @@ import java.util.List;
 public class AcademicYearController {
 
     private final AcademicYearService academicYearService;
+    private final AcademicYearConclusionService conclusionService;
 
     @PostMapping
     @PreAuthorize("hasRole('PRINCIPAL')")
@@ -66,7 +70,21 @@ public class AcademicYearController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Mapping
+    @GetMapping("/conclusion-status")
+    @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
+    public ResponseEntity<Map<String, Boolean>> getConclusionStatus() {
+        return ResponseEntity.ok(Map.of("canConclude", conclusionService.canConcludeYear()));
+    }
+
+    @PostMapping("/conclude")
+    @PreAuthorize("hasRole('PRINCIPAL')")
+    public ResponseEntity<Map<String, Object>> concludeYear(
+            @Valid @RequestBody YearConclusionRequestDTO request) {
+        Map<String, Object> summary = conclusionService.concludeYear(request);
+        return ResponseEntity.ok(summary);
+    }
+
+    //  Mapping
 
     private AcademicYear toEntity(AcademicYearRequestDTO dto) {
         AcademicYear year = new AcademicYear();

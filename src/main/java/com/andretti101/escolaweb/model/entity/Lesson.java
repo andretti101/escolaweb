@@ -47,6 +47,10 @@ public class Lesson implements Serializable {
     @Column(name = "lesson_count", nullable = false)
     private LessonCount lessonCount = LessonCount.ONE;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean active = true;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

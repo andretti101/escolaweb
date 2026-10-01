@@ -62,4 +62,8 @@ public class Announcement implements Serializable {
 
     @Column(name = "target_teachers")
     private Boolean targetTeachers;
+
+    @jakarta.persistence.Column(name = "archived", nullable = false, columnDefinition = "boolean default false")
+    @lombok.Builder.Default
+    private boolean archived = false;
 }

@@ -61,4 +61,8 @@ public class ChatMessage implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "replied_to_id", nullable = true)
     private ChatMessage repliedTo;
+
+    @jakarta.persistence.Column(name = "archived", nullable = false, columnDefinition = "boolean default false")
+    @lombok.Builder.Default
+    private boolean archived = false;
 }

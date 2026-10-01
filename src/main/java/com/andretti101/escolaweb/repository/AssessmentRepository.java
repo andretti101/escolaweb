@@ -15,4 +15,8 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Integer>
     boolean existsByTeacherClassSubject(TeacherClassSubject teacherClassSubject);
     boolean existsByPeriod(AcademicPeriod period);
     long countByTeacherClassSubjectAndPeriod(TeacherClassSubject teacherClassSubject, AcademicPeriod period);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE Assessment a SET a.active = false WHERE a.teacherClassSubject.classRoom.academicYear = :year AND a.active = true")
+    int deactivateAllByAcademicYear(@org.springframework.data.repository.query.Param("year") com.andretti101.escolaweb.model.entity.AcademicYear academicYear);
 }

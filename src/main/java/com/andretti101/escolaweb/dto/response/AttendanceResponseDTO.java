@@ -11,6 +11,7 @@ public record AttendanceResponseDTO(
         String studentName,
         Integer lessonId,
         LocalDate lessonDate,
+        Integer tcsId,
         String subjectName,
         String periodName,
         Integer lessonCount,
