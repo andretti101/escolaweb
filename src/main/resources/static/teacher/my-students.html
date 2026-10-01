@@ -170,11 +170,11 @@
                     
                     const gradesRes = await fetch(`/api/grades/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
                     let grades = gradesRes.ok ? await gradesRes.json() : [];
-                    grades = grades.filter(g => g.tcsId === tcsId || g.subjectName === tcs.subjectName);
+                    grades = grades.filter(g => g.tcsId === tcsId);
                     
                     const attRes = await fetch(`/api/attendances/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
                     let attendances = attRes.ok ? await attRes.json() : [];
-                    attendances = attendances.filter(a => a.subjectName === tcs.subjectName);
+                    attendances = attendances.filter(a => a.tcsId === tcsId);
 
                     let presences = 0;
                     let absences = 0;
@@ -205,7 +205,7 @@
                         for (const pName in groupedGrades) {
                             const periodGrades = groupedGrades[pName];
                             const badgesHtml = periodGrades.map(g => `<span class="badge bg-label-primary me-1 mb-1" title="${escapeHtml(g.assessmentTitle)}">${Number(g.value).toFixed(1)}</span>`).join('');
-                            gradesListHtml += `<div class="mb-2"><span class="d-block small fw-bold text-muted mb-1" style="font-size: 0.75rem;">${escapeHtml(pName)}</span>${badgesHtml}</div>`;
+                            gradesListHtml += `<div class="d-inline-block me-4 mb-2"><span class="d-block small fw-bold text-muted mb-1" style="font-size: 0.75rem;">${escapeHtml(pName)}</span>${badgesHtml}</div>`;
                         }
                     }
                     
@@ -223,12 +223,12 @@
                 
                 tbody.innerHTML = results.map(r => `
                     <tr>
-                        <td class="fw-bold">${escapeHtml(r.studentName)}</td>
-                        <td style="max-width: 250px; white-space: normal;">${r.gradesHtml}</td>
-                        <td class="fw-semibold">${r.avg}</td>
-                        <td><span class="badge bg-label-success">${r.presences}</span></td>
-                        <td><span class="badge bg-label-danger">${r.absences}</span></td>
-                        <td><span class="badge bg-label-warning">${r.justified}</span></td>
+                        <td class="pt-3 fw-bold" style="vertical-align: top;">${escapeHtml(r.studentName)}</td>
+                        <td class="pt-3" style="white-space: normal; vertical-align: top;">${r.gradesHtml}</td>
+                        <td class="pt-3 fw-semibold" style="vertical-align: top;">${r.avg}</td>
+                        <td class="pt-3" style="vertical-align: top;"><span class="badge bg-label-success">${r.presences}</span></td>
+                        <td class="pt-3" style="vertical-align: top;"><span class="badge bg-label-danger">${r.absences}</span></td>
+                        <td class="pt-3" style="vertical-align: top;"><span class="badge bg-label-warning">${r.justified}</span></td>
                     </tr>
                 `).join('');
                 

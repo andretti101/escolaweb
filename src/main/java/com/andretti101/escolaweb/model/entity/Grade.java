@@ -52,6 +52,10 @@ public class Grade implements Serializable {
     @Column(name = "student_situation", length = 20)
     private StudentSituation studentSituation;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean active = true;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

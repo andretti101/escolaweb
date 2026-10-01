@@ -54,6 +54,7 @@ public class AssessmentController {
             Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
             List<Assessment> myAssessments = teacherClassSubjectService.findByTeacher(teacher.getId())
                     .stream()
+                    .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
                     .flatMap(tcs -> assessmentService.findByTeacherClassSubject(tcs.getId()).stream())
                     .toList();
             return ResponseEntity.ok(myAssessments.stream().map(this::toResponse).toList());
@@ -129,7 +130,10 @@ public class AssessmentController {
     private Set<Integer> getAuthenticatedTeacherTcsIds() {
         Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
         return teacherClassSubjectService.findByTeacher(teacher.getId())
-                .stream().map(TeacherClassSubject::getId).collect(Collectors.toSet());
+                .stream()
+                .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
+                .map(TeacherClassSubject::getId)
+                .collect(Collectors.toSet());
     }
 
     // ── Mapping

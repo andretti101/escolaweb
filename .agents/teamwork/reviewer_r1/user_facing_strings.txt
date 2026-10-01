@@ -1,0 +1,415 @@
+[src/main/java/com/andretti101/escolaweb/dto/request/AcademicPeriodRequestDTO.java:11] O ano letivo é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AcademicPeriodRequestDTO.java:14] O nome do período é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AcademicPeriodRequestDTO.java:15] O nome deve ter no máximo 100 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/AcademicYearRequestDTO.java:11] O ano letivo é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AcademicYearRequestDTO.java:12] O ano deve ser a partir de 2000.
+[src/main/java/com/andretti101/escolaweb/dto/request/AcademicYearRequestDTO.java:13] O ano deve ser até 2100.
+[src/main/java/com/andretti101/escolaweb/dto/request/AnnouncementRequestDTO.java:13] O título é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AnnouncementRequestDTO.java:14] O título deve ter no máximo 100 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/AnnouncementRequestDTO.java:17] A mensagem é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/AnnouncementRequestDTO.java:18] A mensagem deve ter no máximo 2000 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:12] O título da avaliação é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:13] O título deve ter no máximo 100 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:18] A data da avaliação é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:21] O tipo de avaliação é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:24] O vínculo professor-turma-disciplina é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:27] O período letivo é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AttendanceRequestDTO.java:8] O aluno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AttendanceRequestDTO.java:11] A aula é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/AttendanceRequestDTO.java:14] O status da presença é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/AttendanceUpdateRequestDTO.java:7] O status da presença é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/ChangePasswordRequestDTO.java:8] A senha atual é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/ChangePasswordRequestDTO.java:11] A nova senha é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/ChangePasswordRequestDTO.java:12] A nova senha deve ter entre 8 e 255 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/ChatMessageRequestDTO.java:15] O conteúdo da mensagem não pode ser vazio.
+[src/main/java/com/andretti101/escolaweb/dto/request/ClassRoomRequestDTO.java:11] O ano letivo é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/ClassRoomRequestDTO.java:14] O nome da turma é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/ClassRoomRequestDTO.java:15] O nome deve ter no máximo 20 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/ClassRoomRequestDTO.java:18] O turno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/EnrollmentRequestDTO.java:9] O aluno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/EnrollmentRequestDTO.java:12] A turma é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/ForgotPasswordRequestDTO.java:8] O e-mail é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/ForgotPasswordRequestDTO.java:9] O e-mail informado é inválido.
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:11] O aluno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:14] A avaliação é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:17] O valor da nota é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:18] 0.0
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:18] A nota deve ser no mínimo 0.
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:19] 10.0
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:19] A nota deve ser no máximo 10.
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeUpdateRequestDTO.java:11] O valor da nota é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeUpdateRequestDTO.java:12] 0.0
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeUpdateRequestDTO.java:12] A nota deve ser no mínimo 0.
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeUpdateRequestDTO.java:13] 10.0
+[src/main/java/com/andretti101/escolaweb/dto/request/GradeUpdateRequestDTO.java:13] A nota deve ser no máximo 10.
+[src/main/java/com/andretti101/escolaweb/dto/request/LessonRequestDTO.java:11] A data da aula é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/LessonRequestDTO.java:18] O vínculo professor-turma-disciplina é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/LessonRequestDTO.java:21] A aula deve ter no mínimo 1 período.
+[src/main/java/com/andretti101/escolaweb/dto/request/LessonRequestDTO.java:22] A aula pode ter no máximo 6 períodos.
+[src/main/java/com/andretti101/escolaweb/dto/request/LoginRequestDTO.java:8] O e-mail é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/LoginRequestDTO.java:9] O e-mail informado é inválido.
+[src/main/java/com/andretti101/escolaweb/dto/request/LoginRequestDTO.java:12] A senha é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:9] O nome é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:10] O nome deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:13] O e-mail é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:14] O e-mail informado é inválido.
+[src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:15] O e-mail deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:18] A senha é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:19] A senha deve ter entre 8 e 255 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/RefreshTokenRequestDTO.java:7] O refresh token é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/ResetPasswordRequestDTO.java:8] O token é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/ResetPasswordRequestDTO.java:11] A nova senha é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/ResetPasswordRequestDTO.java:12] A nova senha deve ter entre 8 e 255 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:13] O nome da escola deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:16] O endereço deve ter no máximo 255 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:19] O telefone deve ter no máximo 20 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:22] O e-mail informado é inválido.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:23] O e-mail deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:26] 0.0
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:26] A média mínima deve ser no mínimo 0.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:27] 10.0
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:27] A média mínima deve ser no máximo 10.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:30] 0.0
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:30] A frequência mínima deve ser no mínimo 0.
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:31] 100.0
+[src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:31] A frequência mínima deve ser no máximo 100.
+[src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:9] O nome é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:10] O nome deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:13] O e-mail é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:14] O e-mail informado é inválido.
+[src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:15] O e-mail deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:18] A senha é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:19] A senha deve ter entre 8 e 255 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:13] O nome do aluno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:14] O nome deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:17] O e-mail é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:18] O e-mail informado é inválido.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:19] O e-mail deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:22] A senha é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:23] A senha deve ter entre 8 e 255 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:26] O telefone deve ter no máximo 20 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:29] O telefone do responsável deve ter no máximo 20 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:32] O número de matrícula é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:33] A matrícula deve ter no máximo 30 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:36] A data de nascimento é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:37] A data de nascimento deve ser uma data passada.
+[src/main/java/com/andretti101/escolaweb/dto/request/SubjectRequestDTO.java:8] O nome da disciplina é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/SubjectRequestDTO.java:9] O nome deve ter no máximo 100 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:8] O professor é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:11] A turma é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:14] A disciplina é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:17] O número mínimo de avaliações deve ser ao menos 1.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:20] O número máximo de avaliações deve ser ao menos 1.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:9] O nome é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:10] O nome deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:13] O e-mail é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:14] O e-mail informado é inválido.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:15] O e-mail deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:18] A senha é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:19] A senha deve ter entre 8 e 255 caracteres.
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:12] O ano letivo seguinte é obrigatório.
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:15] A média mínima é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:16] 0.0
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:16] A média mínima deve ser no mínimo 0.
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:17] 10.0
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:17] A média mínima deve ser no máximo 10.
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:20] A frequência mínima é obrigatória.
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:21] 0.0
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:21] A frequência mínima deve ser no mínimo 0.
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:22] 100.0
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:22] A frequência mínima deve ser no máximo 100.
+[src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:25] O tipo de divisão do período é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:31] O ano letivo é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:36] O nome do período é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:37] O nome do período deve ter no máximo 100 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:29] O ano letivo é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:32] O título é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:33] O título deve ter no máximo 100 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:37] A mensagem é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:38] A mensagem deve ter no máximo 2000 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:49] O autor é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:33] A atribuição de professor, turma e matéria é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:38] O período é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:43] O título é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:44] O título deve ter no máximo 100 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:55] O tipo de avaliação é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:33] A aula é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:38] O aluno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:43] O status da presença é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/AttendanceHistory.java:27] O registro de frequência é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:35] O remetente é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:33] O nome da turma é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:34] O nome da turma deve ter no máximo 20 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:42] O turno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:47] O ano letivo é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:32] O aluno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:37] A turma é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:36] O aluno é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:41] A avaliação é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:46] 0.0
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:46] A nota deve ser de pelo menos 0.
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:47] 10.0
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:47] A nota deve ser no máximo 10.
+[src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:28] A nota é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:31] A atribuição de professor, turma e matéria é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:36] A data da aula é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:32] O nome da escola deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:36] O endereço deve ter no máximo 255 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:40] O telefone deve ter no máximo 20 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:44] E-mail inválido.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:45] O e-mail deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:55] 0.0
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:55] A frequência mínima deve ser de pelo menos 0.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:56] 100.0
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:56] A frequência mínima deve ser no máximo 100.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:61] 0.0
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:61] A média mínima deve ser de pelo menos 0.
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:62] 10.0
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:62] A média mínima deve ser no máximo 10.
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:24] O telefone deve ter no máximo 20 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:28] O telefone do responsável deve ter no máximo 20 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:32] O número de matrícula é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:33] O número de matrícula deve ter no máximo 30 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:30] O nome da matéria é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:31] O nome da matéria deve ter no máximo 100 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:44] O número mínimo de avaliações deve ser ao menos 1.
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:48] O número máximo de avaliações deve ser ao menos 1.
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:33] O nome é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:34] O nome deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:38] E-mail inválido.
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:39] O e-mail é obrigatório.
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:40] O e-mail deve ter no máximo 150 caracteres.
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:44] A senha é obrigatória.
+[src/main/java/com/andretti101/escolaweb/model/enums/AttendanceStatus.java:6] Falta Justificada
+[src/main/java/com/andretti101/escolaweb/model/enums/LessonCount.java:28] No LessonCount constant mapped to database value: 
+[src/main/java/com/andretti101/escolaweb/model/enums/LessonCount.java:29] . Valid range is 1–6.
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:8] Pré-Escola 1
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:9] Pré-Escola 2
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:10] Pré-Escola 3
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:11] 1º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:12] 2º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:13] 3º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:14] 4º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:15] 5º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:16] 6º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:17] 7º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:18] 8º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:19] 9º Ano Fundamental
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:20] 1º Ano Médio
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:21] 2º Ano Médio
+[src/main/java/com/andretti101/escolaweb/model/enums/SchoolGrade.java:22] 3º Ano Médio
+[src/main/java/com/andretti101/escolaweb/model/enums/UserRole.java:7] Direção
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:49] Não é possível atualizar o período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:49] ' pois ele já está fechado.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:73] Cannot delete a closed academic period with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:77] Cannot delete period with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:77]  because it has assessments linked to it.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:115] O ano letivo 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:115]  já possui 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:116]  período(s) acadêmico(s) gerado(s). Remova-os antes de gerar novamente.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:125] Período Anual
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:125] º 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:147] O período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:147] ' já está fechado.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:168] O ano letivo 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:168]  não possui períodos acadêmicos. Gere-os primeiro.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:192] Todos os períodos do ano letivo 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:193]  já foram fechados. Não há mais períodos para abrir.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:200] A data de início do período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:201] ' (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:202] ) é anterior à data de término do período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:203] ' (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:204] ). Ajuste as datas antes de prosseguir.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:223] Não é possível fechar o período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:224] ': a data de término deve ser definida antes do fechamento.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:230] Não é possível fechar o período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:231] ': a data de término (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:232] ) ainda não foi atingida.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:256] Não é possível fechar o período '%s': a matéria '%s' na turma '%s' possui apenas %d avaliação(ões), mas exige no mínimo %d.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:291] A data de início (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:292] ) do período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:293] ' não pode ser anterior à data de término (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:295] ) do período anterior '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:306] A data de término (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:307] ) do período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:308] ' não pode ser posterior à data de início (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:310] ) do período seguinte '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:318] A data de início (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:319] ) deve ser anterior à data de término (
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:320] ) do período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:341] Período acadêmico não encontrado com id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:346] O ano letivo é obrigatório.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:64] Não é possível concluir o ano letivo 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:65] . Todos os períodos acadêmicos devem estar fechados antes da conclusão.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:27] Academic year already registered: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:40] Academic year already registered: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:57] Cannot delete academic year with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:57]  because it has classrooms linked to it.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:61] Cannot delete academic year with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:61]  because it has periods linked to it.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:83] No active academic year found.
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:99] Academic year not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:48] Professores não podem enviar recados para professores.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:54] Selecione pelo menos uma turma ou marque a opção para professores.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:63] Você não tem permissão para enviar recados para turmas que não leciona.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:72] Uma ou mais turmas não foram encontradas.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:85] Aviso não encontrado com id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:138] Professores não podem enviar recados para professores.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:147] Você não tem permissão para editar este aviso.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:156] Selecione pelo menos uma turma ou marque a opção para professores.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:165] Você não tem permissão para enviar recados para turmas que não leciona.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:174] Uma ou mais turmas não foram encontradas.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:187] Aviso não encontrado com id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:196] Você não tem permissão para excluir este aviso.
+[src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:235] User not found
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:121] O número máximo de avaliações (
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:122] ) para a matéria '
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:123] ' na turma '
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:124] ' já foi atingido no período '
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:130] Assessment not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:135] TeacherClassSubject is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:142] Academic period is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:150] Academic period '
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:150] ' is closed. No changes are allowed.
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:156] Assessment date is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:163] A data da avaliação (
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:164] ) não pode ser anterior à data de início do período (
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:167] A data da avaliação (
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:168] ) não pode ser posterior à data de término do período (
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:177] Conflito de Ano Letivo: A turma pertence ao ano '
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:179] ', mas o período escolhido pertence a outro ano letivo.
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:47] Attendance status is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:51] Attendance for student with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:52]  in lesson with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:52]  is already registered.
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:73] Attendance status is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:238] Attendance not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:244] Student with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:245]  does not have an active enrollment in classroom with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:252] Lesson is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:259] Student is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:31] Usuário autenticado não encontrado com o e-mail: 
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:41] O usuário autenticado não é um professor.
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:51] O usuário autenticado não é um aluno.
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:58] ROLE_TEACHER
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:63] ROLE_STUDENT
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:74] Acesso negado: você não tem permissão para acessar este recurso.
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:85] Acesso negado: você só pode acessar suas próprias informações.
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:95] Nenhum usuário autenticado encontrado.
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:105] Password reset requested for non-existent email: {}
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:129] Password reset token generated for user: {}
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:137] Token de redefinição inválido ou já utilizado.
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:142] Token de redefinição expirado. Solicite um novo link.
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:155] Password successfully reset for user: {}
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:183] Usuário não encontrado com o e-mail: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:33] Turma não encontrada. ID: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:36] Usuário não encontrado. ID: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:40] Você foi bloqueado e não pode enviar mensagens neste chat.
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:66] Turma não encontrada. ID: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:77] Erro ao buscar mensagens ocultas: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:92] Mensagem não encontrada
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:95] Você só pode editar suas próprias mensagens.
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:101] Você foi bloqueado e não pode editar mensagens.
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:105] Não é possível editar uma mensagem excluída.
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:119] Mensagem não encontrada
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:124] Você não tem permissão para excluir esta mensagem.
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:131] Você foi bloqueado e não pode excluir mensagens.
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:170] User not found
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:172] Classroom not found
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:192] User not found
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:229] Erro ao buscar read receipts: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:249] User not found
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:251] Message not found
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:265] Usuário não encontrado. ID: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:270] Você não tem permissão para enviar mensagens neste chat global.
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:297] User not found
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:322] Erro ao buscar read receipts do chat dos professores: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:339] Erro ao buscar mensagens ocultas: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:354] User not found
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:34] Classroom '
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:34] ' already exists in academic year 
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:53] Classroom '
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:53] ' already exists in academic year 
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:71] Cannot delete classroom with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:71]  because it has student enrollments.
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:75] Cannot delete classroom with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:75]  because it has teacher-subject assignments.
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:124] Classroom not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:129] Academic year is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/CustomUserDetailsService.java:24] Usuário não encontrado com o e-mail: 
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:34] EscolaWEB — Redefinição de Senha
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:38] Password reset email sent to: {}
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:41] Failed to send password reset email to: {}
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:43] Falha ao enviar e-mail de redefinição de senha.
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:50] 
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:79] text-align: center;
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:36] Não é possível matricular um aluno inativo.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:39] Não é possível realizar matrículas em uma turma inativa.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:43] O aluno já possui uma matrícula ativa para este ano letivo.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:46] O aluno já está matriculado nesta turma.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:70] O aluno já possui uma matrícula ativa para este ano letivo.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:87] Não é possível excluir esta matrícula pois o aluno já possui notas registradas. Considere desativar a matrícula em vez de excluir.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:90] Não é possível excluir esta matrícula pois o aluno já possui presenças registradas. Considere desativar a matrícula em vez de excluir.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:151] Não é possível transferir o aluno para uma turma inativa.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:155] O aluno já está matriculado nesta turma.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:159] A transferência só é permitida entre turmas do mesmo ano letivo.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:168] Enrollment not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:173] Student is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:180] Classroom is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:50] Grade for student with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:51]  on assessment with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:51]  is already registered.
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:217] Academic period '
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:218] ' is closed. Grades cannot be modified.
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:225] Grade value must be between 0 and 10.
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:232] Student with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:233]  does not have an active enrollment in classroom with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:240] Grade not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:245] Student is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:252] Assessment is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:29] Lesson date is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:44] Lesson date is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:97] Lesson not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:102] TeacherClassSubject is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:27] Email already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:41] Email already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:98] Principal not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:44] Refresh token inválido ou não encontrado.
+[src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:50] Reutilização de token detectada. Todas as sessões foram encerradas por segurança. 
+[src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:51] Faça login novamente.
+[src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:58] Refresh token expirado. Faça login novamente.
+[src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:71] Refresh token não encontrado.
+[src/main/java/com/andretti101/escolaweb/service/impl/ReportCardServiceImpl.java:174] O aluno '
+[src/main/java/com/andretti101/escolaweb/service/impl/ReportCardServiceImpl.java:174] ' não possui matrícula no ano letivo 
+[src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:70] Minimum grade must be between 0 and 10.
+[src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:76] Minimum attendance must be between 0 and 100.
+[src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:27] Email already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:41] Email already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:98] Secretary not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:104] Student not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:109] Email already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:115] Email already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:51] Cannot delete subject with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:51]  because it is linked to class assignments.
+[src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:93] Subject not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:99] Subject name already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:40] Não é possível vincular um professor inativo à turma.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:43] Não é possível vincular professores a uma turma inativa.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:46] Não é possível vincular uma matéria inativa.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:49] Esta matéria já está vinculada a esta turma (apenas um professor por matéria).
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:74] Esta matéria já está vinculada a esta turma.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:94] Não é possível excluir este vínculo pois já existem aulas registradas.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:97] Não é possível excluir este vínculo pois já existem avaliações registradas.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:133] The minimum number of assessments (
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:134] ) cannot be greater than the maximum (
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:141] TeacherClassSubject not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:146] Teacher is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:153] Classroom is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:160] Subject is required.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:29] Email already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:43] Email already in use: 
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:64] Cannot delete teacher with id 
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:64]  because they have active class assignments.
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:106] Teacher not found with id: 
+[src/main/java/com/andretti101/escolaweb/service/impl/UserServiceImpl.java:52] Current password is incorrect.
+[src/main/java/com/andretti101/escolaweb/service/impl/UserServiceImpl.java:84] User not found with id: 

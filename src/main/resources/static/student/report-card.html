@@ -80,6 +80,10 @@
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                                 <h5 class="mb-0">Resultado Consolidado</h5>
+                                <div id="generalStatusContainer" class="d-flex align-items-center gap-2 mt-1 mt-sm-0">
+                                    <span class="text-muted fw-semibold">Situação Geral:</span>
+                                    <span id="generalStatusBadge" class="badge bg-label-secondary">Carregando...</span>
+                                </div>
                             </div>
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped">
@@ -116,122 +120,112 @@
             if (!studentId) return;
 
             try {
-                const settingsRes = await fetch('/api/school-settings', { headers: {'Authorization': `Bearer ${jwtToken}`} });
-                if (!settingsRes.ok) throw new Error('Falha ao obter regras da escola');
-                const settings = await settingsRes.json();
-                
-                const minGrade = settings.minimumGrade || 7.0;
-                
-                const gradesResP = fetch(`/api/grades/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
-                const attendanceResP = fetch(`/api/attendances/report/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
-                
-                const [gradesRes, attendanceRes] = await Promise.all([gradesResP, attendanceResP]);
-                
-                if (!gradesRes.ok) throw new Error('Falha ao obter notas');
-                const grades = await gradesRes.json();
-                
+                let activeYear = null;
+                const yrRes = await fetch('/api/academic-years/active', { headers: {'Authorization': 'Bearer ' + jwtToken} });
+                if (yrRes.ok) activeYear = await yrRes.json();
+
                 let attendanceReport = { absencesPerSubject: {}, generalFrequency: 100 };
-                if (attendanceRes.ok) {
-                    attendanceReport = await attendanceRes.json();
-                }
+                const queryYear = activeYear ? '?yearId=' + activeYear.id : '';
+                const attRes = await fetch(`/api/attendances/report/student/${studentId}` + queryYear, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                if (attRes.ok) attendanceReport = await attRes.json();
 
-                let divisor = 4; // Padrão
-                if(settings.periodType === 'BIMESTER') divisor = 4;
-                else if(settings.periodType === 'TRIMESTER') divisor = 3;
-                else if(settings.periodType === 'QUADRIMESTER') divisor = 3;
-                else if(settings.periodType === 'SEMESTER') divisor = 2;
+                if (activeYear) {
+                    const rcRes = await fetch(`/api/report-cards/student/${studentId}/year/${activeYear.id}`, { headers: {'Authorization': 'Bearer ' + jwtToken} });
+                    if (rcRes.ok) {
+                        const rc = await rcRes.json();
+                        const periodNames = new Set();
+                        rc.subjects.forEach(s => s.periodGrades.forEach(pg => periodNames.add(pg.periodName)));
+                        const sortedPeriods = Array.from(periodNames).sort();
+                        
+                        const thead = document.getElementById('reportHead');
+                        thead.innerHTML = `
+                            <tr class="table-primary">
+                                <th>Disciplina</th>
+                                ${sortedPeriods.map(p => `<th>${p}</th>`).join('')}
+                                <th>Média Final</th>
+                                <th>Faltas</th>
+                                <th>Situação</th>
+                            </tr>
+                        `;
 
-                const matrix = {};
-                const periodNames = new Set();
+                        const tbody = document.getElementById('reportBody');
+                        let html = '';
 
-                grades.forEach(g => {
-                    if(!g.subjectName || !g.periodName) return;
-                    periodNames.add(g.periodName);
-                    
-                    if(!matrix[g.subjectName]) matrix[g.subjectName] = { periods: {} };
-                    if(!matrix[g.subjectName].periods[g.periodName]) matrix[g.subjectName].periods[g.periodName] = [];
-                    
-                    matrix[g.subjectName].periods[g.periodName].push(g.value);
-                });
+                        rc.subjects.forEach(s => {
+                            let rowHtml = `<td><strong>${s.subjectName}</strong></td>`;
+                            sortedPeriods.forEach(p => {
+                                const pg = s.periodGrades.find(x => x.periodName === p);
+                                if(pg && pg.average != null) {
+                                    rowHtml += `<td>${pg.average.toFixed(1)}</td>`;
+                                } else {
+                                    rowHtml += `<td class="text-muted">-</td>`;
+                                }
+                            });
 
-                const sortedPeriods = Array.from(periodNames).sort();
-                
-                const thead = document.getElementById('reportHead');
-                thead.innerHTML = `
-                    <tr class="table-primary">
-                        <th>Disciplina</th>
-                        ${sortedPeriods.map(p => `<th>${p}</th>`).join('')}
-                        <th>Média Final</th>
-                        <th>Faltas</th>
-                        <th>Situação</th>
-                    </tr>
-                `;
+                            let finalAvgHtml = `<span class="text-muted">-</span>`;
+                            let gradesCount = s.periodGrades.filter(pg => pg.average != null).length;
+                            if (gradesCount === rc.totalPeriods || s.situation === 'APPROVED' || s.situation === 'FAILED') {
+                                let sumAverages = s.periodGrades.reduce((acc, pg) => acc + (pg.average || 0), 0);
+                                let finalAvg = sumAverages / rc.totalPeriods;
+                                finalAvgHtml = `<strong>${finalAvg.toFixed(1)}</strong>`;
+                            }
 
-                const tbody = document.getElementById('reportBody');
-                let html = '';
+                            let situationHtml = '<span class="badge bg-label-warning">Pendente</span>';
+                            if (s.situation === 'APPROVED') situationHtml = '<span class="badge bg-label-success">Aprovado</span>';
+                            else if (s.situation === 'FAILED') situationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
 
-                for(const [subj, data] of Object.entries(matrix)) {
-                    let rowHtml = `<td><strong>${subj}</strong></td>`;
-                    let sumAverages = 0;
-                    let periodsWithGrades = 0;
+                            const absences = attendanceReport.absencesPerSubject[s.subjectName] || 0;
 
-                    sortedPeriods.forEach(p => {
-                        const vals = data.periods[p];
-                        if(vals && vals.length > 0) {
-                            const avg = vals.reduce((a,b)=>a+b, 0) / vals.length;
-                            sumAverages += avg;
-                            periodsWithGrades++;
-                            rowHtml += `<td>${avg.toFixed(1)}</td>`;
-                        } else {
-                            rowHtml += `<td class="text-muted">-</td>`;
+                            rowHtml += `<td>${finalAvgHtml}</td><td>${absences}</td><td>${situationHtml}</td>`;
+                            html += `<tr>${rowHtml}</tr>`;
+                        });
+                        
+                        if (rc.subjects.length === 0) {
+                            html = `<tr><td colspan="${sortedPeriods.length + 4}" class="text-center text-muted">Nenhuma nota encontrada.</td></tr>`;
                         }
-                    });
 
-                    let situationHtml = '<span class="badge bg-label-secondary">Pendente</span>';
-                    let finalAvgHtml = '<span class="text-muted">-</span>';
+                        let freqSituationHtml = '<span class="badge bg-label-warning">PENDENTE</span>';
+                        if (rc.frequency.situation === 'APPROVED') freqSituationHtml = '<span class="badge bg-label-success">APROVADO</span>';
+                        else if (rc.frequency.situation === 'FAILED') freqSituationHtml = '<span class="badge bg-label-danger">REPROVADO</span>';
 
-                    if (periodsWithGrades === divisor) {
-                        const finalAvg = sumAverages / divisor;
-                        finalAvgHtml = `<strong>${finalAvg.toFixed(1)}</strong>`;
-
-                        if (finalAvg >= minGrade) {
-                            situationHtml = '<span class="badge bg-label-success">Aprovado</span>';
-                        } else {
-                            situationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
+                        if (rc.subjects.length > 0) {
+                            html += `
+                                <tr>
+                                    <td colspan="${sortedPeriods.length + 4}" class="text-end fw-bold">
+                                        Frequência Geral Escolar: ${rc.frequency.generalFrequency.toFixed(2)}% ${freqSituationHtml}
+                                    </td>
+                                </tr>
+                            `;
                         }
+
+                        tbody.innerHTML = html;
+
+                        // UPDATE HEADER BADGE
+                        const generalStatus = rc.generalSituation;
+                        const badgeEl = document.getElementById('generalStatusBadge');
+                        if (badgeEl) {
+                            if (generalStatus === 'APPROVED') {
+                                badgeEl.className = 'badge bg-label-success fs-6';
+                                badgeEl.innerHTML = '<i class="bx bx-check-circle me-1"></i> Aprovado';
+                            } else if (generalStatus === 'FAILED') {
+                                badgeEl.className = 'badge bg-label-danger fs-6';
+                                badgeEl.innerHTML = '<i class="bx bx-x-circle me-1"></i> Reprovado';
+                            } else {
+                                badgeEl.className = 'badge bg-label-warning fs-6';
+                                badgeEl.innerHTML = '<i class="bx bx-time me-1"></i> Pendente';
+                            }
+                        }
+                    } else {
+                        throw new Error('Falha ao obter boletim');
                     }
-
-                    const absences = attendanceReport.absencesPerSubject[subj] || 0;
-
-                    rowHtml += `<td>${finalAvgHtml}</td><td>${absences}</td><td>${situationHtml}</td>`;
-                    html += `<tr>${rowHtml}</tr>`;
+                } else {
+                    document.getElementById('reportHead').innerHTML = '<tr><td class="text-warning">Nenhum ano letivo ativo</td></tr>';
+                    document.getElementById('reportBody').innerHTML = '';
                 }
-                
-                if (Object.keys(matrix).length === 0) {
-                    html = `<tr><td colspan="${sortedPeriods.length + 4}" class="text-center text-muted">Nenhuma nota encontrada.</td></tr>`;
-                }
-
-                // Add general frequency footer row
-                const minFreq = settings.minimumAttendance || 75.0;
-                const isGeneralApproved = attendanceReport.generalFrequency >= minFreq;
-                const freqSituationHtml = isGeneralApproved 
-                    ? '<span class="badge bg-label-success">APROVADO</span>' 
-                    : '<span class="badge bg-label-danger">REPROVADO</span>';
-
-                if (Object.keys(matrix).length > 0) {
-                    html += `
-                        <tr>
-                            <td colspan="${sortedPeriods.length + 4}" class="text-end fw-bold">
-                                Frequência Geral Escolar: ${attendanceReport.generalFrequency}% ${freqSituationHtml}
-                            </td>
-                        </tr>
-                    `;
-                }
-
-                tbody.innerHTML = html;
             } catch (e) {
                 console.error(e);
                 document.getElementById('reportHead').innerHTML = '<tr><td class="text-danger">Erro de conexão</td></tr>';
+                document.getElementById('reportBody').innerHTML = '';
             }
         }
         

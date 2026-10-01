@@ -1,0 +1,351 @@
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:53: throw new IllegalArgumentException("Usuário não autenticado no WebSocket.");
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:59: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:63: throw new IllegalArgumentException("Acesso negado: Alunos não podem acessar o chat dos professores.");
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:78: throw new IllegalArgumentException("Acesso negado: Aluno não matriculado nesta turma.");
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:81: throw new IllegalArgumentException("Acesso negado: Perfil não autorizado para o chat da turma.");
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:43: throw new AccessDeniedException("Você não pertence a esta turma.");
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:47: throw new AccessDeniedException("Você não leciona nesta turma.");
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:50: throw new AccessDeniedException("Acesso negado.");
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:60: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:83: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:99: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:114: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:138: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:148: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:159: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:164: .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:187: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:210: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:218: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:225: .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:233: public String handleException(IllegalArgumentException exception) {
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:241: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:266: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:278: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:291: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:294: throw new org.springframework.security.access.AccessDeniedException("Acesso negado: Alunos não têm acesso ao chat dos professores.");
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:312: .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+src/main/java/com/andretti101/escolaweb/dto/request/AcademicPeriodRequestDTO.java:11: @NotNull(message = "O ano letivo é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AcademicPeriodRequestDTO.java:14: @NotBlank(message = "O nome do período é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AcademicPeriodRequestDTO.java:15: @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/AcademicYearRequestDTO.java:11: @NotNull(message = "O ano letivo é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AcademicYearRequestDTO.java:12: @Min(value = 2000, message = "O ano deve ser a partir de 2000.")
+src/main/java/com/andretti101/escolaweb/dto/request/AcademicYearRequestDTO.java:13: @Max(value = 2100, message = "O ano deve ser até 2100.")
+src/main/java/com/andretti101/escolaweb/dto/request/AnnouncementRequestDTO.java:13: @NotBlank(message = "O título é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AnnouncementRequestDTO.java:14: @Size(max = 100, message = "O título deve ter no máximo 100 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/AnnouncementRequestDTO.java:17: @NotBlank(message = "A mensagem é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/AnnouncementRequestDTO.java:18: @Size(max = 2000, message = "A mensagem deve ter no máximo 2000 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:12: @NotBlank(message = "O título da avaliação é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:13: @Size(max = 100, message = "O título deve ter no máximo 100 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:18: @NotNull(message = "A data da avaliação é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:21: @NotNull(message = "O tipo de avaliação é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:24: @NotNull(message = "O vínculo professor-turma-disciplina é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AssessmentRequestDTO.java:27: @NotNull(message = "O período letivo é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AttendanceRequestDTO.java:8: @NotNull(message = "O aluno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AttendanceRequestDTO.java:11: @NotNull(message = "A aula é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/AttendanceRequestDTO.java:14: @NotBlank(message = "O status da presença é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/AttendanceUpdateRequestDTO.java:7: @NotBlank(message = "O status da presença é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/ChangePasswordRequestDTO.java:8: @NotBlank(message = "A senha atual é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/ChangePasswordRequestDTO.java:11: @NotBlank(message = "A nova senha é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/ChangePasswordRequestDTO.java:12: @Size(min = 8, max = 255, message = "A nova senha deve ter entre 8 e 255 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/ChatMessageRequestDTO.java:15: @NotBlank(message = "O conteúdo da mensagem não pode ser vazio.")
+src/main/java/com/andretti101/escolaweb/dto/request/ClassRoomRequestDTO.java:11: @NotNull(message = "O ano letivo é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/ClassRoomRequestDTO.java:14: @NotBlank(message = "O nome da turma é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/ClassRoomRequestDTO.java:15: @Size(max = 20, message = "O nome deve ter no máximo 20 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/ClassRoomRequestDTO.java:18: @NotNull(message = "O turno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/EnrollmentRequestDTO.java:9: @NotNull(message = "O aluno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/EnrollmentRequestDTO.java:12: @NotNull(message = "A turma é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/ForgotPasswordRequestDTO.java:8: @NotBlank(message = "O e-mail é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/ForgotPasswordRequestDTO.java:9: @Email(message = "O e-mail informado é inválido.")
+src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:11: @NotNull(message = "O aluno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:14: @NotNull(message = "A avaliação é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:17: @NotNull(message = "O valor da nota é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:18: @DecimalMin(value = "0.0", message = "A nota deve ser no mínimo 0.")
+src/main/java/com/andretti101/escolaweb/dto/request/GradeLaunchRequestDTO.java:19: @DecimalMax(value = "10.0", message = "A nota deve ser no máximo 10.")
+src/main/java/com/andretti101/escolaweb/dto/request/GradeUpdateRequestDTO.java:11: @NotNull(message = "O valor da nota é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/GradeUpdateRequestDTO.java:12: @DecimalMin(value = "0.0", message = "A nota deve ser no mínimo 0.")
+src/main/java/com/andretti101/escolaweb/dto/request/GradeUpdateRequestDTO.java:13: @DecimalMax(value = "10.0", message = "A nota deve ser no máximo 10.")
+src/main/java/com/andretti101/escolaweb/dto/request/LessonRequestDTO.java:11: @NotNull(message = "A data da aula é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/LessonRequestDTO.java:18: @NotNull(message = "O vínculo professor-turma-disciplina é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/LessonRequestDTO.java:21: @Min(value = 1, message = "A aula deve ter no mínimo 1 período.")
+src/main/java/com/andretti101/escolaweb/dto/request/LessonRequestDTO.java:22: @Max(value = 6, message = "A aula pode ter no máximo 6 períodos.")
+src/main/java/com/andretti101/escolaweb/dto/request/LoginRequestDTO.java:8: @NotBlank(message = "O e-mail é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/LoginRequestDTO.java:9: @Email(message = "O e-mail informado é inválido.")
+src/main/java/com/andretti101/escolaweb/dto/request/LoginRequestDTO.java:12: @NotBlank(message = "A senha é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:9: @NotBlank(message = "O nome é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:10: @Size(max = 150, message = "O nome deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:13: @NotBlank(message = "O e-mail é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:14: @Email(message = "O e-mail informado é inválido.")
+src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:15: @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:18: @NotBlank(message = "A senha é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/PrincipalRequestDTO.java:19: @Size(min = 8, max = 255, message = "A senha deve ter entre 8 e 255 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/RefreshTokenRequestDTO.java:7: @NotBlank(message = "O refresh token é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/ResetPasswordRequestDTO.java:8: @NotBlank(message = "O token é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/ResetPasswordRequestDTO.java:11: @NotBlank(message = "A nova senha é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/ResetPasswordRequestDTO.java:12: @Size(min = 8, max = 255, message = "A nova senha deve ter entre 8 e 255 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:13: @Size(max = 150, message = "O nome da escola deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:16: @Size(max = 255, message = "O endereço deve ter no máximo 255 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:19: @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:22: @Email(message = "O e-mail informado é inválido.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:23: @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:26: @DecimalMin(value = "0.0", message = "A média mínima deve ser no mínimo 0.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:27: @DecimalMax(value = "10.0", message = "A média mínima deve ser no máximo 10.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:30: @DecimalMin(value = "0.0", message = "A frequência mínima deve ser no mínimo 0.")
+src/main/java/com/andretti101/escolaweb/dto/request/SchoolSettingsRequestDTO.java:31: @DecimalMax(value = "100.0", message = "A frequência mínima deve ser no máximo 100.")
+src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:9: @NotBlank(message = "O nome é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:10: @Size(max = 150, message = "O nome deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:13: @NotBlank(message = "O e-mail é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:14: @Email(message = "O e-mail informado é inválido.")
+src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:15: @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:18: @NotBlank(message = "A senha é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/SecretaryRequestDTO.java:19: @Size(min = 8, max = 255, message = "A senha deve ter entre 8 e 255 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:13: @NotBlank(message = "O nome do aluno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:14: @Size(max = 150, message = "O nome deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:17: @NotBlank(message = "O e-mail é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:18: @Email(message = "O e-mail informado é inválido.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:19: @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:22: @NotBlank(message = "A senha é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:23: @Size(min = 8, max = 255, message = "A senha deve ter entre 8 e 255 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:26: @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:29: @Size(max = 20, message = "O telefone do responsável deve ter no máximo 20 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:32: @NotBlank(message = "O número de matrícula é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:33: @Size(max = 30, message = "A matrícula deve ter no máximo 30 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:36: @NotNull(message = "A data de nascimento é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/StudentRequestDTO.java:37: @Past(message = "A data de nascimento deve ser uma data passada.")
+src/main/java/com/andretti101/escolaweb/dto/request/SubjectRequestDTO.java:8: @NotBlank(message = "O nome da disciplina é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/SubjectRequestDTO.java:9: @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:8: @NotNull(message = "O professor é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:11: @NotNull(message = "A turma é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:14: @NotNull(message = "A disciplina é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:17: @Min(value = 1, message = "O número mínimo de avaliações deve ser ao menos 1.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherClassSubjectRequestDTO.java:20: @Min(value = 1, message = "O número máximo de avaliações deve ser ao menos 1.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:9: @NotBlank(message = "O nome é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:10: @Size(max = 150, message = "O nome deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:13: @NotBlank(message = "O e-mail é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:14: @Email(message = "O e-mail informado é inválido.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:15: @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:18: @NotBlank(message = "A senha é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/TeacherRequestDTO.java:19: @Size(min = 8, max = 255, message = "A senha deve ter entre 8 e 255 caracteres.")
+src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:12: @NotNull(message = "O ano letivo seguinte é obrigatório.")
+src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:15: @NotNull(message = "A média mínima é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:16: @DecimalMin(value = "0.0", message = "A média mínima deve ser no mínimo 0.")
+src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:17: @DecimalMax(value = "10.0", message = "A média mínima deve ser no máximo 10.")
+src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:20: @NotNull(message = "A frequência mínima é obrigatória.")
+src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:21: @DecimalMin(value = "0.0", message = "A frequência mínima deve ser no mínimo 0.")
+src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:22: @DecimalMax(value = "100.0", message = "A frequência mínima deve ser no máximo 100.")
+src/main/java/com/andretti101/escolaweb/dto/request/YearConclusionRequestDTO.java:25: @NotNull(message = "O tipo de divisão do período é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:31: @NotNull(message = "O ano letivo é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:36: @NotBlank(message = "O nome do período é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:37: @Size(max = 100, message = "O nome do período deve ter no máximo 100 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:29: @NotNull(message = "O ano letivo é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:32: @NotBlank(message = "O título é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:33: @Size(max = 100, message = "O título deve ter no máximo 100 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:37: @NotBlank(message = "A mensagem é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:38: @Size(max = 2000, message = "A mensagem deve ter no máximo 2000 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:49: @NotNull(message = "O autor é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:33: @NotNull(message = "A atribuição de professor, turma e matéria é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:38: @NotNull(message = "O período é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:43: @NotBlank(message = "O título é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:44: @Size(max = 100, message = "O título deve ter no máximo 100 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:55: @NotNull(message = "O tipo de avaliação é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:33: @NotNull(message = "A aula é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:38: @NotNull(message = "O aluno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:43: @NotNull(message = "O status da presença é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/AttendanceHistory.java:27: @NotNull(message = "O registro de frequência é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:35: @NotNull(message = "O remetente é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:33: @NotBlank(message = "O nome da turma é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:34: @Size(max = 20, message = "O nome da turma deve ter no máximo 20 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:42: @NotNull(message = "O turno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:47: @NotNull(message = "O ano letivo é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:32: @NotNull(message = "O aluno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:37: @NotNull(message = "A turma é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:36: @NotNull(message = "O aluno é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:41: @NotNull(message = "A avaliação é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:46: @DecimalMin(value = "0.0", message = "A nota deve ser de pelo menos 0.")
+src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:47: @DecimalMax(value = "10.0", message = "A nota deve ser no máximo 10.")
+src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:28: @NotNull(message = "A nota é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:31: @NotNull(message = "A atribuição de professor, turma e matéria é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:36: @NotNull(message = "A data da aula é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:32: @Size(max = 150, message = "O nome da escola deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:36: @Size(max = 255, message = "O endereço deve ter no máximo 255 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:40: @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:44: @Email(message = "E-mail inválido.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:45: @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:55: @DecimalMin(value = "0.0", message = "A frequência mínima deve ser de pelo menos 0.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:56: @DecimalMax(value = "100.0", message = "A frequência mínima deve ser no máximo 100.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:61: @DecimalMin(value = "0.0", message = "A média mínima deve ser de pelo menos 0.")
+src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:62: @DecimalMax(value = "10.0", message = "A média mínima deve ser no máximo 10.")
+src/main/java/com/andretti101/escolaweb/model/entity/Student.java:24: @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/Student.java:28: @Size(max = 20, message = "O telefone do responsável deve ter no máximo 20 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/Student.java:32: @NotBlank(message = "O número de matrícula é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Student.java:33: @Size(max = 30, message = "O número de matrícula deve ter no máximo 30 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:30: @NotBlank(message = "O nome da matéria é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:31: @Size(max = 100, message = "O nome da matéria deve ter no máximo 100 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:44: @Min(value = 1, message = "O número mínimo de avaliações deve ser ao menos 1.")
+src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:48: @Min(value = 1, message = "O número máximo de avaliações deve ser ao menos 1.")
+src/main/java/com/andretti101/escolaweb/model/entity/User.java:33: @NotBlank(message = "O nome é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/User.java:34: @Size(max = 150, message = "O nome deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/User.java:38: @Email(message = "E-mail inválido.")
+src/main/java/com/andretti101/escolaweb/model/entity/User.java:39: @NotBlank(message = "O e-mail é obrigatório.")
+src/main/java/com/andretti101/escolaweb/model/entity/User.java:40: @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
+src/main/java/com/andretti101/escolaweb/model/entity/User.java:44: @NotBlank(message = "A senha é obrigatória.")
+src/main/java/com/andretti101/escolaweb/model/enums/LessonCount.java:27: throw new IllegalArgumentException(
+src/main/java/com/andretti101/escolaweb/service/exception/BusinessRuleException.java:5: public BusinessRuleException(String message) {
+src/main/java/com/andretti101/escolaweb/service/exception/ResourceNotFoundException.java:5: public ResourceNotFoundException(String message) {
+src/main/java/com/andretti101/escolaweb/service/exception/UnauthorizedOperationException.java:5: public UnauthorizedOperationException(String message) {
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:49: throw new IllegalStateException("Não é possível atualizar o período '" + existing.getName() + "' pois ele já está fechado.");
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:73: throw new IllegalStateException("Cannot delete a closed academic period with id: " + id);
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:76: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:114: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:147: throw new IllegalStateException("O período '" + period.getName() + "' já está fechado.");
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:167: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:191: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:199: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:222: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:229: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:255: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:290: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:305: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:317: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:341: .orElseThrow(() -> new EntityNotFoundException("Período acadêmico não encontrado com id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:346: throw new IllegalArgumentException("O ano letivo é obrigatório.");
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:63: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:27: throw new IllegalStateException("Academic year already registered: " + academicYear.getYear());
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:40: throw new IllegalStateException("Academic year already registered: " + incoming.getYear());
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:56: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:60: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:83: .orElseThrow(() -> new EntityNotFoundException("No active academic year found."));
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:99: .orElseThrow(() -> new EntityNotFoundException("Academic year not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:48: throw new org.springframework.security.access.AccessDeniedException("Professores não podem enviar recados para professores.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:54: throw new IllegalArgumentException("Selecione pelo menos uma turma ou marque a opção para professores.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:63: throw new org.springframework.security.access.AccessDeniedException("Você não tem permissão para enviar recados para turmas que não leciona.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:72: throw new EntityNotFoundException("Uma ou mais turmas não foram encontradas.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:85: .orElseThrow(() -> new EntityNotFoundException("Aviso não encontrado com id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:138: throw new org.springframework.security.access.AccessDeniedException("Professores não podem enviar recados para professores.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:147: throw new SecurityException("Você não tem permissão para editar este aviso.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:156: throw new IllegalArgumentException("Selecione pelo menos uma turma ou marque a opção para professores.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:165: throw new org.springframework.security.access.AccessDeniedException("Você não tem permissão para enviar recados para turmas que não leciona.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:174: throw new EntityNotFoundException("Uma ou mais turmas não foram encontradas.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:187: .orElseThrow(() -> new EntityNotFoundException("Aviso não encontrado com id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:196: throw new SecurityException("Você não tem permissão para excluir este aviso.");
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:235: User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:120: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:130: .orElseThrow(() -> new EntityNotFoundException("Assessment not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:135: throw new IllegalArgumentException("TeacherClassSubject is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:142: throw new IllegalArgumentException("Academic period is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:149: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:156: throw new IllegalArgumentException("Assessment date is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:163: throw new IllegalArgumentException("A data da avaliação (" + formattedAssessmentDate
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:167: throw new IllegalArgumentException("A data da avaliação (" + formattedAssessmentDate
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:177: throw new IllegalStateException("Conflito de Ano Letivo: A turma pertence ao ano '"
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:47: throw new IllegalArgumentException("Attendance status is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:50: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:73: throw new IllegalArgumentException("Attendance status is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:238: .orElseThrow(() -> new EntityNotFoundException("Attendance not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:243: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:252: throw new IllegalArgumentException("Lesson is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:259: throw new IllegalArgumentException("Student is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:30: .orElseThrow(() -> new EntityNotFoundException(
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:41: throw new UnauthorizedOperationException("O usuário autenticado não é um professor.");
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:51: throw new UnauthorizedOperationException("O usuário autenticado não é um aluno.");
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:73: throw new UnauthorizedOperationException(
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:84: throw new UnauthorizedOperationException(
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:95: throw new UnauthorizedOperationException("Nenhum usuário autenticado encontrado.");
+src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:136: .orElseThrow(() -> new IllegalArgumentException(
+src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:141: throw new IllegalArgumentException(
+src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:182: .orElseThrow(() -> new EntityNotFoundException(
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:33: .orElseThrow(() -> new EntityNotFoundException("Turma não encontrada. ID: " + classroomId));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:36: .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado. ID: " + senderId));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:40: throw new IllegalArgumentException("Você foi bloqueado e não pode enviar mensagens neste chat.");
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:43: ChatMessage message = ChatMessage.builder()
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:66: throw new EntityNotFoundException("Turma não encontrada. ID: " + classroomId);
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:91: ChatMessage message = chatMessageRepository.findById(messageId)
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:92: .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada"));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:95: throw new org.springframework.security.access.AccessDeniedException("Você só pode editar suas próprias mensagens.");
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:101: throw new IllegalArgumentException("Você foi bloqueado e não pode editar mensagens.");
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:105: throw new IllegalArgumentException("Não é possível editar uma mensagem excluída.");
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:118: ChatMessage message = chatMessageRepository.findById(messageId)
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:119: .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada"));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:124: throw new org.springframework.security.access.AccessDeniedException("Você não tem permissão para excluir esta mensagem.");
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:131: throw new IllegalArgumentException("Você foi bloqueado e não pode excluir mensagens.");
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:170: .orElseThrow(() -> new EntityNotFoundException("User not found"));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:172: .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:192: .orElseThrow(() -> new EntityNotFoundException("User not found"));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:249: .orElseThrow(() -> new EntityNotFoundException("User not found"));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:250: ChatMessage message = chatMessageRepository.findById(messageId)
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:251: .orElseThrow(() -> new EntityNotFoundException("Message not found"));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:265: .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado. ID: " + senderId));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:270: throw new org.springframework.security.access.AccessDeniedException("Você não tem permissão para enviar mensagens neste chat global.");
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:273: ChatMessage message = ChatMessage.builder()
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:297: .orElseThrow(() -> new EntityNotFoundException("User not found"));
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:354: .orElseThrow(() -> new EntityNotFoundException("User not found"));
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:33: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:52: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:70: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:74: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:124: .orElseThrow(() -> new EntityNotFoundException("Classroom not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:129: throw new IllegalArgumentException("Academic year is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/CustomUserDetailsService.java:23: .orElseThrow(() -> new UsernameNotFoundException(
+src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:29: MimeMessage message = mailSender.createMimeMessage();
+src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:42: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:36: throw new IllegalStateException("Não é possível matricular um aluno inativo.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:39: throw new IllegalStateException("Não é possível realizar matrículas em uma turma inativa.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:43: throw new IllegalStateException("O aluno já possui uma matrícula ativa para este ano letivo.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:46: throw new IllegalStateException("O aluno já está matriculado nesta turma.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:70: throw new IllegalStateException("O aluno já possui uma matrícula ativa para este ano letivo.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:87: throw new IllegalStateException("Não é possível excluir esta matrícula pois o aluno já possui notas registradas. Considere desativar a matrícula em vez de excluir.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:90: throw new IllegalStateException("Não é possível excluir esta matrícula pois o aluno já possui presenças registradas. Considere desativar a matrícula em vez de excluir.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:151: throw new IllegalStateException("Não é possível transferir o aluno para uma turma inativa.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:155: throw new IllegalStateException("O aluno já está matriculado nesta turma.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:159: throw new IllegalStateException("A transferência só é permitida entre turmas do mesmo ano letivo.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:168: .orElseThrow(() -> new EntityNotFoundException("Enrollment not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:173: throw new IllegalArgumentException("Student is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:180: throw new IllegalArgumentException("Classroom is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:49: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:216: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:225: throw new IllegalArgumentException("Grade value must be between 0 and 10.");
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:231: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:240: .orElseThrow(() -> new EntityNotFoundException("Grade not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:245: throw new IllegalArgumentException("Student is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:252: throw new IllegalArgumentException("Assessment is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:29: throw new IllegalArgumentException("Lesson date is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:44: throw new IllegalArgumentException("Lesson date is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:97: .orElseThrow(() -> new EntityNotFoundException("Lesson not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:102: throw new IllegalArgumentException("TeacherClassSubject is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:27: throw new IllegalStateException("Email already in use: " + principal.getEmail());
+src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:41: throw new IllegalStateException("Email already in use: " + incoming.getEmail());
+src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:98: .orElseThrow(() -> new EntityNotFoundException("Principal not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:43: .orElseThrow(() -> new EntityNotFoundException(
+src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:49: throw new BadCredentialsException(
+src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:57: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:71: throw new EntityNotFoundException("Refresh token não encontrado.");
+src/main/java/com/andretti101/escolaweb/service/impl/ReportCardServiceImpl.java:173: .orElseThrow(() -> new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:70: throw new IllegalArgumentException("Minimum grade must be between 0 and 10.");
+src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:76: throw new IllegalArgumentException("Minimum attendance must be between 0 and 100.");
+src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:27: throw new IllegalStateException("Email already in use: " + secretary.getEmail());
+src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:41: throw new IllegalStateException("Email already in use: " + incoming.getEmail());
+src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:98: .orElseThrow(() -> new EntityNotFoundException("Secretary not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:104: .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:109: throw new IllegalStateException("Email already in use: " + email);
+src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:115: throw new IllegalStateException("Email already in use: " + email);
+src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:50: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:93: .orElseThrow(() -> new EntityNotFoundException("Subject not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:99: throw new IllegalStateException("Subject name already in use: " + name);
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:40: throw new IllegalStateException("Não é possível vincular um professor inativo à turma.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:43: throw new IllegalStateException("Não é possível vincular professores a uma turma inativa.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:46: throw new IllegalStateException("Não é possível vincular uma matéria inativa.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:49: throw new IllegalStateException("Esta matéria já está vinculada a esta turma (apenas um professor por matéria).");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:74: throw new IllegalStateException("Esta matéria já está vinculada a esta turma.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:94: throw new IllegalStateException("Não é possível excluir este vínculo pois já existem aulas registradas.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:97: throw new IllegalStateException("Não é possível excluir este vínculo pois já existem avaliações registradas.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:132: throw new IllegalArgumentException(
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:140: .orElseThrow(() -> new EntityNotFoundException(
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:146: throw new IllegalArgumentException("Teacher is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:153: throw new IllegalArgumentException("Classroom is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:160: throw new IllegalArgumentException("Subject is required.");
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:29: throw new IllegalStateException("Email already in use: " + teacher.getEmail());
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:43: throw new IllegalStateException("Email already in use: " + incoming.getEmail());
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:63: throw new IllegalStateException(
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:106: .orElseThrow(() -> new EntityNotFoundException("Teacher not found with id: " + id));
+src/main/java/com/andretti101/escolaweb/service/impl/UserServiceImpl.java:52: throw new IllegalArgumentException("Current password is incorrect.");
+src/main/java/com/andretti101/escolaweb/service/impl/UserServiceImpl.java:84: .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));

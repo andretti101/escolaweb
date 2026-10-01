@@ -148,7 +148,12 @@
         async function init() {
             if (!studentId) return;
             try {
-                const res = await fetch(`/api/grades/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                let activeYear = null;
+                const yrRes = await fetch('/api/academic-years/active', { headers: {'Authorization': 'Bearer ' + jwtToken} });
+                if (yrRes.ok) activeYear = await yrRes.json();
+                const queryYear = activeYear ? '?yearId=' + activeYear.id : '';
+
+                const res = await fetch(`/api/grades/student/${studentId}` + queryYear, { headers: {'Authorization': `Bearer ${jwtToken}`} });
                 if (res.ok) {
                     allGrades = await res.json();
                     buildPeriodDropdown();

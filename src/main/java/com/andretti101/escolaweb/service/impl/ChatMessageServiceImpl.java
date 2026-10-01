@@ -65,7 +65,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if (!classRoomRepository.existsById(classroomId)) {
             throw new EntityNotFoundException("Turma não encontrada. ID: " + classroomId);
         }
-        List<ChatMessage> messages = chatMessageRepository.findTop50ByClassroom_IdOrderByTimestampDesc(classroomId);
+        List<ChatMessage> messages = chatMessageRepository.findTop50ByClassroom_IdAndArchivedFalseOrderByTimestampDesc(classroomId);
         java.util.Collections.reverse(messages);
         
         List<Integer> tempHiddenIds = new java.util.ArrayList<>();
@@ -132,7 +132,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
         }
 
-        message.setContent(""); // Limpa o texto original
+        message.setContent("");
         message.setDeleted(true);
         message.setDeletedByAdmin(!isAuthor && isAdmin);
 
@@ -190,10 +190,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public boolean hasUnreadMessages(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-                
-        // A simple logic: if any classroom has a message ID greater than the user's lastReadMessageId for that classroom
-        // For students, they are linked to 1 classroom. For admins, they might see all.
-        // Let's get the user's role to determine classrooms to check.
+
         List<ClassRoom> classroomsToCheck;
         if (user instanceof com.andretti101.escolaweb.model.entity.Student) {
             com.andretti101.escolaweb.model.entity.Student student = (com.andretti101.escolaweb.model.entity.Student) user;
@@ -204,7 +201,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     .filter(c -> studentClassRoomIds.contains(c.getId()))
                     .collect(Collectors.toList());
         } else {
-            return false; // Não notificar admins
+            return false;
         }
 
         for (ClassRoom classroom : classroomsToCheck) {
@@ -327,7 +324,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     @Transactional(readOnly = true)
     public List<ChatMessageResponseDTO> getGlobalTeacherHistory(Integer userId) {
-        List<ChatMessage> messages = chatMessageRepository.findTop50ByIsGlobalTeacherChatTrueOrderByTimestampDesc();
+        List<ChatMessage> messages = chatMessageRepository.findTop50ByIsGlobalTeacherChatTrueAndArchivedFalseOrderByTimestampDesc();
         java.util.Collections.reverse(messages);
         
         List<Integer> tempHiddenIds = new java.util.ArrayList<>();

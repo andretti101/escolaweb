@@ -150,7 +150,7 @@
         const authUserId = localStorage.getItem("user_id");
 
         Promise.all([
-            fetch("/api/classrooms?activeOnly=false", { headers: { "Authorization": "Bearer " + token } }).then(r => r.json()),
+            fetch("/api/classrooms", { headers: { "Authorization": "Bearer " + token } }).then(r => r.json()),
             fetch("/api/teacher-class-subjects/teacher/" + authUserId, { headers: { "Authorization": "Bearer " + token } }).then(r => r.json())
         ])
         .then(([classroomsData, tcsData]) => {
@@ -369,3 +369,4 @@ messageInput.addEventListener("input", function() {
 </script>
 </body>
 </html>
+

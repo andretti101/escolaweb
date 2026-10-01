@@ -57,6 +57,10 @@ public class Assessment implements Serializable {
     @Column(name = "assessment_type", length = 20, nullable = false)
     private AssessmentType assessmentType;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean active = true;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

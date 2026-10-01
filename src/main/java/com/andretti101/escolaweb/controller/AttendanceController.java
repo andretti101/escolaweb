@@ -94,10 +94,22 @@ public class AttendanceController {
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
-    public ResponseEntity<List<AttendanceResponseDTO>> findByStudent(@PathVariable Integer studentId) {
+    public ResponseEntity<List<AttendanceResponseDTO>> findByStudent(
+            @PathVariable Integer studentId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
 
         List<Attendance> attendances = attendanceService.findByStudent(studentId);
+
+        if (yearId != null) {
+            attendances = attendances.stream()
+                    .filter(a -> a.getLesson() != null &&
+                                 a.getLesson().getTeacherClassSubject() != null &&
+                                 a.getLesson().getTeacherClassSubject().getClassRoom() != null &&
+                                 a.getLesson().getTeacherClassSubject().getClassRoom().getAcademicYear() != null &&
+                                 a.getLesson().getTeacherClassSubject().getClassRoom().getAcademicYear().getId().equals(yearId))
+                    .toList();
+        }
 
         if (authenticatedUserService.isTeacher()) {
             Set<Integer> myTcsIds = getAuthenticatedTeacherTcsIds();
@@ -126,9 +138,10 @@ public class AttendanceController {
     @GetMapping("/report/student/{studentId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<com.andretti101.escolaweb.dto.response.StudentAttendanceReportDTO> getStudentAttendanceReport(
-            @PathVariable Integer studentId) {
+            @PathVariable Integer studentId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
-        return ResponseEntity.ok(attendanceService.getStudentAttendanceReport(studentId));
+        return ResponseEntity.ok(attendanceService.getStudentAttendanceReport(studentId, yearId));
     }
 
     @PutMapping("/{id}")
@@ -170,7 +183,10 @@ public class AttendanceController {
     private Set<Integer> getAuthenticatedTeacherTcsIds() {
         Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
         return teacherClassSubjectService.findByTeacher(teacher.getId())
-                .stream().map(TeacherClassSubject::getId).collect(Collectors.toSet());
+                .stream()
+                .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
+                .map(TeacherClassSubject::getId)
+                .collect(Collectors.toSet());
     }
 
     // ── Mapping
@@ -221,6 +237,7 @@ public class AttendanceController {
                 a.getStudent().getName(),
                 a.getLesson().getId(),
                 a.getLesson().getLessonDate(),
+                a.getLesson().getTeacherClassSubject().getId(),
                 a.getLesson().getTeacherClassSubject().getSubject().getName(),
                 pName,
                 a.getLesson().getLessonCount() != null ? a.getLesson().getLessonCount().getValue() : 1,

@@ -87,6 +87,12 @@
                             <h5 class="mb-0">Alunos Cadastrados</h5>
 
                             <div class="d-flex align-items-center gap-3">
+                                <select id="situationFilter" class="form-select form-select-sm" style="width: auto;">
+                                    <option value="all">Todas as Situações</option>
+                                    <option value="Aprovado">Aprovado</option>
+                                    <option value="Reprovado">Reprovado</option>
+                                    <option value="Pendente">Pendente</option>
+                                </select>
                                 <select id="classFilter" class="form-select form-select-sm" style="width: auto;">
                                     <option value="all">Todas as Turmas</option>
                                 </select>
@@ -115,6 +121,7 @@
                                     <th>Telefones</th>
                                     <th>Status</th>
                                     <th class="text-center">Turma</th>
+                                    <th class="text-center">Situação</th>
                                     <th class="text-center">Ação</th>
                                 </tr>
                                 </thead>
@@ -161,7 +168,7 @@
                 <footer class="content-footer footer bg-footer-theme">
                     <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">
-                                Copyright © 2026 EscolaWEB. Todos os direitos reservados.
+                                Copyright Â© 2026 EscolaWEB. Todos os direitos reservados.
                             </div>
                     </div>
                 </footer>
@@ -184,24 +191,36 @@
 <script src="/js/load-sidebar.js"></script>
 
 <script>
-    // ── Estado da página ────────────────────────────────────────────────────
+    // â”€â”€ Estado da página â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let allStudents = [];
     let statusFilter = 'active'; // Mudança pedida: Ativos listados primeiro/por padrão
     let searchTerm = '';
+    let activeYearId = null;
 
-    // ── Utilitários ─────────────────────────────────────────────────────────
+    async function loadActiveYear() {
+        try {
+            const res = await fetch('/api/academic-years', { headers: {'Authorization': 'Bearer ' + getToken()} });
+            if (res.ok) {
+                const years = await res.json();
+                const active = years.find(y => y.active);
+                if (active) activeYearId = active.id;
+            }
+        } catch (e) {}
+    }
+
+    // â”€â”€ Utilitários â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function getToken() {
         return localStorage.getItem('jwt_token') || '';
     }
 
     function formatDate(dateStr) {
-        if (!dateStr) return '—';
+        if (!dateStr) return '-';
         const [year, month, day] = dateStr.split('-');
         return `${day}/${month}/${year}`;
     }
 
     function formatPhone(phone) {
-        return phone || '—';
+        return phone || 'â€”';
     }
 
     function getInitials(name) {
@@ -230,7 +249,7 @@
     }
 
 
-    // ── Renderização ────────────────────────────────────────────────────────
+    // â”€â”€ RenderizAção â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function renderTable(students) {
         const tbody = document.getElementById('studentsTableBody');
         const emptyState = document.getElementById('emptyState');
@@ -276,6 +295,14 @@
             </td>
             <td class="text-center">${escapeHtml(student.className) || '-'}</td>
             <td class="text-center">
+              ${(function() {
+                  const s = String(student.situation || 'Pendente').toUpperCase();
+                  if (s === 'APROVADO') return '<span class="badge bg-label-success">Aprovado</span>';
+                  if (s === 'REPROVADO') return '<span class="badge bg-label-danger">Reprovado</span>';
+                  return '<span class="badge bg-label-warning">Pendente</span>';
+              })()}
+            </td>
+            <td class="text-center">
               <div class="dropdown">
                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                   <i class="bx bx-dots-vertical-rounded"></i>
@@ -309,8 +336,9 @@
             .replace(/"/g, '&quot;');
     }
 
-    // ── Filtragem ───────────────────────────────────────────────────────────
+    // â”€â”€ Filtragem â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let classFilter = 'all';
+    let situationFilter = 'all';
 
     function applyFilters() {
         let result = allStudents;
@@ -319,6 +347,10 @@
             result = result.filter(s => s.active);
         } else if (statusFilter === 'inactive') {
             result = result.filter(s => !s.active);
+        }
+
+        if (situationFilter !== 'all') {
+            result = result.filter(s => (s.situation || 'Pendente') === situationFilter);
         }
 
         if (classFilter !== 'all') {
@@ -340,7 +372,7 @@
 
     function populateClassDropdown() {
         const select = document.getElementById('classFilter');
-        // Mantém a opção atual selecionada, se existir
+        // Mantém Açãopção atual selecionada, se existir
         const currentVal = select.value;
         select.innerHTML = '<option value="all">Todas as Turmas</option>';
         const classes = [...new Set(allStudents.map(s => s.className).filter(c => c && c !== '-'))].sort();
@@ -356,7 +388,7 @@
         }
     }
 
-    // ── Carregamento de dados ───────────────────────────────────────────────
+    // â”€â”€ Carregamento de dados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function loadStudents() {
         const loadingState = document.getElementById('loadingState');
         const errorState = document.getElementById('errorState');
@@ -386,7 +418,7 @@
             }
 
             allStudents = await response.json();
-            // Coloca os inativos por último na ordenação geral (caso statusFilter == 'all')
+            // ColocAçãos inativos por último nAçãordenAção geral (caso statusFilter == 'all')
             allStudents.sort((a, b) => {
                 if (a.active && !b.active) return -1;
                 if (!a.active && b.active) return 1;
@@ -403,7 +435,7 @@
         }
     }
 
-    // ── Ativar / Desativar / Excluir ─────────────────────────────────────────
+    // â”€â”€ Ativar / Desativar / Excluir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function toggleStatus(id, activate) {
         const action = activate ? 'ativar' : 'desativar';
         const student = allStudents.find(s => s.id === id);
@@ -429,7 +461,7 @@
                 throw new Error(err?.message || `Não foi possível ${action} o aluno.`);
             }
 
-            // Atualiza localmente sem nova chamada à API
+            // Atualiza localmente sem nova chamada Í  API
             const index = allStudents.findIndex(s => s.id === id);
             if (index !== -1) {
                 allStudents[index] = {...allStudents[index], active: activate};
@@ -445,7 +477,7 @@
         const student = allStudents.find(s => s.id === id);
         const name = student ? student.name : `aluno #${id}`;
 
-        if (!confirm(`TEM CERTEZA que deseja EXCLUIR DEFINITIVAMENTE o aluno "${name}" do sistema?\n\nEsta ação não poderá ser desfeita.`)) return;
+        if (!confirm(`TEM CERTEZA que deseja EXCLUIR DEFINITIVAMENTE o aluno "${name}" do sistema?\n\nEsta Ação não poderá ser desfeita.`)) return;
 
         try {
             const response = await fetch(`/api/students/${id}`, {
@@ -474,8 +506,9 @@
     }
 
 
-    // ── Inicialização ───────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', () => {
+    // â”€â”€ InicializAção â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadActiveYear();
 
 
         // Filtro de status
@@ -487,6 +520,14 @@
         });
 
         // Filtro de turma
+        const situationFilterSelect = document.getElementById('situationFilter');
+        if (situationFilterSelect) {
+            situationFilterSelect.addEventListener('change', e => {
+                situationFilter = e.target.value;
+                applyFilters();
+            });
+        }
+
         const classFilterSelect = document.getElementById('classFilter');
         if (classFilterSelect) {
             classFilterSelect.addEventListener('change', e => {
@@ -506,5 +547,7 @@
 </script>
 </body>
 </html>
+
+
 
 

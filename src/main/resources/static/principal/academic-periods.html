@@ -292,6 +292,7 @@
                 avatarClass = 'bg-label-warning';
             }
 
+            const isLastOpenPeriod = !p.closed && allPeriods.filter(x => x.academicYearId === p.academicYearId && !x.closed).length === 1;
             return `
                     <tr class="${p.closed ? 'opacity-75 bg-lighter' : ''}">
                         <td>
@@ -314,6 +315,7 @@
                                 <div class="dropdown-menu">
                                     ${!p.closed ? `
                                         <li><a class="dropdown-item" href="/principal/edit/academic-period.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
+                                        ${isLastOpenPeriod ? `<li><a class="dropdown-item text-warning" href="javascript:void(0);" onclick="closePeriod(${p.id})"><i class="bx bx-lock-alt me-1"></i> Fechar Período</a></li>` : ''}
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deletePeriod(${p.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
                                     ` : '<li><span class="dropdown-item text-muted"><i class="bx bx-lock-alt me-1"></i> Período fechado</span></li>'}

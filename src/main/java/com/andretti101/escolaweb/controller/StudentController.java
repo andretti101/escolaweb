@@ -28,6 +28,8 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    private final com.andretti101.escolaweb.service.ReportCardService reportCardService;
+    private final com.andretti101.escolaweb.service.AcademicYearService academicYearService;
     private final AuthenticatedUserService authenticatedUserService;
 
     @PostMapping
@@ -37,7 +39,7 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
-    @GetMapping
+        @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<List<StudentResponseDTO>> findAll(
             @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
@@ -52,7 +54,33 @@ public class StudentController {
             students = studentService.findAll();
         }
         
-        return ResponseEntity.ok(students.stream().map(this::toResponse).toList());
+        java.util.Map<Integer, String> situationMap = new java.util.HashMap<>();
+        try {
+            com.andretti101.escolaweb.model.entity.AcademicYear activeYear = academicYearService.findActive();
+            if (activeYear != null) {
+                List<com.andretti101.escolaweb.model.entity.Enrollment> activeEnrollments = new java.util.ArrayList<>();
+                for (Student s : students) {
+                    if (s.getEnrollments() != null) {
+                        for (com.andretti101.escolaweb.model.entity.Enrollment e : s.getEnrollments()) {
+                            if (e.isActive() && e.getClassRoom().getAcademicYear().getId().equals(activeYear.getId())) {
+                                activeEnrollments.add(e);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!activeEnrollments.isEmpty()) {
+                    List<com.andretti101.escolaweb.dto.response.ReportCardDTO> reports = reportCardService.generateReportCardsBatch(activeEnrollments, activeYear);
+                    for (com.andretti101.escolaweb.dto.response.ReportCardDTO r : reports) {
+                        situationMap.put(r.studentId(), r.generalSituation().getLabel());
+                    }
+                }
+            }
+        } catch(Exception ex) {
+            // ignore
+        }
+        
+        return ResponseEntity.ok(students.stream().map(s -> toResponse(s, situationMap)).toList());
     }
 
     @GetMapping("/{id}")
@@ -90,7 +118,7 @@ public class StudentController {
         return ResponseEntity.ok(toResponse(studentService.deactivate(id)));
     }
 
-    // ── Mapping
+    //  Mapping
 
     private Student toEntity(StudentRequestDTO dto) {
         Student student = new Student();
@@ -104,11 +132,26 @@ public class StudentController {
         return student;
     }
 
-    private StudentResponseDTO toResponse(Student s) {
-        String className = s.getEnrollments() != null ? s.getEnrollments().stream()
-                .filter(com.andretti101.escolaweb.model.entity.Enrollment::isActive)
-                .map(e -> e.getClassRoom().getName())
-                .findFirst().orElse("-") : "-";
+        private StudentResponseDTO toResponse(Student s) {
+        return toResponse(s, new java.util.HashMap<>());
+    }
+
+    private StudentResponseDTO toResponse(Student s, java.util.Map<Integer, String> situationMap) {
+        String className = "-";
+        String situation = "Pendente";
+        if (s.getEnrollments() != null) {
+            var activeEnrollment = s.getEnrollments().stream()
+                    .filter(com.andretti101.escolaweb.model.entity.Enrollment::isActive)
+                    .findFirst();
+            if (activeEnrollment.isPresent()) {
+                className = activeEnrollment.get().getClassRoom().getName();
+                if (situationMap.containsKey(s.getId())) {
+                    situation = situationMap.get(s.getId());
+                } else if (activeEnrollment.get().getGeneralSituation() != null) {
+                    situation = activeEnrollment.get().getGeneralSituation().getLabel();
+                }
+            }
+        }
 
         return new StudentResponseDTO(
                 s.getId(),
@@ -120,7 +163,8 @@ public class StudentController {
                 s.getBirthDate(),
                 s.isActive(),
                 s.getCreatedAt(),
-                className
+                className,
+                situation
         );
     }
 }

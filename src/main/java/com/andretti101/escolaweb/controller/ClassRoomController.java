@@ -31,7 +31,7 @@ public class ClassRoomController {
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<ClassRoomResponseDTO>> findAll(
-            @RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
+            @RequestParam(required = false, defaultValue = "true") boolean activeOnly) {
         List<ClassRoom> classRooms = activeOnly
                 ? classRoomService.findAllActive()
                 : classRoomService.findAll();

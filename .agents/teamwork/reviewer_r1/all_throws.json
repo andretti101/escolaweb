@@ -1,0 +1,1035 @@
+[
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java",
+    "line": 53,
+    "arg": "\"Usuário não autenticado no WebSocket.\"",
+    "strings": [
+      "Usuário não autenticado no WebSocket."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java",
+    "line": 63,
+    "arg": "\"Acesso negado: Alunos não podem acessar o chat dos professores.\"",
+    "strings": [
+      "Acesso negado: Alunos não podem acessar o chat dos professores."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java",
+    "line": 78,
+    "arg": "\"Acesso negado: Aluno não matriculado nesta turma.\"",
+    "strings": [
+      "Acesso negado: Aluno não matriculado nesta turma."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java",
+    "line": 81,
+    "arg": "\"Acesso negado: Perfil não autorizado para o chat da turma.\"",
+    "strings": [
+      "Acesso negado: Perfil não autorizado para o chat da turma."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/controller/ChatController.java",
+    "line": 43,
+    "arg": "\"Você não pertence a esta turma.\"",
+    "strings": [
+      "Você não pertence a esta turma."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/controller/ChatController.java",
+    "line": 47,
+    "arg": "\"Você não leciona nesta turma.\"",
+    "strings": [
+      "Você não leciona nesta turma."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/controller/ChatController.java",
+    "line": 50,
+    "arg": "\"Acesso negado.\"",
+    "strings": [
+      "Acesso negado."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/controller/ChatController.java",
+    "line": 294,
+    "arg": "\"Acesso negado: Alunos não têm acesso ao chat dos professores.\"",
+    "strings": [
+      "Acesso negado: Alunos não têm acesso ao chat dos professores."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/model/enums/LessonCount.java",
+    "line": 27,
+    "arg": "\"No LessonCount constant mapped to database value: \" + value\r\n                        + \". Valid range is 1–6.\"",
+    "strings": [
+      "No LessonCount constant mapped to database value: ",
+      ". Valid range is 1–6."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 49,
+    "arg": "\"Não é possível atualizar o período '\" + existing.getName() + \"' pois ele já está fechado.\"",
+    "strings": [
+      "Não é possível atualizar o período '",
+      "' pois ele já está fechado."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 73,
+    "arg": "\"Cannot delete a closed academic period with id: \" + id",
+    "strings": [
+      "Cannot delete a closed academic period with id: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 76,
+    "arg": "\"Cannot delete period with id \" + id + \" because it has assessments linked to it.\"",
+    "strings": [
+      "Cannot delete period with id ",
+      " because it has assessments linked to it."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 114,
+    "arg": "\"O ano letivo \" + year.getYear() + \" já possui \" + existing.size()\r\n                    + \" período(s) acadêmico(s) gerado(s). Remova-os antes de gerar novamente.\"",
+    "strings": [
+      "O ano letivo ",
+      " já possui ",
+      " período(s) acadêmico(s) gerado(s). Remova-os antes de gerar novamente."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 147,
+    "arg": "\"O período '\" + period.getName() + \"' já está fechado.\"",
+    "strings": [
+      "O período '",
+      "' já está fechado."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 167,
+    "arg": "\"O ano letivo \" + year.getYear() + \" não possui períodos acadêmicos. Gere-os primeiro.\"",
+    "strings": [
+      "O ano letivo ",
+      " não possui períodos acadêmicos. Gere-os primeiro."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 191,
+    "arg": "\"Todos os períodos do ano letivo \" + year.getYear()\r\n                    + \" já foram fechados. Não há mais períodos para abrir.\"",
+    "strings": [
+      "Todos os períodos do ano letivo ",
+      " já foram fechados. Não há mais períodos para abrir."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 199,
+    "arg": "\"A data de início do período '\" + nextPeriod.getName()\r\n                        + \"' (\" + nextPeriod.getStartDate().format(DATE_FMT)\r\n                        + \") é anterior à data de término do período '\"\r\n                        + currentOpen.getName() + \"' (\" + currentOpen.getEndDate().format(DATE_FMT)\r\n                        + \"). Ajuste as datas antes de prosseguir.\"",
+    "strings": [
+      "A data de início do período '",
+      "' (",
+      ") é anterior à data de término do período '",
+      "' (",
+      "). Ajuste as datas antes de prosseguir."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 222,
+    "arg": "\"Não é possível fechar o período '\" + period.getName()\r\n                    + \"': a data de término deve ser definida antes do fechamento.\"",
+    "strings": [
+      "Não é possível fechar o período '",
+      "': a data de término deve ser definida antes do fechamento."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 229,
+    "arg": "\"Não é possível fechar o período '\" + period.getName()\r\n                    + \"': a data de término (\" + period.getEndDate().format(DATE_FMT)\r\n                    + \") ainda não foi atingida.\"",
+    "strings": [
+      "Não é possível fechar o período '",
+      "': a data de término (",
+      ") ainda não foi atingida."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 255,
+    "arg": "String.format(\"Não é possível fechar o período '%s': a matéria '%s' na turma '%s' possui apenas %d avaliação(ões), mas exige no mínimo %d.\",\r\n                                    period.getName(),\r\n                                    tcs.getSubject().getName(),\r\n                                    tcs.getClassRoom().getName(),\r\n                                    assessmentCount,\r\n                                    tcs.getMinAssessmentsPerPeriod())",
+    "strings": [
+      "Não é possível fechar o período '%s': a matéria '%s' na turma '%s' possui apenas %d avaliação(ões), mas exige no mínimo %d."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 290,
+    "arg": "\"A data de início (\" + newStartDate.format(DATE_FMT)\r\n                            + \") do período '\" + existing.getName()\r\n                            + \"' não pode ser anterior à data de término (\"\r\n                            + previous.getEndDate().format(DATE_FMT)\r\n                            + \") do período anterior '\" + previous.getName() + \"'.\"",
+    "strings": [
+      "A data de início (",
+      ") do período '",
+      "' não pode ser anterior à data de término (",
+      ") do período anterior '",
+      "'."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 305,
+    "arg": "\"A data de término (\" + newEndDate.format(DATE_FMT)\r\n                            + \") do período '\" + existing.getName()\r\n                            + \"' não pode ser posterior à data de início (\"\r\n                            + next.getStartDate().format(DATE_FMT)\r\n                            + \") do período seguinte '\" + next.getName() + \"'.\"",
+    "strings": [
+      "A data de término (",
+      ") do período '",
+      "' não pode ser posterior à data de início (",
+      ") do período seguinte '",
+      "'."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 317,
+    "arg": "\"A data de início (\" + newStartDate.format(DATE_FMT)\r\n                    + \") deve ser anterior à data de término (\" + newEndDate.format(DATE_FMT)\r\n                    + \") do período '\" + existing.getName() + \"'.\"",
+    "strings": [
+      "A data de início (",
+      ") deve ser anterior à data de término (",
+      ") do período '",
+      "'."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java",
+    "line": 346,
+    "arg": "\"O ano letivo é obrigatório.\"",
+    "strings": [
+      "O ano letivo é obrigatório."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java",
+    "line": 63,
+    "arg": "\"Não é possível concluir o ano letivo \" + activeYear.getYear()\n                    + \". Todos os períodos acadêmicos devem estar fechados antes da conclusão.\"",
+    "strings": [
+      "Não é possível concluir o ano letivo ",
+      ". Todos os períodos acadêmicos devem estar fechados antes da conclusão."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java",
+    "line": 27,
+    "arg": "\"Academic year already registered: \" + academicYear.getYear()",
+    "strings": [
+      "Academic year already registered: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java",
+    "line": 40,
+    "arg": "\"Academic year already registered: \" + incoming.getYear()",
+    "strings": [
+      "Academic year already registered: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java",
+    "line": 56,
+    "arg": "\"Cannot delete academic year with id \" + id + \" because it has classrooms linked to it.\"",
+    "strings": [
+      "Cannot delete academic year with id ",
+      " because it has classrooms linked to it."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java",
+    "line": 60,
+    "arg": "\"Cannot delete academic year with id \" + id + \" because it has periods linked to it.\"",
+    "strings": [
+      "Cannot delete academic year with id ",
+      " because it has periods linked to it."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 48,
+    "arg": "\"Professores não podem enviar recados para professores.\"",
+    "strings": [
+      "Professores não podem enviar recados para professores."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 54,
+    "arg": "\"Selecione pelo menos uma turma ou marque a opção para professores.\"",
+    "strings": [
+      "Selecione pelo menos uma turma ou marque a opção para professores."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 63,
+    "arg": "\"Você não tem permissão para enviar recados para turmas que não leciona.\"",
+    "strings": [
+      "Você não tem permissão para enviar recados para turmas que não leciona."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 72,
+    "arg": "\"Uma ou mais turmas não foram encontradas.\"",
+    "strings": [
+      "Uma ou mais turmas não foram encontradas."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 138,
+    "arg": "\"Professores não podem enviar recados para professores.\"",
+    "strings": [
+      "Professores não podem enviar recados para professores."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 147,
+    "arg": "\"Você não tem permissão para editar este aviso.\"",
+    "strings": [
+      "Você não tem permissão para editar este aviso."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 156,
+    "arg": "\"Selecione pelo menos uma turma ou marque a opção para professores.\"",
+    "strings": [
+      "Selecione pelo menos uma turma ou marque a opção para professores."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 165,
+    "arg": "\"Você não tem permissão para enviar recados para turmas que não leciona.\"",
+    "strings": [
+      "Você não tem permissão para enviar recados para turmas que não leciona."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 174,
+    "arg": "\"Uma ou mais turmas não foram encontradas.\"",
+    "strings": [
+      "Uma ou mais turmas não foram encontradas."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java",
+    "line": 196,
+    "arg": "\"Você não tem permissão para excluir este aviso.\"",
+    "strings": [
+      "Você não tem permissão para excluir este aviso."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java",
+    "line": 120,
+    "arg": "\"O número máximo de avaliações (\" + tcs.getMaxAssessmentsPerPeriod()\r\n                            + \") para a matéria '\" + tcs.getSubject().getName()\r\n                            + \"' na turma '\" + tcs.getClassRoom().getName()\r\n                            + \"' já foi atingido no período '\" + period.getName() + \"'.\"",
+    "strings": [
+      "O número máximo de avaliações (",
+      ") para a matéria '",
+      "' na turma '",
+      "' já foi atingido no período '",
+      "'."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java",
+    "line": 135,
+    "arg": "\"TeacherClassSubject is required.\"",
+    "strings": [
+      "TeacherClassSubject is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java",
+    "line": 142,
+    "arg": "\"Academic period is required.\"",
+    "strings": [
+      "Academic period is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java",
+    "line": 149,
+    "arg": "\"Academic period '\" + period.getName() + \"' is closed. No changes are allowed.\"",
+    "strings": [
+      "Academic period '",
+      "' is closed. No changes are allowed."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java",
+    "line": 156,
+    "arg": "\"Assessment date is required.\"",
+    "strings": [
+      "Assessment date is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java",
+    "line": 163,
+    "arg": "\"A data da avaliação (\" + formattedAssessmentDate \r\n                    + \") não pode ser anterior à data de início do período (\" + period.getStartDate().format(formatter) + \").\"",
+    "strings": [
+      "A data da avaliação (",
+      ") não pode ser anterior à data de início do período (",
+      ")."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java",
+    "line": 167,
+    "arg": "\"A data da avaliação (\" + formattedAssessmentDate \r\n                    + \") não pode ser posterior à data de término do período (\" + period.getEndDate().format(formatter) + \").\"",
+    "strings": [
+      "A data da avaliação (",
+      ") não pode ser posterior à data de término do período (",
+      ")."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java",
+    "line": 177,
+    "arg": "\"Conflito de Ano Letivo: A turma pertence ao ano '\" \r\n                    + tcs.getClassRoom().getAcademicYear().getYear() \r\n                    + \"', mas o período escolhido pertence a outro ano letivo.\"",
+    "strings": [
+      "Conflito de Ano Letivo: A turma pertence ao ano '",
+      "', mas o período escolhido pertence a outro ano letivo."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java",
+    "line": 47,
+    "arg": "\"Attendance status is required.\"",
+    "strings": [
+      "Attendance status is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java",
+    "line": 50,
+    "arg": "\"Attendance for student with id \" + student.getId()\r\n                            + \" in lesson with id \" + lesson.getId() + \" is already registered.\"",
+    "strings": [
+      "Attendance for student with id ",
+      " in lesson with id ",
+      " is already registered."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java",
+    "line": 73,
+    "arg": "\"Attendance status is required.\"",
+    "strings": [
+      "Attendance status is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java",
+    "line": 243,
+    "arg": "\"Student with id \" + student.getId()\r\n                    + \" does not have an active enrollment in classroom with id \"\r\n                    + tcs.getClassRoom().getId() + \".\"",
+    "strings": [
+      "Student with id ",
+      " does not have an active enrollment in classroom with id ",
+      "."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java",
+    "line": 252,
+    "arg": "\"Lesson is required.\"",
+    "strings": [
+      "Lesson is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java",
+    "line": 259,
+    "arg": "\"Student is required.\"",
+    "strings": [
+      "Student is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java",
+    "line": 41,
+    "arg": "\"O usuário autenticado não é um professor.\"",
+    "strings": [
+      "O usuário autenticado não é um professor."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java",
+    "line": 51,
+    "arg": "\"O usuário autenticado não é um aluno.\"",
+    "strings": [
+      "O usuário autenticado não é um aluno."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java",
+    "line": 73,
+    "arg": "\"Acesso negado: você não tem permissão para acessar este recurso.\"",
+    "strings": [
+      "Acesso negado: você não tem permissão para acessar este recurso."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java",
+    "line": 84,
+    "arg": "\"Acesso negado: você só pode acessar suas próprias informações.\"",
+    "strings": [
+      "Acesso negado: você só pode acessar suas próprias informações."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java",
+    "line": 95,
+    "arg": "\"Nenhum usuário autenticado encontrado.\"",
+    "strings": [
+      "Nenhum usuário autenticado encontrado."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java",
+    "line": 141,
+    "arg": "\"Token de redefinição expirado. Solicite um novo link.\"",
+    "strings": [
+      "Token de redefinição expirado. Solicite um novo link."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java",
+    "line": 40,
+    "arg": "\"Você foi bloqueado e não pode enviar mensagens neste chat.\"",
+    "strings": [
+      "Você foi bloqueado e não pode enviar mensagens neste chat."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java",
+    "line": 66,
+    "arg": "\"Turma não encontrada. ID: \" + classroomId",
+    "strings": [
+      "Turma não encontrada. ID: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java",
+    "line": 95,
+    "arg": "\"Você só pode editar suas próprias mensagens.\"",
+    "strings": [
+      "Você só pode editar suas próprias mensagens."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java",
+    "line": 101,
+    "arg": "\"Você foi bloqueado e não pode editar mensagens.\"",
+    "strings": [
+      "Você foi bloqueado e não pode editar mensagens."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java",
+    "line": 105,
+    "arg": "\"Não é possível editar uma mensagem excluída.\"",
+    "strings": [
+      "Não é possível editar uma mensagem excluída."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java",
+    "line": 124,
+    "arg": "\"Você não tem permissão para excluir esta mensagem.\"",
+    "strings": [
+      "Você não tem permissão para excluir esta mensagem."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java",
+    "line": 131,
+    "arg": "\"Você foi bloqueado e não pode excluir mensagens.\"",
+    "strings": [
+      "Você foi bloqueado e não pode excluir mensagens."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java",
+    "line": 270,
+    "arg": "\"Você não tem permissão para enviar mensagens neste chat global.\"",
+    "strings": [
+      "Você não tem permissão para enviar mensagens neste chat global."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java",
+    "line": 33,
+    "arg": "\"Classroom '\" + classRoom.getName() + \"' already exists in academic year \" + year.getYear()",
+    "strings": [
+      "Classroom '",
+      "' already exists in academic year "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java",
+    "line": 52,
+    "arg": "\"Classroom '\" + incoming.getName() + \"' already exists in academic year \" + year.getYear()",
+    "strings": [
+      "Classroom '",
+      "' already exists in academic year "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java",
+    "line": 70,
+    "arg": "\"Cannot delete classroom with id \" + id + \" because it has student enrollments.\"",
+    "strings": [
+      "Cannot delete classroom with id ",
+      " because it has student enrollments."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java",
+    "line": 74,
+    "arg": "\"Cannot delete classroom with id \" + id + \" because it has teacher-subject assignments.\"",
+    "strings": [
+      "Cannot delete classroom with id ",
+      " because it has teacher-subject assignments."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java",
+    "line": 129,
+    "arg": "\"Academic year is required.\"",
+    "strings": [
+      "Academic year is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java",
+    "line": 42,
+    "arg": "\"Falha ao enviar e-mail de redefinição de senha.\", e",
+    "strings": [
+      "Falha ao enviar e-mail de redefinição de senha."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 36,
+    "arg": "\"Não é possível matricular um aluno inativo.\"",
+    "strings": [
+      "Não é possível matricular um aluno inativo."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 39,
+    "arg": "\"Não é possível realizar matrículas em uma turma inativa.\"",
+    "strings": [
+      "Não é possível realizar matrículas em uma turma inativa."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 43,
+    "arg": "\"O aluno já possui uma matrícula ativa para este ano letivo.\"",
+    "strings": [
+      "O aluno já possui uma matrícula ativa para este ano letivo."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 46,
+    "arg": "\"O aluno já está matriculado nesta turma.\"",
+    "strings": [
+      "O aluno já está matriculado nesta turma."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 70,
+    "arg": "\"O aluno já possui uma matrícula ativa para este ano letivo.\"",
+    "strings": [
+      "O aluno já possui uma matrícula ativa para este ano letivo."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 87,
+    "arg": "\"Não é possível excluir esta matrícula pois o aluno já possui notas registradas. Considere desativar a matrícula em vez de excluir.\"",
+    "strings": [
+      "Não é possível excluir esta matrícula pois o aluno já possui notas registradas. Considere desativar a matrícula em vez de excluir."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 90,
+    "arg": "\"Não é possível excluir esta matrícula pois o aluno já possui presenças registradas. Considere desativar a matrícula em vez de excluir.\"",
+    "strings": [
+      "Não é possível excluir esta matrícula pois o aluno já possui presenças registradas. Considere desativar a matrícula em vez de excluir."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 151,
+    "arg": "\"Não é possível transferir o aluno para uma turma inativa.\"",
+    "strings": [
+      "Não é possível transferir o aluno para uma turma inativa."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 155,
+    "arg": "\"O aluno já está matriculado nesta turma.\"",
+    "strings": [
+      "O aluno já está matriculado nesta turma."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 159,
+    "arg": "\"A transferência só é permitida entre turmas do mesmo ano letivo.\"",
+    "strings": [
+      "A transferência só é permitida entre turmas do mesmo ano letivo."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 173,
+    "arg": "\"Student is required.\"",
+    "strings": [
+      "Student is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java",
+    "line": 180,
+    "arg": "\"Classroom is required.\"",
+    "strings": [
+      "Classroom is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java",
+    "line": 49,
+    "arg": "\"Grade for student with id \" + student.getId()\r\n                    + \" on assessment with id \" + assessment.getId() + \" is already registered.\"",
+    "strings": [
+      "Grade for student with id ",
+      " on assessment with id ",
+      " is already registered."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java",
+    "line": 216,
+    "arg": "\"Academic period '\" + assessment.getPeriod().getName()\r\n                    + \"' is closed. Grades cannot be modified.\"",
+    "strings": [
+      "Academic period '",
+      "' is closed. Grades cannot be modified."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java",
+    "line": 225,
+    "arg": "\"Grade value must be between 0 and 10.\"",
+    "strings": [
+      "Grade value must be between 0 and 10."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java",
+    "line": 231,
+    "arg": "\"Student with id \" + student.getId()\r\n                    + \" does not have an active enrollment in classroom with id \"\r\n                    + tcs.getClassRoom().getId() + \".\"",
+    "strings": [
+      "Student with id ",
+      " does not have an active enrollment in classroom with id ",
+      "."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java",
+    "line": 245,
+    "arg": "\"Student is required.\"",
+    "strings": [
+      "Student is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java",
+    "line": 252,
+    "arg": "\"Assessment is required.\"",
+    "strings": [
+      "Assessment is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java",
+    "line": 29,
+    "arg": "\"Lesson date is required.\"",
+    "strings": [
+      "Lesson date is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java",
+    "line": 44,
+    "arg": "\"Lesson date is required.\"",
+    "strings": [
+      "Lesson date is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java",
+    "line": 102,
+    "arg": "\"TeacherClassSubject is required.\"",
+    "strings": [
+      "TeacherClassSubject is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java",
+    "line": 27,
+    "arg": "\"Email already in use: \" + principal.getEmail()",
+    "strings": [
+      "Email already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java",
+    "line": 41,
+    "arg": "\"Email already in use: \" + incoming.getEmail()",
+    "strings": [
+      "Email already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java",
+    "line": 49,
+    "arg": "\"Reutilização de token detectada. Todas as sessões foram encerradas por segurança. \"\r\n                            + \"Faça login novamente.\"",
+    "strings": [
+      "Reutilização de token detectada. Todas as sessões foram encerradas por segurança. ",
+      "Faça login novamente."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java",
+    "line": 57,
+    "arg": "\"Refresh token expirado. Faça login novamente.\"",
+    "strings": [
+      "Refresh token expirado. Faça login novamente."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java",
+    "line": 71,
+    "arg": "\"Refresh token não encontrado.\"",
+    "strings": [
+      "Refresh token não encontrado."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java",
+    "line": 70,
+    "arg": "\"Minimum grade must be between 0 and 10.\"",
+    "strings": [
+      "Minimum grade must be between 0 and 10."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java",
+    "line": 76,
+    "arg": "\"Minimum attendance must be between 0 and 100.\"",
+    "strings": [
+      "Minimum attendance must be between 0 and 100."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java",
+    "line": 27,
+    "arg": "\"Email already in use: \" + secretary.getEmail()",
+    "strings": [
+      "Email already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java",
+    "line": 41,
+    "arg": "\"Email already in use: \" + incoming.getEmail()",
+    "strings": [
+      "Email already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java",
+    "line": 109,
+    "arg": "\"Email already in use: \" + email",
+    "strings": [
+      "Email already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java",
+    "line": 115,
+    "arg": "\"Email already in use: \" + email",
+    "strings": [
+      "Email already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java",
+    "line": 50,
+    "arg": "\"Cannot delete subject with id \" + id + \" because it is linked to class assignments.\"",
+    "strings": [
+      "Cannot delete subject with id ",
+      " because it is linked to class assignments."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java",
+    "line": 99,
+    "arg": "\"Subject name already in use: \" + name",
+    "strings": [
+      "Subject name already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 40,
+    "arg": "\"Não é possível vincular um professor inativo à turma.\"",
+    "strings": [
+      "Não é possível vincular um professor inativo à turma."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 43,
+    "arg": "\"Não é possível vincular professores a uma turma inativa.\"",
+    "strings": [
+      "Não é possível vincular professores a uma turma inativa."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 46,
+    "arg": "\"Não é possível vincular uma matéria inativa.\"",
+    "strings": [
+      "Não é possível vincular uma matéria inativa."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 49,
+    "arg": "\"Esta matéria já está vinculada a esta turma (apenas um professor por matéria).\"",
+    "strings": [
+      "Esta matéria já está vinculada a esta turma (apenas um professor por matéria)."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 74,
+    "arg": "\"Esta matéria já está vinculada a esta turma.\"",
+    "strings": [
+      "Esta matéria já está vinculada a esta turma."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 94,
+    "arg": "\"Não é possível excluir este vínculo pois já existem aulas registradas.\"",
+    "strings": [
+      "Não é possível excluir este vínculo pois já existem aulas registradas."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 97,
+    "arg": "\"Não é possível excluir este vínculo pois já existem avaliações registradas.\"",
+    "strings": [
+      "Não é possível excluir este vínculo pois já existem avaliações registradas."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 132,
+    "arg": "\"The minimum number of assessments (\" + min\r\n                            + \") cannot be greater than the maximum (\" + max + \").\"",
+    "strings": [
+      "The minimum number of assessments (",
+      ") cannot be greater than the maximum (",
+      ")."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 146,
+    "arg": "\"Teacher is required.\"",
+    "strings": [
+      "Teacher is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 153,
+    "arg": "\"Classroom is required.\"",
+    "strings": [
+      "Classroom is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java",
+    "line": 160,
+    "arg": "\"Subject is required.\"",
+    "strings": [
+      "Subject is required."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java",
+    "line": 29,
+    "arg": "\"Email already in use: \" + teacher.getEmail()",
+    "strings": [
+      "Email already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java",
+    "line": 43,
+    "arg": "\"Email already in use: \" + incoming.getEmail()",
+    "strings": [
+      "Email already in use: "
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java",
+    "line": 63,
+    "arg": "\"Cannot delete teacher with id \" + id + \" because they have active class assignments.\"",
+    "strings": [
+      "Cannot delete teacher with id ",
+      " because they have active class assignments."
+    ]
+  },
+  {
+    "file": "src/main/java/com/andretti101/escolaweb/service/impl/UserServiceImpl.java",
+    "line": 52,
+    "arg": "\"Current password is incorrect.\"",
+    "strings": [
+      "Current password is incorrect."
+    ]
+  }
+]

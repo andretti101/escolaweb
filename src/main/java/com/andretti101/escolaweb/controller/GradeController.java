@@ -71,10 +71,21 @@ public class GradeController {
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
-    public ResponseEntity<List<GradeResponseDTO>> findByStudent(@PathVariable Integer studentId) {
+    public ResponseEntity<List<GradeResponseDTO>> findByStudent(
+            @PathVariable Integer studentId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
 
         List<Grade> grades = gradeService.findByStudent(studentId);
+
+        if (yearId != null) {
+            grades = grades.stream()
+                    .filter(g -> g.getAssessment() != null && 
+                                 g.getAssessment().getPeriod() != null && 
+                                 g.getAssessment().getPeriod().getAcademicYear() != null &&
+                                 g.getAssessment().getPeriod().getAcademicYear().getId().equals(yearId))
+                    .toList();
+        }
 
         if (authenticatedUserService.isTeacher()) {
             Set<Integer> myTcsIds = getAuthenticatedTeacherTcsIds();
@@ -138,7 +149,10 @@ public class GradeController {
     private Set<Integer> getAuthenticatedTeacherTcsIds() {
         Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
         return teacherClassSubjectService.findByTeacher(teacher.getId())
-                .stream().map(TeacherClassSubject::getId).collect(Collectors.toSet());
+                .stream()
+                .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
+                .map(TeacherClassSubject::getId)
+                .collect(Collectors.toSet());
     }
 
     // ── Mapping

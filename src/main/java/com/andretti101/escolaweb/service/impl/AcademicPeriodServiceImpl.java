@@ -168,9 +168,9 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
                     "O ano letivo " + year.getYear() + " não possui períodos acadêmicos. Gere-os primeiro.");
         }
 
-        // Encontrar o período atualmente ativo (não fechado + com datas = em andamento)
+        // Encontrar o período atualmente ativo (não fechado)
         AcademicPeriod currentOpen = allPeriods.stream()
-                .filter(p -> !p.isClosed() && p.getStartDate() != null && p.getEndDate() != null)
+                .filter(p -> !p.isClosed())
                 .findFirst()
                 .orElse(null);
 

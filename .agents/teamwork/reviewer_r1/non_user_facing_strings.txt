@@ -1,0 +1,254 @@
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:16] academic_periods  |  @Table(name = "academic_periods")
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:22] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:33] academic_year_id  |  @JoinColumn(name = "academic_year_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:38] name  |  @Column(name = "name", nullable = false, length = 100)
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:41] start_date  |  @Column(name = "start_date")
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:44] end_date  |  @Column(name = "end_date")
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:52] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicPeriod.java:55] period  |  @OneToMany(mappedBy = "period", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:14] academic_years  |  @Table(name = "academic_years")
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:20] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:33] start_date  |  @Column(name = "start_date")
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:36] end_date  |  @Column(name = "end_date")
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:44] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:47] academicYear  |  @OneToMany(mappedBy = "academicYear", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/AcademicYear.java:50] academicYear  |  @OneToMany(mappedBy = "academicYear", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:17] announcements  |  @Table(name = "announcements")
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:23] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:42] event_date  |  @Column(name = "event_date")
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:46] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:51] author_id  |  @JoinColumn(name = "author_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:57] announcement_classrooms  |  name = "announcement_classrooms",
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:58] announcement_id  |  joinColumns = @JoinColumn(name = "announcement_id"),
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:59] class_room_id  |  inverseJoinColumns = @JoinColumn(name = "class_room_id")
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:63] target_teachers  |  @Column(name = "target_teachers")
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:66] archived  |  @Column(name = "archived", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/Announcement.java:66] boolean default false  |  @Column(name = "archived", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:18] assessments  |  @Table(name = "assessments")
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:24] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:35] teacher_class_subject_id  |  @JoinColumn(name = "teacher_class_subject_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:40] period_id  |  @JoinColumn(name = "period_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:48] TEXT  |  @Column(columnDefinition = "TEXT")
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:52] assessment_date  |  @Column(name = "assessment_date")
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:57] assessment_type  |  @Column(name = "assessment_type", length = 20, nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:61] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:65] updated_at  |  @Column(name = "updated_at")
+[src/main/java/com/andretti101/escolaweb/model/entity/Assessment.java:68] assessment  |  @OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:16] attendances  |  name = "attendances",
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:17] lesson_id  |  uniqueConstraints = @UniqueConstraint(columnNames = {"lesson_id", "student_id"})
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:17] student_id  |  uniqueConstraints = @UniqueConstraint(columnNames = {"lesson_id", "student_id"})
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:24] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:35] lesson_id  |  @JoinColumn(name = "lesson_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:40] student_id  |  @JoinColumn(name = "student_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:49] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:53] updated_at  |  @Column(name = "updated_at")
+[src/main/java/com/andretti101/escolaweb/model/entity/Attendance.java:56] attendance  |  @OneToMany(mappedBy = "attendance", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/AttendanceHistory.java:12] attendance_history  |  @Table(name = "attendance_history")
+[src/main/java/com/andretti101/escolaweb/model/entity/AttendanceHistory.java:18] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/AttendanceHistory.java:29] attendance_id  |  @JoinColumn(name = "attendance_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/AttendanceHistory.java:32] old_status  |  @Column(name = "old_status", length = 30)
+[src/main/java/com/andretti101/escolaweb/model/entity/AttendanceHistory.java:35] new_status  |  @Column(name = "new_status", length = 30)
+[src/main/java/com/andretti101/escolaweb/model/entity/AttendanceHistory.java:39] changed_at  |  @Column(name = "changed_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatHiddenMessage.java:10] chat_hidden_messages  |  @Table(name = "chat_hidden_messages")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatHiddenMessage.java:23] user_id  |  @JoinColumn(name = "user_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatHiddenMessage.java:27] message_id  |  @JoinColumn(name = "message_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatHiddenMessage.java:31] hidden_at  |  @Column(name = "hidden_at", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:13] chat_messages  |  @Table(name = "chat_messages")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:19] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:28] TEXT  |  @Column(columnDefinition = "TEXT")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:32] timestamp  |  @Column(name = "timestamp", nullable = false, updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:37] sender_id  |  @JoinColumn(name = "sender_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:41] classroom_id  |  @JoinColumn(name = "classroom_id", nullable = true)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:44] is_global_teacher_chat  |  @Column(name = "is_global_teacher_chat", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:44] boolean default false  |  @Column(name = "is_global_teacher_chat", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:49] is_edited  |  @Column(name = "is_edited", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:49] boolean default false  |  @Column(name = "is_edited", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:53] is_deleted  |  @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:53] boolean default false  |  @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:57] deleted_by_admin  |  @Column(name = "deleted_by_admin", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:57] boolean default false  |  @Column(name = "deleted_by_admin", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:61] archived  |  @Column(name = "archived", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:61] boolean default false  |  @Column(name = "archived", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatMessage.java:66] replied_to_id  |  @JoinColumn(name = "replied_to_id", nullable = true)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatReadReceipt.java:10] chat_read_receipts  |  @Table(name = "chat_read_receipts")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatReadReceipt.java:23] user_id  |  @JoinColumn(name = "user_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatReadReceipt.java:27] classroom_id  |  @JoinColumn(name = "classroom_id", nullable = true)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatReadReceipt.java:30] is_global_teacher_chat  |  @Column(name = "is_global_teacher_chat", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatReadReceipt.java:30] boolean default false  |  @Column(name = "is_global_teacher_chat", nullable = false, columnDefinition = "boolean default false")
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatReadReceipt.java:35] last_read_message_id  |  @Column(name = "last_read_message_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ChatReadReceipt.java:39] last_read_at  |  @Column(name = "last_read_at", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:18] class_rooms  |  @Table(name = "class_rooms")
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:24] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:35] number  |  @Column(name = "number", nullable = false, length = 20)
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:39] school_grade  |  @Column(name = "school_grade", length = 30)
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:49] academic_year_id  |  @JoinColumn(name = "academic_year_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:53] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:57] updated_at  |  @Column(name = "updated_at")
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:64] classRoom  |  @OneToMany(mappedBy = "classRoom", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/ClassRoom.java:67] classRoom  |  @OneToMany(mappedBy = "classRoom", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:15] enrollments  |  name = "enrollments",
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:16] student_id  |  uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "class_room_id"})
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:16] class_room_id  |  uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "class_room_id"})
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:23] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:34] student_id  |  @JoinColumn(name = "student_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:39] class_room_id  |  @JoinColumn(name = "class_room_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:42] enrollment_date  |  @Column(name = "enrollment_date")
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:50] general_situation  |  @Column(name = "general_situation", length = 20)
+[src/main/java/com/andretti101/escolaweb/model/entity/Enrollment.java:54] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:19] grades  |  name = "grades",
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:20] student_id  |  uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "assessment_id"})
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:20] assessment_id  |  uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "assessment_id"})
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:27] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:38] student_id  |  @JoinColumn(name = "student_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:43] assessment_id  |  @JoinColumn(name = "assessment_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:48] score  |  @Column(name = "score", precision = 5, scale = 2)
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:52] student_situation  |  @Column(name = "student_situation", length = 20)
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:56] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:60] updated_at  |  @Column(name = "updated_at")
+[src/main/java/com/andretti101/escolaweb/model/entity/Grade.java:63] grade  |  @OneToMany(mappedBy = "grade", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+[src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:13] grade_history  |  @Table(name = "grade_history")
+[src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:19] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:30] grade_id  |  @JoinColumn(name = "grade_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:33] old_grade  |  @Column(name = "old_grade", precision = 5, scale = 2)
+[src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:36] new_grade  |  @Column(name = "new_grade", precision = 5, scale = 2)
+[src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:40] changed_at  |  @Column(name = "changed_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/GradeHistory.java:43] TEXT  |  @Column(columnDefinition = "TEXT")
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:16] lessons  |  @Table(name = "lessons")
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:22] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:33] teacher_class_subject_id  |  @JoinColumn(name = "teacher_class_subject_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:37] lesson_date  |  @Column(name = "lesson_date", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:40] TEXT  |  @Column(columnDefinition = "TEXT")
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:43] TEXT  |  @Column(columnDefinition = "TEXT")
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:47] lesson_count  |  @Column(name = "lesson_count", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:51] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:55] updated_at  |  @Column(name = "updated_at")
+[src/main/java/com/andretti101/escolaweb/model/entity/Lesson.java:58] lesson  |  @OneToMany(mappedBy = "lesson", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/PasswordResetToken.java:11] password_reset_tokens  |  @Table(name = "password_reset_tokens")
+[src/main/java/com/andretti101/escolaweb/model/entity/PasswordResetToken.java:17] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/PasswordResetToken.java:30] user_id  |  @JoinColumn(name = "user_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/PasswordResetToken.java:33] expires_at  |  @Column(name = "expires_at", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/PasswordResetToken.java:37] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Principal.java:10] principals  |  @Table(name = "principals")
+[src/main/java/com/andretti101/escolaweb/model/entity/Principal.java:11] PRINCIPAL  |  @DiscriminatorValue("PRINCIPAL")
+[src/main/java/com/andretti101/escolaweb/model/entity/RefreshToken.java:11] refresh_tokens  |  @Table(name = "refresh_tokens")
+[src/main/java/com/andretti101/escolaweb/model/entity/RefreshToken.java:17] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/RefreshToken.java:30] user_id  |  @JoinColumn(name = "user_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/RefreshToken.java:37] expires_at  |  @Column(name = "expires_at", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/RefreshToken.java:41] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:17] school_settings  |  @Table(name = "school_settings")
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:23] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:33] school_name  |  @Column(name = "school_name", length = 150)
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:51] period_type  |  @Column(name = "period_type", length = 20)
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:57] minimum_attendance  |  @Column(name = "minimum_attendance", precision = 5, scale = 2)
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:58] 70.00  |  private BigDecimal minimumAttendance = new BigDecimal("70.00");
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:63] minimum_average  |  @Column(name = "minimum_average", precision = 3, scale = 1)
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:64] 6.0  |  private BigDecimal minimumGrade = new BigDecimal("6.0");
+[src/main/java/com/andretti101/escolaweb/model/entity/SchoolSettings.java:67] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Secretary.java:10] secretaries  |  @Table(name = "secretaries")
+[src/main/java/com/andretti101/escolaweb/model/entity/Secretary.java:11] SECRETARY  |  @DiscriminatorValue("SECRETARY")
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:14] students  |  @Table(name = "students")
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:15] STUDENT  |  @DiscriminatorValue("STUDENT")
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:25] own_phone  |  @Column(name = "own_phone", length = 20)
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:29] guardian_phone  |  @Column(name = "guardian_phone", length = 20)
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:34] enrollment  |  @Column(name = "enrollment", nullable = false, unique = true, length = 30)
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:37] birth_date  |  @Column(name = "birth_date")
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:40] student  |  @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:43] student  |  @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:46] student  |  @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/Student.java:49] is_chat_blocked  |  @Column(name = "is_chat_blocked")
+[src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:15] subjects  |  @Table(name = "subjects")
+[src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:21] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:35] TEXT  |  @Column(columnDefinition = "TEXT")
+[src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:39] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:43] updated_at  |  @Column(name = "updated_at")
+[src/main/java/com/andretti101/escolaweb/model/entity/Subject.java:50] subject  |  @OneToMany(mappedBy = "subject", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/Teacher.java:11] teachers  |  @Table(name = "teachers")
+[src/main/java/com/andretti101/escolaweb/model/entity/Teacher.java:12] TEACHER  |  @DiscriminatorValue("TEACHER")
+[src/main/java/com/andretti101/escolaweb/model/entity/Teacher.java:21] teacher  |  @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:15] teacher_class_subject  |  name = "teacher_class_subject",
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:16] class_room_id  |  uniqueConstraints = @UniqueConstraint(columnNames = {"class_room_id", "subject_id"})
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:16] subject_id  |  uniqueConstraints = @UniqueConstraint(columnNames = {"class_room_id", "subject_id"})
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:23] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:33] teacher_id  |  @JoinColumn(name = "teacher_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:37] class_room_id  |  @JoinColumn(name = "class_room_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:41] subject_id  |  @JoinColumn(name = "subject_id", nullable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:45] min_assessments_per_period  |  @Column(name = "min_assessments_per_period")
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:49] max_assessments_per_period  |  @Column(name = "max_assessments_per_period")
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:53] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:56] teacherClassSubject  |  @OneToMany(mappedBy = "teacherClassSubject", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/TeacherClassSubject.java:59] teacherClassSubject  |  @OneToMany(mappedBy = "teacherClassSubject", fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:17] users  |  @Table(name = "users")
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:19] role  |  @DiscriminatorColumn(name = "role", discriminatorType = DiscriminatorType.STRING, length = 20)
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:24] id  |  @EqualsAndHashCode(of = "id")
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:53] role  |  @Column(name = "role", insertable = false, updatable = false, length = 20)
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:57] created_at  |  @Column(name = "created_at", updatable = false)
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:61] updated_at  |  @Column(name = "updated_at")
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:64] last_read_announcements  |  @Column(name = "last_read_announcements")
+[src/main/java/com/andretti101/escolaweb/model/entity/User.java:67] user  |  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+[src/main/java/com/andretti101/escolaweb/model/enums/AcademicPeriodType.java:4] Bimestre  |  BIMESTER("Bimestre"),
+[src/main/java/com/andretti101/escolaweb/model/enums/AcademicPeriodType.java:5] Trimestre  |  TRIMESTER("Trimestre"),
+[src/main/java/com/andretti101/escolaweb/model/enums/AcademicPeriodType.java:6] Quadrimestre  |  QUADRIMESTER("Quadrimestre"),
+[src/main/java/com/andretti101/escolaweb/model/enums/AcademicPeriodType.java:7] Semestre  |  SEMESTER("Semestre"),
+[src/main/java/com/andretti101/escolaweb/model/enums/AcademicPeriodType.java:8] Anual  |  ANNUAL("Anual");
+[src/main/java/com/andretti101/escolaweb/model/enums/AssessmentType.java:4] Prova  |  EXAM("Prova"),
+[src/main/java/com/andretti101/escolaweb/model/enums/AssessmentType.java:5] Trabalho  |  ASSIGNMENT("Trabalho"),
+[src/main/java/com/andretti101/escolaweb/model/enums/AssessmentType.java:6] Caderno  |  NOTEBOOK("Caderno");
+[src/main/java/com/andretti101/escolaweb/model/enums/AttendanceStatus.java:4] Presente  |  PRESENT("Presente"),
+[src/main/java/com/andretti101/escolaweb/model/enums/AttendanceStatus.java:5] Falta  |  ABSENT("Falta"),
+[src/main/java/com/andretti101/escolaweb/model/enums/Shift.java:4] Matutino  |  MORNING("Matutino"),
+[src/main/java/com/andretti101/escolaweb/model/enums/Shift.java:5] Vespertino  |  AFTERNOON("Vespertino"),
+[src/main/java/com/andretti101/escolaweb/model/enums/Shift.java:6] Noturno  |  EVENING("Noturno"),
+[src/main/java/com/andretti101/escolaweb/model/enums/Shift.java:7] Integral  |  FULL_TIME("Integral");
+[src/main/java/com/andretti101/escolaweb/model/enums/StudentSituation.java:4] Aprovado  |  APPROVED("Aprovado"),
+[src/main/java/com/andretti101/escolaweb/model/enums/StudentSituation.java:5] Reprovado  |  FAILED("Reprovado"),
+[src/main/java/com/andretti101/escolaweb/model/enums/StudentSituation.java:6] Pendente  |  PENDING("Pendente");
+[src/main/java/com/andretti101/escolaweb/model/enums/UserRole.java:4] Aluno  |  STUDENT("Aluno"),
+[src/main/java/com/andretti101/escolaweb/model/enums/UserRole.java:5] Professor  |  TEACHER("Professor"),
+[src/main/java/com/andretti101/escolaweb/model/enums/UserRole.java:6] Secretaria  |  SECRETARY("Secretaria"),
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:33] dd/MM/yyyy  |  private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:295] '.  |  + ") do período anterior '" + previous.getName() + "'.");
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:310] '.  |  + ") do período seguinte '" + next.getName() + "'.");
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:320] '.  |  + ") do período '" + existing.getName() + "'.");
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:138] concludedYear  |  summary.put("concludedYear", activeYear.getYear());
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:139] newYear  |  summary.put("newYear", savedNewYear.getYear());
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:140] approvedStudents  |  summary.put("approvedStudents", approvedCount);
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:141] failedStudents  |  summary.put("failedStudents", failedCount);
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:142] totalStudentsProcessed  |  summary.put("totalStudentsProcessed", approvedCount + failedCount);
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:143] archivedChatMessages  |  summary.put("archivedChatMessages", archivedMessages);
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:144] archivedAnnouncements  |  summary.put("archivedAnnouncements", archivedAnnouncements);
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:145] newPeriodType  |  summary.put("newPeriodType", request.periodType().getLabel());
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:146] newMinimumGrade  |  summary.put("newMinimumGrade", request.minimumGrade());
+[src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:147] newMinimumAttendance  |  summary.put("newMinimumAttendance", request.minimumAttendance());
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:124] '.  |  + "' já foi atingido no período '" + period.getName() + "'.");
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:159] dd/MM/yyyy  |  java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:164] ).  |  + ") não pode ser anterior à data de início do período (" + period.getStartDate().format(formatter) + ").");
+[src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:168] ).  |  + ") não pode ser posterior à data de término do período (" + period.getEndDate().format(formatter) + ").");
+[src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:246] .  |  + tcs.getClassRoom().getId() + ".");
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:46] ${password-reset.expiration}  |  @Value("${password-reset.expiration}")
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:166] UNKNOWN  |  .orElse("UNKNOWN");
+[src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:171] Bearer  |  "Bearer",
+[src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:135]   |  message.setContent(""); // Limpa o texto original
+[src/main/java/com/andretti101/escolaweb/service/impl/CustomUserDetailsService.java:30] ROLE_  |  .authorities(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:20] ${password-reset.base-url}  |  @Value("${password-reset.base-url}")
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:25] /reset-password.html?token=  |  String resetLink = baseUrl + "/reset-password.html?token=" + token;
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:30] UTF-8  |  MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:32] noreply@escolaweb.com  |  helper.setFrom("noreply@escolaweb.com");
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:54] UTF-8  |  <meta charset="UTF-8">
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:71] container  |  <div class="container">
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:72] header  |  <div class="header">
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:75] body  |  <div class="body">
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:80] %s  |  <a href="%s" class="btn">Redefinir Senha</a>
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:80] btn  |  <a href="%s" class="btn">Redefinir Senha</a>
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:87] footer  |  <div class="footer">
+[src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:93]   |  """.formatted(userName, resetLink);
+[src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:234] .  |  + tcs.getClassRoom().getId() + ".");
+[src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:48] SenhaTemporaria123  |  if (incomingPassword != null && !incomingPassword.isBlank() && !incomingPassword.equals("SenhaTemporaria123")) {
+[src/main/java/com/andretti101/escolaweb/service/impl/ReportCardServiceImpl.java:174] .  |  "O aluno '" + student.getName() + "' não possui matrícula no ano letivo " + year.getYear() + "."));
+[src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:60] Escola  |  .schoolName("Escola")
+[src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:61] 6.0  |  .minimumGrade(new BigDecimal("6.0"))
+[src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:62] 75.00  |  .minimumAttendance(new BigDecimal("75.00"))
+[src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:75] 100  |  if (attendance.compareTo(BigDecimal.ZERO) < 0 || attendance.compareTo(new BigDecimal("100")) > 0) {
+[src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:48] SenhaTemporaria123  |  if (incomingPassword != null && !incomingPassword.isBlank() && !incomingPassword.equals("SenhaTemporaria123")) {
+[src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:48] SenhaTemporaria123  |  if (incomingPassword != null && !incomingPassword.isBlank() && !incomingPassword.equals("SenhaTemporaria123")) {
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:134] ).  |  + ") cannot be greater than the maximum (" + max + ").");
+[src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:50] SenhaTemporaria123  |  if (incomingPassword != null && !incomingPassword.isBlank() && !incomingPassword.equals("SenhaTemporaria123")) {

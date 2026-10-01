@@ -1,0 +1,301 @@
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:53
+   "Usuário não autenticado no WebSocket."
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:63
+   "Acesso negado: Alunos não podem acessar o chat dos professores."
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:78
+   "Acesso negado: Aluno não matriculado nesta turma."
+src/main/java/com/andretti101/escolaweb/config/WebSocketAuthInterceptor.java:81
+   "Acesso negado: Perfil não autorizado para o chat da turma."
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:43
+   "Você não pertence a esta turma."
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:47
+   "Você não leciona nesta turma."
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:50
+   "Acesso negado."
+src/main/java/com/andretti101/escolaweb/controller/ChatController.java:294
+   "Acesso negado: Alunos não têm acesso ao chat dos professores."
+src/main/java/com/andretti101/escolaweb/model/enums/LessonCount.java:27
+   "No LessonCount constant mapped to database value: "
+   ". Valid range is 1–6."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:49
+   "Não é possível atualizar o período '"
+   "' pois ele já está fechado."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:73
+   "Cannot delete a closed academic period with id: "
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:76
+   "Cannot delete period with id "
+   " because it has assessments linked to it."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:114
+   "O ano letivo "
+   " já possui "
+   " período(s) acadêmico(s) gerado(s). Remova-os antes de gerar novamente."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:147
+   "O período '"
+   "' já está fechado."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:167
+   "O ano letivo "
+   " não possui períodos acadêmicos. Gere-os primeiro."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:191
+   "Todos os períodos do ano letivo "
+   " já foram fechados. Não há mais períodos para abrir."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:199
+   "A data de início do período '"
+   "' ("
+   ") é anterior à data de término do período '"
+   "' ("
+   "). Ajuste as datas antes de prosseguir."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:222
+   "Não é possível fechar o período '"
+   "': a data de término deve ser definida antes do fechamento."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:229
+   "Não é possível fechar o período '"
+   "': a data de término ("
+   ") ainda não foi atingida."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:255
+   "Não é possível fechar o período '%s': a matéria '%s' na turma '%s' possui apenas %d avaliação(ões), mas exige no mínimo %d."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:290
+   "A data de início ("
+   ") do período '"
+   "' não pode ser anterior à data de término ("
+   ") do período anterior '"
+   "'."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:305
+   "A data de término ("
+   ") do período '"
+   "' não pode ser posterior à data de início ("
+   ") do período seguinte '"
+   "'."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:317
+   "A data de início ("
+   ") deve ser anterior à data de término ("
+   ") do período '"
+   "'."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicPeriodServiceImpl.java:346
+   "O ano letivo é obrigatório."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearConclusionServiceImpl.java:63
+   "Não é possível concluir o ano letivo "
+   ". Todos os períodos acadêmicos devem estar fechados antes da conclusão."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:27
+   "Academic year already registered: "
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:40
+   "Academic year already registered: "
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:56
+   "Cannot delete academic year with id "
+   " because it has classrooms linked to it."
+src/main/java/com/andretti101/escolaweb/service/impl/AcademicYearServiceImpl.java:60
+   "Cannot delete academic year with id "
+   " because it has periods linked to it."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:48
+   "Professores não podem enviar recados para professores."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:54
+   "Selecione pelo menos uma turma ou marque a opção para professores."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:63
+   "Você não tem permissão para enviar recados para turmas que não leciona."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:72
+   "Uma ou mais turmas não foram encontradas."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:138
+   "Professores não podem enviar recados para professores."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:147
+   "Você não tem permissão para editar este aviso."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:156
+   "Selecione pelo menos uma turma ou marque a opção para professores."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:165
+   "Você não tem permissão para enviar recados para turmas que não leciona."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:174
+   "Uma ou mais turmas não foram encontradas."
+src/main/java/com/andretti101/escolaweb/service/impl/AnnouncementServiceImpl.java:196
+   "Você não tem permissão para excluir este aviso."
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:120
+   "O número máximo de avaliações ("
+   ") para a matéria '"
+   "' na turma '"
+   "' já foi atingido no período '"
+   "'."
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:135
+   "TeacherClassSubject is required."
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:142
+   "Academic period is required."
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:149
+   "Academic period '"
+   "' is closed. No changes are allowed."
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:156
+   "Assessment date is required."
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:163
+   "A data da avaliação ("
+   ") não pode ser anterior à data de início do período ("
+   ")."
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:167
+   "A data da avaliação ("
+   ") não pode ser posterior à data de término do período ("
+   ")."
+src/main/java/com/andretti101/escolaweb/service/impl/AssessmentServiceImpl.java:177
+   "Conflito de Ano Letivo: A turma pertence ao ano '"
+   "', mas o período escolhido pertence a outro ano letivo."
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:47
+   "Attendance status is required."
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:50
+   "Attendance for student with id "
+   " in lesson with id "
+   " is already registered."
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:73
+   "Attendance status is required."
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:243
+   "Student with id "
+   " does not have an active enrollment in classroom with id "
+   "."
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:252
+   "Lesson is required."
+src/main/java/com/andretti101/escolaweb/service/impl/AttendanceServiceImpl.java:259
+   "Student is required."
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:41
+   "O usuário autenticado não é um professor."
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:51
+   "O usuário autenticado não é um aluno."
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:73
+   "Acesso negado: você não tem permissão para acessar este recurso."
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:84
+   "Acesso negado: você só pode acessar suas próprias informações."
+src/main/java/com/andretti101/escolaweb/service/impl/AuthenticatedUserServiceImpl.java:95
+   "Nenhum usuário autenticado encontrado."
+src/main/java/com/andretti101/escolaweb/service/impl/AuthServiceImpl.java:141
+   "Token de redefinição expirado. Solicite um novo link."
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:40
+   "Você foi bloqueado e não pode enviar mensagens neste chat."
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:66
+   "Turma não encontrada. ID: "
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:95
+   "Você só pode editar suas próprias mensagens."
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:101
+   "Você foi bloqueado e não pode editar mensagens."
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:105
+   "Não é possível editar uma mensagem excluída."
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:124
+   "Você não tem permissão para excluir esta mensagem."
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:131
+   "Você foi bloqueado e não pode excluir mensagens."
+src/main/java/com/andretti101/escolaweb/service/impl/ChatMessageServiceImpl.java:270
+   "Você não tem permissão para enviar mensagens neste chat global."
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:33
+   "Classroom '"
+   "' already exists in academic year "
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:52
+   "Classroom '"
+   "' already exists in academic year "
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:70
+   "Cannot delete classroom with id "
+   " because it has student enrollments."
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:74
+   "Cannot delete classroom with id "
+   " because it has teacher-subject assignments."
+src/main/java/com/andretti101/escolaweb/service/impl/ClassRoomServiceImpl.java:129
+   "Academic year is required."
+src/main/java/com/andretti101/escolaweb/service/impl/EmailServiceImpl.java:42
+   "Falha ao enviar e-mail de redefinição de senha."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:36
+   "Não é possível matricular um aluno inativo."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:39
+   "Não é possível realizar matrículas em uma turma inativa."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:43
+   "O aluno já possui uma matrícula ativa para este ano letivo."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:46
+   "O aluno já está matriculado nesta turma."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:70
+   "O aluno já possui uma matrícula ativa para este ano letivo."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:87
+   "Não é possível excluir esta matrícula pois o aluno já possui notas registradas. Considere desativar a matrícula em vez de excluir."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:90
+   "Não é possível excluir esta matrícula pois o aluno já possui presenças registradas. Considere desativar a matrícula em vez de excluir."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:151
+   "Não é possível transferir o aluno para uma turma inativa."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:155
+   "O aluno já está matriculado nesta turma."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:159
+   "A transferência só é permitida entre turmas do mesmo ano letivo."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:173
+   "Student is required."
+src/main/java/com/andretti101/escolaweb/service/impl/EnrollmentServiceImpl.java:180
+   "Classroom is required."
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:49
+   "Grade for student with id "
+   " on assessment with id "
+   " is already registered."
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:216
+   "Academic period '"
+   "' is closed. Grades cannot be modified."
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:225
+   "Grade value must be between 0 and 10."
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:231
+   "Student with id "
+   " does not have an active enrollment in classroom with id "
+   "."
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:245
+   "Student is required."
+src/main/java/com/andretti101/escolaweb/service/impl/GradeServiceImpl.java:252
+   "Assessment is required."
+src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:29
+   "Lesson date is required."
+src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:44
+   "Lesson date is required."
+src/main/java/com/andretti101/escolaweb/service/impl/LessonServiceImpl.java:102
+   "TeacherClassSubject is required."
+src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:27
+   "Email already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/PrincipalServiceImpl.java:41
+   "Email already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:49
+   "Reutilização de token detectada. Todas as sessões foram encerradas por segurança. "
+   "Faça login novamente."
+src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:57
+   "Refresh token expirado. Faça login novamente."
+src/main/java/com/andretti101/escolaweb/service/impl/RefreshTokenServiceImpl.java:71
+   "Refresh token não encontrado."
+src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:70
+   "Minimum grade must be between 0 and 10."
+src/main/java/com/andretti101/escolaweb/service/impl/SchoolSettingsServiceImpl.java:76
+   "Minimum attendance must be between 0 and 100."
+src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:27
+   "Email already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/SecretaryServiceImpl.java:41
+   "Email already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:109
+   "Email already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/StudentServiceImpl.java:115
+   "Email already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:50
+   "Cannot delete subject with id "
+   " because it is linked to class assignments."
+src/main/java/com/andretti101/escolaweb/service/impl/SubjectServiceImpl.java:99
+   "Subject name already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:40
+   "Não é possível vincular um professor inativo à turma."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:43
+   "Não é possível vincular professores a uma turma inativa."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:46
+   "Não é possível vincular uma matéria inativa."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:49
+   "Esta matéria já está vinculada a esta turma (apenas um professor por matéria)."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:74
+   "Esta matéria já está vinculada a esta turma."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:94
+   "Não é possível excluir este vínculo pois já existem aulas registradas."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:97
+   "Não é possível excluir este vínculo pois já existem avaliações registradas."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:132
+   "The minimum number of assessments ("
+   ") cannot be greater than the maximum ("
+   ")."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:146
+   "Teacher is required."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:153
+   "Classroom is required."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherClassSubjectServiceImpl.java:160
+   "Subject is required."
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:29
+   "Email already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:43
+   "Email already in use: "
+src/main/java/com/andretti101/escolaweb/service/impl/TeacherServiceImpl.java:63
+   "Cannot delete teacher with id "
+   " because they have active class assignments."
+src/main/java/com/andretti101/escolaweb/service/impl/UserServiceImpl.java:52
+   "Current password is incorrect."

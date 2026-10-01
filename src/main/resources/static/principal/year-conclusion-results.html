@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Resultados do Ano Letivo | Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <style>
+        .filter-btn.active { box-shadow: 0 0.125rem 0.5rem rgba(105,108,255,.4); }
+        .student-row { transition: background-color 0.2s; }
+        .student-row:hover { background-color: rgba(105,108,255,.04); }
+        .counter-card { min-width: 120px; }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0">
+                            <span class="text-muted fw-light">Sistema /</span> Resultados do Ano Letivo
+                        </h4>
+                        <a href="/principal/year-conclusion.html" class="btn btn-outline-primary btn-sm">
+                            <i class="bx bx-arrow-back me-1"></i> Voltar
+                        </a>
+                    </div>
+
+                    <div id="alertContainer"></div>
+
+                    <!-- Seletor de Ano -->
+                    <div class="card mb-4">
+                        <div class="card-body py-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <label for="yearSelect" class="form-label mb-0 fw-bold">Selecionar Ano Letivo</label>
+                                </div>
+                                <div class="col-md-4">
+                                    <select id="yearSelect" class="form-select">
+                                        <option value="">Carregando...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar aluno por nome..."/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nav-align-top mb-4">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item">
+                                <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-geral">Visão Geral (Alunos)</button>
+                            </li>
+                            <li class="nav-item">
+                                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-turma">Histórico por Turma</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="navs-geral" role="tabpanel">
+                                <!-- Contadores -->
+                                <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card counter-card cursor-pointer" id="filterAll" onclick="filterBy('ALL')">
+                                <div class="card-body text-center py-3">
+                                    <i class="bx bx-group text-primary mb-1" style="font-size: 1.5rem;"></i>
+                                    <h4 class="mb-0 text-primary" id="countAll">0</h4>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card counter-card cursor-pointer" id="filterApproved" onclick="filterBy('APPROVED')">
+                                <div class="card-body text-center py-3">
+                                    <i class="bx bx-check-circle text-success mb-1" style="font-size: 1.5rem;"></i>
+                                    <h4 class="mb-0 text-success" id="countApproved">0</h4>
+                                    <small class="text-muted">Aprovados</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card counter-card cursor-pointer" id="filterFailed" onclick="filterBy('FAILED')">
+                                <div class="card-body text-center py-3">
+                                    <i class="bx bx-x-circle text-danger mb-1" style="font-size: 1.5rem;"></i>
+                                    <h4 class="mb-0 text-danger" id="countFailed">0</h4>
+                                    <small class="text-muted">Reprovados</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card counter-card cursor-pointer" id="filterPending" onclick="filterBy('PENDING')">
+                                <div class="card-body text-center py-3">
+                                    <i class="bx bx-time text-warning mb-1" style="font-size: 1.5rem;"></i>
+                                    <h4 class="mb-0 text-warning" id="countPending">0</h4>
+                                    <small class="text-muted">Pendentes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Alunos -->
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Aluno</th>
+                                        <th>Matrícula</th>
+                                        <th>Turma</th>
+                                        <th>Grau</th>
+                                        <th class="text-center">Situação Geral</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">
+                                            <i class="bx bx-loader-alt bx-spin" style="font-size: 2rem;"></i>
+                                            <p class="mt-2 mb-0">Carregando resultados...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer text-muted small" id="tableFooter">
+                            -
+                        </div>
+                    </div>
+                            </div>
+                            
+                            <!-- TAB HISTÓRICO POR TURMA -->
+                            <div class="tab-pane fade" id="navs-turma" role="tabpanel">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Selecionar Turma</label>
+                                        <select id="classSelect" class="form-select" onchange="loadClassHistory()">
+                                            <option value="">Selecione uma turma...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-end">
+                                        <span id="classGradeBadge" class="badge bg-primary fs-6 mb-1" style="display:none;"></span>
+                                    </div>
+                                </div>
+                                
+                                <div id="classHistoryContent" style="display:none;">
+                                      <div class="row">
+                                          <div class="col-12 mb-4">
+                                              <div class="card h-100">
+                                                  <h5 class="card-header bg-label-info">Matérias e Professores</h5>
+                                                  <div class="table-responsive text-nowrap">
+                                                      <table class="table table-hover">
+                                                          <thead>
+                                                              <tr>
+                                                                  <th>Matéria</th>
+                                                                  <th>Professor</th>
+                                                                  <th>Mínimo de Avaliações</th>
+                                                                  <th>Máximo de Avaliações</th>
+                                                              </tr>
+                                                          </thead>
+                                                          <tbody id="historySubjectsTable">
+                                                          </tbody>
+                                                      </table>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          <div class="col-12 mb-4">
+                                              <div class="card h-100">
+                                                  <h5 class="card-header bg-label-success">Alunos da Turma</h5>
+                                                  <div class="table-responsive text-nowrap">
+                                                      <table class="table table-hover">
+                                                          <thead>
+                                                              <tr>
+                                                                  <th>Aluno</th>
+                                                                  <th>Matrícula</th>
+                                                                  <th>Data Matrícula</th>
+                                                                  <th>Status</th>
+                                                              </tr>
+                                                          </thead>
+                                                          <tbody id="historyStudentsTable">
+                                                          </tbody>
+                                                      </table>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                                <div id="classHistoryEmpty" class="text-center py-5 text-muted" style="display:none;">
+                                    <i class="bx bx-info-circle bx-lg mb-3"></i>
+                                    <h5>Nenhuma turma selecionada ou sem dados históricos.</h5>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                </div>
+
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">Copyright © 2026 EscolaWEB. Todos os direitos reservados.</div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script src="/js/load-sidebar.js"></script>
+
+<script>
+    function escapeHtml(unsafe) {
+        if (unsafe == null) return '';
+        return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function getToken() {
+        return localStorage.getItem('jwt_token') || '';
+    }
+
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
+
+    let allEnrollments = [];
+    let currentFilter = 'ALL';
+    let allYears = [];
+
+    // ══════════════════════════════════════════════════════════════
+    // CARREGAMENTO INICIAL
+    // ══════════════════════════════════════════════════════════════
+
+    async function loadYears() {
+        try {
+            const res = await fetch('/api/academic-years', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            if (!res.ok) throw new Error('Erro ao carregar anos letivos.');
+            allYears = await res.json();
+
+            const select = document.getElementById('yearSelect');
+            select.innerHTML = '';
+
+            // Ordenar por ano decrescente
+            allYears.sort((a, b) => b.year - a.year);
+
+            allYears.forEach(y => {
+                const option = document.createElement('option');
+                option.value = y.year;
+                option.textContent = `${y.year}${y.active ? ' (Ativo)' : ''}`;
+                select.appendChild(option);
+            });
+
+            if (allYears.length > 0) {
+                // Selecionar o primeiro não-ativo (ano concluído mais recente), ou o ativo
+                const concluded = allYears.find(y => !y.active);
+                if (concluded) {
+                    select.value = concluded.year;
+                }
+                const initialYearValue = parseInt(select.value);
+                loadEnrollments(initialYearValue);
+                loadClassesForYear(initialYearValue);
+            }
+        } catch (error) {
+            showAlert('Erro ao carregar anos letivos: ' + error.message, 'danger');
+        }
+    }
+
+    async function loadEnrollments(yearValue) {
+        try {
+            const res = await fetch('/api/enrollments', {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            if (!res.ok) throw new Error('Erro ao carregar matrículas.');
+            const enrollments = await res.json();
+
+            // Filtrar pelo ano selecionado
+            allEnrollments = enrollments.filter(e => e.academicYear === yearValue);
+
+            updateCounters();
+            renderTable();
+        } catch (error) {
+            showAlert('Erro ao carregar matrículas: ' + error.message, 'danger');
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // CONTADORES E FILTROS
+    // ══════════════════════════════════════════════════════════════
+
+    function updateCounters() {
+        const approved = allEnrollments.filter(e => e.generalSituation === 'APPROVED').length;
+        const failed = allEnrollments.filter(e => e.generalSituation === 'FAILED').length;
+        const pending = allEnrollments.filter(e => e.generalSituation === 'PENDING' || !e.generalSituation).length;
+
+        document.getElementById('countAll').textContent = allEnrollments.length;
+        document.getElementById('countApproved').textContent = approved;
+        document.getElementById('countFailed').textContent = failed;
+        document.getElementById('countPending').textContent = pending;
+    }
+
+    function filterBy(filter) {
+        currentFilter = filter;
+
+        // Atualizar visual dos cards
+        document.querySelectorAll('.counter-card').forEach(c => c.classList.remove('active'));
+        const activeCard = document.getElementById('filter' + filter.charAt(0) + filter.slice(1).toLowerCase());
+        if (activeCard) activeCard.classList.add('active');
+
+        renderTable();
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // RENDERIZAÇÃO DA TABELA
+    // ══════════════════════════════════════════════════════════════
+
+    function renderTable() {
+        const tbody = document.getElementById('studentsTableBody');
+        const search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+        let filtered = [...allEnrollments];
+
+        // Filtrar por situação
+        if (currentFilter === 'APPROVED') {
+            filtered = filtered.filter(e => e.generalSituation === 'APPROVED');
+        } else if (currentFilter === 'FAILED') {
+            filtered = filtered.filter(e => e.generalSituation === 'FAILED');
+        } else if (currentFilter === 'PENDING') {
+            filtered = filtered.filter(e => e.generalSituation === 'PENDING' || !e.generalSituation);
+        }
+
+        // Filtrar por busca
+        if (search) {
+            filtered = filtered.filter(e =>
+                (e.studentName || '').toLowerCase().includes(search) ||
+                (e.studentRegistrationNumber || '').toLowerCase().includes(search)
+            );
+        }
+
+        // Ordenar: aprovados primeiro, depois reprovados, depois pendentes, e por nome
+        const situationOrder = { 'APPROVED': 1, 'FAILED': 2, 'PENDING': 3 };
+        filtered.sort((a, b) => {
+            const sA = situationOrder[a.generalSituation] || 3;
+            const sB = situationOrder[b.generalSituation] || 3;
+            if (sA !== sB) return sA - sB;
+            return (a.studentName || '').localeCompare(b.studentName || '');
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-5 text-muted">
+                        <i class="bx bx-search-alt" style="font-size: 2rem;"></i>
+                        <p class="mt-2 mb-0">Nenhum aluno encontrado.</p>
+                    </td>
+                </tr>`;
+            document.getElementById('tableFooter').textContent = '0 resultados';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(e => {
+            let gradeText = e.schoolGrade || '-';
+            if(gradeText.startsWith('PRE_')) gradeText = gradeText.replace('PRE_', 'Pré-Escola ');
+            if(gradeText.startsWith('FUNDAMENTAL_')) gradeText = gradeText.replace('FUNDAMENTAL_', '') + 'º Ano Fundamental';
+            if(gradeText.startsWith('MEDIO_')) gradeText = gradeText.replace('MEDIO_', '') + 'º Ano Médio';
+            
+            return `
+            <tr class="student-row">
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-sm me-2">
+                            <span class="avatar-initial rounded-circle bg-label-${getSituationColor(e.generalSituation)}">
+                                ${getInitials(e.studentName)}
+                            </span>
+                        </div>
+                        <strong>${e.studentName || '—'}</strong>
+                    </div>
+                </td>
+                <td><code>${e.studentRegistrationNumber || '—'}</code></td>
+                <td>${e.classRoomName || '—'}</td>
+                <td>${gradeText}</td>
+                <td class="text-center">
+                    <span class="badge bg-label-${getSituationColor(e.generalSituation)} rounded-pill">
+                        ${getSituationIcon(e.generalSituation)} ${getSituationLabel(e.generalSituation)}
+                    </span>
+                </td>
+            </tr>
+        `;
+        }).join('');
+
+        document.getElementById('tableFooter').textContent =
+            `Exibindo ${filtered.length} de ${allEnrollments.length} alunos`;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // HELPERS
+    // ══════════════════════════════════════════════════════════════
+
+    function getSituationLabel(situation) {
+        switch (situation) {
+            case 'APPROVED': return 'Aprovado';
+            case 'FAILED': return 'Reprovado';
+            case 'PENDING': return 'Pendente';
+            default: return 'Sem situação';
+        }
+    }
+
+    function getSituationColor(situation) {
+        switch (situation) {
+            case 'APPROVED': return 'success';
+            case 'FAILED': return 'danger';
+            case 'PENDING': return 'warning';
+            default: return 'secondary';
+        }
+    }
+
+    function getSituationIcon(situation) {
+        switch (situation) {
+            case 'APPROVED': return '<i class="bx bx-check"></i>';
+            case 'FAILED': return '<i class="bx bx-x"></i>';
+            case 'PENDING': return '<i class="bx bx-time"></i>';
+            default: return '<i class="bx bx-minus"></i>';
+        }
+    }
+
+    function getInitials(name) {
+        if (!name) return '?';
+        const parts = name.trim().split(' ');
+        if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        return parts[0][0].toUpperCase();
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // EVENTOS
+    // ══════════════════════════════════════════════════════════════
+
+    document.getElementById('yearSelect').addEventListener('change', (e) => {
+        const val = parseInt(e.target.value);
+        loadEnrollments(val);
+        loadClassesForYear(val);
+    });
+
+    document.getElementById('searchInput').addEventListener('input', () => {
+        renderTable();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadYears();
+        filterBy('ALL');
+    });
+
+    async function loadClassesForYear(yearValue) {
+        const classSelect = document.getElementById('classSelect');
+        document.getElementById('classHistoryContent').style.display = 'none';
+        document.getElementById('classGradeBadge').style.display = 'none';
+        document.getElementById('classHistoryEmpty').style.display = 'block';
+        
+        const targetYearObj = allYears.find(y => y.year == yearValue);
+        if(!targetYearObj) return;
+
+        try {
+            const res = await fetch(`/api/classrooms/academic-year/${targetYearObj.id}`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            if (res.ok) {
+                const classes = await res.json();
+                classSelect.innerHTML = '<option value="">Selecione uma turma...</option>' + 
+                    classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+        async function loadClassHistory() {
+        const classId = document.getElementById('classSelect').value;
+        const contentDiv = document.getElementById('classHistoryContent');
+        const emptyDiv = document.getElementById('classHistoryEmpty');
+        const badge = document.getElementById('classGradeBadge');
+        
+        if (!classId) {
+            contentDiv.style.display = 'none';
+            emptyDiv.style.display = 'block';
+            badge.style.display = 'none';
+            return;
+        }
+
+        try {
+            const [clsRes, tcsRes, enrRes] = await Promise.all([
+                fetch(`/api/classrooms/${classId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+                fetch(`/api/teacher-class-subjects/classroom/${classId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+                fetch(`/api/enrollments/classroom/${classId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } })
+            ]);
+
+            if (clsRes.ok && tcsRes.ok && enrRes.ok) {
+                const classroom = await clsRes.json();
+                const subjects = await tcsRes.json();
+                const students = await enrRes.json();
+                
+                let gradeText = classroom.schoolGrade || '';
+                if(gradeText.startsWith('PRE_')) gradeText = gradeText.replace('PRE_', 'Pré-Escola ');
+                if(gradeText.startsWith('FUNDAMENTAL_')) gradeText = gradeText.replace('FUNDAMENTAL_', '') + 'º Ano Fundamental';
+                if(gradeText.startsWith('MEDIO_')) gradeText = gradeText.replace('MEDIO_', '') + 'º Ano Médio';
+                
+                badge.textContent = gradeText;
+
+                const tcsTable = document.getElementById('historySubjectsTable');
+                if (subjects.length === 0) {
+                    tcsTable.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhuma grade encontrada.</td></tr>';
+                } else {
+                    tcsTable.innerHTML = subjects.map(s => `
+                        <tr>
+                            <td><span class="badge bg-label-info">${escapeHtml(s.subjectName)}</span></td>
+                            <td><strong>${escapeHtml(s.teacherName)}</strong></td>
+                            <td>${s.minAssessmentsPerPeriod || '-'}</td>
+                            <td>${s.maxAssessmentsPerPeriod || '-'}</td>
+                        </tr>`).join('');
+                }
+
+                const stuTable = document.getElementById('historyStudentsTable');
+                if (students.length === 0) {
+                    stuTable.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum aluno encontrado.</td></tr>';
+                } else {
+                    stuTable.innerHTML = students.map(st => `
+                        <tr>
+                            <td><strong>${escapeHtml(st.studentName)}</strong></td>
+                            <td>${escapeHtml(st.studentRegistrationNumber)}</td>
+                            <td>${st.enrollmentDate ? new Date(st.enrollmentDate + 'T12:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+                            <td><span class="badge ${st.active ? 'bg-label-success' : 'bg-label-secondary'}">${st.active ? 'Ativa' : 'Inativa'}</span></td>
+                        </tr>`).join('');
+                }
+
+                contentDiv.style.display = 'block';
+                emptyDiv.style.display = 'none';
+                badge.style.display = 'inline-block';
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+</script>
+</body>
+</html>

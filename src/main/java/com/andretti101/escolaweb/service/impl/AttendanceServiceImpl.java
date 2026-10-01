@@ -157,7 +157,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public com.andretti101.escolaweb.dto.response.StudentAttendanceReportDTO getStudentAttendanceReport(Integer studentId) {
+    public com.andretti101.escolaweb.dto.response.StudentAttendanceReportDTO getStudentAttendanceReport(Integer studentId, Integer yearId) {
         Student student = studentService.findById(studentId);
         List<Attendance> attendances = attendanceRepository.findByStudent(student);
 
@@ -168,6 +168,22 @@ public class AttendanceServiceImpl implements AttendanceService {
         int totalUnjustifiedAbsences = 0;
 
         for (Attendance a : attendances) {
+            if (a.getLesson() == null || 
+                a.getLesson().getTeacherClassSubject() == null || 
+                a.getLesson().getTeacherClassSubject().getClassRoom() == null || 
+                a.getLesson().getTeacherClassSubject().getClassRoom().getAcademicYear() == null) {
+                continue;
+            }
+
+            if (yearId != null) {
+                if (!a.getLesson().getTeacherClassSubject().getClassRoom().getAcademicYear().getId().equals(yearId)) {
+                    continue;
+                }
+            } else {
+                if (!a.getLesson().getTeacherClassSubject().getClassRoom().getAcademicYear().isActive()) {
+                    continue;
+                }
+            }
             String subjectName = a.getLesson().getTeacherClassSubject().getSubject().getName();
             int count = a.getLesson().getLessonCount() != null ? a.getLesson().getLessonCount().getValue() : 1;
 

@@ -20,6 +20,7 @@ public class LimparPeriodosTest {
         System.out.println("\n\n=============================================");
         System.out.println("INICIANDO LIMPEZA DE DADOS...");
         
+        int gradeHistories = jdbcTemplate.update("DELETE FROM grade_history");
         int grades = jdbcTemplate.update("DELETE FROM grades");
         int assessments = jdbcTemplate.update("DELETE FROM assessments");
         int periods = jdbcTemplate.update("DELETE FROM academic_periods");

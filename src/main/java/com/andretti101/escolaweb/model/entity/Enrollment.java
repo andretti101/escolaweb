@@ -45,6 +45,10 @@ public class Enrollment implements Serializable {
     @Column(nullable = false)
     private boolean active = true;
 
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    @jakarta.persistence.Column(name = "general_situation", length = 20)
+    private com.andretti101.escolaweb.model.enums.StudentSituation generalSituation;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

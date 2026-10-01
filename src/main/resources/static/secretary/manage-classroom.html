@@ -387,7 +387,7 @@
 
     async function loadGlobalClassrooms() {
         try {
-            const res = await fetch(`/api/classrooms?activeOnly=true`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            const res = await fetch(`/api/classrooms`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
             if (res.ok) {
                 const classrooms = await res.json();
                 const select = document.getElementById('globalClassroomSelect');

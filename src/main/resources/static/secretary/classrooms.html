@@ -206,7 +206,7 @@
 
     async function loadClassrooms() {
         try {
-            const response = await fetch('/api/classrooms', {
+            const response = await fetch('/api/classrooms?activeOnly=false', {
                 headers: {'Authorization': `Bearer ${jwtToken || ''}`}
             });
             if (response.ok) {

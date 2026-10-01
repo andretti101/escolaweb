@@ -5,8 +5,6 @@ import com.andretti101.escolaweb.dto.response.EnrollmentResponseDTO;
 import com.andretti101.escolaweb.model.entity.ClassRoom;
 import com.andretti101.escolaweb.model.entity.Enrollment;
 import com.andretti101.escolaweb.model.entity.Student;
-import com.andretti101.escolaweb.model.entity.Teacher;
-import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.EnrollmentService;
 import com.andretti101.escolaweb.service.TeacherClassSubjectService;
@@ -75,6 +73,7 @@ public class EnrollmentController {
             com.andretti101.escolaweb.model.entity.Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
             boolean teachesInClassroom = teacherClassSubjectService.findByTeacher(teacher.getId())
                     .stream()
+                    .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
                     .anyMatch(tcs -> tcs.getClassRoom().getId().equals(classRoomId));
             if (!teachesInClassroom) {
                 return ResponseEntity.ok(java.util.List.of());
@@ -153,9 +152,11 @@ public class EnrollmentController {
                 e.getStudent().getRegistrationNumber(),
                 e.getClassRoom().getId(),
                 e.getClassRoom().getName(),
+                e.getClassRoom().getSchoolGrade().getLabel(),
                 e.getClassRoom().getAcademicYear().getYear(),
                 e.getEnrollmentDate(),
                 e.isActive(),
+                e.getGeneralSituation(),
                 e.getCreatedAt()
         );
     }
