@@ -25,12 +25,14 @@
     <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
     <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
     <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <script src="/js/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/demo.css"/>
     <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
     <link rel="stylesheet" href="/assets/vendor/css/pages/page-auth.css"/>
 
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
+    <link rel="stylesheet" href="/assets/css/dark-mode.css" />
 </head>
 
 <body>
@@ -94,6 +96,14 @@
                         <div class="mb-3">
                             <button class="btn btn-primary d-grid w-100" style="border-radius: 10px;" type="submit">
                                 Entrar
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="auth-theme-toggle" data-theme-toggle aria-pressed="false"
+                                    aria-label="Alternar tema claro/escuro" title="Ativar modo escuro">
+                                <span class="auth-theme-thumb" aria-hidden="true"></span>
+                                <span class="auth-theme-option is-light"><i class="bx bx-sun"></i>Claro</span>
+                                <span class="auth-theme-option is-dark"><i class="bx bx-moon"></i>Escuro</span>
                             </button>
                         </div>
                     </form>

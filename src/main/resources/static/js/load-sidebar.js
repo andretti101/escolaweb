@@ -146,7 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         }
                     } finally {
+                        // Preserva a preferência de tema (não é dado de sessão)
+                        const themeKey = (window.EscolaTheme && window.EscolaTheme.STORAGE_KEY) || 'escolaweb-theme';
+                        const savedTheme = localStorage.getItem(themeKey);
                         localStorage.clear();
+                        if (savedTheme) localStorage.setItem(themeKey, savedTheme);
                         window.location.href = '/login.html';
                     }
                 });
