@@ -20,6 +20,7 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
     <div class="layout-wrapper layout-content-navbar">
@@ -315,7 +316,7 @@
             }).join('');
         }
 
-        function showConfirmModal(title, message, onConfirm) {
+        function _showConfirmModal_old(title, message, onConfirm) {
             let modalEl = document.getElementById('customConfirmModal');
             if (!modalEl) {
                 const html = `
@@ -354,7 +355,7 @@
             modal.show();
         }
 
-        function showAlertModal(title, message) {
+        function _showAlertModal_old(title, message) {
             let modalEl = document.getElementById('customAlertModal');
             if (!modalEl) {
                 const html = `
@@ -414,3 +415,4 @@
     </script>
 </body>
 </html>
+

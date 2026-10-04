@@ -34,6 +34,7 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
 <div class="layout-wrapper layout-content-navbar">
@@ -319,7 +320,7 @@
 
     async function toggleStatus(id, activate) {
         const action = activate ? 'ativar' : 'desativar';
-        if (!confirm(`Tem certeza que deseja ${action} esta matéria?`)) return;
+        if (!(await window.showConfirmModal('Atenção', `Tem certeza que deseja ${action} esta matéria?`))) return;
 
         const endpoint = `/api/subjects/${id}/${activate ? 'activate' : 'deactivate'}`;
         try {
@@ -332,15 +333,15 @@
                 loadSubjects();
             } else {
                 const err = await response.json().catch(() => null);
-                alert(`Erro ao ${action} matéria: ${err?.message || 'Erro desconhecido'}`);
+                await window.showAlertModal('Aviso', `Erro ao ${action} matéria: ${err?.message || 'Erro desconhecido'}`);
             }
         } catch (error) {
-            alert(`Erro de conexão ao tentar ${action} a matéria.`);
+            await window.showAlertModal('Aviso', `Erro de conexão ao tentar ${action} a matéria.`);
         }
     }
 
     async function deleteSubject(id) {
-        if (!confirm('ATENÇÃO: Deseja realmente EXCLUIR DEFINITIVAMENTE esta matéria? Esta ação não pode ser desfeita.')) return;
+        if (!(await window.showConfirmModal('Atenção', 'ATENÇÃO: Deseja realmente EXCLUIR DEFINITIVAMENTE esta matéria? Esta ação não pode ser desfeita.'))) return;
         try {
             const response = await fetch(`/api/subjects/${id}`, {
                 method: 'DELETE',
@@ -351,10 +352,10 @@
                 loadSubjects();
             } else {
                 const err = await response.json().catch(() => null);
-                alert(`Erro ao excluir matéria: ${err?.message || 'Esta matéria está vinculada a alocações de professores e não pode ser excluída.'}`);
+                await window.showAlertModal('Aviso', `Erro ao excluir matéria: ${err?.message || 'Esta matéria está vinculada a alocações de professores e não pode ser excluída.'}`);
             }
         } catch (error) {
-            alert('Erro de conexão ao tentar excluir a matéria.');
+            await window.showAlertModal('Aviso', 'Erro de conexão ao tentar excluir a matéria.');
         }
     }
 
@@ -374,5 +375,6 @@
 </script>
 </body>
 </html>
+
 
 

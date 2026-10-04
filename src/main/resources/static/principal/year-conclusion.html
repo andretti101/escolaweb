@@ -35,6 +35,7 @@
         }
     </style>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
 
@@ -435,7 +436,7 @@
     // MODAL DE CONFIRMAÇÃO
     // ══════════════════════════════════════════════════════════════
 
-    function showConfirmModal(title, message, onConfirm) {
+    function _showConfirmModal_old(title, message, onConfirm) {
         let modalEl = document.getElementById('customConfirmModal');
         if (!modalEl) {
             const html = `

@@ -36,6 +36,7 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
 <div class="layout-wrapper layout-content-navbar">
@@ -338,7 +339,7 @@
 
     async function toggleStatus(id, activate) {
         const action = activate ? 'ativar' : 'desativar';
-        if (!confirm(`Tem certeza que deseja ${action} este professor?`)) return;
+        if (!(await window.showConfirmModal('Atenção', `Tem certeza que deseja ${action} este professor?`))) return;
 
         const endpoint = `/api/teachers/${id}/${activate ? 'activate' : 'deactivate'}`;
         try {
@@ -352,15 +353,15 @@
                 loadTeachers();
             } else {
                 const err = await response.json().catch(() => null);
-                alert(`Erro ao ${action} professor: ${err?.message || 'Erro desconhecido'}`);
+                await window.showAlertModal('Aviso', `Erro ao ${action} professor: ${err?.message || 'Erro desconhecido'}`);
             }
         } catch (error) {
-            alert(`Erro de conexão ao tentar ${action} o professor.`);
+            await window.showAlertModal('Aviso', `Erro de conexão ao tentar ${action} o professor.`);
         }
     }
 
     async function deleteTeacher(id) {
-        if (!confirm('ATENÇÃO: Deseja realmente EXCLUIR DEFINITIVAMENTE este professor? Esta ação não pode ser desfeita.')) return;
+        if (!(await window.showConfirmModal('Atenção', 'ATENÇÃO: Deseja realmente EXCLUIR DEFINITIVAMENTE este professor? Esta ação não pode ser desfeita.'))) return;
 
         try {
             const response = await fetch(`/api/teachers/${id}`, {
@@ -374,10 +375,10 @@
                 loadTeachers();
             } else {
                 const err = await response.json().catch(() => null);
-                alert(`Erro ao excluir professor: ${err?.message || 'Conflito de dados ou erro desconhecido.'}`);
+                await window.showAlertModal('Aviso', `Erro ao excluir professor: ${err?.message || 'Conflito de dados ou erro desconhecido.'}`);
             }
         } catch (error) {
-            alert('Erro de conexão ao tentar excluir o professor.');
+            await window.showAlertModal('Aviso', 'Erro de conexão ao tentar excluir o professor.');
         }
     }
 
@@ -400,5 +401,6 @@
 </script>
 </body>
 </html>
+
 
 

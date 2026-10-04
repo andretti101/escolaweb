@@ -27,6 +27,7 @@
         .border-left-warning { border-left: 4px solid #ffab00 !important; }
     </style>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
 <div class="layout-wrapper layout-content-navbar">
@@ -316,7 +317,7 @@
 
         window.fetchAnnouncements = fetchAnnouncements;
         window.deleteAnnouncement = async function(id) {
-            if (confirm('Tem certeza que deseja excluir este aviso?')) {
+            if (await window.showConfirmModal('Atenção', 'Tem certeza que deseja excluir este aviso?')) {
                 try {
                     const token = localStorage.getItem('jwt_token');
                     const response = await fetch('/api/announcements/' + id, {
@@ -326,7 +327,7 @@
                     if (response.ok) {
                         fetchAnnouncements(currentPage);
                     } else {
-                        alert('Erro ao excluir aviso.');
+                        await window.showAlertModal('Aviso', 'Erro ao excluir aviso.');
                     }
                 } catch (e) { console.error(e); }
             }
@@ -346,3 +347,4 @@
 <script src="/js/load-sidebar.js"></script>
 </body>
 </html>
+

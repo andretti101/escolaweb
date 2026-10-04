@@ -36,6 +36,7 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
 <div class="layout-wrapper layout-content-navbar">
@@ -338,7 +339,7 @@
 
     async function toggleStatus(id, activate) {
         const action = activate ? 'ativar' : 'desativar';
-        if (!confirm(`Tem certeza que deseja ${action} este diretor?`)) return;
+        if (!(await window.showConfirmModal('Atenção', `Tem certeza que deseja ${action} este diretor?`))) return;
 
         const endpoint = `/api/principals/${id}/${activate ? 'activate' : 'deactivate'}`;
         try {
@@ -352,15 +353,15 @@
                 loadPrincipals();
             } else {
                 const err = await response.json().catch(() => null);
-                alert(`Erro ao ${action} diretor: ${err?.message || 'Erro desconhecido'}`);
+                await window.showAlertModal('Aviso', `Erro ao ${action} diretor: ${err?.message || 'Erro desconhecido'}`);
             }
         } catch (error) {
-            alert(`Erro de conexão ao tentar ${action} o diretor.`);
+            await window.showAlertModal('Aviso', `Erro de conexão ao tentar ${action} o diretor.`);
         }
     }
 
     async function deletePrincipal(id) {
-        if (!confirm('ATENÇÃO: Deseja realmente EXCLUIR DEFINITIVAMENTE este diretor? Esta ação não pode ser desfeita.')) return;
+        if (!(await window.showConfirmModal('Atenção', 'ATENÇÃO: Deseja realmente EXCLUIR DEFINITIVAMENTE este diretor? Esta ação não pode ser desfeita.'))) return;
 
         try {
             const response = await fetch(`/api/principals/${id}`, {
@@ -374,10 +375,10 @@
                 loadPrincipals();
             } else {
                 const err = await response.json().catch(() => null);
-                alert(`Erro ao excluir diretor: ${err?.message || 'Conflito de dados ou erro desconhecido.'}`);
+                await window.showAlertModal('Aviso', `Erro ao excluir diretor: ${err?.message || 'Conflito de dados ou erro desconhecido.'}`);
             }
         } catch (error) {
-            alert('Erro de conexão ao tentar excluir o diretor.');
+            await window.showAlertModal('Aviso', 'Erro de conexão ao tentar excluir o diretor.');
         }
     }
 
@@ -400,5 +401,6 @@
 </script>
 </body>
 </html>
+
 
 

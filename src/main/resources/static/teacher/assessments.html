@@ -23,6 +23,7 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
     <div class="layout-wrapper layout-content-navbar">
@@ -134,7 +135,7 @@
                 container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
                 window.scrollTo(0,0);
             } else {
-                alert(message);
+                await window.showAlertModal('Aviso', message);
             }
         }
 
@@ -274,7 +275,7 @@
             });
         }
 
-        function showConfirmModal(title, message, onConfirm) {
+        function _showConfirmModal_old(title, message, onConfirm) {
             let modalEl = document.getElementById('customConfirmModal');
             if (!modalEl) {
                 const modalHtml = `
@@ -337,3 +338,4 @@
     </script>
 </body>
 </html>
+
