@@ -33,6 +33,7 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 
 <body>
@@ -164,7 +165,7 @@
                     } else if (userRole.includes("STUDENT")) {
                         window.location.href = "/student/dashboard.html";
                     } else {
-                        alert("Atenção: role não mapeada — [" + userRole + "]. Verifique o F12.");
+                        await window.showAlertModal('Aviso', "Atenção: role não mapeada — [" + userRole + "]. Verifique o F12.");
                         console.error("Resposta completa:", data);
                     }
 
@@ -176,16 +177,17 @@
                         message = "E-mail ou senha incorretos. Tente novamente.";
                     }
 
-                    alert(message);
+                    await window.showAlertModal('Aviso', message);
                 }
 
             } catch (error) {
                 console.error("Erro na requisição:", error);
-                alert("Erro ao conectar com o servidor. O backend está rodando?");
+                await window.showAlertModal('Aviso', "Erro ao conectar com o servidor. O backend está rodando?");
             }
         });
     });
 </script>
+
 
 
 

@@ -117,6 +117,7 @@
         }
     </style>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
 <div class="layout-wrapper layout-content-navbar">
@@ -799,7 +800,7 @@
     // ══════════════════════════════════════════════════════════
 
     window.toggleEnrollment = async (id, activate) => {
-        if (!confirm(`Deseja ${activate ? 'ativar' : 'desativar'} esta matrícula?`)) return;
+        if (!(await window.showConfirmModal('Atenção', `Deseja ${activate ? 'ativar' : 'desativar'} esta matrícula?`))) return;
         try {
             const res = await fetch(`/api/enrollments/${id}/${activate ? 'activate' : 'deactivate'}`, {
                 method: 'PUT',
@@ -817,7 +818,7 @@
     };
 
     window.deleteEnrollment = async (id) => {
-        if (!confirm('Deseja excluir permanentemente esta matrícula?')) return;
+        if (!(await window.showConfirmModal('Atenção', 'Deseja excluir permanentemente esta matrícula?'))) return;
         try {
             const res = await fetch(`/api/enrollments/${id}`, {
                 method: 'DELETE',
@@ -835,7 +836,7 @@
     };
 
     window.deleteTCS = async (id) => {
-        if (!confirm('Deseja excluir permanentemente este vínculo de grade?')) return;
+        if (!(await window.showConfirmModal('Atenção', 'Deseja excluir permanentemente este vínculo de grade?'))) return;
         try {
             const res = await fetch(`/api/teacher-class-subjects/${id}`, {
                 method: 'DELETE',
@@ -896,7 +897,7 @@
         const newClassRoomId = document.getElementById('newClassRoomSelect').value;
 
         if (!newClassRoomId) {
-            alert('Por favor, selecione uma turma de destino.');
+            await window.showAlertModal('Aviso', 'Por favor, selecione uma turma de destino.');
             return;
         }
 
@@ -944,3 +945,4 @@
 <script src="/js/load-sidebar.js"></script>
 </body>
 </html>
+

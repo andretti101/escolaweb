@@ -33,6 +33,7 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 
 <body>
@@ -443,7 +444,7 @@
         const student = allStudents.find(s => s.id === id);
         const name = student ? student.name : `aluno #${id}`;
 
-        if (!confirm(`Deseja ${action} o aluno "${name}"?`)) return;
+        if (!(await window.showConfirmModal('Atenção', `Deseja ${action} o aluno "${name}"?`))) return;
 
         const endpoint = `/api/students/${id}/${activate ? 'activate' : 'deactivate'}`;
 
@@ -471,7 +472,7 @@
             applyFilters();
 
         } catch (error) {
-            alert(error.message);
+            await window.showAlertModal('Aviso', error.message);
         }
     }
 
@@ -479,7 +480,7 @@
         const student = allStudents.find(s => s.id === id);
         const name = student ? student.name : `aluno #${id}`;
 
-        if (!confirm(`TEM CERTEZA que deseja EXCLUIR DEFINITIVAMENTE o aluno "${name}" do sistema?\n\nEsta Ação não poderá ser desfeita.`)) return;
+        if (!(await window.showConfirmModal('Atenção', `TEM CERTEZA que deseja EXCLUIR DEFINITIVAMENTE o aluno "${name}" do sistema?\n\nEsta Ação não poderá ser desfeita.`))) return;
 
         try {
             const response = await fetch(`/api/students/${id}`, {
@@ -500,10 +501,10 @@
             // Removendo da lista e recarregando
             allStudents = allStudents.filter(s => s.id !== id);
             applyFilters();
-            alert('Aluno excluído com sucesso.');
+            await window.showAlertModal('Aviso', 'Aluno excluído com sucesso.');
 
         } catch (error) {
-            alert(error.message);
+            await window.showAlertModal('Aviso', error.message);
         }
     }
 
@@ -549,6 +550,7 @@
 </script>
 </body>
 </html>
+
 
 
 

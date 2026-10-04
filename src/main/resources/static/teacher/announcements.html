@@ -27,6 +27,7 @@
         .border-left-warning { border-left: 4px solid #ffab00 !important; }
     </style>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+<script src="/js/global-modals.js"></script>
 </head>
 <body>
 <div class="layout-wrapper layout-content-navbar">
@@ -246,7 +247,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-function showConfirmModal(title, message, onConfirm) {
+function _showConfirmModal_old(title, message, onConfirm) {
     let modalEl = document.getElementById('customConfirmModal');
     if (!modalEl) {
         const html = `
@@ -296,11 +297,11 @@ window.deleteAnnouncement = function(id) {
             if (response.ok) {
                 window.location.reload();
             } else {
-                alert("Erro ao excluir o aviso.");
+                await window.showAlertModal('Aviso', "Erro ao excluir o aviso.");
             }
         } catch (e) {
             console.error(e);
-            alert("Erro ao excluir o aviso.");
+            await window.showAlertModal('Aviso', "Erro ao excluir o aviso.");
         }
     });
 };

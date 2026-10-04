@@ -23,21 +23,28 @@ if (!token) {
             const currentPath   = window.location.pathname;
 
             if (currentPath.includes("/secretary/") && !payloadString.includes("SECRETARY") && !payloadString.includes("PRINCIPAL")) {
-                if(window.alert) window.alert("Acesso Negado! Área restrita.");
-                setTimeout(() => window.location.href = "/login.html", 1500);
+                handleUnauthorized("Acesso Negado! Área restrita.");
             } else if ((currentPath.includes("/admin/") || currentPath.includes("/principal/")) && !payloadString.includes("PRINCIPAL")) {
-                if(window.alert) window.alert("Acesso Negado! Área exclusiva da Direção.");
-                setTimeout(() => window.location.href = "/login.html", 1500);
+                handleUnauthorized("Acesso Negado! Área exclusiva da Direção.");
             } else if (currentPath.includes("/student/") && !payloadString.includes("STUDENT")) {
-                if(window.alert) window.alert("Acesso Negado! Área exclusiva do Aluno.");
-                setTimeout(() => window.location.href = "/login.html", 1500);
+                handleUnauthorized("Acesso Negado! Área exclusiva do Aluno.");
             } else if (currentPath.includes("/teacher/") && !payloadString.includes("TEACHER")) {
-                if(window.alert) window.alert("Acesso Negado! Área exclusiva do Professor.");
-                setTimeout(() => window.location.href = "/login.html", 1500);
+                handleUnauthorized("Acesso Negado! Área exclusiva do Professor.");
             }
             // Se nenhuma condição disparou, o usuário está autorizado e a página carrega normalmente.
         }
 
+        function handleUnauthorized(msg) {
+            document.documentElement.style.display = 'none';
+            document.addEventListener("DOMContentLoaded", async () => {
+                document.documentElement.style.display = '';
+                document.body.style.display = 'none';
+                if (window.showAlertModal) {
+                    await window.showAlertModal("Acesso Negado", msg);
+                }
+                window.location.href = "/login.html";
+            });
+        }
     } catch (error) {
         // Token corrompido ou malformado — limpa os dois tokens e expulsa
         console.error("Token inválido ou corrompido:", error);
