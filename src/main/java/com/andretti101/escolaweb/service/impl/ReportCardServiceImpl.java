@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ReportCardServiceImpl implements ReportCardService {
 
     private final StudentService studentService;
