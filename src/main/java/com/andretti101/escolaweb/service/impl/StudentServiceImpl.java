@@ -19,6 +19,7 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.context.MessageSource messageSource;
 
     @Override
     @Transactional
@@ -101,18 +102,18 @@ public class StudentServiceImpl implements StudentService {
 
     Student findStudentOrThrow(Integer id) {
         return studentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(messageSource.getMessage("error.student.not.found", new Object[]{id}, org.springframework.context.i18n.LocaleContextHolder.getLocale())));
     }
 
     private void validateEmailAvailable(String email) {
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalStateException("Email already in use: " + email);
+            throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
     }
 
     private void validateEmailNotTakenByAnother(String email, Integer currentId) {
         if (userRepository.existsByEmailAndIdNot(email, currentId)) {
-            throw new IllegalStateException("Email already in use: " + email);
+            throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
     }
 }

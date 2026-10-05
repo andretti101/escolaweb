@@ -43,7 +43,7 @@
                     </div>
                     
                     <h4 class="fw-bold py-3 mb-4">
-                        <span class="text-muted fw-light">Mural de Recados /</span> Recados para Professores
+                        <span class="text-muted fw-light">Mural de Recados /</span> Meus Recados
                     </h4>
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -97,13 +97,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const userId = parseInt(localStorage.getItem("user_id"));
 
     try {
-        const url = window.location.pathname.includes('my-announcements') ? '/api/announcements/my-announcements' : '/api/announcements/for-teachers';
+        const url = window.location.pathname.includes('my-announcements') ? '/api/announcements/my-announcements' : '/api/announcements/my-teaching-classrooms';
         const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        if (!response.ok) { const text = await response.text(); throw new Error(`Status ${response.status}: ${text}`); }
+        if (!response.ok) {
+            let errMsg = `Status ${response.status}`;
+            try {
+                const errObj = await response.json();
+                if (errObj.message) errMsg = errObj.message;
+            } catch (e) {}
+            throw new Error(errMsg);
+        }
         const announcements = await response.json();
         fetch('/api/announcements/mark-read', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }).catch(console.error);
         
@@ -124,10 +131,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 fixedList.push(a);
                 return;
             }
-                const eDate = new Date(a.eventDate + "T00:00:00");
-                const parsedDate = isNaN(eDate) ? new Date(a.eventDate) : eDate;
-                if (parsedDate < today) pastList.push(a);
-                else upcomingList.push(a);
+            const eDate = new Date(a.eventDate + "T00:00:00");
+            const parsedDate = isNaN(eDate) ? new Date(a.eventDate) : eDate;
+            if (parsedDate < today) pastList.push(a);
+            else upcomingList.push(a);
         });
 
         const renderCards = (list, containerId) => {

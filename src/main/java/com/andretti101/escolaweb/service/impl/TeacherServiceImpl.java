@@ -21,12 +21,13 @@ public class TeacherServiceImpl implements TeacherService {
     private final UserRepository userRepository;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.context.MessageSource messageSource;
 
     @Override
     @Transactional
     public Teacher create(Teacher teacher) {
         if (userRepository.existsByEmail(teacher.getEmail())) {
-            throw new IllegalStateException("Email already in use: " + teacher.getEmail());
+            throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
         teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
         teacher.setActive(true);
@@ -40,7 +41,7 @@ public class TeacherServiceImpl implements TeacherService {
 
         if (!existing.getEmail().equals(incoming.getEmail())
                 && userRepository.existsByEmailAndIdNot(incoming.getEmail(), id)) {
-            throw new IllegalStateException("Email already in use: " + incoming.getEmail());
+            throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
 
         existing.setName(incoming.getName());
@@ -103,6 +104,6 @@ public class TeacherServiceImpl implements TeacherService {
 
     Teacher findTeacherOrThrow(Integer id) {
         return teacherRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Teacher not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(messageSource.getMessage("error.teacher.not.found", new Object[]{id}, org.springframework.context.i18n.LocaleContextHolder.getLocale())));
     }
 }

@@ -43,7 +43,7 @@
                     </div>
                     
                     <h4 class="fw-bold py-3 mb-4">
-                        <span class="text-muted fw-light">Mural de Recados /</span> Recados das minhas turmas
+                        <span class="text-muted fw-light">Mural de Recados /</span> Recados para Professores
                     </h4>
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -52,7 +52,6 @@
                             <i class="bx bx-plus me-1"></i> Novo Aviso
                         </a>
                     </div>
-                    <div class="row mb-4"><div class="col-md-4"><select id="filterClassroom" class="form-select"><option value="">Todas as Turmas</option></select></div></div>
 
                     <!-- Avisos Fixados --> <div id="fixed-section" style="display: none; margin-bottom: 3rem;"> <h5 class="fw-bold text-primary mb-3"><i class="bx bx-pin me-2"></i>Avisos Fixados</h5> <div class="row mb-5" id="fixed-container"></div> <hr class="my-5" /> </div> <div class="row" id="upcoming-container">
                         <div class="col-12 text-center py-5">
@@ -98,64 +97,54 @@ document.addEventListener("DOMContentLoaded", async () => {
     const userId = parseInt(localStorage.getItem("user_id"));
 
     try {
-        const url = window.location.pathname.includes('my-announcements') ? '/api/announcements/my-announcements' : '/api/announcements/my-teaching-classrooms';
+        const url = window.location.pathname.includes('my-announcements') ? '/api/announcements/my-announcements' : '/api/announcements/for-teachers';
         const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        if (!response.ok) { const text = await response.text(); throw new Error(`Status ${response.status}: ${text}`); }
-                  const announcements = await response.json();
-          fetch('/api/announcements/mark-read', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }).catch(console.error);
-          
-          announcements.sort((a, b) => {
-              if (!a.eventDate) return 1;
-              if (!b.eventDate) return -1;
-              return new Date(a.eventDate) - new Date(b.eventDate);
-          });
-          
-          window.allAnnouncements = announcements;
-          
-          
-            const authUserId = localStorage.getItem("user_id");
-            if (authUserId) {
-                fetch('/api/teacher-class-subjects/teacher/' + authUserId, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(r => r.json())
-                .then(tcsData => {
-                    const filterEl = document.getElementById('filterClassroom');
-                    if (filterEl && Array.isArray(tcsData)) {
-                        const uniqueClasses = new Map();
-                        tcsData.forEach(item => uniqueClasses.set(item.classRoomId, item.classRoomName));
-                        
-                        // Sort alphabetically by name
-                        const sortedClasses = Array.from(uniqueClasses.entries()).sort((a, b) => a[1].localeCompare(b[1]));
-                        
-                        sortedClasses.forEach(([id, name]) => {
-                            filterEl.insertAdjacentHTML('beforeend', '<option value="' + id + '">' + name + '</option>');
-                        });
-                        
-                        if (!filterEl.dataset.listenerAdded) {
-                            filterEl.addEventListener('change', () => window.applyFilters());
-                            filterEl.dataset.listenerAdded = 'true';
-                        }
-                    }
-                })
-                .catch(console.error);
-            }
+        if (!response.ok) {
+            let errMsg = `Status ${response.status}`;
+            try {
+                const errObj = await response.json();
+                if (errObj.message) errMsg = errObj.message;
+            } catch (e) {}
+            throw new Error(errMsg);
+        }
+        const announcements = await response.json();
+        fetch('/api/announcements/mark-read', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }).catch(console.error);
+        
+        announcements.sort((a, b) => {
+            if (!a.eventDate) return 1;
+            if (!b.eventDate) return -1;
+            return new Date(a.eventDate) - new Date(b.eventDate);
+        });
 
-          
-          
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        const fixedList = [];
+        const upcomingList = [];
+        const pastList = [];
+        announcements.forEach(a => {
+            if (!a.eventDate) {
+                fixedList.push(a);
+                return;
+            }
+                const eDate = new Date(a.eventDate + "T00:00:00");
+                const parsedDate = isNaN(eDate) ? new Date(a.eventDate) : eDate;
+                if (parsedDate < today) pastList.push(a);
+                else upcomingList.push(a);
+        });
+
         const renderCards = (list, containerId) => {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             if (list.length === 0) {
-                container.innerHTML = '<div class="col-12"><p class="text-muted">Nenhum recado encontrado.</p></div>';
+                container.innerHTML = `<div class="col-12"><p class="text-muted">Nenhum recado encontrado.</p></div>`;
                 return;
             }
 
-            let htmlString = '';
             list.forEach(item => {
                 let borderClass = 'border-left-primary';
                 const role = item.authorRole ? item.authorRole.toUpperCase() : '';
@@ -171,75 +160,42 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 const eventDateStr = item.eventDate 
-                    ? new Date(item.eventDate + "T00:00:00").toLocaleDateString('pt-BR') 
+                    ? new Date(item.eventDate).toLocaleDateString('pt-BR') 
                     : 'Sem data';
 
-                let userIdStr = '';
-                try {
-                    const token = localStorage.getItem('jwt_token');
-                    if (token) {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        userIdStr = payload.userId;
-                    }
-                } catch(e) {}
-                
-                const canEdit = item.authorId == userIdStr;
-                const editButtonHtml = canEdit ? '<a href="/teacher/edit/announcement.html?id=' + item.id + '" class="btn btn-sm btn-icon btn-outline-primary" title="Editar"><i class="bx bx-pencil"></i></a> <a href="javascript:void(0);" onclick="deleteAnnouncement(' + item.id + ')" class="btn btn-sm btn-icon btn-outline-danger ms-1" title="Excluir"><i class="bx bx-trash"></i></a>' : '';
+                const canEdit = item.authorId === userId;
+                const editButtonHtml = canEdit ? `<a href="/teacher/edit/announcement.html?id=${item.id}" class="btn btn-sm btn-icon btn-outline-primary" title="Editar"><i class="bx bx-pencil"></i></a> <a href="javascript:void(0);" onclick="deleteAnnouncement(${item.id})" class="btn btn-sm btn-icon btn-outline-danger ms-1" title="Excluir"><i class="bx bx-trash"></i></a>` : '';
 
-                htmlString += '<div class="col-md-6 col-lg-4 mb-4">' +
-                        '<div class="card card-announcement h-100 ' + borderClass + '">' +
-                            '<div class="card-body">' +
-                                '<div class="d-flex justify-content-between align-items-start mb-2">' +
-                                    '<h5 class="card-title mb-0">' + item.title + '</h5>' +
-                                    '<div class="flex-shrink-0 text-nowrap ms-2">' + editButtonHtml + '</div>' +
-                                '</div>' +
-                                '<p class="card-text text-muted mb-2"><i class="bx bx-calendar-event me-1"></i> Data: ' + eventDateStr + '</p>' +
-                                '<p class="card-text mb-3" style="white-space: pre-wrap;">' + (item.message || "").replace(/(?:\r?\n\s*){2,}/g, "\n") + '</p>' +
-                                '<div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">' +
-                                    '<small class="text-muted"><i class="bx bx-user me-1"></i> ' + (item.authorName || 'Desconhecido') + '</small>' +
-                                    '<span class="badge bg-label-secondary text-wrap" style="max-width: 60%;"><i class="bx bx-group me-1"></i> ' + classNames + '</span>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>';
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card card-announcement h-100 ${borderClass}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">${item.title}</h5>
+                                    <div class="flex-shrink-0 text-nowrap ms-2">${editButtonHtml}</div>
+                                </div>
+                                <p class="card-text text-muted mb-2"><i class="bx bx-calendar-event me-1"></i> Data: ${eventDateStr}</p>
+                                <p class="card-text mb-3" style="white-space: pre-wrap;">${(item.message || "").replace(/(?:\r?\n\s*){2,}/g, "\n")}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                    <small class="text-muted"><i class="bx bx-user me-1"></i> ${item.authorName || 'Desconhecido'}</small>
+                                    <span class="badge bg-label-secondary text-wrap" style="max-width: 60%;"><i class="bx bx-group me-1"></i> ${classNames}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                container.insertAdjacentHTML('beforeend', cardHtml);
             });
-            container.innerHTML = htmlString;
         };
 
-            window.applyFilters = function() {
-              let filtered = window.allAnnouncements;
-              const cid = document.getElementById('filterClassroom')?.value;
-              if (cid) {
-                  filtered = filtered.filter(a => a.classRooms && a.classRooms.some(c => c.id.toString() === cid));
-              }
-              
-              const fixedList = [];
-              const upcomingList = [];
-              const pastList = [];
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              
-              filtered.forEach(a => {
-                  if (!a.eventDate) {
-                      fixedList.push(a);
-                      return;
-                  }
-                  const eDate = new Date(a.eventDate + "T00:00:00");
-                  const parsedDate = isNaN(eDate) ? new Date(a.eventDate) : eDate;
-                  if (parsedDate < today) pastList.push(a);
-                  else upcomingList.push(a);
-              });
-              
-              renderCards(upcomingList, 'upcoming-container'); const fixedSection = document.getElementById('fixed-section'); if (fixedList.length > 0) { fixedSection.style.display = 'block'; renderCards(fixedList, 'fixed-container'); } else { fixedSection.style.display = 'none'; }
-          const pastSection = document.getElementById('past-section');
-          if (pastList.length > 0) {
-              pastSection.style.display = 'block';
-              renderCards(pastList, 'past-container');
-          } else {
-              pastSection.style.display = 'none';
-          }
-      }; // close applyFilters
-      window.applyFilters();
+        renderCards(upcomingList, 'upcoming-container'); const fixedSection = document.getElementById('fixed-section'); if (fixedList.length > 0) { fixedSection.style.display = 'block'; renderCards(fixedList, 'fixed-container'); } else { fixedSection.style.display = 'none'; }
+        const pastSection = document.getElementById('past-section');
+        if (pastList.length > 0) {
+            pastSection.style.display = 'block';
+            renderCards(pastList, 'past-container');
+        } else {
+            pastSection.style.display = 'none';
+        }
 
     } catch (error) {
         console.error(error);

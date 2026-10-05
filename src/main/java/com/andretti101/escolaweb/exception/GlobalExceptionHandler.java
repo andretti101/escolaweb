@@ -29,7 +29,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
+@lombok.RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final org.springframework.context.MessageSource messageSource;
+
+    private String getMessage(String key, Object... args) {
+        return messageSource.getMessage(key, args, org.springframework.context.i18n.LocaleContextHolder.getLocale());
+    }
 
     // ═════════════════════════════
     // 400 BAD REQUEST
@@ -39,49 +46,41 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
 
-        List<FieldErrorDetail> fieldErrors = ex.getBindingResult()
+        String errorMessage = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fe -> new FieldErrorDetail(
-                        fe.getField(),
-                        fe.getDefaultMessage()))
-                .collect(Collectors.toList());
+                .findFirst()
+                .map(org.springframework.validation.FieldError::getDefaultMessage)
+                .orElse(getMessage("error.validation"));
 
-        log.warn("Validation failed on {}: {}", request.getRequestURI(), fieldErrors);
+        log.warn("Validation failed on {}: {}", request.getRequestURI(), errorMessage);
 
         return ResponseEntity
                 .badRequest()
-                .body(ApiErrorResponse.ofValidation(
+                .body(ApiErrorResponse.of(
                         HttpStatus.BAD_REQUEST,
-                        "Erro de validação nos campos enviados.",
-                        request.getRequestURI(),
-                        fieldErrors));
+                        errorMessage,
+                        request.getRequestURI()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex, HttpServletRequest request) {
 
-        List<FieldErrorDetail> fieldErrors = ex.getConstraintViolations()
+        String errorMessage = ex.getConstraintViolations()
                 .stream()
-                .map(cv -> {
-                    String field = cv.getPropertyPath().toString();
-                    if (field.contains(".")) {
-                        field = field.substring(field.lastIndexOf('.') + 1);
-                    }
-                    return new FieldErrorDetail(field, cv.getMessage());
-                })
-                .collect(Collectors.toList());
+                .findFirst()
+                .map(jakarta.validation.ConstraintViolation::getMessage)
+                .orElse(getMessage("error.invalid.param"));
 
-        log.warn("Constraint violation on {}: {}", request.getRequestURI(), fieldErrors);
+        log.warn("Constraint violation on {}: {}", request.getRequestURI(), errorMessage);
 
         return ResponseEntity
                 .badRequest()
-                .body(ApiErrorResponse.ofValidation(
+                .body(ApiErrorResponse.of(
                         HttpStatus.BAD_REQUEST,
-                        "Parâmetro inválido na requisição.",
-                        request.getRequestURI(),
-                        fieldErrors));
+                        errorMessage,
+                        request.getRequestURI()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -94,7 +93,7 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(ApiErrorResponse.of(
                         HttpStatus.BAD_REQUEST,
-                        "Corpo da requisição inválido ou malformado. Verifique o JSON enviado.",
+                        getMessage("error.malformed.body"),
                         request.getRequestURI()));
     }
 
@@ -108,7 +107,7 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(ApiErrorResponse.of(
                         HttpStatus.BAD_REQUEST,
-                        "Parâmetro obrigatório ausente: '" + ex.getParameterName() + "'.",
+                        getMessage("error.missing.param", ex.getParameterName()),
                         request.getRequestURI()));
     }
 
@@ -127,9 +126,7 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(ApiErrorResponse.of(
                         HttpStatus.BAD_REQUEST,
-                        String.format(
-                                "Parâmetro '%s' com valor inválido '%s'. Tipo esperado: %s.",
-                                ex.getName(), ex.getValue(), expected),
+                        getMessage("error.type.mismatch", ex.getName(), ex.getValue(), expected),
                         request.getRequestURI()));
     }
 
@@ -175,7 +172,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ApiErrorResponse.of(
                         HttpStatus.UNAUTHORIZED,
-                        "Conta desativada. Entre em contato com a secretaria.",
+                        getMessage("error.disabled.account"),
                         request.getRequestURI()));
     }
 
@@ -189,7 +186,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ApiErrorResponse.of(
                         HttpStatus.UNAUTHORIZED,
-                        "Credenciais inválidas.",
+                        getMessage("error.bad.credentials"),
                         request.getRequestURI()));
     }
 
@@ -207,7 +204,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.FORBIDDEN)
                 .body(ApiErrorResponse.of(
                         HttpStatus.FORBIDDEN,
-                        "Acesso negado. Você não tem permissão para realizar esta operação.",
+                        getMessage("error.access.denied"),
                         request.getRequestURI()));
     }
 
@@ -253,7 +250,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(ApiErrorResponse.of(
                         HttpStatus.NOT_FOUND,
-                        "Rota não encontrada: " + request.getMethod() + " " + request.getRequestURI(),
+                        getMessage("error.route.not.found", request.getMethod(), request.getRequestURI()),
                         request.getRequestURI()));
     }
 
@@ -275,9 +272,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(ApiErrorResponse.of(
                         HttpStatus.METHOD_NOT_ALLOWED,
-                        String.format(
-                                "Método HTTP '%s' não permitido para esta rota. Métodos aceitos: %s.",
-                                ex.getMethod(), supported),
+                        getMessage("error.method.not.allowed", ex.getMethod(), supported),
                         request.getRequestURI()));
     }
 
@@ -295,8 +290,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                 .body(ApiErrorResponse.of(
                         HttpStatus.UNSUPPORTED_MEDIA_TYPE,
-                        "Content-Type não suportado: " + ex.getContentType()
-                                + ". Use 'application/json'.",
+                        getMessage("error.unsupported.media.type", ex.getContentType()),
                         request.getRequestURI()));
     }
 
@@ -314,13 +308,13 @@ public class GlobalExceptionHandler {
 
         log.warn("Data integrity violation on {}: {}", request.getRequestURI(), rootCause);
 
-        String userMessage = "Conflito de dados: registro duplicado ou violação de integridade. Verifique se o recurso já existe.";
+        String userMessage = getMessage("error.data.conflict");
         
         if (rootCause != null) {
             if (rootCause.contains("enrollment") || rootCause.contains("uk3vna4k5oncxyxln26gmj708i2")) {
-                userMessage = "Já existe um aluno cadastrado com este número de matrícula.";
+                userMessage = getMessage("error.enrollment.in.use");
             } else if (rootCause.contains("email")) {
-                userMessage = "Já existe um usuário cadastrado com este endereço de e-mail.";
+                userMessage = getMessage("error.email.in.use");
             }
         }
 
@@ -365,7 +359,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiErrorResponse.of(
                         HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Ocorreu um erro interno inesperado. Tente novamente mais tarde.",
+                        getMessage("error.internal.server"),
                         request.getRequestURI()));
     }
 }
