@@ -19,12 +19,13 @@ public class PrincipalServiceImpl implements PrincipalService {
     private final PrincipalRepository principalRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.context.MessageSource messageSource;
 
     @Override
     @Transactional
     public Principal create(Principal principal) {
         if (userRepository.existsByEmail(principal.getEmail())) {
-            throw new IllegalStateException("Email already in use: " + principal.getEmail());
+            throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
         principal.setPassword(passwordEncoder.encode(principal.getPassword()));
         principal.setActive(true);
@@ -38,7 +39,7 @@ public class PrincipalServiceImpl implements PrincipalService {
 
         if (!existing.getEmail().equals(incoming.getEmail())
                 && userRepository.existsByEmailAndIdNot(incoming.getEmail(), id)) {
-            throw new IllegalStateException("Email already in use: " + incoming.getEmail());
+            throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
 
         existing.setName(incoming.getName());
@@ -95,6 +96,6 @@ public class PrincipalServiceImpl implements PrincipalService {
 
     private Principal findPrincipalOrThrow(Integer id) {
         return principalRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Principal not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(messageSource.getMessage("error.principal.not.found", new Object[]{id}, org.springframework.context.i18n.LocaleContextHolder.getLocale())));
     }
 }

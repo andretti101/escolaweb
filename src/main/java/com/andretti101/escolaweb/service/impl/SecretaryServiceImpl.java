@@ -19,12 +19,13 @@ public class SecretaryServiceImpl implements SecretaryService {
     private final SecretaryRepository secretaryRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.context.MessageSource messageSource;
 
     @Override
     @Transactional
     public Secretary create(Secretary secretary) {
         if (userRepository.existsByEmail(secretary.getEmail())) {
-            throw new IllegalStateException("Email already in use: " + secretary.getEmail());
+            throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
         secretary.setPassword(passwordEncoder.encode(secretary.getPassword()));
         secretary.setActive(true);
@@ -38,7 +39,7 @@ public class SecretaryServiceImpl implements SecretaryService {
 
         if (!existing.getEmail().equals(incoming.getEmail())
                 && userRepository.existsByEmailAndIdNot(incoming.getEmail(), id)) {
-            throw new IllegalStateException("Email already in use: " + incoming.getEmail());
+            throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
 
         existing.setName(incoming.getName());
@@ -95,6 +96,6 @@ public class SecretaryServiceImpl implements SecretaryService {
 
     private Secretary findSecretaryOrThrow(Integer id) {
         return secretaryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Secretary not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(messageSource.getMessage("error.secretary.not.found", new Object[]{id}, org.springframework.context.i18n.LocaleContextHolder.getLocale())));
     }
 }
