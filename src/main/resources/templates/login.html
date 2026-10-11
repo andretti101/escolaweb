@@ -165,24 +165,21 @@
                     } else if (userRole.includes("STUDENT")) {
                         window.location.href = "/student/dashboard.html";
                     } else {
-                        await window.showAlertModal('Aviso', "Atenção: role não mapeada — [" + userRole + "]. Verifique o F12.");
+                        await window.showAlertModal('Aviso', "Seu perfil de usuário não foi reconhecido. Entre em contato com o suporte.");
                         console.error("Resposta completa:", data);
                     }
 
                 } else {
                     const errorData = await response.json().catch(() => null);
-                    let message = errorData?.message ?? "Erro desconhecido. Tente novamente.";
-
-                    if (message === "Bad credentials") {
-                        message = "E-mail ou senha incorretos. Tente novamente.";
-                    }
+                    const fallback = "Não foi possível realizar o login. Verifique seus dados e tente novamente.";
+                    const message = window.extractErrorMessage ? window.extractErrorMessage(errorData, fallback) : (errorData?.message || fallback);
 
                     await window.showAlertModal('Aviso', message);
                 }
 
             } catch (error) {
-                console.error("Erro na requisição:", error);
-                await window.showAlertModal('Aviso', "Erro ao conectar com o servidor. O backend está rodando?");
+                console.error("Erro:", error);
+                await window.showAlertModal('Aviso', "Não foi possível se comunicar com o sistema. Tente novamente.");
             }
         });
     });

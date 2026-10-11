@@ -62,7 +62,7 @@ public class TeacherServiceImpl implements TeacherService {
 
         if (teacherClassSubjectRepository.existsByTeacher(teacher)) {
             throw new IllegalStateException(
-                    "Cannot delete teacher with id " + id + " because they have active class assignments.");
+                    "Não é possível excluir o professor '" + teacher.getName() + "' pois ele possui atribuições de turmas ativas. Remova as atribuições antes de excluir.");
         }
 
         teacherRepository.deleteById(id);

@@ -134,12 +134,12 @@ public class AuthServiceImpl implements AuthService {
     public void resetPassword(ResetPasswordRequestDTO dto) {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(dto.token())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Token de redefinição inválido ou já utilizado."));
+                        "O link de redefinição de senha é inválido ou já foi utilizado. Solicite um novo link."));
 
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             passwordResetTokenRepository.delete(resetToken);
             throw new IllegalArgumentException(
-                    "Token de redefinição expirado. Solicite um novo link.");
+                    "O link de redefinição de senha expirou. Por favor, solicite um novo link.");
         }
 
         User user = resetToken.getUser();

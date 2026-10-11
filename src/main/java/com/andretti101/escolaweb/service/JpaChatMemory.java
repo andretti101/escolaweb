@@ -24,19 +24,33 @@ public class JpaChatMemory implements ChatMemory {
     @Override
     @Transactional
     public void add(String conversationId, List<Message> messages) {
-        List<ChatMessageHistory> entities = messages.stream().map(msg -> {
-            String type = "USER";
-            if (msg instanceof AssistantMessage) type = "ASSISTANT";
-            else if (msg instanceof SystemMessage) type = "SYSTEM";
-            
-            return ChatMessageHistory.builder()
-                    .conversationId(conversationId)
-                    .messageType(type)
-                    .content(msg.getText())
-                    .createdAt(LocalDateTime.now())
-                    .build();
-        }).collect(Collectors.toList());
-        repository.saveAll(entities);
+        List<ChatMessageHistory> entities = messages.stream()
+                .filter(msg -> !(msg instanceof org.springframework.ai.chat.messages.ToolResponseMessage))
+                .filter(msg -> {
+                    if (msg instanceof AssistantMessage am) {
+                        return am.getToolCalls() == null || am.getToolCalls().isEmpty();
+                    }
+                    return true;
+                })
+                .map(msg -> {
+                    String type = "USER";
+                    if (msg instanceof AssistantMessage) type = "ASSISTANT";
+                    else if (msg instanceof SystemMessage) type = "SYSTEM";
+                    
+                    String content = msg.getText() != null ? msg.getText() : "";
+                    return ChatMessageHistory.builder()
+                            .conversationId(conversationId)
+                            .messageType(type)
+                            .content(content)
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                })
+                .filter(e -> !e.getContent().isBlank())
+                .collect(Collectors.toList());
+        
+        if (!entities.isEmpty()) {
+            repository.saveAll(entities);
+        }
     }
 
     public List<Message> get(String conversationId, int lastN) {

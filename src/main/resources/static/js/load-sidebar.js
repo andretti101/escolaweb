@@ -63,6 +63,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             
+            // Funcao auxiliar para adicionar o selo (badge) de notificacao sem quebrar o layout/html
+            const addNotificationBadge = (elem) => {
+                if (!elem) return;
+                
+                // Limpar qualquer bolinha injetada incorretamente (antiga) que esteja presa dentro do elem
+                const oldBadges = elem.querySelectorAll('span');
+                oldBadges.forEach(b => b.remove());
+
+                if (!elem.parentElement.querySelector('.notif-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'notif-badge';
+                    // SNEAT usa ms-auto (margin-left: auto) para empurrar pro lado direito
+                    badge.style.cssText = 'display:inline-block; width:8px; height:8px; background-color:#696cff; border-radius:50%; margin-left:auto; margin-right:8px; vertical-align:middle;';
+                    elem.parentElement.appendChild(badge);
+                }
+            };
+
             // 4. Check for unread announcements
             const token = localStorage.getItem("jwt_token");
             if (token) {
@@ -72,10 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(r => r.json())
                 .then(hasUnread => {
                     if (hasUnread && !window.location.pathname.includes('announcements.html')) {
-                        const recadosDiv = document.querySelector('[data-i18n="Mural de Recados"]');
-                        if (recadosDiv) {
-                            recadosDiv.innerHTML += ' <span style="display:inline-block; width:8px; height:8px; background-color:#696cff; border-radius:50%; margin-left:8px; vertical-align:middle;"></span>';
-                        }
+                        addNotificationBadge(document.querySelector('[data-i18n="Mural de Recados"]'));
                     }
                 })
                 .catch(e => console.error('Erro ao verificar avisos:', e));
@@ -87,10 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(r => r.json())
                 .then(status => {
                     if (status.hasUnreadMessages && !window.location.pathname.includes('chat.html')) {
-                        const chatDiv = document.querySelector('[data-i18n="Chat da Turma"]');
-                        if (chatDiv && !chatDiv.innerHTML.includes('background-color:#696cff')) {
-                            chatDiv.innerHTML += ' <span style="display:inline-block; width:8px; height:8px; background-color:#696cff; border-radius:50%; margin-left:8px; vertical-align:middle;"></span>';
-                        }
+                        addNotificationBadge(document.querySelector('[data-i18n="Chat da Turma"]'));
                     }
                 })
                 .catch(e => console.error('Erro ao verificar chat não lido:', e));

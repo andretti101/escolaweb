@@ -431,7 +431,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 let errorMsg = "Erro ao atualizar aviso.";
                 try {
                     const errData = await response.json();
-                    errorMsg = errData.message || errorMsg;
+                    if (window.extractErrorMessage) {
+                        errorMsg = window.extractErrorMessage(errData, errorMsg);
+                    } else if (errData && errData.message) {
+                        errorMsg = errData.message;
+                    }
                 } catch(e) {}
                 showAlert(errorMsg, "danger");
             }

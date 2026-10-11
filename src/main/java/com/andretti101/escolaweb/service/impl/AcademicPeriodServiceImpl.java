@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -31,6 +32,27 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
     private final SchoolSettingsService schoolSettingsService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    public static final Comparator<AcademicPeriod> CHRONOLOGICAL_DESC = (p1, p2) -> {
+        int closedCompare = Boolean.compare(p1.isClosed(), p2.isClosed());
+        if (closedCompare != 0) {
+            return closedCompare; // Open (false) before Closed (true)
+        }
+        if (p1.getStartDate() != null && p2.getStartDate() != null && !p1.getStartDate().isEqual(p2.getStartDate())) {
+            return p2.getStartDate().compareTo(p1.getStartDate()); // StartDate DESC
+        }
+        if (p1.getStartDate() == null && p2.getStartDate() != null) return 1;
+        if (p1.getStartDate() != null && p2.getStartDate() == null) return -1;
+
+        int year1 = p1.getAcademicYear() != null && p1.getAcademicYear().getYear() != null ? p1.getAcademicYear().getYear() : 0;
+        int year2 = p2.getAcademicYear() != null && p2.getAcademicYear().getYear() != null ? p2.getAcademicYear().getYear() : 0;
+        if (year1 != year2) {
+            return Integer.compare(year2, year1); // Year DESC
+        }
+        Integer id1 = p1.getId() != null ? p1.getId() : 0;
+        Integer id2 = p2.getId() != null ? p2.getId() : 0;
+        return Integer.compare(id2, id1); // ID DESC
+    };
 
     @Override
     @Transactional
@@ -70,11 +92,11 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         AcademicPeriod period = findPeriodOrThrow(id);
 
         if (period.isClosed()) {
-            throw new IllegalStateException("Cannot delete a closed academic period with id: " + id);
+            throw new IllegalStateException("Não é possível excluir o período '" + period.getName() + "' pois ele já está fechado.");
         }
         if (assessmentRepository.existsByPeriod(period)) {
             throw new IllegalStateException(
-                    "Cannot delete period with id " + id + " because it has assessments linked to it.");
+                    "Não é possível excluir o período '" + period.getName() + "' pois ele possui avaliações vinculadas. Remova as avaliações antes de excluir.");
         }
 
         academicPeriodRepository.deleteById(id);
@@ -89,14 +111,18 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
     @Override
     @Transactional(readOnly = true)
     public List<AcademicPeriod> findAll() {
-        return academicPeriodRepository.findAll();
+        List<AcademicPeriod> list = new ArrayList<>(academicPeriodRepository.findAllByOrderByAcademicYearYearDescIdDesc());
+        list.sort(CHRONOLOGICAL_DESC);
+        return list;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AcademicPeriod> findByAcademicYear(Integer academicYearId) {
         AcademicYear year = academicYearService.findById(academicYearId);
-        return academicPeriodRepository.findByAcademicYear(year);
+        List<AcademicPeriod> list = new ArrayList<>(academicPeriodRepository.findByAcademicYearOrderByIdDesc(year));
+        list.sort(CHRONOLOGICAL_DESC);
+        return list;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -131,6 +157,7 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             periods.add(academicPeriodRepository.save(period));
         }
 
+        periods.sort(CHRONOLOGICAL_DESC);
         return periods;
     }
 
@@ -253,7 +280,7 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
 
                 if (assessmentCount < tcs.getMinAssessmentsPerPeriod()) {
                     throw new IllegalStateException(
-                            String.format("Não é possível fechar o período '%s': a matéria '%s' na turma '%s' possui apenas %d avaliação(ões), mas exige no mínimo %d.",
+                            String.format("Não é possível fechar o período '%s': a matéria '%s' na turma '%s' possui apenas %d avaliação(ões), mas exige no mínimo %d. Lance as avaliações pendentes antes de fechar o período.",
                                     period.getName(),
                                     tcs.getSubject().getName(),
                                     tcs.getClassRoom().getName(),
@@ -317,7 +344,7 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             throw new IllegalStateException(
                     "A data de início (" + newStartDate.format(DATE_FMT)
                     + ") deve ser anterior à data de término (" + newEndDate.format(DATE_FMT)
-                    + ") do período '" + existing.getName() + "'.");
+                    + ") do período '" + existing.getName() + "'. Verifique o intervalo de datas informado.");
         }
     }
 
@@ -338,12 +365,12 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
 
     AcademicPeriod findPeriodOrThrow(Integer id) {
         return academicPeriodRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Período acadêmico não encontrado com id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Período acadêmico não encontrado."));
     }
 
     private void validateAcademicYearExists(AcademicYear academicYear) {
         if (academicYear == null || academicYear.getId() == null) {
-            throw new IllegalArgumentException("O ano letivo é obrigatório.");
+            throw new IllegalArgumentException("A seleção do ano letivo é obrigatória.");
         }
         academicYearService.findById(academicYear.getId());
     }

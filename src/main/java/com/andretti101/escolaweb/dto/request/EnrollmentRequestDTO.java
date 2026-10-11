@@ -6,10 +6,10 @@ import java.time.LocalDate;
 
 public record EnrollmentRequestDTO(
 
-        @NotNull(message = "O aluno é obrigatório.")
+        @NotNull(message = "Selecione o aluno que deseja matricular.")
         Integer studentId,
 
-        @NotNull(message = "A turma é obrigatória.")
+        @NotNull(message = "Selecione a turma para a matrícula.")
         Integer classRoomId,
 
         LocalDate enrollmentDate

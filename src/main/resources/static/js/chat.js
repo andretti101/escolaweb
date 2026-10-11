@@ -84,10 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (chatTitle) chatTitle.textContent = active.classRoomName || "Turma " + currentClassroomId;
                 connectAndSubscribe();
             } else {
-                showError("Acesso negado: Voc&ecirc; n&atilde;o possui matr&iacute;cula ativa.");
+                showError("Acesso restrito: Você não possui matrícula ativa em nenhuma turma.");
             }
         })
-        .catch(err => showError("Erro ao buscar matr&iacute;cula."));
+        .catch(err => showError("Não foi possível localizar os dados da matrícula. Recarregue a página para tentar novamente."));
     } else if (isTeacher && isGlobalTeacherView) {
         currentClassroomId = 'TEACHERS';
         if (chatTitle) chatTitle.textContent = "Sala dos Professores";
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
             }
-        }).catch(err => showError("Erro ao carregar turmas."));
+        }).catch(err => showError("Não foi possível carregar a lista de turmas. Recarregue a página para tentar novamente."));
     }
 
     function connect(autoSubscribe = true) {
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
         stompClient.connect({ 'Authorization': 'Bearer ' + token }, function(frame) {
             setupSubscriptions(autoSubscribe);
         }, function(error) {
-            showError("Conex&atilde;o com o servidor de chat recusada ou perdida.");
+            showError("A conexão com o bate-papo foi interrompida. Verifique sua conexão com a internet e recarregue a página.");
         });
     }
 
@@ -159,6 +159,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function subscribeToRoom(classroomId) {
+        if (isTeacher && classroomId !== 'TEACHERS') {
+            showError("Acesso negado: Professores só têm acesso à Sala dos Professores.");
+            return;
+        }
         const topic = classroomId === 'TEACHERS' ? '/topic/teachers' : '/topic/classroom/' + classroomId;
         currentSubscription = stompClient.subscribe(topic, function(messageOutput) {
             const message = JSON.parse(messageOutput.body);
@@ -215,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }).catch(() => {
-            if(chatHistory) chatHistory.innerHTML = "<div class='text-center text-muted'>Erro ao carregar hist&oacute;rico.</div>";
+            if(chatHistory) chatHistory.innerHTML = "<div class='text-center text-muted'>Não foi possível carregar o histórico de mensagens. Tente recarregar a página.</div>";
         });
     }
 
@@ -433,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 membersList.appendChild(li);
             });
         }).catch(err => {
-            if(membersList) membersList.innerHTML = '<li class="list-group-item text-center text-danger">Erro ao carregar membros.</li>';
+            if(membersList) membersList.innerHTML = '<li class="list-group-item text-center text-danger">Não foi possível carregar os participantes da turma. Tente recarregar a página.</li>';
         });
     };
 

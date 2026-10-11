@@ -28,7 +28,6 @@ public class ChatController {
     private final UserRepository userRepository;
     private final com.andretti101.escolaweb.repository.ClassRoomRepository classRoomRepository;
     private final com.andretti101.escolaweb.repository.StudentRepository studentRepository;
-    private final com.andretti101.escolaweb.repository.TeacherClassSubjectRepository teacherClassSubjectRepository;
     private final com.andretti101.escolaweb.repository.EnrollmentRepository enrollmentRepository;
 
     private void validateUserAccess(User user, Integer classroomId) {
@@ -43,9 +42,7 @@ public class ChatController {
                 throw new AccessDeniedException("Você não pertence a esta turma.");
             }
         } else if (role.equals("TEACHER")) {
-            if (!teacherClassSubjectRepository.existsByTeacher_IdAndClassRoom_Id(user.getId(), classroomId)) {
-                throw new AccessDeniedException("Você não leciona nesta turma.");
-            }
+            throw new AccessDeniedException("Acesso negado: Professores não têm permissão para acessar o chat da turma.");
         } else {
             throw new AccessDeniedException("Acesso negado.");
         }
@@ -157,6 +154,7 @@ public class ChatController {
     public ResponseEntity<List<com.andretti101.escolaweb.dto.response.ChatMemberDTO>> getMembers(@PathVariable Integer id, Principal principal) {
         User requester = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        validateUserAccess(requester, id);
         boolean isAdmin = requester.getRole() == com.andretti101.escolaweb.model.enums.UserRole.SECRETARY || 
                           requester.getRole() == com.andretti101.escolaweb.model.enums.UserRole.PRINCIPAL;
 
@@ -228,9 +226,9 @@ public class ChatController {
         studentRepository.save(student);
         return ResponseEntity.ok().build();
     }
-    @org.springframework.messaging.handler.annotation.MessageExceptionHandler
+    @org.springframework.messaging.handler.annotation.MessageExceptionHandler({IllegalArgumentException.class, AccessDeniedException.class})
     @org.springframework.messaging.simp.annotation.SendToUser("/queue/errors")
-    public String handleException(IllegalArgumentException exception) {
+    public String handleException(Exception exception) {
         return exception.getMessage();
     }
 

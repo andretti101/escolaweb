@@ -136,7 +136,7 @@
                             </div>
                             <div id="errorState" class="text-center py-5 d-none">
                                 <i class="bx bx-error-circle fs-1 text-danger"></i>
-                                <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar.</p>
+                                <p class="mt-2 text-muted mb-0" id="errorMessage">Não foi possível carregar os períodos acadêmicos. Verifique sua conexão e tente novamente.</p>
                                 <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadPeriods()"><i
                                         class="bx bx-refresh me-1"></i> Tentar novamente
                                 </button>
@@ -236,13 +236,13 @@
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (!response.ok) throw new Error('Erro na resposta do servidor');
+            if (!response.ok) throw new Error('Não foi possível carregar os períodos acadêmicos.');
             allPeriods = await response.json();
 
             // Computed Status
-            allPeriods.sort((a, b) => a.id - b.id);
+            const sortedAsc = [...allPeriods].sort((a, b) => a.id - b.id);
             const yearOpenFound = {};
-            allPeriods.forEach(p => {
+            sortedAsc.forEach(p => {
                 if (p.closed) {
                     p.computedStatus = 'fechado';
                 } else {
@@ -275,6 +275,13 @@
             const term = searchTerm.trim().toLowerCase();
             filtered = filtered.filter(p => p.name.toLowerCase().includes(term));
         }
+
+        filtered.sort((a, b) => {
+            const yearA = parseInt(a.academicYear) || 0;
+            const yearB = parseInt(b.academicYear) || 0;
+            if (yearB !== yearA) return yearB - yearA;
+            return b.id - a.id;
+        });
 
         renderTable(filtered);
     }

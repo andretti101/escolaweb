@@ -21,24 +21,10 @@
 <script src="/js/global-modals.js"></script>
 </head>
 <body>
-    <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-wrapper">
         <div class="layout-container">
             <div id="sidebar-container" data-sidebar="/components/teacher-sidebar.html"></div>
             <div class="layout-page">
-                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
-                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)"><i class="bx bx-menu bx-sm"></i></a>
-                    </div>
-                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                        <div class="navbar-nav align-items-center w-100">
-                            <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
-                                <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
-                                <input type="text" class="form-control border-0 shadow-none px-0 w-100"
-                                       placeholder="Buscar..." aria-label="Buscar" id="globalSearch" style="min-width: 350px;" />
-                            </div>
-                        </div>
-                    </div>
-                </nav>
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -146,13 +132,14 @@
     
     <script>
         function getToken() { return localStorage.getItem('jwt_token') || ''; }
-        function showAlert(message, type) {
+        async function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
+            const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
             if(container) {
-                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
                 window.scrollTo(0,0);
             } else {
-                await window.showAlertModal('Aviso', message);
+                await window.showAlertModal('Aviso', cleanMsg);
             }
         }
 
@@ -167,9 +154,18 @@
 
         async function loadPeriods() {
             try {
+                const activeYearRes = await fetch('/api/academic-years/active', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                let activeYearId = null;
+                if (activeYearRes.ok) {
+                    activeYearId = (await activeYearRes.json()).id;
+                }
+
                 const res = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (res.ok) {
-                    const periods = await res.json();
+                    let periods = await res.json();
+                    if (activeYearId) {
+                        periods = periods.filter(p => p.academicYearId === activeYearId);
+                    }
                     const select = document.getElementById('periodId');
                     periods.forEach(p => {
                         const opt = document.createElement('option');
@@ -194,7 +190,7 @@
                         select.appendChild(opt);
                     });
                 }
-            } catch(e) { console.error(e); showAlert('Erro ao carregar turmas', 'danger'); }
+            } catch(e) { console.error(e); showAlert('Não foi possível carregar as turmas.', 'danger'); }
         }
 
         async function loadStudentsForTcs(tcsId) {
@@ -289,7 +285,8 @@
 
                 if (!assRes.ok) {
                     const err = await assRes.json().catch(()=>null);
-                    throw new Error(err?.message || 'Erro ao criar a avaliação.');
+                    const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao criar a avaliação.') : (err?.message || 'Erro ao criar a avaliação.');
+                    throw new Error(msg);
                 }
                 const assessment = await assRes.json();
 
@@ -321,7 +318,8 @@
                 for (let res of results) {
                     if (!res.ok) {
                         const err = await res.json().catch(()=>null);
-                        errors.push(err?.message || 'Erro ao lançar nota');
+                        const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao lançar nota') : (err?.message || 'Erro ao lançar nota');
+                        errors.push(msg);
                     }
                 }
                 if (errors.length > 0) {

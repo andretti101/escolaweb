@@ -355,8 +355,9 @@ messageInput.addEventListener("input", function() {
                     charCounter.textContent = "0/200 caracteres";
                     charCounter.classList.remove("text-danger");
                 } else {
-                    const err = await response.json().catch(() => ({message: "Erro ao publicar aviso."}));
-                    throw new Error(err.message || "Erro ao publicar aviso.");
+                    const err = await response.json().catch(() => null);
+                    const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao publicar aviso.") : (err?.message || "Erro ao publicar aviso.");
+                    throw new Error(msg);
                 }
             })
             .catch(error => {

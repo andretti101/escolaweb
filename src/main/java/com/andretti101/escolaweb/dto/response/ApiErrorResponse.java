@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record ApiErrorResponse(
         LocalDateTime timestamp,
         int status,
@@ -27,7 +27,7 @@ public record ApiErrorResponse(
                 httpStatus.getReasonPhrase(),
                 message,
                 path,
-                List.of()
+                null
         );
     }
 
@@ -42,7 +42,7 @@ public record ApiErrorResponse(
                 httpStatus.getReasonPhrase(),
                 message,
                 path,
-                fieldErrors
+                (fieldErrors != null && !fieldErrors.isEmpty()) ? fieldErrors : null
         );
     }
 }

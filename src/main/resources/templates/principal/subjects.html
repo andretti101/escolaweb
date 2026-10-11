@@ -214,7 +214,7 @@
             });
 
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (!response.ok) throw new Error('Erro na resposta do servidor');
+            if (!response.ok) throw new Error('Não foi possível carregar as matérias.');
 
             allSubjects = await response.json();
             applyFilters();

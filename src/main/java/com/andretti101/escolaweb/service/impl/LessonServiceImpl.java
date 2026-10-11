@@ -26,7 +26,7 @@ public class LessonServiceImpl implements LessonService {
     @Transactional
     public Lesson create(Lesson lesson) {
         if (lesson.getLessonDate() == null) {
-            throw new IllegalArgumentException("Lesson date is required.");
+            throw new IllegalArgumentException("A data da aula é obrigatória.");
         }
 
         TeacherClassSubject tcs = resolveTcs(lesson.getTeacherClassSubject());
@@ -41,7 +41,7 @@ public class LessonServiceImpl implements LessonService {
         Lesson existing = findLessonOrThrow(id);
 
         if (incoming.getLessonDate() == null) {
-            throw new IllegalArgumentException("Lesson date is required.");
+            throw new IllegalArgumentException("A data da aula é obrigatória.");
         }
 
         TeacherClassSubject tcs = resolveTcs(incoming.getTeacherClassSubject());
@@ -94,12 +94,12 @@ public class LessonServiceImpl implements LessonService {
 
     Lesson findLessonOrThrow(Integer id) {
         return lessonRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Lesson not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Aula não encontrada."));
     }
 
     private TeacherClassSubject resolveTcs(TeacherClassSubject ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("TeacherClassSubject is required.");
+            throw new IllegalArgumentException("Selecione a disciplina e a turma correspondentes à aula.");
         }
         return teacherClassSubjectService.findById(ref.getId());
     }

@@ -129,13 +129,14 @@
     
     <script>
         function getToken() { return localStorage.getItem('jwt_token') || ''; }
-        function showAlert(message, type) {
+        async function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
+            const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
             if(container) {
-                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
                 window.scrollTo(0,0);
             } else {
-                await window.showAlertModal('Aviso', message);
+                await window.showAlertModal('Aviso', cleanMsg);
             }
         }
 
@@ -156,11 +157,21 @@
 
         async function loadFilters() {
             try {
+                const activeYearRes = await fetch('/api/academic-years/active', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                let activeYearId = null;
+                if (activeYearRes.ok) {
+                    activeYearId = (await activeYearRes.json()).id;
+                }
+
                 const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (periodRes.ok) {
                     allPeriods = await periodRes.json();
+                    let dropdownPeriods = allPeriods;
+                    if (activeYearId) {
+                        dropdownPeriods = allPeriods.filter(p => p.academicYearId === activeYearId);
+                    }
                     const pSelect = document.getElementById('periodFilter');
-                    allPeriods.forEach(p => {
+                    dropdownPeriods.forEach(p => {
                         const opt = document.createElement('option');
                         opt.value = p.id;
                         opt.textContent = `${p.academicYear} - ${p.name}`;
@@ -328,10 +339,12 @@
                         loadAssessments();
                     } else {
                         const err = await response.json().catch(()=>null);
-                        showAlert(`Erro ao excluir: ${err?.message || 'Erro desconhecido.'}`, 'danger');
+                        const fallback = 'Não foi possível excluir a avaliação. Verifique se existem dependências ou notas vinculadas.';
+                        const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                        showAlert(msg, 'danger');
                     }
                 } catch(error) {
-                    showAlert('Erro de rede ao tentar excluir.', 'danger');
+                    showAlert('Erro de conexão ao tentar excluir a avaliação.', 'danger');
                 }
             });
         }

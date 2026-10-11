@@ -142,13 +142,14 @@
     
     <script>
         function getToken() { return localStorage.getItem('jwt_token') || ''; }
-        function showAlert(message, type) {
+        async function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
+            const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
             if(container) {
-                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
                 window.scrollTo(0,0);
             } else {
-                await window.showAlertModal('Aviso', message);
+                await window.showAlertModal('Aviso', cleanMsg);
             }
         }
 
@@ -294,7 +295,8 @@
 
                 if (!assRes.ok) {
                     const err = await assRes.json().catch(()=>null);
-                    throw new Error(err?.message || 'Erro ao atualizar a avaliação.');
+                    const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao atualizar a avaliação.') : (err?.message || 'Erro ao atualizar a avaliação.');
+                    throw new Error(msg);
                 }
 
                 const gradePromises = [];
@@ -333,7 +335,19 @@
                     }
                 });
 
-                await Promise.all(gradePromises);
+                const results = await Promise.all(gradePromises);
+                
+                const errors = [];
+                for (let res of results) {
+                    if (res && !res.ok) {
+                        const err = await res.json().catch(() => null);
+                        const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao salvar nota') : (err?.message || 'Erro ao salvar nota');
+                        errors.push(msg);
+                    }
+                }
+                if (errors.length > 0) {
+                    throw new Error('Algumas notas não puderam ser salvas: ' + errors.join(', '));
+                }
                 
                 window.location.href = '/teacher/assessments.html?success=true';
             } catch(error) {

@@ -65,7 +65,7 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
         if (!academicPeriodRepository.areAllPeriodsClosed(activeYear)) {
             throw new IllegalStateException(
                     "Não é possível concluir o ano letivo " + activeYear.getYear()
-                    + ". Todos os períodos acadêmicos devem estar fechados antes da conclusão.");
+                    + ". Todos os períodos acadêmicos devem estar fechados antes da conclusão. Feche os períodos pendentes e tente novamente.");
         }
 
         List<Enrollment> activeEnrollments = enrollmentRepository

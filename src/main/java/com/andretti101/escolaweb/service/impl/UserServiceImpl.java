@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
         User user = findUserOrThrow(id);
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new IllegalArgumentException("Current password is incorrect.");
+            throw new IllegalArgumentException("A senha atual informada está incorreta. Verifique e tente novamente.");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -81,6 +81,6 @@ public class UserServiceImpl implements UserService {
 
     private User findUserOrThrow(Integer id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
     }
 }

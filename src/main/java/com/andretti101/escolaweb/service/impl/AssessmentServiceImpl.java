@@ -127,19 +127,19 @@ public class AssessmentServiceImpl implements AssessmentService {
 
     Assessment findAssessmentOrThrow(Integer id) {
         return assessmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Assessment not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Avaliação não encontrada."));
     }
 
     private TeacherClassSubject resolveTcs(TeacherClassSubject ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("TeacherClassSubject is required.");
+            throw new IllegalArgumentException("Selecione a disciplina e a turma para a avaliação.");
         }
         return teacherClassSubjectService.findById(ref.getId());
     }
 
     private AcademicPeriod resolvePeriod(AcademicPeriod ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Academic period is required.");
+            throw new IllegalArgumentException("Selecione o período acadêmico para a avaliação.");
         }
         return academicPeriodService.findById(ref.getId());
     }
@@ -147,13 +147,13 @@ public class AssessmentServiceImpl implements AssessmentService {
     private void validatePeriodOpen(AcademicPeriod period) {
         if (period.isClosed()) {
             throw new IllegalStateException(
-                    "Academic period '" + period.getName() + "' is closed. No changes are allowed.");
+                    "O período '" + period.getName() + "' está fechado. Não é permitido criar ou alterar avaliações nele.");
         }
     }
 
     private void validateDate(Assessment assessment, AcademicPeriod period) {
         if (assessment.getDate() == null) {
-            throw new IllegalArgumentException("Assessment date is required.");
+            throw new IllegalArgumentException("A data da avaliação é obrigatória.");
         }
         
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -174,9 +174,9 @@ public class AssessmentServiceImpl implements AssessmentService {
             return;
         }
         if (!tcs.getClassRoom().getAcademicYear().getId().equals(period.getAcademicYear().getId())) {
-            throw new IllegalStateException("Conflito de Ano Letivo: A turma pertence ao ano '" 
+            throw new IllegalStateException("Conflito de ano letivo: a turma selecionada pertence ao ano '" 
                     + tcs.getClassRoom().getAcademicYear().getYear() 
-                    + "', mas o período escolhido pertence a outro ano letivo.");
+                    + "', mas o período escolhido pertence a outro ano letivo. Selecione um período correspondente ao ano da turma.");
         }
     }
 }

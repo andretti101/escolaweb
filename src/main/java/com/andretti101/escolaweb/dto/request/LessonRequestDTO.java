@@ -15,11 +15,11 @@ public record LessonRequestDTO(
 
         String notes,
 
-        @NotNull(message = "O vínculo professor-turma-disciplina é obrigatório.")
+        @NotNull(message = "Selecione a disciplina e a turma correspondentes à aula.")
         Integer teacherClassSubjectId,
 
-        @Min(value = 1, message = "A aula deve ter no mínimo 1 período.")
-        @Max(value = 6, message = "A aula pode ter no máximo 6 períodos.")
+        @Min(value = 1, message = "A quantidade de períodos da aula deve ser no mínimo 1.")
+        @Max(value = 6, message = "A quantidade de períodos da aula pode ser no máximo 6.")
         Integer lessonCount
 
 ) {}

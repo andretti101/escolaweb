@@ -397,10 +397,14 @@
                         showResult(result);
                     } else {
                         const err = await response.json().catch(() => null);
-                        let errMsg = err?.message || 'Erro ao processar a conclusão do ano letivo.';
-                        if (err?.errors) {
+                        let errMsg = 'Erro ao processar a conclusão do ano letivo.';
+                        if (window.extractErrorMessage) {
+                            errMsg = window.extractErrorMessage(err, errMsg);
+                        } else if (err?.errors) {
                             const msgs = Object.values(err.errors).flat();
                             if (msgs.length) errMsg = msgs.join('<br>');
+                        } else if (err?.message) {
+                            errMsg = err.message;
                         }
                         showAlert(errMsg, 'danger');
                         btn.disabled = false;

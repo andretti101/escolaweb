@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record AttendanceUpdateRequestDTO(
 
-        @NotBlank(message = "O status da presen\u00e7a \u00e9 obrigat\u00f3rio.")
+        @NotBlank(message = "O status da presença é obrigatório. Selecione presente ou ausente.")
         String status
 
 ) {}

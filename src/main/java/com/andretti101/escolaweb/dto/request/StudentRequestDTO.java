@@ -34,7 +34,7 @@ public record StudentRequestDTO(
         String registrationNumber,
 
         @NotNull(message = "A data de nascimento é obrigatória.")
-        @Past(message = "A data de nascimento deve ser uma data passada.")
+        @Past(message = "A data de nascimento deve ser anterior à data de hoje.")
         LocalDate birthDate
 
 ) {}

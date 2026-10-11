@@ -63,7 +63,7 @@ public class ReportCardServiceImpl implements ReportCardService {
             com.andretti101.escolaweb.model.entity.ClassRoom classRoom = enrollment.getClassRoom();
             
             List<com.andretti101.escolaweb.model.entity.TeacherClassSubject> tcsList = teacherClassSubjectRepository.findByClassRoom(classRoom);
-            List<com.andretti101.escolaweb.model.entity.AcademicPeriod> periods = academicPeriodRepository.findByAcademicYear(year);
+            List<com.andretti101.escolaweb.model.entity.AcademicPeriod> periods = academicPeriodRepository.findByAcademicYearOrderByIdAsc(year);
             
             int totalPeriods = getPeriodsCount(periodType);
             java.math.BigDecimal targetScore = minimumGrade.multiply(java.math.BigDecimal.valueOf(totalPeriods));

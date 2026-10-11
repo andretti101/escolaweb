@@ -305,8 +305,18 @@
                 showAlert(`Turma ${activate ? 'ativada' : 'desativada'} com sucesso.`, 'success');
                 loadClassrooms();
             } else {
-                if (res.status === 403) showAlert("Acesso negado. Apenas a Secretaria pode alterar o status de turmas.", "danger");
-                else showAlert("Erro ao alterar status.", "danger");
+                let errorMsg = 'Erro ao alterar status da turma.';
+                try {
+                    const err = await res.json();
+                    if (window.extractErrorMessage) {
+                        errorMsg = window.extractErrorMessage(err, errorMsg);
+                    } else if (err.message) {
+                        errorMsg = err.message;
+                    }
+                } catch (pe) {
+                    if (res.status === 403) errorMsg = "Acesso negado. Apenas a Secretaria pode alterar o status de turmas.";
+                }
+                showAlert(errorMsg, "danger");
             }
         } catch (e) {
             showAlert("Erro de conexão.", "danger");
@@ -338,8 +348,18 @@
                 showAlert('Turma excluída com sucesso.', 'success');
                 loadClassrooms();
             } else {
-                if (response.status === 403) showAlert("Acesso negado. Apenas a Secretaria pode excluir turmas.", "danger");
-                else showAlert('Erro ao excluir turma. Verifique se existem dependências.', 'danger');
+                let errorMsg = 'Erro ao excluir turma. Verifique se existem dependências.';
+                try {
+                    const err = await response.json();
+                    if (window.extractErrorMessage) {
+                        errorMsg = window.extractErrorMessage(err, errorMsg);
+                    } else if (err.message) {
+                        errorMsg = err.message;
+                    }
+                } catch (pe) {
+                    if (response.status === 403) errorMsg = "Acesso negado. Apenas a Secretaria pode excluir turmas.";
+                }
+                showAlert(errorMsg, 'danger');
             }
         } catch (e) {
             showAlert('Erro de conexão com o servidor.', 'danger');

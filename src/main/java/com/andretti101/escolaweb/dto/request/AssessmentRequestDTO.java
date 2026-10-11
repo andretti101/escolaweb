@@ -21,10 +21,10 @@ public record AssessmentRequestDTO(
         @NotNull(message = "O tipo de avaliação é obrigatório.")
         AssessmentType assessmentType,
 
-        @NotNull(message = "O vínculo professor-turma-disciplina é obrigatório.")
+        @NotNull(message = "Selecione a disciplina e a turma para a avaliação.")
         Integer teacherClassSubjectId,
 
-        @NotNull(message = "O período letivo é obrigatório.")
+        @NotNull(message = "Selecione o período letivo correspondente à avaliação.")
         Integer periodId
 
 ) {}

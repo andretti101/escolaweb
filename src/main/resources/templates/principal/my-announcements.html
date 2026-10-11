@@ -103,7 +103,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 'Authorization': `Bearer ${token}`
             }
         });
-        if (!response.ok) throw new Error("Failed to fetch announcements");
+        if (!response.ok) {
+            let errMsg = 'Não foi possível carregar os avisos.';
+            try {
+                const errObj = await response.json();
+                if (window.extractErrorMessage) {
+                    errMsg = window.extractErrorMessage(errObj, errMsg);
+                } else if (errObj.message) {
+                    errMsg = errObj.message;
+                }
+            } catch (e) {}
+            throw new Error(errMsg);
+        }
         const announcements = await response.json();
         fetch('/api/announcements/mark-read', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }).catch(console.error);
         
@@ -238,11 +249,14 @@ window.deleteAnnouncement = function(id) {
             if (response.ok) {
                 window.location.reload();
             } else {
-                await window.showAlertModal('Aviso', "Erro ao excluir o aviso.");
+                const errorData = await response.json().catch(() => null);
+                const fallback = "Não foi possível excluir o aviso. Tente novamente.";
+                const message = window.extractErrorMessage ? window.extractErrorMessage(errorData, fallback) : (errorData?.message || fallback);
+                await window.showAlertModal('Aviso', message);
             }
         } catch (e) {
             console.error(e);
-            await window.showAlertModal('Aviso', "Erro ao excluir o aviso.");
+            await window.showAlertModal('Erro de Conexão', "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.");
         }
     });
 };

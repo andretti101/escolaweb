@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Welcome message moved to history loading
         }, function(error) {
             forceRemoveTypingIndicator();
-            showError("Conexão com o servidor de chat recusada ou perdida.");
+            showError("A conexão com o assistente inteligente foi perdida. Recarregue a página para tentar novamente.");
         });
     }
 
@@ -245,11 +245,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     messageInput.value = newText;
                     sendMessage();
                 } else {
-                    showError("Erro ao editar a mensagem.");
+                    const errorData = await response.json().catch(() => null);
+                    showError(errorData?.message ?? "Não foi possível editar a mensagem. Tente novamente.");
                 }
             } catch (e) {
                 console.error(e);
-                showError("Erro ao editar a mensagem.");
+                showError("Não foi possível editar a mensagem. Verifique sua conexão e tente novamente.");
             }
         };
     }

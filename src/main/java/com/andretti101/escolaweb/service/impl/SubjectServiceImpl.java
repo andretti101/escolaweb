@@ -48,7 +48,7 @@ public class SubjectServiceImpl implements SubjectService {
 
         if (teacherClassSubjectRepository.existsBySubject(subject)) {
             throw new IllegalStateException(
-                    "Cannot delete subject with id " + id + " because it is linked to class assignments.");
+                    "Não é possível excluir a disciplina '" + subject.getName() + "' pois ela está vinculada a turmas. Remova as atribuições antes de excluir.");
         }
 
         subjectRepository.deleteById(id);
@@ -90,13 +90,13 @@ public class SubjectServiceImpl implements SubjectService {
 
     Subject findSubjectOrThrow(Integer id) {
         return subjectRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Subject not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Disciplina não encontrada."));
     }
 
     private void validateNameAvailable(String name, Integer excludeId) {
         subjectRepository.findByNameIgnoreCase(name).ifPresent(existing -> {
             if (excludeId == null || !existing.getId().equals(excludeId)) {
-                throw new IllegalStateException("Subject name already in use: " + name);
+                throw new IllegalStateException("Já existe uma disciplina cadastrada com o nome '" + name + "'.");
             }
         });
     }

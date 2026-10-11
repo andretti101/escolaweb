@@ -25,6 +25,7 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     public Student create(Student student) {
         validateEmailAvailable(student.getEmail());
+        validateRegistrationNumberAvailable(student.getRegistrationNumber());
         student.setPassword(passwordEncoder.encode(student.getPassword()));
         student.setActive(true);
         return studentRepository.save(student);
@@ -37,6 +38,9 @@ public class StudentServiceImpl implements StudentService {
 
         if (!existing.getEmail().equals(incoming.getEmail())) {
             validateEmailNotTakenByAnother(incoming.getEmail(), id);
+        }
+        if (incoming.getRegistrationNumber() != null && !incoming.getRegistrationNumber().equals(existing.getRegistrationNumber())) {
+            validateRegistrationNumberNotTakenByAnother(incoming.getRegistrationNumber(), id);
         }
 
         existing.setName(incoming.getName());
@@ -114,6 +118,18 @@ public class StudentServiceImpl implements StudentService {
     private void validateEmailNotTakenByAnother(String email, Integer currentId) {
         if (userRepository.existsByEmailAndIdNot(email, currentId)) {
             throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
+        }
+    }
+
+    private void validateRegistrationNumberAvailable(String registrationNumber) {
+        if (registrationNumber != null && !registrationNumber.isBlank() && studentRepository.existsByRegistrationNumber(registrationNumber)) {
+            throw new IllegalStateException(messageSource.getMessage("error.enrollment.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
+        }
+    }
+
+    private void validateRegistrationNumberNotTakenByAnother(String registrationNumber, Integer currentId) {
+        if (registrationNumber != null && !registrationNumber.isBlank() && studentRepository.existsByRegistrationNumberAndIdNot(registrationNumber, currentId)) {
+            throw new IllegalStateException(messageSource.getMessage("error.enrollment.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
     }
 }

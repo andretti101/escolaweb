@@ -28,8 +28,11 @@
             document.body.insertAdjacentHTML('beforeend', html);
             const modalEl = document.getElementById(modalId);
             
-            modalEl.querySelector('.modal-title').textContent = title;
-            modalEl.querySelector('.modal-message').textContent = message;
+            const cleanTitle = (title && String(title).trim()) ? String(title).trim() : 'Atenção';
+            let cleanMsg = (message != null && String(message).trim()) ? String(message).trim() : 'Deseja prosseguir com esta ação?';
+            cleanMsg = cleanMsg.replace(/<br\s*[\/]?>/gi, '\n');
+            modalEl.querySelector('.modal-title').textContent = cleanTitle;
+            modalEl.querySelector('.modal-message').textContent = cleanMsg;
 
             const confirmBtn = modalEl.querySelector('.btn-confirm');
             const cancelBtn = modalEl.querySelector('.btn-cancel');
@@ -98,8 +101,11 @@
             document.body.insertAdjacentHTML('beforeend', html);
             const modalEl = document.getElementById(modalId);
             
-            modalEl.querySelector('.modal-title').textContent = title || 'Aviso';
-            modalEl.querySelector('.modal-message').textContent = message;
+            const cleanTitle = (title && String(title).trim()) ? String(title).trim() : 'Aviso';
+            let cleanMsg = (message != null && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
+            cleanMsg = cleanMsg.replace(/<br\s*[\/]?>/gi, '\n');
+            modalEl.querySelector('.modal-title').textContent = cleanTitle;
+            modalEl.querySelector('.modal-message').textContent = cleanMsg;
 
             const okBtn = modalEl.querySelector('.btn-ok');
             const closeBtn = modalEl.querySelector('.btn-close');
@@ -204,6 +210,107 @@
 
             modal.show();
         });
+    };
+
+    function isTechnicalJargon(str) {
+        if (!str || typeof str !== 'string') return false;
+        const lower = str.trim().toLowerCase();
+        return (
+            lower === 'bad request' ||
+            lower === 'unauthorized' ||
+            lower === 'forbidden' ||
+            lower === 'not found' ||
+            lower === 'method not allowed' ||
+            lower === 'not acceptable' ||
+            lower === 'conflict' ||
+            lower === 'unsupported media type' ||
+            lower === 'unprocessable entity' ||
+            lower === 'internal server error' ||
+            lower === 'bad gateway' ||
+            lower === 'service unavailable' ||
+            lower === 'gateway timeout' ||
+            lower === 'failed to fetch' ||
+            lower.includes('networkerror') ||
+            lower.startsWith('http ') ||
+            lower.startsWith('status ') ||
+            lower.includes('json parse error') ||
+            lower.includes('cannot deserialize') ||
+            lower.includes('could not execute statement') ||
+            lower.includes('data integrity violation') ||
+            lower.includes('constraint violation') ||
+            lower.includes('entitynotfoundexception') ||
+            lower.includes('illegalstateexception') ||
+            lower.includes('nullpointerexception') ||
+            lower.includes('org.springframework') ||
+            lower.includes('jakarta.persistence') ||
+            lower.includes('com.andretti101')
+        );
+    }
+
+    window.extractErrorMessage = function (errorData, fallbackMsg = 'Ocorreu um erro ao processar a solicitação.') {
+        const safeFallback = (fallbackMsg && String(fallbackMsg).trim())
+            ? String(fallbackMsg).trim()
+            : 'Ocorreu um erro ao processar a solicitação. Tente novamente.';
+
+        if (!errorData) return safeFallback;
+
+        if (typeof errorData === 'string') {
+            const trimmed = errorData.trim();
+            if (trimmed && !isTechnicalJargon(trimmed)) return trimmed;
+            return safeFallback;
+        }
+
+        if (errorData instanceof Error && errorData.message) {
+            const trimmed = errorData.message.trim();
+            if (trimmed && !isTechnicalJargon(trimmed)) return trimmed;
+            return safeFallback;
+        }
+
+        // Se houver lista de erros (validações Spring / Bean Validation)
+        if (Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+            const list = errorData.errors
+                .map(err => {
+                    if (typeof err === 'string' && err.trim()) return err.trim();
+                    if (err && typeof err === 'object') {
+                        return err.defaultMessage || err.message || err.detail || null;
+                    }
+                    return null;
+                })
+                .filter(msg => typeof msg === 'string' && msg.trim().length > 0 && !isTechnicalJargon(msg));
+
+            if (list.length > 0) {
+                return list.join('<br>');
+            }
+        } else if (errorData.errors && typeof errorData.errors === 'object' && !Array.isArray(errorData.errors)) {
+            const vals = Object.values(errorData.errors).flat()
+                .map(err => {
+                    if (typeof err === 'string' && err.trim()) return err.trim();
+                    if (err && typeof err === 'object') {
+                        return err.defaultMessage || err.message || err.detail || null;
+                    }
+                    return null;
+                })
+                .filter(msg => typeof msg === 'string' && msg.trim().length > 0 && !isTechnicalJargon(msg));
+            if (vals.length > 0) {
+                return vals.join('<br>');
+            }
+        }
+
+        // Se houver message, detail ou error
+        if (typeof errorData.message === 'string' && errorData.message.trim()) {
+            const trimmed = errorData.message.trim();
+            if (!isTechnicalJargon(trimmed)) return trimmed;
+        }
+        if (typeof errorData.detail === 'string' && errorData.detail.trim()) {
+            const trimmed = errorData.detail.trim();
+            if (!isTechnicalJargon(trimmed)) return trimmed;
+        }
+        if (typeof errorData.error === 'string' && errorData.error.trim()) {
+            const trimmed = errorData.error.trim();
+            if (!isTechnicalJargon(trimmed)) return trimmed;
+        }
+
+        return safeFallback;
     };
 
 })(window);

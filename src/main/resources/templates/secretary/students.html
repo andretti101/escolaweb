@@ -171,7 +171,7 @@
                 <footer class="content-footer footer bg-footer-theme">
                     <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">
-                                Copyright Â© 2026 EscolaWEB. Todos os direitos reservados.
+                                Copyright © 2026 EscolaWEB. Todos os direitos reservados.
                             </div>
                     </div>
                 </footer>
@@ -223,7 +223,7 @@
     }
 
     function formatPhone(phone) {
-        return phone || 'â€”';
+        return phone || '—';
     }
 
     function getInitials(name) {
@@ -461,7 +461,8 @@
 
             if (!response.ok) {
                 const err = await response.json().catch(() => null);
-                throw new Error(err?.message || `Não foi possível ${action} o aluno.`);
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, `Não foi possível ${action} o aluno.`) : (err?.message || `Não foi possível ${action} o aluno.`);
+                throw new Error(msg);
             }
 
             // Atualiza localmente sem nova chamada Í  API
@@ -480,7 +481,7 @@
         const student = allStudents.find(s => s.id === id);
         const name = student ? student.name : `aluno #${id}`;
 
-        if (!(await window.showConfirmModal('Atenção', `TEM CERTEZA que deseja EXCLUIR DEFINITIVAMENTE o aluno "${name}" do sistema?\n\nEsta Ação não poderá ser desfeita.`))) return;
+        if (!(await window.showConfirmModal('Atenção', `TEM CERTEZA que deseja EXCLUIR DEFINITIVAMENTE o aluno "${name}" do sistema?\n\nEsta ação não poderá ser desfeita.`))) return;
 
         try {
             const response = await fetch(`/api/students/${id}`, {
@@ -495,7 +496,9 @@
 
             if (!response.ok) {
                 const err = await response.json().catch(() => null);
-                throw new Error(err?.message || 'Não foi possível excluir o aluno. Talvez ele tenha matrículas ou notas vinculadas (restrição de chave estrangeira).');
+                const fallback = 'Não foi possível excluir o aluno pois ele possui matrículas ou notas vinculadas. Para desativar o acesso, altere o status do aluno para inativo.';
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                throw new Error(msg);
             }
 
             // Removendo da lista e recarregando

@@ -165,19 +165,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private Enrollment findEnrollmentOrThrow(Integer id) {
         return enrollmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Enrollment not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Matrícula não encontrada."));
     }
 
     private Student resolveStudent(Student ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Student is required.");
+            throw new IllegalArgumentException("A seleção do aluno é obrigatória.");
         }
         return studentService.findById(ref.getId());
     }
 
     private ClassRoom resolveClassRoom(ClassRoom ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Classroom is required.");
+            throw new IllegalArgumentException("A seleção da turma é obrigatória.");
         }
         return classRoomService.findById(ref.getId());
     }

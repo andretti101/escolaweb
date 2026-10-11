@@ -30,9 +30,16 @@
                     
                     chatDivs.forEach(chatDiv => {
                         if (chatDiv) {
+                            // Limpar qualquer bolinha injetada incorretamente (antiga) que esteja presa dentro do elem
+                            const oldBadges = chatDiv.querySelectorAll('span');
+                            oldBadges.forEach(b => b.remove());
+
                             // Injeta o selo azul apenas se já não existir
-                            if (!chatDiv.innerHTML.includes('background-color:#696cff')) {
-                                chatDiv.innerHTML += ' <span style="display:inline-block; width:8px; height:8px; background-color:#696cff; border-radius:50%; margin-left:8px; vertical-align:middle;"></span>';
+                            if (!chatDiv.parentElement.querySelector('.notif-badge')) {
+                                const badge = document.createElement('span');
+                                badge.className = 'notif-badge';
+                                badge.style.cssText = 'display:inline-block; width:8px; height:8px; background-color:#696cff; border-radius:50%; margin-left:auto; margin-right:8px; vertical-align:middle;';
+                                chatDiv.parentElement.appendChild(badge);
                             }
                         }
                     });

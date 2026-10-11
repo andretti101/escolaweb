@@ -327,9 +327,15 @@
                     if (response.ok) {
                         fetchAnnouncements(currentPage);
                     } else {
-                        await window.showAlertModal('Aviso', 'Erro ao excluir aviso.');
+                        const err = await response.json().catch(() => null);
+                        const fallback = 'Não foi possível excluir o aviso. Tente novamente.';
+                        const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                        await window.showAlertModal('Aviso', msg);
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) {
+                    console.error(e);
+                    await window.showAlertModal('Erro de Conexão', 'Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.');
+                }
             }
         };
 

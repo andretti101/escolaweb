@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public record ResetPasswordRequestDTO(
 
-        @NotBlank(message = "O token é obrigatório.")
+        @NotBlank(message = "O link ou código de redefinição de senha é obrigatório.")
         String token,
 
         @NotBlank(message = "A nova senha é obrigatória.")

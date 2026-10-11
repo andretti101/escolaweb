@@ -5,19 +5,19 @@ import jakarta.validation.constraints.NotNull;
 
 public record TeacherClassSubjectRequestDTO(
 
-        @NotNull(message = "O professor é obrigatório.")
+        @NotNull(message = "Selecione o professor responsável.")
         Integer teacherId,
 
-        @NotNull(message = "A turma é obrigatória.")
+        @NotNull(message = "Selecione a turma correspondente.")
         Integer classRoomId,
 
-        @NotNull(message = "A disciplina é obrigatória.")
+        @NotNull(message = "Selecione a disciplina correspondente.")
         Integer subjectId,
 
-        @Min(value = 1, message = "O número mínimo de avaliações deve ser ao menos 1.")
+        @Min(value = 1, message = "O número mínimo de avaliações por período deve ser no mínimo 1.")
         Integer minAssessmentsPerPeriod,
 
-        @Min(value = 1, message = "O número máximo de avaliações deve ser ao menos 1.")
+        @Min(value = 1, message = "O número máximo de avaliações por período deve ser no mínimo 1.")
         Integer maxAssessmentsPerPeriod
 
 ) {}

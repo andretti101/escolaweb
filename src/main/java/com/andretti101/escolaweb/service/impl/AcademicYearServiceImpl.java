@@ -24,7 +24,7 @@ public class AcademicYearServiceImpl implements AcademicYearService {
     @Transactional
     public AcademicYear create(AcademicYear academicYear) {
         if (academicYearRepository.existsByYear(academicYear.getYear())) {
-            throw new IllegalStateException("Academic year already registered: " + academicYear.getYear());
+            throw new IllegalStateException("Já existe um ano letivo cadastrado para o ano " + academicYear.getYear() + ".");
         }
         academicYear.setActive(false);
         return academicYearRepository.save(academicYear);
@@ -37,7 +37,7 @@ public class AcademicYearServiceImpl implements AcademicYearService {
 
         if (!existing.getYear().equals(incoming.getYear())
                 && academicYearRepository.existsByYearAndIdNot(incoming.getYear(), id)) {
-            throw new IllegalStateException("Academic year already registered: " + incoming.getYear());
+            throw new IllegalStateException("Já existe um ano letivo cadastrado para o ano " + incoming.getYear() + ".");
         }
 
         existing.setYear(incoming.getYear());
@@ -54,11 +54,11 @@ public class AcademicYearServiceImpl implements AcademicYearService {
 
         if (classRoomRepository.existsByAcademicYear(year)) {
             throw new IllegalStateException(
-                    "Cannot delete academic year with id " + id + " because it has classrooms linked to it.");
+                    "Não é possível excluir o ano letivo " + year.getYear() + " pois ele possui turmas vinculadas. Remova as turmas antes de excluir.");
         }
         if (academicPeriodRepository.existsByAcademicYear(year)) {
             throw new IllegalStateException(
-                    "Cannot delete academic year with id " + id + " because it has periods linked to it.");
+                    "Não é possível excluir o ano letivo " + year.getYear() + " pois ele possui períodos vinculados. Remova os períodos antes de excluir.");
         }
 
         academicYearRepository.deleteById(id);
@@ -80,7 +80,7 @@ public class AcademicYearServiceImpl implements AcademicYearService {
     @Transactional(readOnly = true)
     public AcademicYear findActive() {
         return academicYearRepository.findByActiveTrue()
-                .orElseThrow(() -> new EntityNotFoundException("No active academic year found."));
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum ano letivo ativo foi encontrado."));
     }
 
     @Override
@@ -96,6 +96,6 @@ public class AcademicYearServiceImpl implements AcademicYearService {
 
     AcademicYear findYearOrThrow(Integer id) {
         return academicYearRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Academic year not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ano letivo não encontrado."));
     }
 }

@@ -23,12 +23,12 @@ public record SchoolSettingsRequestDTO(
         @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
         String email,
 
-        @DecimalMin(value = "0.0", message = "A média mínima deve ser no mínimo 0.")
-        @DecimalMax(value = "10.0", message = "A média mínima deve ser no máximo 10.")
+        @DecimalMin(value = "0.0", message = "A média mínima para aprovação deve ser no mínimo 0,0.")
+        @DecimalMax(value = "10.0", message = "A média mínima para aprovação deve ser no máximo 10,0.")
         BigDecimal minimumGrade,
 
-        @DecimalMin(value = "0.0", message = "A frequência mínima deve ser no mínimo 0.")
-        @DecimalMax(value = "100.0", message = "A frequência mínima deve ser no máximo 100.")
+        @DecimalMin(value = "0.0", message = "A frequência mínima exigida deve ser no mínimo 0%.")
+        @DecimalMax(value = "100.0", message = "A frequência mínima exigida deve ser no máximo 100%.")
         BigDecimal minimumAttendance,
 
         AcademicPeriodType periodType

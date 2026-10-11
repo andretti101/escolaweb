@@ -67,13 +67,13 @@ public class SchoolSettingsServiceImpl implements SchoolSettingsService {
 
     private void validateGradeRange(BigDecimal grade) {
         if (grade.compareTo(BigDecimal.ZERO) < 0 || grade.compareTo(BigDecimal.TEN) > 0) {
-            throw new IllegalArgumentException("Minimum grade must be between 0 and 10.");
+            throw new IllegalArgumentException("A média mínima deve estar entre 0 e 10.");
         }
     }
 
     private void validateAttendanceRange(BigDecimal attendance) {
         if (attendance.compareTo(BigDecimal.ZERO) < 0 || attendance.compareTo(new BigDecimal("100")) > 0) {
-            throw new IllegalArgumentException("Minimum attendance must be between 0 and 100.");
+            throw new IllegalArgumentException("A frequência mínima deve estar entre 0 e 100.");
         }
     }
 }

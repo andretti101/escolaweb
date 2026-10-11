@@ -294,11 +294,13 @@
                     let errorMsg = 'Ocorreu um erro ao atualizar o diretor.';
                     try {
                         const errorData = await response.json();
-                        if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
-                            errorMsg = errorData.errors.map(err => err.defaultMessage || err.message).join('<br>');
-                        } else if (errorData.message) {
+                        if (window.extractErrorMessage) {
+                            errorMsg = window.extractErrorMessage(errorData, errorMsg);
+                        } else if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+                            errorMsg = errorData.errors.map(err => err.defaultMessage || err.message).filter(Boolean).join('<br>') || errorMsg;
+                        } else if (errorData.message && errorData.message.trim() !== '') {
                             errorMsg = errorData.message;
-                        } else if (errorData.detail) {
+                        } else if (errorData.detail && errorData.detail.trim() !== '') {
                             errorMsg = errorData.detail;
                         }
                     } catch (parseError) {
@@ -307,6 +309,9 @@
                         } else if (response.status === 401) {
                             errorMsg = "Sessão expirada ou não autenticada. Faça login novamente.";
                         }
+                    }
+                    if (!errorMsg || errorMsg.trim() === '') {
+                        errorMsg = 'Ocorreu um erro ao atualizar o diretor.';
                     }
                     formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
                 }

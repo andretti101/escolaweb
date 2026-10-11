@@ -93,7 +93,7 @@
                                 </div>
                                 <div id="errorState" class="text-center py-5 d-none">
                                     <i class="bx bx-error-circle fs-1 text-danger"></i>
-                                    <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar.</p>
+                                    <p class="mt-2 text-muted mb-0" id="errorMessage">Não foi possível carregar as aulas. Recarregue a página para tentar novamente.</p>
                                     <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadLessons()"><i class="bx bx-refresh me-1"></i> Tentar novamente</button>
                                 </div>
                             </div>
@@ -166,12 +166,22 @@
 
         async function loadFilters() {
             try {
+                const activeYearRes = await fetch('/api/academic-years/active', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                let activeYearId = null;
+                if (activeYearRes.ok) {
+                    activeYearId = (await activeYearRes.json()).id;
+                }
+
                 // Fetch periods
                 const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (periodRes.ok) {
                     allPeriods = await periodRes.json();
+                    let dropdownPeriods = allPeriods;
+                    if (activeYearId) {
+                        dropdownPeriods = allPeriods.filter(p => p.academicYearId === activeYearId);
+                    }
                     const pSelect = document.getElementById('periodFilter');
-                    allPeriods.forEach(p => {
+                    dropdownPeriods.forEach(p => {
                         const opt = document.createElement('option');
                         opt.value = p.id;
                         opt.textContent = `${p.academicYear} - ${p.name}`;
@@ -224,7 +234,7 @@
                     headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
                 if (response.status === 401 || response.status === 403) return handleUnauthorized();
-                if (!response.ok) throw new Error('Erro na resposta do servidor');
+                if (!response.ok) throw new Error('Não foi possível carregar as aulas.');
                 allLessons = await response.json();
                 
                 // Sort by date descending (most recent first)
@@ -394,10 +404,11 @@
                         loadLessons(); 
                     } else {
                         const err = await response.json().catch(()=>null);
-                        showAlertModal('Erro', `Erro ao excluir: ${err?.message || 'A aula possui registros dependentes.'}`);
+                        const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Não foi possível excluir a aula. Verifique se ela possui dependências ativas.') : (err?.message || 'Não foi possível excluir a aula. Verifique se ela possui dependências ativas.');
+                        showAlertModal('Erro ao Excluir', msg);
                     }
                 } catch (error) { 
-                    showAlertModal('Erro', 'Erro de conexão.'); 
+                    showAlertModal('Erro de Conexão', 'Não foi possível comunicar com o servidor. Verifique sua conexão com a internet e tente novamente.'); 
                 }
             });
         }

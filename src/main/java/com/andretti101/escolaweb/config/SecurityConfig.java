@@ -16,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Configuration
 @EnableWebSecurity
@@ -24,12 +26,15 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final HandlerExceptionResolver exceptionResolver;
 
     public SecurityConfig(
             CustomUserDetailsService userDetailsService,
-            @Lazy JwtAuthenticationFilter jwtAuthenticationFilter) {
+            @Lazy JwtAuthenticationFilter jwtAuthenticationFilter,
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.exceptionResolver = exceptionResolver;
     }
 
     @Bean
@@ -68,13 +73,9 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, e) ->
-                                response.sendError(
-                                        jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED,
-                                        "Não autorizado: token ausente ou inválido."))
+                                exceptionResolver.resolveException(request, response, null, e))
                         .accessDeniedHandler((request, response, e) ->
-                                response.sendError(
-                                        jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN,
-                                        "Acesso negado: permissão insuficiente."))
+                                exceptionResolver.resolveException(request, response, null, e))
                 );
 
         return http.build();

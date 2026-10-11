@@ -130,34 +130,34 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
     private void validateAssessmentLimits(Integer min, Integer max) {
         if (min != null && max != null && min > max) {
             throw new IllegalArgumentException(
-                    "The minimum number of assessments (" + min
-                            + ") cannot be greater than the maximum (" + max + ").");
+                    "O número mínimo de avaliações (" + min
+                            + ") não pode ser maior que o número máximo (" + max + "). Ajuste os limites informados.");
         }
     }
 
     TeacherClassSubject findTcsOrThrow(Integer id) {
         return teacherClassSubjectRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "TeacherClassSubject not found with id: " + id));
+                        "Vínculo de professor e disciplina na turma não encontrado ou já removido."));
     }
 
     private Teacher resolveTeacher(Teacher ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Teacher is required.");
+            throw new IllegalArgumentException("Selecione o professor responsável.");
         }
         return teacherService.findById(ref.getId());
     }
 
     private ClassRoom resolveClassRoom(ClassRoom ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Classroom is required.");
+            throw new IllegalArgumentException("Selecione a turma correspondente.");
         }
         return classRoomService.findById(ref.getId());
     }
 
     private Subject resolveSubject(Subject ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Subject is required.");
+            throw new IllegalArgumentException("Selecione a disciplina correspondente.");
         }
         return subjectService.findById(ref.getId());
     }

@@ -30,10 +30,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public ChatMessageResponseDTO saveMessage(Integer classroomId, Integer senderId, String content, Integer repliedToId) {
         ClassRoom classroom = classRoomRepository.findById(classroomId)
-                .orElseThrow(() -> new EntityNotFoundException("Turma não encontrada. ID: " + classroomId));
+                .orElseThrow(() -> new EntityNotFoundException("Turma não encontrada."));
 
         User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado. ID: " + senderId));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
 
         if (sender instanceof com.andretti101.escolaweb.model.entity.Student && 
             ((com.andretti101.escolaweb.model.entity.Student) sender).isChatBlocked()) {
@@ -63,7 +63,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional(readOnly = true)
     public List<ChatMessageResponseDTO> getHistoryByClassroomId(Integer classroomId, Integer userId) {
         if (!classRoomRepository.existsById(classroomId)) {
-            throw new EntityNotFoundException("Turma não encontrada. ID: " + classroomId);
+            throw new EntityNotFoundException("Turma não encontrada.");
         }
         List<ChatMessage> messages = chatMessageRepository.findTop50ByClassroom_IdAndArchivedFalseOrderByTimestampDesc(classroomId);
         java.util.Collections.reverse(messages);
@@ -89,7 +89,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public ChatMessageResponseDTO editMessage(Integer messageId, Integer senderId, String newContent) {
         ChatMessage message = chatMessageRepository.findById(messageId)
-                .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada ou já foi removida."));
 
         if (!message.getSender().getId().equals(senderId)) {
             throw new org.springframework.security.access.AccessDeniedException("Você só pode editar suas próprias mensagens.");
@@ -116,7 +116,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public ChatMessageResponseDTO deleteMessage(Integer messageId, Integer userId, boolean isAdmin) {
         ChatMessage message = chatMessageRepository.findById(messageId)
-                .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada ou já foi removida."));
 
         boolean isAuthor = message.getSender().getId().equals(userId);
 
@@ -167,9 +167,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public void markAsRead(Integer userId, Integer classroomId, Integer messageId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
         ClassRoom classroom = classRoomRepository.findById(classroomId)
-                .orElseThrow(() -> new EntityNotFoundException("Classroom not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Turma não encontrada."));
 
         com.andretti101.escolaweb.model.entity.ChatReadReceipt receipt = chatReadReceiptRepository
                 .findByUserIdAndClassroomId(userId, classroomId)
@@ -189,7 +189,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional(readOnly = true)
     public boolean hasUnreadMessages(Integer userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
 
         List<ClassRoom> classroomsToCheck;
         if (user instanceof com.andretti101.escolaweb.model.entity.Student) {
@@ -243,9 +243,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public void hideMessage(Integer messageId, Integer userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
         ChatMessage message = chatMessageRepository.findById(messageId)
-                .orElseThrow(() -> new EntityNotFoundException("Message not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada."));
 
         if (chatHiddenMessageRepository.findByUserIdAndMessageId(userId, messageId).isEmpty()) {
             chatHiddenMessageRepository.save(com.andretti101.escolaweb.model.entity.ChatHiddenMessage.builder()
@@ -259,7 +259,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public ChatMessageResponseDTO saveGlobalTeacherMessage(Integer senderId, String content, Integer repliedToId) {
         User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado. ID: " + senderId));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
 
         if (!(sender.getRole() == com.andretti101.escolaweb.model.enums.UserRole.TEACHER ||
               sender.getRole() == com.andretti101.escolaweb.model.enums.UserRole.SECRETARY ||
@@ -291,7 +291,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public void markGlobalTeacherAsRead(Integer userId, Integer messageId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
 
         com.andretti101.escolaweb.model.entity.ChatReadReceipt receipt = chatReadReceiptRepository
                 .findByUserIdAndIsGlobalTeacherChatTrue(userId)
@@ -348,7 +348,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional(readOnly = true)
     public boolean hasUnreadGlobalTeacherMessages(Integer userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
                 
         if (user.getRole() == com.andretti101.escolaweb.model.enums.UserRole.TEACHER ||
             user.getRole() == com.andretti101.escolaweb.model.enums.UserRole.SECRETARY ||

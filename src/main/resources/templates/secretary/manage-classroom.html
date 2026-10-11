@@ -176,20 +176,28 @@
                                     <small class="text-muted">Busque e matricule rapidamente</small>
                                 </div>
                                 <div class="card-body pt-4">
-                                    <div class="row g-3">
-                                        <div class="col-md-3">
-                                            <label class="form-label" for="enrollmentDate">Data da Matrícula</label>
-                                            <input type="date" id="enrollmentDate" class="form-control" required/>
-                                        </div>
-                                        <div class="col-md-9">
-                                            <label class="form-label">Selecionar Aluno</label>
-                                            <div class="search-select-container" id="studentSearchContainer">
-                                                <input type="text" class="form-control search-select-input"
-                                                       id="studentSearch" placeholder="Buscar aluno por nome, matrícula ou e-mail..."/>
-                                                <div class="search-select-dropdown shadow-lg" id="studentDropdown" style="max-height: 350px;"></div>
+                                    <form id="studentEnrollmentForm">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-3">
+                                                <label class="form-label" for="enrollmentDate">Data da Matrícula</label>
+                                                <input type="date" id="enrollmentDate" class="form-control" required/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="studentSearch">Selecionar Aluno</label>
+                                                <div class="search-select-container" id="studentSearchContainer">
+                                                    <input type="text" class="form-control search-select-input"
+                                                           id="studentSearch" placeholder="Buscar aluno por nome, matrícula ou e-mail..." autocomplete="off"/>
+                                                    <div class="search-select-dropdown shadow-lg" id="studentDropdown" style="max-height: 350px;"></div>
+                                                </div>
+                                                <input type="hidden" id="studentId"/>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="submit" class="btn btn-primary w-100" id="btnSubmitStudent">
+                                                    <i class="bx bx-user-plus me-1"></i> Matricular
+                                                </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
                             <!-- Tabela de Alunos -->
@@ -345,6 +353,20 @@
     </div>
 </div>
 
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;" id="toastPlacement">
+    <div id="successToast" class="bs-toast toast bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bx bx-check-circle me-2 text-white"></i>
+            <div class="me-auto fw-semibold text-white">Sucesso</div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body text-white" id="successToastBody">
+            Operação realizada com sucesso!
+        </div>
+    </div>
+</div>
+
 <script src="/assets/vendor/libs/jquery/jquery.js"></script>
 <script src="/assets/vendor/libs/popper/popper.js"></script>
 <script src="/assets/vendor/js/bootstrap.js"></script>
@@ -370,14 +392,54 @@
         return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    function showAlert(message, type) {
+    async function showAlert(message, type) {
         const container = document.getElementById('alertContainer');
-        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+        const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
         setTimeout(() => {
             container.innerHTML = '';
         }, 5000);
         window.scrollTo(0, 0);
     }
+
+    function showToast(message, type = 'success') {
+        let container = document.getElementById('toastPlacement');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toastPlacement';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '1090';
+            document.body.appendChild(container);
+        }
+        const toastId = 'toast_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        const iconClass = type === 'success' ? 'bx-check-circle' : (type === 'danger' ? 'bx-x-circle' : 'bx-error');
+        const title = type === 'success' ? 'Sucesso' : (type === 'danger' ? 'Erro' : 'Aviso');
+        const toastEl = document.createElement('div');
+        toastEl.id = toastId;
+        toastEl.className = `bs-toast toast bg-${type} fade show`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+        toastEl.innerHTML = `
+            <div class="toast-header">
+                <i class="bx ${iconClass} me-2 text-white"></i>
+                <div class="me-auto fw-semibold text-white">${title}</div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body text-white">
+                ${escapeHtml(message)}
+            </div>
+        `;
+        container.appendChild(toastEl);
+        try {
+            const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+            toast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        } catch (e) {
+            setTimeout(() => { toastEl.remove(); }, 4000);
+        }
+    }
+    window.showToast = showToast;
 
     if (!classRoomId) {
         document.getElementById('alertContainer').innerHTML = '<div class="alert alert-info mt-4">Por favor, selecione uma turma no menu acima para começar.</div>';
@@ -574,7 +636,10 @@
     const studentDropdown = document.getElementById('studentDropdown');
 
     studentSearch.addEventListener('focus', () => renderStudentDropdown(studentSearch.value));
-    studentSearch.addEventListener('input', () => renderStudentDropdown(studentSearch.value));
+    studentSearch.addEventListener('input', () => {
+        document.getElementById('studentId').value = '';
+        renderStudentDropdown(studentSearch.value);
+    });
 
     // Keep dropdown open even if clicked outside? 
     // Usually it's better to close if clicking entirely outside the container.
@@ -600,7 +665,7 @@
             studentDropdown.innerHTML = `<div class="no-results">${q ? 'Nenhum aluno encontrado' : 'Todos os alunos desta lista já estão matriculados'}</div>`;
         } else {
             studentDropdown.innerHTML = filtered.slice(0, 50).map(s => {
-                return `<div class="dropdown-item" data-id="${s.id}">
+                return `<div class="dropdown-item" data-id="${s.id}" data-label="${escapeHtml(s.name)}">
                     <div class="d-flex align-items-center w-100">
                         <i class="bx bx-user-plus text-primary me-2 fs-4"></i>
                         <div>
@@ -618,51 +683,14 @@
         studentDropdown.classList.add('show');
     }
 
-    studentDropdown.addEventListener('click', async (e) => {
+    studentDropdown.addEventListener('click', (e) => {
         const item = e.target.closest('.dropdown-item');
         if (!item || item.classList.contains('disabled')) return;
-        
-        const id = parseInt(item.dataset.id);
-        const originalHtml = item.innerHTML;
-        
-        // Show loading state inline
-        item.classList.add('disabled', 'bg-light');
-        item.innerHTML = `<div class="d-flex align-items-center w-100 text-muted">
-            <span class="spinner-border spinner-border-sm text-primary me-3"></span>
-            <strong>Matriculando...</strong>
-        </div>`;
-        
-        try {
-            const dateInput = document.getElementById('enrollmentDate');
-            if (!dateInput.value) dateInput.valueAsDate = new Date();
-            const date = dateInput.value;
-            
-            const res = await fetch('/api/enrollments', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${jwtToken || ''}`},
-                body: JSON.stringify({studentId: id, classRoomId: parseInt(classRoomId), enrollmentDate: date})
-            });
-            
-            if (res.ok) {
-                showAlert('Aluno matriculado com sucesso!', 'success');
-                // Adiciona localmente para a lista parar de mostrar e chama loadEnrollments em background
-                enrolledStudentIds.add(id);
-                renderStudentDropdown(studentSearch.value);
-                
-                // Atualiza a tabela geral em background
-                loadEnrollments();
-                studentSearch.focus();
-            } else {
-                const err = await res.json().catch(() => ({}));
-                showAlert(err.message || err.detail || 'Erro ao matricular', 'danger');
-                item.innerHTML = originalHtml;
-                item.classList.remove('disabled', 'bg-light');
-            }
-        } catch (ex) {
-            showAlert('Erro de conexão.', 'danger');
-            item.innerHTML = originalHtml;
-            item.classList.remove('disabled', 'bg-light');
-        }
+        const id = item.dataset.id;
+        const name = item.dataset.label || item.querySelector('strong')?.textContent || '';
+        document.getElementById('studentId').value = id;
+        studentSearch.value = name;
+        studentDropdown.classList.remove('show');
     });
 
     // ══════════════════════════════════════════════════════════
@@ -737,17 +765,116 @@
     // FORM HANDLERS
     // ══════════════════════════════════════════════════════════
 
+    document.getElementById('studentEnrollmentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let studentId = document.getElementById('studentId').value;
+        const studentSearchInput = document.getElementById('studentSearch');
+        const searchVal = studentSearchInput.value.trim().toLowerCase();
+
+        // Fallback: auto-match student by name, registrationNumber or email
+        if (!studentId && searchVal) {
+            const matched = allStudents.find(s => 
+                !enrolledStudentIds.has(s.id) && 
+                ((s.name && s.name.toLowerCase() === searchVal) || 
+                 (s.registrationNumber && s.registrationNumber.toLowerCase() === searchVal) ||
+                 (s.email && s.email.toLowerCase() === searchVal))
+            );
+            if (matched) {
+                studentId = matched.id;
+                document.getElementById('studentId').value = matched.id;
+            }
+        }
+
+        if (!studentId) {
+            showAlert('Selecione um aluno da lista.', 'warning');
+            showToast('Selecione um aluno da lista.', 'warning');
+            return;
+        }
+
+        const dateInput = document.getElementById('enrollmentDate');
+        if (!dateInput.value) dateInput.valueAsDate = new Date();
+        const date = dateInput.value;
+
+        const btn = document.getElementById('btnSubmitStudent');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Matriculando...';
+
+        try {
+            const res = await fetch('/api/enrollments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken || ''}`
+                },
+                body: JSON.stringify({
+                    studentId: parseInt(studentId),
+                    classRoomId: parseInt(classRoomId),
+                    enrollmentDate: date
+                })
+            });
+
+            if (res.ok) {
+                const newEnrollment = await res.json();
+                enrolledStudentIds.add(parseInt(studentId));
+
+                // Instantly update active UI table/list in DOM
+                allEnrollments.unshift(newEnrollment);
+                renderEnrollmentsTable();
+
+                // Update badge
+                const badge = document.getElementById('enrollmentCountBadge');
+                badge.textContent = allEnrollments.length;
+                badge.style.display = '';
+
+                // Show success toast and alert without reload
+                showToast('Aluno matriculado com sucesso!', 'success');
+                showAlert('Aluno matriculado com sucesso!', 'success');
+
+                // Clear input
+                document.getElementById('studentSearch').value = '';
+                document.getElementById('studentId').value = '';
+
+                // Background sync removed to avoid reloading feeling
+                studentSearch.focus();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao matricular aluno.') : (err.message || err.detail || 'Erro ao matricular aluno.');
+                showAlert(msg, 'danger');
+                showToast(msg, 'danger');
+            }
+        } catch (ex) {
+            showAlert('Erro de conexão.', 'danger');
+            showToast('Erro de conexão.', 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-user-plus me-1"></i> Matricular';
+        }
+    });
+
     document.getElementById('tcsForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const teacherId = document.getElementById('teacherId').value;
-        const subjectId = document.getElementById('subjectId').value;
+        let teacherId = document.getElementById('teacherId').value;
+        let subjectId = document.getElementById('subjectId').value;
+
+        if (!teacherId && document.getElementById('teacherSearch').value.trim()) {
+            const q = document.getElementById('teacherSearch').value.trim().toLowerCase();
+            const found = allTeachers.find(t => t.name && t.name.toLowerCase() === q);
+            if (found) { teacherId = found.id; document.getElementById('teacherId').value = found.id; }
+        }
+        if (!subjectId && document.getElementById('subjectSearch').value.trim()) {
+            const q = document.getElementById('subjectSearch').value.trim().toLowerCase();
+            const found = allSubjects.find(s => s.name && s.name.toLowerCase() === q);
+            if (found) { subjectId = found.id; document.getElementById('subjectId').value = found.id; }
+        }
 
         if (!teacherId) {
             showAlert('Selecione um professor da lista.', 'warning');
+            showToast('Selecione um professor da lista.', 'warning');
             return;
         }
         if (!subjectId) {
             showAlert('Selecione uma matéria da lista.', 'warning');
+            showToast('Selecione uma matéria da lista.', 'warning');
             return;
         }
 
@@ -755,12 +882,13 @@
         const maxVal = parseInt(document.getElementById('maxAssessments').value);
         if (minVal > maxVal) {
             showAlert('O mínimo de avaliações não pode ser maior que o máximo.', 'warning');
+            showToast('O mínimo de avaliações não pode ser maior que o máximo.', 'warning');
             return;
         }
 
         const btn = document.getElementById('btnSubmitTcs');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
 
         const payload = {
             teacherId: parseInt(teacherId),
@@ -777,18 +905,31 @@
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
+                const newTcs = await res.json();
+                if (!window._tcsData) window._tcsData = [];
+                window._tcsData.unshift(newTcs);
+                renderTCSTable();
+
+                const tcsBadge = document.getElementById('tcsCountBadge');
+                tcsBadge.textContent = window._tcsData.length;
+                tcsBadge.style.display = '';
+
+                showToast("Grade vinculada com sucesso!", "success");
                 showAlert("Grade vinculada com sucesso!", "success");
+
                 document.getElementById('teacherSearch').value = '';
                 document.getElementById('teacherId').value = '';
                 document.getElementById('subjectSearch').value = '';
                 document.getElementById('subjectId').value = '';
-                loadTCS();
             } else {
-                const err = await res.json();
-                showAlert(err.message || err.detail || "Erro ao vincular grade.", "danger");
+                const err = await res.json().catch(() => ({}));
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao vincular grade.") : (err.message || err.detail || "Erro ao vincular grade.");
+                showAlert(msg, "danger");
+                showToast(msg, "danger");
             }
         } catch (e) {
             showAlert("Erro de conexão.", "danger");
+            showToast("Erro de conexão.", "danger");
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="bx bx-plus me-1"></i> Vincular';
@@ -811,9 +952,11 @@
                 loadEnrollments();
             } else {
                 const err = await res.json().catch(() => ({}));
-                showAlert(err.message || "Erro ao alterar status.", "danger");
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao alterar status.") : (err.message || "Erro ao alterar status.");
+                showAlert(msg, "danger");
             }
         } catch (e) {
+            showAlert("Erro de conexão ao alterar status.", "danger");
         }
     };
 
@@ -829,9 +972,11 @@
                 loadEnrollments();
             } else {
                 const err = await res.json().catch(() => ({}));
-                showAlert(err.message || "Erro ao excluir matrícula. O aluno pode ter notas ou presenças registradas.", "danger");
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao excluir matrícula. O aluno pode ter notas ou presenças registradas.") : (err.message || "Erro ao excluir matrícula. O aluno pode ter notas ou presenças registradas.");
+                showAlert(msg, "danger");
             }
         } catch (e) {
+            showAlert("Erro de conexão ao excluir matrícula.", "danger");
         }
     };
 
@@ -847,9 +992,11 @@
                 loadTCS();
             } else {
                 const err = await res.json().catch(() => ({}));
-                showAlert(err.message || "Erro ao excluir vínculo. Pode haver aulas ou avaliações registradas.", "warning");
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao excluir vínculo. Pode haver aulas ou avaliações registradas.") : (err.message || "Erro ao excluir vínculo. Pode haver aulas ou avaliações registradas.");
+                showAlert(msg, "warning");
             }
         } catch (e) {
+            showAlert("Erro de conexão ao excluir vínculo.", "danger");
         }
     };
 
@@ -917,7 +1064,8 @@
                 loadEnrollments();
             } else {
                 const err = await res.json().catch(() => ({}));
-                showAlert(err.message || "Erro ao transferir aluno.", "danger");
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao transferir aluno.") : (err.message || "Erro ao transferir aluno.");
+                showAlert(msg, "danger");
             }
         } catch (e) {
             showAlert("Erro de conexão.", "danger");

@@ -172,8 +172,12 @@
                     let errorMsg = 'Ocorreu um erro ao cadastrar a matéria.';
                     try {
                         const errorData = await response.json();
-                        if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
-                            errorMsg = errorData.errors.map(err => err.defaultMessage || err.message).join('<br>');
+                        if (window.extractErrorMessage) {
+                            errorMsg = window.extractErrorMessage(errorData, errorMsg);
+                        } else if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+                            const list = errorData.errors.map(err => (typeof err === 'string' ? err : (err.defaultMessage || err.message))).filter(Boolean);
+                            if (list.length > 0) errorMsg = list.join('<br>');
+                            else if (errorData.message) errorMsg = errorData.message;
                         } else if (errorData.message) {
                             errorMsg = errorData.message;
                         } else if (errorData.detail) {
@@ -183,6 +187,7 @@
                         if (response.status === 403) errorMsg = "Acesso negado: seu perfil não tem permissão para cadastrar matérias.";
                         else if (response.status === 401) errorMsg = "Sessão expirada. Faça login novamente.";
                     }
+                    if (!errorMsg || !errorMsg.trim()) errorMsg = 'Ocorreu um erro ao cadastrar a matéria. Verifique os dados e tente novamente.';
                     formMessage.innerHTML = `<div class="alert alert-danger alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">${errorMsg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
                 }
             } catch (error) {

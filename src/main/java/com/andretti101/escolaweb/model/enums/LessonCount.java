@@ -25,7 +25,6 @@ public enum LessonCount {
             }
         }
         throw new IllegalArgumentException(
-                "No LessonCount constant mapped to database value: " + value
-                        + ". Valid range is 1–6.");
+                "Quantidade de aulas inválida: " + value + ". A quantidade de aulas deve estar entre 1 e 6.");
     }
 }

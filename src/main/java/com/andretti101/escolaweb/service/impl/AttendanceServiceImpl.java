@@ -44,12 +44,11 @@ public class AttendanceServiceImpl implements AttendanceService {
         Student student = resolveStudent(attendance.getStudent());
 
         if (attendance.getStatus() == null) {
-            throw new IllegalArgumentException("Attendance status is required.");
+            throw new IllegalArgumentException("O status da frequência é obrigatório.");
         }
         if (attendanceRepository.existsByLessonAndStudent(lesson, student)) {
             throw new IllegalStateException(
-                    "Attendance for student with id " + student.getId()
-                            + " in lesson with id " + lesson.getId() + " is already registered.");
+                    "A frequência do aluno '" + student.getName() + "' nesta aula já foi registrada.");
         }
 
         validateActiveEnrollment(student, lesson.getTeacherClassSubject());
@@ -70,7 +69,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         Attendance existing = findAttendanceOrThrow(id);
 
         if (incoming.getStatus() == null) {
-            throw new IllegalArgumentException("Attendance status is required.");
+            throw new IllegalArgumentException("O status da frequência é obrigatório.");
         }
 
         AttendanceStatus previous = existing.getStatus();
@@ -251,28 +250,27 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     Attendance findAttendanceOrThrow(Integer id) {
         return attendanceRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Attendance not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Registro de frequência não encontrado."));
     }
 
     private void validateActiveEnrollment(Student student, TeacherClassSubject tcs) {
         if (!enrollmentRepository.existsByStudentAndClassRoomAndActiveTrue(student, tcs.getClassRoom())) {
             throw new IllegalStateException(
-                    "Student with id " + student.getId()
-                    + " does not have an active enrollment in classroom with id "
-                    + tcs.getClassRoom().getId() + ".");
+                    "O aluno '" + student.getName() + "' não possui matrícula ativa na turma '"
+                    + tcs.getClassRoom().getName() + "'. Apenas alunos com matrícula ativa podem ter presença registrada.");
         }
     }
 
     private Lesson resolveLesson(Lesson ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Lesson is required.");
+            throw new IllegalArgumentException("A identificação da aula é obrigatória.");
         }
         return lessonService.findById(ref.getId());
     }
 
     private Student resolveStudent(Student ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Student is required.");
+            throw new IllegalArgumentException("A seleção do aluno é obrigatória.");
         }
         return studentService.findById(ref.getId());
     }

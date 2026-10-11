@@ -134,7 +134,8 @@
 
         function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
-            container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+            const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
+            container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
             window.scrollTo(0,0);
         }
 
@@ -237,7 +238,8 @@
 
                 if (!lessonRes.ok) {
                     const err = await lessonRes.json().catch(()=>null);
-                    throw new Error(err?.message || 'Erro ao atualizar os dados da aula.');
+                    const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao atualizar os dados da aula.') : (err?.message || 'Erro ao atualizar os dados da aula.');
+                    throw new Error(msg);
                 }
                 
                 // 2. Update Attendances
@@ -257,7 +259,18 @@
                     });
                 });
 
-                await Promise.all(attendancePromises);
+                const attResults = await Promise.all(attendancePromises);
+                const attErrors = [];
+                for (let r of attResults) {
+                    if (r && !r.ok) {
+                        const err = await r.json().catch(() => null);
+                        const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao atualizar frequência') : (err?.message || 'Erro ao atualizar frequência');
+                        attErrors.push(msg);
+                    }
+                }
+                if (attErrors.length > 0) {
+                    throw new Error('Aula atualizada, mas houve erro ao atualizar frequência de alunos: ' + attErrors.join(', '));
+                }
 
                 window.location.href = '/teacher/lessons.html?success=true';
             } catch(error) {

@@ -227,10 +227,14 @@
                 showAlert('Configurações atualizadas com sucesso!', 'success');
             } else {
                 const err = await response.json().catch(() => null);
-                let errMsg = err?.message || 'Erro ao salvar as configurações.';
-                if (err?.errors) {
+                let errMsg = 'Erro ao salvar as configurações.';
+                if (window.extractErrorMessage) {
+                    errMsg = window.extractErrorMessage(err, errMsg);
+                } else if (err?.errors) {
                     const msgs = Object.values(err.errors).flat();
                     if (msgs.length) errMsg = msgs.join('<br>');
+                } else if (err?.message) {
+                    errMsg = err.message;
                 }
                 showAlert(errMsg, 'danger');
             }

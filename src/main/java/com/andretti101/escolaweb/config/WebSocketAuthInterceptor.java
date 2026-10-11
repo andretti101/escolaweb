@@ -27,8 +27,6 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
 
-    private final com.andretti101.escolaweb.repository.TeacherClassSubjectRepository teacherClassSubjectRepository;
-
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -77,6 +75,8 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                         if (!enrolled) {
                             throw new IllegalArgumentException("Acesso negado: Aluno não matriculado nesta turma.");
                         }
+                    } else if (user.getRole() == UserRole.TEACHER) {
+                        throw new IllegalArgumentException("Acesso negado: Professores não têm permissão para acessar o chat da turma.");
                     } else {
                         throw new IllegalArgumentException("Acesso negado: Perfil não autorizado para o chat da turma.");
                     }

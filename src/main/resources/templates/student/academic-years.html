@@ -115,7 +115,7 @@
                             </div>
                             <div id="errorState" class="text-center py-5 d-none">
                                 <i class="bx bx-error-circle fs-1 text-danger"></i>
-                                <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar.</p>
+                                <p class="mt-2 text-muted mb-0" id="errorMessage">Não foi possível carregar os anos letivos. Verifique sua conexão e tente novamente.</p>
                                 <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadYears()"><i
                                         class="bx bx-refresh me-1"></i> Tentar novamente
                                 </button>
@@ -191,7 +191,7 @@
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (!response.ok) throw new Error('Erro na resposta do servidor');
+            if (!response.ok) throw new Error('Não foi possível carregar os anos letivos.');
             allYears = await response.json();
             allYears.sort((a, b) => b.year - a.year);
             applyFilters();

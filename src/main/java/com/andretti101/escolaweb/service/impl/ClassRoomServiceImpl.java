@@ -31,7 +31,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
 
         if (classRoomRepository.existsByAcademicYearAndName(year, classRoom.getName())) {
             throw new IllegalStateException(
-                    "Classroom '" + classRoom.getName() + "' already exists in academic year " + year.getYear());
+                    "Já existe uma turma com o nome '" + classRoom.getName() + "' no ano letivo " + year.getYear() + ".");
         }
 
         classRoom.setActive(true);
@@ -50,7 +50,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
         if ((nameChanged || yearChanged)
                 && classRoomRepository.existsByAcademicYearAndName(year, incoming.getName())) {
             throw new IllegalStateException(
-                    "Classroom '" + incoming.getName() + "' already exists in academic year " + year.getYear());
+                    "Já existe uma turma com o nome '" + incoming.getName() + "' no ano letivo " + year.getYear() + ".");
         }
 
         existing.setName(incoming.getName());
@@ -68,11 +68,11 @@ public class ClassRoomServiceImpl implements ClassRoomService {
 
         if (enrollmentRepository.existsByClassRoom(classRoom)) {
             throw new IllegalStateException(
-                    "Cannot delete classroom with id " + id + " because it has student enrollments.");
+                    "Não é possível excluir a turma '" + classRoom.getName() + "' pois ela possui matrículas de alunos vinculadas. Remova ou transfira as matrículas antes de excluir.");
         }
         if (teacherClassSubjectRepository.existsByClassRoom(classRoom)) {
             throw new IllegalStateException(
-                    "Cannot delete classroom with id " + id + " because it has teacher-subject assignments.");
+                    "Não é possível excluir a turma '" + classRoom.getName() + "' pois ela possui disciplinas e professores atribuídos. Remova as atribuições antes de excluir.");
         }
 
         classRoomRepository.deleteById(id);
@@ -121,12 +121,12 @@ public class ClassRoomServiceImpl implements ClassRoomService {
 
     ClassRoom findClassRoomOrThrow(Integer id) {
         return classRoomRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Classroom not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Turma não encontrada."));
     }
 
     private AcademicYear resolveAcademicYear(AcademicYear ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Academic year is required.");
+            throw new IllegalArgumentException("A seleção do ano letivo é obrigatória.");
         }
         return academicYearService.findById(ref.getId());
     }

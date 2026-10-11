@@ -233,7 +233,7 @@
             });
 
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (!response.ok) throw new Error('Erro na resposta do servidor');
+            if (!response.ok) throw new Error('Não foi possível carregar os diretores.');
 
             const data = await response.json();
             allPrincipals = Array.isArray(data) ? data : [];
@@ -353,7 +353,9 @@
                 loadPrincipals();
             } else {
                 const err = await response.json().catch(() => null);
-                await window.showAlertModal('Aviso', `Erro ao ${action} diretor: ${err?.message || 'Erro desconhecido'}`);
+                const fallback = `Não foi possível ${action} o diretor. Tente novamente.`;
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                await window.showAlertModal('Aviso', msg);
             }
         } catch (error) {
             await window.showAlertModal('Aviso', `Erro de conexão ao tentar ${action} o diretor.`);
@@ -375,7 +377,9 @@
                 loadPrincipals();
             } else {
                 const err = await response.json().catch(() => null);
-                await window.showAlertModal('Aviso', `Erro ao excluir diretor: ${err?.message || 'Conflito de dados ou erro desconhecido.'}`);
+                const fallback = 'Não foi possível excluir o diretor. Verifique se existem registros vinculados a este usuário.';
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                await window.showAlertModal('Aviso', msg);
             }
         } catch (error) {
             await window.showAlertModal('Aviso', 'Erro de conexão ao tentar excluir o diretor.');

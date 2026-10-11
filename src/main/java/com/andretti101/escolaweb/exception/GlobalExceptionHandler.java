@@ -55,12 +55,19 @@ public class GlobalExceptionHandler {
 
         log.warn("Validation failed on {}: {}", request.getRequestURI(), errorMessage);
 
+        List<FieldErrorDetail> fieldErrors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(f -> new FieldErrorDetail(f.getField(), f.getDefaultMessage()))
+                .toList();
+
         return ResponseEntity
                 .badRequest()
-                .body(ApiErrorResponse.of(
+                .body(ApiErrorResponse.ofValidation(
                         HttpStatus.BAD_REQUEST,
                         errorMessage,
-                        request.getRequestURI()));
+                        request.getRequestURI(),
+                        fieldErrors));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -75,12 +82,20 @@ public class GlobalExceptionHandler {
 
         log.warn("Constraint violation on {}: {}", request.getRequestURI(), errorMessage);
 
+        List<FieldErrorDetail> fieldErrors = ex.getConstraintViolations()
+                .stream()
+                .map(cv -> new FieldErrorDetail(
+                        cv.getPropertyPath() != null ? cv.getPropertyPath().toString() : "param",
+                        cv.getMessage()))
+                .toList();
+
         return ResponseEntity
                 .badRequest()
-                .body(ApiErrorResponse.of(
+                .body(ApiErrorResponse.ofValidation(
                         HttpStatus.BAD_REQUEST,
                         errorMessage,
-                        request.getRequestURI()));
+                        request.getRequestURI(),
+                        fieldErrors));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -126,7 +141,7 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(ApiErrorResponse.of(
                         HttpStatus.BAD_REQUEST,
-                        getMessage("error.type.mismatch", ex.getName(), ex.getValue(), expected),
+                        getMessage("error.type.mismatch", ex.getName()),
                         request.getRequestURI()));
     }
 
@@ -136,11 +151,15 @@ public class GlobalExceptionHandler {
 
         log.warn("Illegal argument on {}: {}", request.getRequestURI(), ex.getMessage());
 
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : getMessage("error.illegal.argument");
+
         return ResponseEntity
                 .badRequest()
                 .body(ApiErrorResponse.of(
                         HttpStatus.BAD_REQUEST,
-                        ex.getMessage(),
+                        message,
                         request.getRequestURI()));
     }
 
@@ -158,7 +177,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ApiErrorResponse.of(
                         HttpStatus.UNAUTHORIZED,
-                        ex.getMessage(),
+                        getMessage("error.bad.credentials"),
                         request.getRequestURI()));
     }
 
@@ -194,17 +213,21 @@ public class GlobalExceptionHandler {
     // 403 FORBIDDEN
     // ═════════════════════════════
 
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({AccessDeniedException.class, SecurityException.class})
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(
-            AccessDeniedException ex, HttpServletRequest request) {
+            Exception ex, HttpServletRequest request) {
 
         log.warn("Access denied on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : getMessage("error.access.denied");
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(ApiErrorResponse.of(
                         HttpStatus.FORBIDDEN,
-                        getMessage("error.access.denied"),
+                        message,
                         request.getRequestURI()));
     }
 
@@ -214,11 +237,15 @@ public class GlobalExceptionHandler {
 
         log.warn("Unauthorized operation on {}: {}", request.getRequestURI(), ex.getMessage());
 
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : getMessage("error.unauthorized.operation");
+
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(ApiErrorResponse.of(
                         HttpStatus.FORBIDDEN,
-                        ex.getMessage(),
+                        message,
                         request.getRequestURI()));
     }
 
@@ -232,11 +259,19 @@ public class GlobalExceptionHandler {
 
         log.warn("Entity not found on {}: {}", request.getRequestURI(), ex.getMessage());
 
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : getMessage("error.entity.not.found");
+
+        if (message != null && (message.contains("com.andretti101") || message.toLowerCase().startsWith("unable to find") || message.toLowerCase().contains("entity"))) {
+            message = getMessage("error.entity.not.found");
+        }
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ApiErrorResponse.of(
                         HttpStatus.NOT_FOUND,
-                        ex.getMessage(),
+                        message,
                         request.getRequestURI()));
     }
 
@@ -311,10 +346,19 @@ public class GlobalExceptionHandler {
         String userMessage = getMessage("error.data.conflict");
         
         if (rootCause != null) {
-            if (rootCause.contains("enrollment") || rootCause.contains("uk3vna4k5oncxyxln26gmj708i2")) {
+            String lower = rootCause.toLowerCase();
+            if (lower.contains("foreign key") || lower.contains("is still referenced") || lower.contains("referenced from table") || lower.contains("violates foreign key")) {
+                userMessage = getMessage("error.foreign.key.conflict");
+            } else if (lower.contains("enrollment") || lower.contains("uk3vna4k5oncxyxln26gmj708i2") || lower.contains("registration") || lower.contains("students_enrollment_key")) {
                 userMessage = getMessage("error.enrollment.in.use");
-            } else if (rootCause.contains("email")) {
+            } else if (lower.contains("email") || lower.contains("uk_users_email") || lower.contains("users_email_key")) {
                 userMessage = getMessage("error.email.in.use");
+            } else if (lower.contains("subject") || lower.contains("uk_subjects_name") || lower.contains("subjects_name_key")) {
+                userMessage = getMessage("error.subject.in.use");
+            } else if (lower.contains("class_room") || lower.contains("classroom") || lower.contains("class_rooms")) {
+                userMessage = getMessage("error.classroom.in.use");
+            } else if (lower.contains("academic_year") || lower.contains("academicyear") || lower.contains("academic_years")) {
+                userMessage = getMessage("error.academic.year.in.use");
             }
         }
 
@@ -336,11 +380,15 @@ public class GlobalExceptionHandler {
 
         log.warn("Business rule violation on {}: {}", request.getRequestURI(), ex.getMessage());
 
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : getMessage("error.illegal.state");
+
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(ApiErrorResponse.of(
                         HttpStatus.UNPROCESSABLE_ENTITY,
-                        ex.getMessage(),
+                        message,
                         request.getRequestURI()));
     }
 

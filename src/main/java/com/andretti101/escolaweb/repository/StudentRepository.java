@@ -20,4 +20,8 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
 
     @Query("SELECT s FROM Student s JOIN s.enrollments e WHERE e.classRoom.id = :classroomId AND e.active = true")
     List<Student> findByClassroomId(@org.springframework.data.repository.query.Param("classroomId") Integer classroomId);
+
+    boolean existsByRegistrationNumber(String registrationNumber);
+
+    boolean existsByRegistrationNumberAndIdNot(String registrationNumber, Integer id);
 }

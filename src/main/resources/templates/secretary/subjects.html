@@ -221,7 +221,7 @@
             });
 
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (!response.ok) throw new Error('Erro na resposta do servidor');
+            if (!response.ok) throw new Error('Não foi possível carregar as matérias.');
 
             allSubjects = await response.json();
             applyFilters();
@@ -333,7 +333,9 @@
                 loadSubjects();
             } else {
                 const err = await response.json().catch(() => null);
-                await window.showAlertModal('Aviso', `Erro ao ${action} matéria: ${err?.message || 'Erro desconhecido'}`);
+                const fallback = `Não foi possível ${action} a matéria. Tente novamente.`;
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                await window.showAlertModal('Aviso', msg);
             }
         } catch (error) {
             await window.showAlertModal('Aviso', `Erro de conexão ao tentar ${action} a matéria.`);
@@ -352,7 +354,9 @@
                 loadSubjects();
             } else {
                 const err = await response.json().catch(() => null);
-                await window.showAlertModal('Aviso', `Erro ao excluir matéria: ${err?.message || 'Esta matéria está vinculada a alocações de professores e não pode ser excluída.'}`);
+                const fallback = 'Esta matéria está vinculada a alocações de professores e não pode ser excluída.';
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                await window.showAlertModal('Aviso', msg);
             }
         } catch (error) {
             await window.showAlertModal('Aviso', 'Erro de conexão ao tentar excluir a matéria.');

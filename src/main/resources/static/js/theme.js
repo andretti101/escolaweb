@@ -42,12 +42,14 @@
         return root.classList.contains('dark-style') ? DARK : LIGHT;
     }
 
-    function applyClasses(theme) {
+    function applyClasses(theme, deferColorScheme) {
         var isDark = theme === DARK;
         root.classList.toggle('dark-style', isDark);
         root.classList.toggle('light-style', !isDark);
         root.setAttribute('data-bs-theme', theme);
-        root.style.colorScheme = isDark ? 'dark' : 'light';
+        if (!deferColorScheme) {
+            root.style.colorScheme = isDark ? 'dark' : 'light';
+        }
     }
 
     function syncUI() {
@@ -82,17 +84,22 @@
         theme = theme === DARK ? DARK : LIGHT;
         var animate = !options || options.animate !== false;
         var persist = !options || options.persist !== false;
+        var shouldAnimate = animate && !!document.body;
 
-        if (animate && document.body) {
-            // Transição suave apenas durante a troca (evita animar cada hover da página)
+        if (shouldAnimate) {
+            // Transição suave apenas durante a troca (evita animar cada hover da página).
+            // Força reflow (offsetWidth) antes de alternar dark-style/light-style e adia a
+            // troca de color-scheme para evitar que o Chromium cancele as transições CSS.
             root.classList.add('theme-switching');
+            void root.offsetWidth;
             window.clearTimeout(set._timer);
             set._timer = window.setTimeout(function () {
                 root.classList.remove('theme-switching');
-            }, 350);
+                root.style.colorScheme = current() === DARK ? 'dark' : 'light';
+            }, 380);
         }
 
-        applyClasses(theme);
+        applyClasses(theme, shouldAnimate);
         if (persist) writeStored(theme);
         syncUI();
 

@@ -82,7 +82,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional(readOnly = true)
     public Announcement findById(Integer id) {
         return announcementRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Aviso não encontrado com id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Aviso não encontrado ou já foi removido."));
     }
 
     @Override
@@ -184,7 +184,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional
     public void delete(Integer id, Integer userId) {
         Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Aviso não encontrado com id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Aviso não encontrado ou já foi removido."));
         
         User authUser = userRepository.findById(userId).orElseThrow();
         
@@ -232,7 +232,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void markAnnouncementsAsRead(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
         user.setLastReadAnnouncements(LocalDateTime.now());
         userRepository.save(user);
     }

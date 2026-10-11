@@ -9,20 +9,20 @@ import java.math.BigDecimal;
 
 public record YearConclusionRequestDTO(
 
-        @NotNull(message = "O ano letivo seguinte é obrigatório.")
+        @NotNull(message = "Informe o ano letivo de destino para a transição dos alunos.")
         Integer nextYear,
 
-        @NotNull(message = "A média mínima é obrigatória.")
-        @DecimalMin(value = "0.0", message = "A média mínima deve ser no mínimo 0.")
-        @DecimalMax(value = "10.0", message = "A média mínima deve ser no máximo 10.")
+        @NotNull(message = "A média mínima para aprovação é obrigatória.")
+        @DecimalMin(value = "0.0", message = "A média mínima para aprovação deve ser no mínimo 0,0.")
+        @DecimalMax(value = "10.0", message = "A média mínima para aprovação deve ser no máximo 10,0.")
         BigDecimal minimumGrade,
 
-        @NotNull(message = "A frequência mínima é obrigatória.")
-        @DecimalMin(value = "0.0", message = "A frequência mínima deve ser no mínimo 0.")
-        @DecimalMax(value = "100.0", message = "A frequência mínima deve ser no máximo 100.")
+        @NotNull(message = "A frequência mínima exigida é obrigatória.")
+        @DecimalMin(value = "0.0", message = "A frequência mínima exigida deve ser no mínimo 0%.")
+        @DecimalMax(value = "100.0", message = "A frequência mínima exigida deve ser no máximo 100%.")
         BigDecimal minimumAttendance,
 
-        @NotNull(message = "O tipo de divisão do período é obrigatório.")
+        @NotNull(message = "Selecione o formato dos períodos letivos (Bimestre, Trimestre ou Semestre).")
         AcademicPeriodType periodType
 
 ) {}

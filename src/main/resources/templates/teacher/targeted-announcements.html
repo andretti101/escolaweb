@@ -104,10 +104,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
         if (!response.ok) {
-            let errMsg = `Status ${response.status}`;
+            let errMsg = 'Não foi possível carregar os avisos.';
             try {
                 const errObj = await response.json();
-                if (errObj.message) errMsg = errObj.message;
+                if (window.extractErrorMessage) {
+                    errMsg = window.extractErrorMessage(errObj, errMsg);
+                } else if (errObj.message) {
+                    errMsg = errObj.message;
+                }
             } catch (e) {}
             throw new Error(errMsg);
         }
@@ -253,11 +257,14 @@ window.deleteAnnouncement = function(id) {
             if (response.ok) {
                 window.location.reload();
             } else {
-                await window.showAlertModal('Aviso', "Erro ao excluir o aviso.");
+                const err = await response.json().catch(() => null);
+                const fallback = 'Não foi possível excluir o aviso. Tente novamente.';
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                await window.showAlertModal('Aviso', msg);
             }
         } catch (e) {
             console.error(e);
-            await window.showAlertModal('Aviso', "Erro ao excluir o aviso.");
+            await window.showAlertModal('Erro de Conexão', 'Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.');
         }
     });
 };

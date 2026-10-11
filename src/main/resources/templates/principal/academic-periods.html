@@ -114,7 +114,7 @@
                             </div>
                             <div id="errorState" class="text-center py-5 d-none">
                                 <i class="bx bx-error-circle fs-1 text-danger"></i>
-                                <p class="mt-2 text-muted mb-0" id="errorMessage">Erro ao carregar.</p>
+                                <p class="mt-2 text-muted mb-0" id="errorMessage">Não foi possível carregar os períodos acadêmicos.</p>
                                 <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadPeriods()"><i
                                         class="bx bx-refresh me-1"></i> Tentar novamente
                                 </button>
@@ -212,13 +212,13 @@
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (!response.ok) throw new Error('Erro na resposta do servidor');
+            if (!response.ok) throw new Error('Não foi possível carregar os períodos acadêmicos.');
             allPeriods = await response.json();
 
             // Computed Status
-            allPeriods.sort((a, b) => a.id - b.id);
+            const sortedAsc = [...allPeriods].sort((a, b) => a.id - b.id);
             const yearOpenFound = {};
-            allPeriods.forEach(p => {
+            sortedAsc.forEach(p => {
                 if (p.closed) {
                     p.computedStatus = 'fechado';
                 } else {
@@ -254,13 +254,12 @@
             filtered = filtered.filter(p => p.name && p.name.toLowerCase().includes(term));
         }
 
-        if (statusFilter === 'all') {
-            filtered.sort((a, b) => {
-                if (!a.closed && b.closed) return -1;
-                if (a.closed && !b.closed) return 1;
-                return 0;
-            });
-        }
+        filtered.sort((a, b) => {
+            const yearA = parseInt(a.academicYear) || 0;
+            const yearB = parseInt(b.academicYear) || 0;
+            if (yearB !== yearA) return yearB - yearA;
+            return b.id - a.id;
+        });
 
         renderTable(filtered);
     }
@@ -412,10 +411,10 @@
                     loadPeriods();
                 } else {
                     const err = await response.json().catch(() => null);
-                    showAlertModal('Aviso', `Não foi possível fechar o período:\n\n${err?.message || 'Erro desconhecido.'}`);
+                    showAlertModal('Aviso', `Não foi possível fechar o período:\n\n${err?.message || 'Verifique se a data de término já passou e se todos os professores lançaram as avaliações mínimas.'}`);
                 }
             } catch (error) {
-                showAlertModal('Erro', 'Erro de conexão.');
+                showAlertModal('Erro de Conexão', 'Não foi possível comunicar com o servidor. Verifique sua conexão com a internet e tente novamente.');
             }
         });
     }
@@ -434,10 +433,12 @@
                     loadPeriods();
                 } else {
                     const err = await response.json().catch(() => null);
-                    showAlertModal('Erro', `Erro ao excluir: ${err?.message || 'Este período possui avaliações vinculadas.'}`);
+                    const fallback = 'Não foi possível excluir o período. Verifique se existem avaliações vinculadas a ele.';
+                    const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                    showAlertModal('Erro ao Excluir', msg);
                 }
             } catch (error) {
-                showAlertModal('Erro', 'Erro de conexão.');
+                showAlertModal('Erro de Conexão', 'Não foi possível comunicar com o servidor. Verifique sua conexão com a internet e tente novamente.');
             }
         });
     }
@@ -469,10 +470,12 @@
                     loadPeriods();
                 } else {
                     const err = await response.json().catch(() => null);
-                    showAlertModal('Aviso', `Não foi possível gerar os períodos:\n\n${err?.message || 'Erro desconhecido.'}`);
+                    const fallback = 'Verifique se o ano acadêmico possui estrutura definida ou se os períodos já foram criados.';
+                    const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                    showAlertModal('Aviso', `Não foi possível gerar os períodos:\n\n${msg}`);
                 }
             } catch (error) {
-                showAlertModal('Erro', 'Erro de conexão.');
+                showAlertModal('Erro de Conexão', 'Não foi possível comunicar com o servidor. Verifique sua conexão com a internet e tente novamente.');
             }
         });
     }
@@ -494,10 +497,12 @@
                     loadPeriods();
                 } else {
                     const err = await response.json().catch(() => null);
-                    showAlertModal('Aviso', `A transição foi bloqueada:\n\n${err?.message || 'Erro desconhecido.'}`);
+                    const fallback = 'Verifique se o período atual cumpriu todos os requisitos para encerramento.';
+                    const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                    showAlertModal('Aviso', `A transição foi bloqueada:\n\n${msg}`);
                 }
             } catch (error) {
-                showAlertModal('Erro', 'Erro de conexão.');
+                showAlertModal('Erro de Conexão', 'Não foi possível comunicar com o servidor. Verifique sua conexão com a internet e tente novamente.');
             }
         });
     }

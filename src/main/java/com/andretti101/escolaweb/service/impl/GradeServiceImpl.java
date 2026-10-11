@@ -47,8 +47,8 @@ public class GradeServiceImpl implements GradeService {
 
         if (gradeRepository.existsByStudentAndAssessment(student, assessment)) {
             throw new IllegalStateException(
-                    "Grade for student with id " + student.getId()
-                    + " on assessment with id " + assessment.getId() + " is already registered.");
+                    "Já existe uma nota lançada para o aluno '" + student.getName()
+                    + "' na avaliação '" + assessment.getTitle() + "'. Para alterá-la, utilize a opção de edição de nota.");
         }
 
         validateActiveEnrollment(student, assessment.getTeacherClassSubject());
@@ -214,42 +214,41 @@ public class GradeServiceImpl implements GradeService {
     private void validatePeriodOpen(Assessment assessment) {
         if (assessment.getPeriod().isClosed()) {
             throw new IllegalStateException(
-                    "Academic period '" + assessment.getPeriod().getName()
-                    + "' is closed. Grades cannot be modified.");
+                    "O período acadêmico '" + assessment.getPeriod().getName()
+                    + "' está fechado. Não é permitido lançar ou alterar notas.");
         }
     }
 
     private void validateGradeValue(BigDecimal value) {
         if (value == null) return;
         if (value.compareTo(BigDecimal.ZERO) < 0 || value.compareTo(BigDecimal.TEN) > 0) {
-            throw new IllegalArgumentException("Grade value must be between 0 and 10.");
+            throw new IllegalArgumentException("O valor da nota deve estar entre 0,0 e 10,0. Verifique o valor digitado.");
         }
     }
 
     private void validateActiveEnrollment(Student student, TeacherClassSubject tcs) {
         if (!enrollmentRepository.existsByStudentAndClassRoomAndActiveTrue(student, tcs.getClassRoom())) {
             throw new IllegalStateException(
-                    "Student with id " + student.getId()
-                    + " does not have an active enrollment in classroom with id "
-                    + tcs.getClassRoom().getId() + ".");
+                    "O aluno '" + student.getName() + "' não possui matrícula ativa na turma '"
+                    + tcs.getClassRoom().getName() + "'. Apenas alunos com matrícula ativa podem receber notas.");
         }
     }
 
     private Grade findGradeOrThrow(Integer id) {
         return gradeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Grade not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Nota não encontrada ou já removida."));
     }
 
     private Student resolveStudent(Student ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Student is required.");
+            throw new IllegalArgumentException("A seleção do aluno é obrigatória.");
         }
         return studentService.findById(ref.getId());
     }
 
     private Assessment resolveAssessment(Assessment ref) {
         if (ref == null || ref.getId() == null) {
-            throw new IllegalArgumentException("Assessment is required.");
+            throw new IllegalArgumentException("A seleção da avaliação é obrigatória.");
         }
         return assessmentService.findById(ref.getId());
     }
