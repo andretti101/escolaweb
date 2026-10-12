@@ -1,6 +1,7 @@
 package com.andretti101.escolaweb.controller;
 
 import com.andretti101.escolaweb.dto.request.TeacherRequestDTO;
+import com.andretti101.escolaweb.dto.request.TeacherUpdateRequestDTO;
 import com.andretti101.escolaweb.dto.response.TeacherResponseDTO;
 import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.service.TeacherService;
@@ -46,8 +47,15 @@ public class TeacherController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<TeacherResponseDTO> update(
-            @PathVariable Integer id, @Valid @RequestBody TeacherRequestDTO dto) {
+            @PathVariable Integer id, @Valid @RequestBody TeacherUpdateRequestDTO dto) {
         return ResponseEntity.ok(toResponse(teacherService.update(id, toEntity(dto))));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('SECRETARY')")
+    public ResponseEntity<TeacherResponseDTO> patch(
+            @PathVariable Integer id, @Valid @RequestBody TeacherUpdateRequestDTO dto) {
+        return update(id, dto);
     }
 
     @DeleteMapping("/{id}")
@@ -76,6 +84,14 @@ public class TeacherController {
         teacher.setName(dto.name());
         teacher.setEmail(dto.email());
         teacher.setPassword(dto.password()); // encoded by TeacherServiceImpl.create()
+        return teacher;
+    }
+
+    private Teacher toEntity(TeacherUpdateRequestDTO dto) {
+        Teacher teacher = new Teacher();
+        teacher.setName(dto.name());
+        teacher.setEmail(dto.email());
+        teacher.setPassword(dto.password());
         return teacher;
     }
 

@@ -354,7 +354,7 @@
             const payload = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
-                password: senhaDigitada.trim() !== '' ? senhaDigitada : 'SenhaTemporaria123',
+                password: senhaDigitada.trim() !== '' ? senhaDigitada : null,
                 ownPhone: document.getElementById('ownPhone').value || null,
                 guardianPhone: document.getElementById('guardianPhone').value || null,
                 registrationNumber: document.getElementById('registrationNumber').value,

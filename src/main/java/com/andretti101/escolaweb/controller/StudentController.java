@@ -1,6 +1,7 @@
 package com.andretti101.escolaweb.controller;
 
 import com.andretti101.escolaweb.dto.request.StudentRequestDTO;
+import com.andretti101.escolaweb.dto.request.StudentUpdateRequestDTO;
 import com.andretti101.escolaweb.dto.response.StudentResponseDTO;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.service.AuthenticatedUserService;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -94,9 +96,17 @@ public class StudentController {
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<StudentResponseDTO> update(
             @PathVariable Integer id,
-            @Valid @RequestBody StudentRequestDTO dto) {
+            @Valid @RequestBody StudentUpdateRequestDTO dto) {
         Student updated = studentService.update(id, toEntity(dto));
         return ResponseEntity.ok(toResponse(updated));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('SECRETARY')")
+    public ResponseEntity<StudentResponseDTO> patch(
+            @PathVariable Integer id,
+            @Valid @RequestBody StudentUpdateRequestDTO dto) {
+        return update(id, dto);
     }
 
     @DeleteMapping("/{id}")
@@ -121,6 +131,18 @@ public class StudentController {
     //  Mapping
 
     private Student toEntity(StudentRequestDTO dto) {
+        Student student = new Student();
+        student.setName(dto.name());
+        student.setEmail(dto.email());
+        student.setPassword(dto.password());
+        student.setOwnPhone(dto.ownPhone());
+        student.setGuardianPhone(dto.guardianPhone());
+        student.setRegistrationNumber(dto.registrationNumber());
+        student.setBirthDate(dto.birthDate());
+        return student;
+    }
+
+    private Student toEntity(StudentUpdateRequestDTO dto) {
         Student student = new Student();
         student.setName(dto.name());
         student.setEmail(dto.email());
