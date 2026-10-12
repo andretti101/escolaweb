@@ -48,7 +48,7 @@ public class GradeController {
             Assessment assessment = assessmentService.findById(dto.assessmentId());
             authenticatedUserService.enforceTeacherOwnership(assessment.getTeacherClassSubject());
         }
-        Grade launched = gradeService.launch(toEntity(dto), dto.notes());
+        Grade launched = gradeService.launch(toEntity(dto));
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(launched));
     }
 

@@ -283,21 +283,99 @@ ORDER BY c.id, sb.id;
 -- 8. AULAS
 -- =====================================================================
 -- Para cada vínculo professor/turma/disciplina e para cada trimestre do ano
--- são geradas até 6 aulas, uma a cada 14 dias a partir do início do
--- trimestre. O deslocamento ((subject_id-1) % 5) espalha as disciplinas de
+-- são geradas até 6 aulas com planos pedagógicos realistas por disciplina.
+-- O deslocamento ((subject_id-1) % 5) espalha as disciplinas de
 -- segunda a sexta. Só entram aulas até 06/10/2026 (data de referência) e
 -- dentro do período; por isso o 3º trimestre de 2026 tem menos aulas.
 -- lesson_count (1 ou 2) = quantidade de aulas geminadas no dia.
 INSERT INTO lessons (content, created_at, lesson_count, lesson_date, notes, updated_at, teacher_class_subject_id, active)
-SELECT sb.name || ': ' || (ARRAY['apresentação do conteúdo','exercícios dirigidos','aula expositiva e discussão',
-                                  'trabalho em grupo','atividade prática','revisão para a avaliação'])[n.i + 1],
-       x.d::timestamp + interval '8 hours',
-       1 + ((t.id + n.i) % 2),
-       x.d,
-       CASE WHEN n.i = 5 THEN 'Aula de revisão antes da avaliação do trimestre' END,
-       x.d::timestamp + interval '8 hours',
-       t.id,
-       true
+SELECT 
+    CASE sb.id
+        -- Língua Portuguesa
+        WHEN 1 THEN (ARRAY[
+            'Gêneros textuais contemporâneos: crônica jornalística e análise crítica',
+            'Sintaxe do período composto por coordenação e subordinação',
+            'Semântica e figuras de linguagem na interpretação de textos literários',
+            'Produção textual dissertativo-argumentativa: introdução e tese',
+            'Oficina de redação: coesão referencial e conectivos',
+            'Revisão geral de gramática e estrutura textual para avaliação trimestral'
+        ])[n.i + 1]
+        -- Matemática
+        WHEN 2 THEN (ARRAY[
+            'Introdução às funções afins e quadráticas: estudo dos coeficientes',
+            'Resolução de problemas contextualizados com equações e inequações',
+            'Geometria plana e espacial: cálculo de perímetros, áreas e volumes',
+            'Trigonometria no triângulo retângulo e razões fundamentais',
+            'Análise de gráficos estatísticos, média ponderada e desvio padrão',
+            'Plantão de resolução de exercícios e revisão dos conteúdos da prova'
+        ])[n.i + 1]
+        -- História
+        WHEN 3 THEN (ARRAY[
+            'A Era Vargas e as transformações trabalhistas e sociais no Brasil',
+            'Crise de 1929 e a ascensão dos regimes totalitários na Europa',
+            'Segunda Guerra Mundial: antecedentes, desdobramentos e ordem bipolar',
+            'Guerra Fria: impactos geopolíticos na América Latina',
+            'Ditadura Civil-Militar no Brasil: censura, resistência e movimentos sociais',
+            'Síntese histórica, debate orientado e revisão preparatória do trimestre'
+        ])[n.i + 1]
+        -- Geografia
+        WHEN 4 THEN (ARRAY[
+            'Globalização e as novas redes de fluxos de capitais e mercadorias',
+            'Geopolítica mundial: blocos econômicos e conflitos territoriais',
+            'Urbanização brasileira e segregação socioespacial nas metrópoles',
+            'Impactos socioambientais: desmatamento, transição energética e clima',
+            'Cartografia temática e leitura de mapas de densidade demográfica',
+            'Revisão interdisciplinar de geografia física e econômica'
+        ])[n.i + 1]
+        -- Ciências
+        WHEN 5 THEN (ARRAY[
+            'Genética mendeliana e hereditariedade: noções de DNA e cromossomos',
+            'Evolução e seleção natural: teorias de Lamarck e Darwin',
+            'Química fundamental: modelos atômicos e ligações químicas covalentes',
+            'Termologia e leis fundamentais da conservação da energia',
+            'Prática no laboratório de ciências: observação microscópica e reações',
+            'Revisão dos eixos temáticos e discussão dos relatórios científicos'
+        ])[n.i + 1]
+        -- Inglês
+        WHEN 6 THEN (ARRAY[
+            'Reading Comprehension: Scanning, skimming and critical text analysis',
+            'Grammar Focus: Present Perfect vs Simple Past in authentic contexts',
+            'Listening & Speaking: Global environmental issues and debates',
+            'Vocabulary building: Academic discourse and formal register',
+            'Collaborative writing: Opinion essays and peer review',
+            'Final trimestrial review: Interactive mock test and feedback'
+        ])[n.i + 1]
+        -- Educação Física
+        WHEN 7 THEN (ARRAY[
+            'Fundamentos táticos dos esportes coletivos: voleibol e futsal',
+            'Capacidades físicas: resistência aeróbica, velocidade e flexibilidade',
+            'História e dimensões culturais dos Jogos Olímpicos modernos',
+            'Práticas corporais de aventura e expressão rítmica integrada',
+            'Saúde, ergonomia e prevenção do sedentarismo na adolescência',
+            'Vivência prática integrativa e autoavaliação do desempenho corporal'
+        ])[n.i + 1]
+        -- Artes
+        WHEN 8 THEN (ARRAY[
+            'Vanguardas europeias no século XX: Cubismo, Surrealismo e Futurismo',
+            'Modernismo no Brasil e a Semana de Arte Moderna de 1922',
+            'Linguagens visuais contemporâneas: fotografia, design e intervenção',
+            'Música popular brasileira como patrimônio imaterial e resistência',
+            'Oficina prática de criação: releitura visual e composição artística',
+            'Apresentação do portfólio artístico e reflexão crítica do período'
+        ])[n.i + 1]
+        ELSE sb.name || ': Aula temática ' || (n.i + 1)
+    END,
+    x.d::timestamp + interval '8 hours',
+    1 + ((t.id + n.i) % 2),
+    x.d,
+    CASE 
+        WHEN n.i = 4 THEN 'Atividade avaliativa formativa / entrega de relatório preliminar'
+        WHEN n.i = 5 THEN 'Encontro de consolidação de dúvidas antes da avaliação trimestral'
+        ELSE NULL
+    END,
+    x.d::timestamp + interval '8 hours',
+    t.id,
+    true
 FROM teacher_class_subject t
 JOIN class_rooms c ON c.id = t.class_room_id
 JOIN subjects sb ON sb.id = t.subject_id
@@ -351,17 +429,75 @@ UPDATE attendances SET updated_at = created_at + interval '2 days' WHERE status 
 -- 10. AVALIAÇÕES
 -- =====================================================================
 -- 2 avaliações por vínculo professor/turma/disciplina em cada trimestre,
--- respeitando o mínimo de 2 definido na seção 7:
---   * 1ª avaliação: PROVA (EXAM), 28 dias após o início do trimestre;
+-- respeitando a nomenclatura pedagógica contextualizada de cada disciplina:
+--   * 1ª avaliação: PROVA (EXAM) com títulos autênticos por disciplina e trimestre;
 --   * 2ª avaliação: TRABALHO (ASSIGNMENT) no 1º e 3º trimestres ou
---     VISTO DE CADERNO (NOTEBOOK) no 2º, 63 dias após o início.
+--     VISTO DE CADERNO / ATIVIDADE PRÁTICA (NOTEBOOK) no 2º trimestre.
 -- Em 2026, a 2ª avaliação do 3º trimestre ainda está no futuro (novembro).
 INSERT INTO assessments (assessment_type, created_at, assessment_date, description, title, updated_at, period_id, teacher_class_subject_id, active)
 SELECT k.typ,
        p.start_date::timestamp + interval '7 days',
        p.start_date + k.off + ((t.subject_id - 1) % 5),
-       sb.name || ' - ' || k.label || ' do ' || ((p.id - 1) % 3 + 1) || 'º Trimestre',
-       k.label || ' do ' || ((p.id - 1) % 3 + 1) || 'º Trimestre',
+       CASE k.n
+           WHEN 1 THEN 
+               CASE sb.id
+                   WHEN 1 THEN 'Avaliação formal de interpretação textual, coesão e análise sintática'
+                   WHEN 2 THEN 'Prova individual de raciocínio lógico, cálculo algébrico e geometria'
+                   WHEN 3 THEN 'Avaliação discursiva de contextualização histórica e interpretação de fontes'
+                   WHEN 4 THEN 'Prova de dinâmica territorial, geopolítica e análise cartográfica'
+                   WHEN 5 THEN 'Avaliação teórico-prática de ciências naturais e biologia celular'
+                   WHEN 6 THEN 'Reading comprehension test, lexical analysis and grammar accuracy'
+                   WHEN 7 THEN 'Avaliação teórica de regras desportivas, fisiologia e hábitos saudáveis'
+                   WHEN 8 THEN 'Análise estética, história da arte e manifestações culturais brasileiras'
+                   ELSE 'Avaliação somativa formal do trimestre'
+               END
+           ELSE 
+               CASE 
+                   WHEN k.typ = 'ASSIGNMENT' THEN 
+                       CASE sb.id
+                           WHEN 1 THEN 'Produção de redação dissertativa com debate temático em grupo'
+                           WHEN 2 THEN 'Trabalho de modelagem matemática com dados do cotidiano escolar'
+                           WHEN 3 THEN 'Pesquisa bibliográfica e seminário temático de memória histórica'
+                           WHEN 4 THEN 'Elaboração de mapa temático e relatório socioambiental'
+                           WHEN 5 THEN 'Relatório experimental investigativo de laboratório'
+                           WHEN 6 THEN 'Oral presentation and video storytelling in English'
+                           WHEN 7 THEN 'Circuito motor e planejamento de torneio interclasses'
+                           WHEN 8 THEN 'Portfólio de expressão artística e releitura contemporânea'
+                           ELSE 'Trabalho bimestral de pesquisa aplicada'
+                       END
+                   ELSE 'Visto do caderno pedagógico, anotações de aula e resolução de listas semanais'
+               END
+       END,
+       CASE k.n
+           WHEN 1 THEN 
+               CASE sb.id
+                   WHEN 1 THEN 'Prova Bimestral de Língua Portuguesa (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                   WHEN 2 THEN 'Avaliação de Matemática: Álgebra e Geometria (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                   WHEN 3 THEN 'Prova de História: Sociedade e Transformações (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                   WHEN 4 THEN 'Avaliação de Geografia: Espaço e Dinâmica (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                   WHEN 5 THEN 'Prova Trimestral de Ciências Naturais (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                   WHEN 6 THEN 'English Written Assessment: Unit Progress (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                   WHEN 7 THEN 'Avaliação Teórica de Educação Física (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                   WHEN 8 THEN 'Avaliação de História da Arte e Expressão (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                   ELSE 'Prova Escrita do ' || ((p.id - 1) % 3 + 1) || 'º Trimestre'
+               END
+           ELSE 
+               CASE 
+                   WHEN k.typ = 'ASSIGNMENT' THEN 
+                       CASE sb.id
+                           WHEN 1 THEN 'Redação e Seminário de Literatura (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                           WHEN 2 THEN 'Projeto Prático de Estatística e Resolução de Problemas (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                           WHEN 3 THEN 'Pesquisa Documental e Apresentação em Grupo (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                           WHEN 4 THEN 'Estudo de Caso Socioambiental (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                           WHEN 5 THEN 'Relatório Investigativo de Laboratório (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                           WHEN 6 THEN 'Speaking Project & Cultural Essay (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                           WHEN 7 THEN 'Avaliação Prática de Habilidades Esportivas (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                           WHEN 8 THEN 'Painel Artístico e Portfólio de Criação (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+                           ELSE 'Trabalho Prático do ' || ((p.id - 1) % 3 + 1) || 'º Trimestre'
+                       END
+                   ELSE 'Acompanhamento de Caderno e Listas (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
+               END
+       END,
        p.start_date::timestamp + interval '7 days',
        p.id,
        t.id,
@@ -371,10 +507,9 @@ JOIN class_rooms c ON c.id = t.class_room_id
 JOIN subjects sb ON sb.id = t.subject_id
 JOIN academic_periods p ON p.academic_year_id = c.academic_year_id
 CROSS JOIN LATERAL (
-    VALUES (1, 'EXAM', 'Prova', 28),
-           (2, CASE WHEN ((p.id - 1) % 3 + 1) % 2 = 1 THEN 'ASSIGNMENT' ELSE 'NOTEBOOK' END,
-               CASE WHEN ((p.id - 1) % 3 + 1) % 2 = 1 THEN 'Trabalho' ELSE 'Visto de Caderno' END, 63)
-) AS k(n, typ, label, off)
+    VALUES (1, 'EXAM', 28),
+           (2, CASE WHEN ((p.id - 1) % 3 + 1) % 2 = 1 THEN 'ASSIGNMENT' ELSE 'NOTEBOOK' END, 63)
+) AS k(n, typ, off)
 ORDER BY t.id, p.id, k.n;
 
 -- =====================================================================
@@ -449,11 +584,27 @@ CROSS JOIN LATERAL (
 WHERE a.assessment_date + 1 <= DATE '2026-10-06'
 ORDER BY a.id, e.student_id;
 
--- Histórico de notas: 1 em cada 20 notas foi revisada (a nota antiga era
--- 0,5 ponto menor), simulando a correção de uma prova após pedido de revisão.
--- Registrado pelo professor responsável da turma/disciplina.
+-- Histórico de notas: 1 em cada 20 notas foi revisada com motivos pedagógicos variados e realistas.
+-- Registrado pelo professor responsável da turma/disciplina (ou pela coordenação/secretaria quando aplicável).
 INSERT INTO grade_history (changed_at, new_grade, notes, old_grade, grade_id, changed_by)
-SELECT g.created_at + interval '1 day', g.score, 'Nota corrigida após revisão da avaliação', g.score - 0.5, g.id, tcs.teacher_id
+SELECT g.created_at + interval '1 day',
+       g.score,
+       (ARRAY[
+           'Retificação após deferimento de recurso na questão discursiva',
+           'Correção de critério na rubrica de avaliação após conferência com o aluno',
+           'Nota atualizada após entrega de trabalho complementar autorizado pela coordenação',
+           'Revisão da pontuação de cálculo na folha de resposta da prova',
+           'Ajuste decorrente de realização de 2ª chamada da avaliação trimestral',
+           'Correção de digitação involuntária no lançamento inicial da nota',
+           'Bonificação atribuída pela participação ativa na feira cultural e científica',
+           'Reavaliação pedagógica deliberada em reunião do conselho de classe'
+       ])[(g.id / 20) % 8 + 1],
+       CASE 
+           WHEN g.score >= 0.5 THEN g.score - 0.5
+           ELSE g.score + 0.5
+       END,
+       g.id,
+       tcs.teacher_id
 FROM grades g
 JOIN assessments a ON a.id = g.assessment_id
 JOIN teacher_class_subject tcs ON tcs.id = a.teacher_class_subject_id
