@@ -22,6 +22,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
     private final EnrollmentRepository enrollmentRepository;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
     private final AcademicYearService academicYearService;
+    private final com.andretti101.escolaweb.repository.AcademicYearRepository academicYearRepository;
 
     @Override
     @Transactional
@@ -99,7 +100,10 @@ public class ClassRoomServiceImpl implements ClassRoomService {
     @Override
     @Transactional(readOnly = true)
     public List<ClassRoom> findByAcademicYear(Integer academicYearId) {
-        AcademicYear year = academicYearService.findById(academicYearId);
+        if (academicYearId == null) return java.util.Collections.emptyList();
+        AcademicYear year = academicYearRepository.findById(academicYearId)
+                .orElseGet(() -> academicYearRepository.findByYear(academicYearId)
+                        .orElseThrow(() -> new EntityNotFoundException("Ano letivo não encontrado.")));
         return classRoomRepository.findByAcademicYear(year);
     }
 

@@ -137,6 +137,12 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
+                                    <label for="filterPeriod" class="form-label">Período Letivo</label>
+                                    <select id="filterPeriod" class="form-select">
+                                        <option value="">Todos os períodos</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
                                     <label for="filterClassRoom" class="form-label">Turma</label>
                                     <select id="filterClassRoom" class="form-select">
                                         <option value="">Todas as turmas</option>
@@ -162,10 +168,7 @@
                                     <label for="filterTo" class="form-label">Data Até</label>
                                     <input type="date" id="filterTo" class="form-control" />
                                 </div>
-                                <div class="col-md-6 d-flex align-items-end gap-2">
-                                    <button type="button" id="btnFilter" class="btn btn-primary">
-                                        <i class="bx bx-search me-1"></i> Filtrar
-                                    </button>
+                                <div class="col-md-3 d-flex align-items-end gap-2">
                                     <button type="button" id="btnClear" class="btn btn-outline-secondary">
                                         <i class="bx bx-reset me-1"></i> Limpar Filtros
                                     </button>

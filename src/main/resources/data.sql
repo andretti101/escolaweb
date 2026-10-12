@@ -471,20 +471,25 @@ ORDER BY g.id;
 INSERT INTO announcements (id, archived, created_at, event_date, message, target_teachers, title, author_id) VALUES
  (1, true,  '2025-04-28 09:00:00', '2025-05-10', 'Convidamos os responsáveis para a reunião de pais e mestres do 1º semestre, às 9h, no pátio da escola.', false, 'Reunião de pais e mestres', 1),
  (2, true,  '2025-10-20 10:00:00', '2025-11-14', 'A Feira de Ciências 2025 acontecerá no ginásio. Os trabalhos devem ser entregues aos professores até o dia 7.', false, 'Feira de Ciências 2025', 2),
- (3, true,  '2026-02-02 08:00:00', '2026-02-09', 'Bem-vindos ao ano letivo de 2026! As aulas começam no dia 9 de fevereiro. Confiram a turma e o horário na secretaria.', false, 'Início do ano letivo 2026', 1),
- (4, true,  '2026-08-17 14:00:00', '2026-08-28', 'O conselho de classe do 2º trimestre será realizado no dia 28 de agosto. Professores, lancem as notas até o dia 26.', true,  'Conselho de classe - 2º trimestre', 1),
+ (3, false, '2026-02-02 08:00:00', '2026-02-09', 'Bem-vindos ao ano letivo de 2026! As aulas começam no dia 9 de fevereiro. Confiram a turma e o horário na secretaria.', false, 'Início do ano letivo 2026', 1),
+ (4, false, '2026-08-17 14:00:00', '2026-08-28', 'O conselho de classe do 2º trimestre será realizado no dia 28 de agosto. Professores, lancem as notas até o dia 26.', true,  'Conselho de classe - 2º trimestre', 1),
  (5, false, '2026-09-28 09:30:00', '2026-10-30', 'A Feira de Ciências 2026 será no dia 30 de outubro. Os grupos devem definir seus temas com os professores até 16 de outubro.', false, 'Feira de Ciências 2026', 2),
  (6, false, '2026-10-02 16:00:00', '2026-10-09', 'Reunião pedagógica no dia 9 de outubro, às 17h30, na sala dos professores. Pauta: planejamento das avaliações do 3º trimestre.', true,  'Reunião pedagógica - 3º trimestre', 1),
- (7, false, '2026-10-05 11:00:00', '2026-10-12', 'Não haverá aula no dia 12 de outubro (feriado nacional). As atividades retornam normalmente no dia 13.', false, 'Feriado de 12 de outubro', 2);
+ (7, false, '2026-10-05 11:00:00', '2026-10-12', 'Não haverá aula no dia 12 de outubro (feriado nacional). As atividades retornam normalmente no dia 13.', false, 'Feriado de 12 de outubro', 2),
+ (8, true,  '2024-03-04 09:00:00', '2024-03-15', 'Reunião inicial com pais e responsáveis para o ano letivo de 2024.', false, 'Reunião de Pais e Mestres 2024', 1),
+ (9, true,  '2024-11-18 10:00:00', '2024-11-29', 'Encerramento do ano letivo de 2024 e orientações para renovação de matrículas.', false, 'Encerramento do Ano Letivo 2024', 2),
+ (10, true, '2025-08-11 15:00:00', '2025-08-22', 'Conselho pedagógico do 2º trimestre de 2025 na sala dos professores.', true,  'Conselho de Classe 2025', 1);
 
--- Turmas que recebem cada aviso (turmas 4 a 6 = 2025; 7 a 9 = 2026).
--- Os avisos para professores (4 e 6) não são ligados a turmas.
+-- Turmas que recebem cada aviso (turmas 1 a 3 = 2024; 4 a 6 = 2025; 7 a 9 = 2026).
+-- Os avisos para professores (4, 6 e 10) não são ligados a turmas.
 INSERT INTO announcement_classrooms (announcement_id, class_room_id) VALUES
  (1, 4), (1, 5), (1, 6),
  (2, 4), (2, 5), (2, 6),
  (3, 7), (3, 8), (3, 9),
  (5, 7), (5, 8), (5, 9),
- (7, 7), (7, 8), (7, 9);
+ (7, 7), (7, 8), (7, 9),
+ (8, 1), (8, 2), (8, 3),
+ (9, 1), (9, 2), (9, 3);
 
 -- =====================================================================
 -- 13. CHAT
@@ -495,6 +500,7 @@ INSERT INTO announcement_classrooms (announcement_id, class_room_id) VALUES
 --   is_edited        -> mensagem editada pelo autor;
 --   is_deleted       -> mensagem apagada pelo autor;
 --   deleted_by_admin -> mensagem removida pela moderação.
+-- Inclui mensagens arquivadas de 2024 e 2025 para consulta no arquivo histórico.
 INSERT INTO chat_messages (id, archived, content, deleted_by_admin, is_deleted, is_edited, is_global_teacher_chat, "timestamp", classroom_id, replied_to_id, sender_id) VALUES
  (1, false, 'Bom dia, turma! Lembrem que a prova de Língua Portuguesa é na próxima semana.', false, false, false, false, '2026-09-28 07:45:00', 7, NULL, 3),
  (2, false, 'Professora, a prova vai incluir interpretação de texto?', false, false, false, false, '2026-09-28 07:52:00', 7, 1, 11),
@@ -504,7 +510,26 @@ INSERT INTO chat_messages (id, archived, content, deleted_by_admin, is_deleted, 
  (6, false, 'Obrigada, professor!', false, false, false, false, '2026-10-01 13:25:00', 8, 5, 22),
  (7, false, 'Pessoal, lembrete da reunião pedagógica na sexta, às 17h30.', false, false, false, true, '2026-10-02 16:10:00', NULL, NULL, 1),
  (8, false, 'Confirmado, estarei presente.', false, false, false, true, '2026-10-02 16:20:00', NULL, 7, 5),
- (9, false, 'Mensagem removida pela moderação.', true, true, false, false, '2026-10-03 10:00:00', 8, NULL, 25);
+ (9, false, 'Mensagem removida pela moderação.', true, true, false, false, '2026-10-03 10:00:00', 8, NULL, 25),
+ (10, true, 'Bom dia, turma! Sejam bem-vindos ao ano letivo de 2024.', false, false, false, false, '2024-02-15 08:00:00', 1, NULL, 3),
+ (11, true, 'Bom dia, professora Mariana! Ansioso pelo ano.', false, false, false, false, '2024-02-15 08:05:00', 1, 10, 11),
+ (12, true, 'Lembrem-se de trazer o material para a aula de gramática amanhã.', false, false, false, false, '2024-03-10 09:30:00', 1, NULL, 3),
+ (13, true, 'Turma, lista de exercícios preparatória para a prova já está liberada.', false, false, false, false, '2024-04-18 10:00:00', 2, NULL, 4),
+ (14, true, 'Professor, teremos revisão antes da avaliação?', false, false, false, false, '2024-04-18 10:15:00', 2, 13, 21),
+ (15, true, 'Sim, faremos resolução de dúvidas na quarta-feira.', false, false, false, false, '2024-04-18 10:20:00', 2, 14, 4),
+ (16, true, 'Colegas, reunião geral do corpo docente agendada para sexta-feira, 14h.', false, false, false, true, '2024-02-16 14:00:00', NULL, NULL, 1),
+ (17, true, 'Presença confirmada. Levarei as pautas do planejamento.', false, false, false, true, '2024-02-16 14:20:00', NULL, 16, 3),
+ (18, true, 'Iniciando o ano letivo de 2025! Bons estudos a todos.', false, false, false, false, '2025-02-18 08:00:00', 4, NULL, 3),
+ (19, true, 'Professora, qual o tema da primeira redação?', false, false, false, false, '2025-02-25 09:00:00', 4, NULL, 11),
+ (20, true, 'O tema será Convivência e Cidadania na Escola.', false, false, false, false, '2025-02-25 09:12:00', 4, 19, 3),
+ (21, true, 'Pessoal do 1º Médio, entrega do trabalho de trigonometria até dia 25.', false, false, false, false, '2025-04-15 11:00:00', 5, NULL, 4),
+ (22, true, 'Entendido professor Carlos, obrigado!', false, false, false, false, '2025-04-15 11:05:00', 5, 21, 21),
+ (23, true, 'Lembrete: fechamento das médias do 2º trimestre até o dia 28/08/2025.', false, false, false, true, '2025-08-20 15:00:00', NULL, NULL, 1),
+ (24, true, 'Notas de Língua Portuguesa já devidamente consolidadas no sistema.', false, false, false, true, '2025-08-22 16:30:00', NULL, 23, 3),
+ (25, true, 'Boas-vindas ao 1º ano do Ensino Médio de 2024! Nosso cronograma está disponível.', false, false, false, false, '2024-02-19 08:30:00', 3, NULL, 4),
+ (26, true, 'Professor, os livros didáticos serão entregues nesta semana?', false, false, false, false, '2024-02-19 08:45:00', 3, 25, 31),
+ (27, true, 'Turma do 2º Médio de 2025: projeto interdisciplinar com entrega no final do trimestre.', false, false, false, false, '2025-03-12 10:00:00', 6, NULL, 5),
+ (28, true, 'Combinado, professora Patrícia! Já formamos os grupos de pesquisa.', false, false, false, false, '2025-03-12 10:20:00', 6, 27, 31);
 
 -- Mensagem ocultada por um usuário apenas para si mesmo (aluno 15 ocultou a mensagem 4).
 INSERT INTO chat_hidden_messages (id, hidden_at, message_id, user_id) VALUES

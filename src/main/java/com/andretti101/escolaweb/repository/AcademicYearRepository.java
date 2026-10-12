@@ -9,6 +9,7 @@ import java.util.Optional;
 @Repository
 public interface AcademicYearRepository extends JpaRepository<AcademicYear, Integer> {
     Optional<AcademicYear> findByActiveTrue();
+    Optional<AcademicYear> findByYear(Integer year);
     boolean existsByYear(Integer year);
     boolean existsByYearAndIdNot(Integer year, Integer id);
 }

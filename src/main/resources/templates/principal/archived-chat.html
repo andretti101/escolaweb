@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Mensagens Arquivadas | Direção | Escola Web</title>
+    
+    <script src="/js/auth-guard.js"></script>
+
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <script src="/js/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+
+    <style>
+        .chat-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 190px);
+            background-color: #f5f5f9;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .chat-header {
+            background-color: #566a7f;
+            color: white;
+            padding: 14px 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .chat-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #f5f5f9; 
+        }
+        .chat-message { 
+            max-width: 75%;
+            padding: 8px 12px 10px 12px;
+            border-radius: 10px;
+            position: relative;
+            font-size: 14px;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+            align-self: flex-start;
+            background-color: #ffffff;
+            color: #566a7f;
+            border-top-left-radius: 2px;
+        }
+        .chat-message.is-admin {
+            border-left: 3px solid #ffab00;
+        }
+        .chat-message.is-teacher {
+            border-left: 3px solid #696cff;
+        }
+        .chat-message.is-secretary {
+            border-left: 3px solid #71dd37;
+        }
+        .chat-message .author {
+            font-size: 12px;
+            font-weight: 600;
+            color: #566a7f;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .replied-box {
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            border-left: 3px solid #8592a3;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .replied-box strong {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 11px;
+            color: #566a7f;
+        }
+        .chat-message .msg-content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .chat-message .msg-text {
+            flex: 1 1 auto;
+            min-width: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .chat-message .time-container {
+            flex: 0 0 auto;
+            margin-left: auto;
+            font-size: 11px;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .deleted-msg {
+            font-style: italic;
+            opacity: 0.65;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .header-select {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 20px;
+            padding: 4px 30px 4px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header-select:hover, .header-select:focus {
+            background-color: rgba(255, 255, 255, 0.25) !important;
+            border-color: #ffffff !important;
+            outline: none;
+        }
+        .header-select option {
+            color: #435971 !important;
+            background-color: #ffffff !important;
+            font-weight: 500;
+        }
+        .chat-readonly-footer {
+            background-color: #e7e7ff;
+            color: #696cff;
+            border-top: 1px solid #d9dee3;
+            padding: 12px 18px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        html.dark-style .chat-header {
+            background-color: var(--ew-surface-2);
+            border-bottom: 1px solid var(--ew-border);
+        }
+        html.dark-style .chat-message {
+            background-color: var(--ew-surface-2);
+            color: var(--ew-heading);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+        }
+        html.dark-style .chat-message .author {
+            color: var(--ew-heading);
+        }
+        html.dark-style .replied-box {
+            background-color: rgba(255, 255, 255, 0.06);
+            border-left-color: var(--ew-border);
+        }
+        html.dark-style .replied-box strong {
+            color: var(--ew-heading);
+        }
+        html.dark-style .chat-readonly-footer {
+            background-color: rgba(105, 108, 255, 0.16);
+            color: #a3a4cc;
+            border-top-color: var(--ew-border);
+        }
+    </style>
+    <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+    <script src="/js/global-modals.js"></script>
+</head>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+
+            <div class="layout-page">
+                <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i>
+                        </a>
+                    </div>
+                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                        <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                            <span class="fs-4 fw-bold">
+                                <i class="bx bx-archive fs-3 text-secondary me-2"></i> 
+                                <span class="text-secondary">Mensagens Arquivadas</span>
+                            </span>
+                        </div>
+
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitial">A</span>
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitialInner">A</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <span class="fw-semibold d-block" id="dropdownUserName">Carregando...</span>
+                                                    <small class="text-muted" id="dropdownUserRole">Direção</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><div class="dropdown-divider"></div></li>
+                                    <li>
+                                        <a class="dropdown-item" href="javascript:void(0);" id="btnLogoutNavbar">
+                                            <i class="bx bx-power-off me-2 text-danger"></i>
+                                            <span class="align-middle text-danger">Sair</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        
+                        <div class="alert alert-secondary d-flex align-items-center mb-3" role="alert">
+                            <i class="bx bx-info-circle fs-4 me-2 text-secondary"></i>
+                            <div>
+                                <strong>Modo Histórico Arquivado:</strong> Exibição somente leitura para fins de auditoria e conformidade. O envio de mensagens está desabilitado para registros arquivados.
+                            </div>
+                        </div>
+
+                        <div class="chat-wrapper">
+                            <div class="chat-header">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <i class='bx bx-archive-in fs-3'></i>
+                                    <select id="yearSelect" class="form-select form-select-sm header-select" style="min-width: 140px;">
+                                        <option value="">Todos os Anos</option>
+                                    </select>
+                                    <select id="classroomSelect" class="form-select form-select-sm header-select" style="min-width: 220px;">
+                                        <option value="">Selecione um canal / turma...</option>
+                                        <option value="TEACHERS">Sala dos Professores</option>
+                                    </select>
+                                    <span class="badge bg-secondary ms-2 fw-bold d-none d-sm-inline-block shadow-sm">Arquivo Histórico</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" id="btnMembers" class="btn btn-sm btn-light text-secondary d-none align-items-center gap-1 shadow-sm fw-bold" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMembers" onclick="loadMembers()">
+                                        <i class='bx bx-group'></i> Ver Membros
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-history" id="chatHistory">
+                                <div class="text-center py-5 text-muted">
+                                    <i class="bx bx-conversation fs-1 mb-2"></i>
+                                    <p class="mb-0">Selecione uma turma ou a Sala dos Professores acima para consultar o histórico arquivado.</p>
+                                </div>
+                            </div>
+
+                            <div class="chat-readonly-footer">
+                                <i class="bx bx-lock-alt"></i>
+                                <span>Canal arquivado — Envio e modificação desabilitados</span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <!-- Offcanvas Members -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMembers" aria-labelledby="offcanvasMembersLabel">
+      <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasMembersLabel" class="offcanvas-title">Membros da Turma</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body" style="padding: 0;">
+        <ul class="list-group list-group-flush" id="membersList">
+            <li class="list-group-item text-center text-muted">Carregando...</li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="/assets/vendor/libs/popper/popper.js"></script>
+    <script src="/assets/vendor/js/bootstrap.js"></script>
+    <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/js/load-sidebar.js"></script>
+    <script>
+        let allClassrooms = [];
+        let allAcademicYears = [];
+
+        function getToken() {
+            return localStorage.getItem("jwt_token") || '';
+        }
+
+        async function loadInitialData() {
+            const token = getToken();
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                const [yearsRes, classroomsRes] = await Promise.all([
+                    fetch('/api/academic-years', { headers: { 'Authorization': 'Bearer ' + token } }),
+                    fetch('/api/classrooms?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } })
+                ]);
+
+                if (yearsRes.ok) {
+                    allAcademicYears = await yearsRes.json();
+                    allAcademicYears.sort((a, b) => (b.year || 0) - (a.year || 0));
+                    const yearSelect = document.getElementById("yearSelect");
+                    if (yearSelect) {
+                        yearSelect.innerHTML = '<option value="">Todos os Anos</option>';
+                        allAcademicYears.forEach(y => {
+                            const opt = document.createElement('option');
+                            opt.value = y.id;
+                            opt.textContent = y.year + (y.active ? ' (Atual)' : '');
+                            yearSelect.appendChild(opt);
+                        });
+                    }
+                }
+
+                if (classroomsRes.ok) {
+                    allClassrooms = await classroomsRes.json();
+                    allClassrooms.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                }
+
+                renderClassroomSelect();
+            } catch (e) {
+                console.error("Erro ao carregar dados iniciais:", e);
+            }
+        }
+
+        function renderClassroomSelect() {
+            const yearSelect = document.getElementById("yearSelect");
+            const selectedYearId = yearSelect ? yearSelect.value : '';
+            const classroomSelect = document.getElementById("classroomSelect");
+            if (!classroomSelect) return;
+
+            const prevValue = classroomSelect.value;
+            classroomSelect.innerHTML = `
+                <option value="">Selecione um canal / turma...</option>
+                <option value="TEACHERS">Sala dos Professores</option>
+            `;
+
+            let filtered = allClassrooms;
+            if (selectedYearId) {
+                filtered = allClassrooms.filter(c => String(c.academicYearId) === String(selectedYearId) || String(c.academicYear) === String(selectedYearId));
+            }
+
+            filtered.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                let label = c.name || '';
+                if (!selectedYearId && c.academicYear) {
+                    label += ' (' + c.academicYear + ')';
+                }
+                if (!c.active) {
+                    label += ' [Inativa]';
+                }
+                opt.textContent = label;
+                classroomSelect.appendChild(opt);
+            });
+
+            const optionExists = Array.from(classroomSelect.options).some(o => o.value === prevValue);
+            if (prevValue && optionExists) {
+                classroomSelect.value = prevValue;
+                if (prevValue === 'TEACHERS') {
+                    loadArchivedMessages('TEACHERS');
+                }
+            } else {
+                classroomSelect.value = '';
+                loadArchivedMessages('');
+            }
+        }
+
+        async function loadArchivedMessages(selectedVal) {
+            const token = getToken();
+            const btnMembers = document.getElementById("btnMembers");
+            const chatHistory = document.getElementById("chatHistory");
+
+            if (!selectedVal) {
+                if (btnMembers) {
+                    btnMembers.classList.add('d-none');
+                    btnMembers.classList.remove('d-inline-flex');
+                }
+                if (chatHistory) {
+                    chatHistory.innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <i class="bx bx-conversation fs-1 mb-2"></i>
+                            <p class="mb-0">Selecione uma turma ou a Sala dos Professores acima para consultar o histórico arquivado.</p>
+                        </div>`;
+                }
+                return;
+            }
+
+            if (btnMembers) {
+                btnMembers.classList.remove('d-none');
+                btnMembers.classList.add('d-inline-flex');
+            }
+            if (chatHistory) {
+                chatHistory.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 text-muted small">Carregando mensagens arquivadas...</p>
+                    </div>`;
+            }
+
+            let url;
+            if (selectedVal === 'TEACHERS') {
+                const yearSelect = document.getElementById("yearSelect");
+                const selectedYearId = yearSelect ? yearSelect.value : '';
+                url = '/api/chat/teachers/archived-history';
+                if (selectedYearId) {
+                    url += '?year=' + encodeURIComponent(selectedYearId);
+                }
+            } else {
+                url = '/api/chat/classroom/' + selectedVal + '/archived-history';
+            }
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar histórico arquivado.');
+                }
+
+                const messages = await response.json();
+                renderMessages(messages);
+            } catch (err) {
+                console.error(err);
+                if (chatHistory) {
+                    chatHistory.innerHTML = `
+                        <div class="alert alert-danger mx-3 my-4" role="alert">
+                            <i class="bx bx-error me-2"></i> Não foi possível carregar as mensagens arquivadas.
+                        </div>`;
+                }
+            }
+        }
+
+        function renderMessages(messages) {
+            chatHistory.innerHTML = '';
+            if (!messages || messages.length === 0) {
+                chatHistory.innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <i class="bx bx-archive fs-1 mb-2 text-secondary"></i>
+                        <p class="mb-0">Nenhuma mensagem arquivada encontrada para este canal.</p>
+                    </div>`;
+                return;
+            }
+
+            messages.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                let roleClass = '';
+                let roleBadge = '';
+                const role = msg.senderRole ? msg.senderRole.toUpperCase() : '';
+
+                if (role === 'TEACHER') {
+                    roleClass = 'is-teacher';
+                    roleBadge = '<span class="badge bg-label-primary px-1 py-0" style="font-size:10px;">Professor</span>';
+                } else if (role === 'PRINCIPAL') {
+                    roleClass = 'is-admin';
+                    roleBadge = '<span class="badge bg-label-warning px-1 py-0" style="font-size:10px;">Direção</span>';
+                } else if (role === 'SECRETARY') {
+                    roleClass = 'is-secretary';
+                    roleBadge = '<span class="badge bg-label-success px-1 py-0" style="font-size:10px;">Secretaria</span>';
+                } else if (role === 'STUDENT') {
+                    roleBadge = '<span class="badge bg-label-secondary px-1 py-0" style="font-size:10px;">Aluno</span>';
+                }
+
+                msgDiv.className = `chat-message ${roleClass}`;
+
+                let replyHtml = '';
+                if (msg.repliedToId && msg.repliedToContent) {
+                    replyHtml = `
+                        <div class="replied-box">
+                            <strong><i class="bx bx-reply me-1"></i>${escapeHtml(msg.repliedToSenderName || 'Mensagem')}</strong>
+                            <div class="text-truncate">${escapeHtml(msg.repliedToContent)}</div>
+                        </div>`;
+                }
+
+                let timeStr = '';
+                if (msg.timestamp) {
+                    try {
+                        const d = new Date(msg.timestamp);
+                        timeStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    } catch (e) {
+                        timeStr = msg.timestamp;
+                    }
+                }
+
+                let contentHtml = '';
+                if (msg.isDeleted) {
+                    contentHtml = `<div class="deleted-msg"><i class="bx bx-trash"></i> ${msg.deletedByAdmin ? 'Mensagem apagada pela moderação' : 'Mensagem apagada'}</div>`;
+                } else {
+                    contentHtml = `<div class="msg-text">${escapeHtml(msg.content)}</div>`;
+                }
+
+                let editedBadge = msg.isEdited && !msg.isDeleted ? '<span class="text-muted small ms-1" style="font-size:10px;">(editada)</span>' : '';
+
+                msgDiv.innerHTML = `
+                    <div class="author">
+                        <span>${escapeHtml(msg.senderName || 'Desconhecido')}</span>
+                        ${roleBadge}
+                    </div>
+                    ${replyHtml}
+                    <div class="msg-content-wrapper">
+                        ${contentHtml}
+                        <div class="time-container">
+                            ${editedBadge}
+                            <span>${timeStr}</span>
+                        </div>
+                    </div>`;
+
+                chatHistory.appendChild(msgDiv);
+            });
+
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        async function loadMembers() {
+            const classroomSelect = document.getElementById("classroomSelect");
+            const selectedVal = classroomSelect ? classroomSelect.value : '';
+            const membersList = document.getElementById("membersList");
+            const offcanvasTitle = document.getElementById("offcanvasMembersLabel");
+            if (offcanvasTitle) {
+                offcanvasTitle.textContent = selectedVal === 'TEACHERS' ? 'Membros da Sala dos Professores' : 'Membros da Turma';
+            }
+            membersList.innerHTML = '<li class="list-group-item text-center text-muted">Carregando...</li>';
+
+            if (!selectedVal) {
+                membersList.innerHTML = '<li class="list-group-item text-muted text-center">Selecione uma turma ou a Sala dos Professores primeiro.</li>';
+                return;
+            }
+
+            let url = selectedVal === 'TEACHERS'
+                ? '/api/chat/teachers/members'
+                : '/api/chat/classrooms/' + selectedVal + '/members';
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (!response.ok) throw new Error('Erro ao buscar membros.');
+
+                const members = await response.json();
+                membersList.innerHTML = '';
+                if (members.length === 0) {
+                    membersList.innerHTML = '<li class="list-group-item text-muted">Nenhum membro encontrado.</li>';
+                    return;
+                }
+
+                members.forEach(m => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    li.innerHTML = `
+                        <div>
+                            <strong>${escapeHtml(m.name)}</strong>
+                            ${m.registrationNumber ? `<br><small class="text-muted">Matrícula: ${escapeHtml(m.registrationNumber)}</small>` : ''}
+                            ${m.email ? `<br><small class="text-muted">${escapeHtml(m.email)}</small>` : ''}
+                        </div>
+                        ${m.isBlocked ? '<span class="badge bg-danger">Bloqueado</span>' : ''}
+                    `;
+                    membersList.appendChild(li);
+                });
+            } catch (e) {
+                console.error(e);
+                membersList.innerHTML = '<li class="list-group-item text-danger">Falha ao carregar lista de membros.</li>';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function init() {
+            loadInitialData();
+
+            const yearSelect = document.getElementById("yearSelect");
+            const classroomSelect = document.getElementById("classroomSelect");
+
+            if (yearSelect) {
+                yearSelect.addEventListener('change', () => {
+                    renderClassroomSelect();
+                });
+            }
+
+            if (classroomSelect) {
+                classroomSelect.addEventListener('change', () => {
+                    loadArchivedMessages(classroomSelect.value);
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

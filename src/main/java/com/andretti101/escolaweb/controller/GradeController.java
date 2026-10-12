@@ -48,7 +48,7 @@ public class GradeController {
             Assessment assessment = assessmentService.findById(dto.assessmentId());
             authenticatedUserService.enforceTeacherOwnership(assessment.getTeacherClassSubject());
         }
-        Grade launched = gradeService.launch(toEntity(dto));
+        Grade launched = gradeService.launch(toEntity(dto), dto.notes());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(launched));
     }
 
@@ -134,7 +134,7 @@ public class GradeController {
         }
         Grade incoming = new Grade();
         incoming.setValue(dto.value());
-        return ResponseEntity.ok(toResponse(gradeService.update(id, incoming)));
+        return ResponseEntity.ok(toResponse(gradeService.update(id, incoming, dto.notes())));
     }
 
     @DeleteMapping("/{id}")

@@ -41,7 +41,7 @@
                             <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
                                 <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
                                 <input type="text" class="form-control border-0 shadow-none px-0 w-100"
-                                       placeholder="Buscar..." aria-label="Buscar" id="globalSearch" style="min-width: 350px;" />
+                                       placeholder="Buscar por título, turma ou matéria..." aria-label="Buscar" id="globalSearch" style="min-width: 350px;" />
                             </div>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="fw-bold mb-0">Avaliações e Notas</h4>
+                            <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Sala de Aula /</span> Avaliações e Notas</h4>
                             <a href="/teacher/create/assessment.html" class="btn btn-primary">
                                 <i class="bx bx-plus me-1"></i> Nova Avaliação
                             </a>
@@ -105,7 +105,7 @@
                         
                     </div>
                     
-                    <footer class="content-footer footer theme-bg-footer">
+                    <footer class="content-footer footer bg-footer-theme">
                         <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                             <div class="mb-2 mb-md-0">
                                 Copyright © 2026 EscolaWEB. Todos os direitos reservados.
@@ -149,6 +149,11 @@
             if (urlParams.get('success') === 'true') {
                 showAlert('Avaliação e notas salvas com sucesso!', 'success');
                 window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            const globalSearch = document.getElementById('globalSearch');
+            if (globalSearch) {
+                globalSearch.addEventListener('input', () => filterAssessments());
             }
 
             await loadFilters();
@@ -203,7 +208,7 @@
                 if (res.ok) {
                     allAssessments = await res.json();
                     allAssessments.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    renderTable(allAssessments);
+                    filterAssessments();
                 } else {
                     throw new Error('Falha na API');
                 }
@@ -216,6 +221,8 @@
         function filterAssessments() {
             const tcsFilter = document.getElementById('tcsFilter').value;
             const periodFilter = document.getElementById('periodFilter').value;
+            const searchEl = document.getElementById('globalSearch');
+            const searchTerm = searchEl ? searchEl.value.trim().toLowerCase() : '';
             
             let filtered = [...allAssessments];
             
@@ -225,6 +232,26 @@
             if (periodFilter) {
                 filtered = filtered.filter(a => String(a.periodId) === String(periodFilter));
             }
+            if (searchTerm) {
+                const typeNames = { 'EXAM': 'prova', 'ASSIGNMENT': 'trabalho', 'NOTEBOOK': 'caderno' };
+                filtered = filtered.filter(a => {
+                    const period = allPeriods.find(p => p.id === a.periodId);
+                    const periodName = period ? `${period.academicYear} - ${period.name}`.toLowerCase() : '';
+                    const parts = a.date ? a.date.split('-') : [];
+                    const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : '';
+                    const typeName = (typeNames[a.assessmentType] || a.assessmentType || '').toLowerCase();
+                    return (
+                        (a.title && a.title.toLowerCase().includes(searchTerm)) ||
+                        (a.description && a.description.toLowerCase().includes(searchTerm)) ||
+                        (a.classRoomName && a.classRoomName.toLowerCase().includes(searchTerm)) ||
+                        (a.subjectName && a.subjectName.toLowerCase().includes(searchTerm)) ||
+                        (`${a.classRoomName || ''} - ${a.subjectName || ''}`.toLowerCase().includes(searchTerm)) ||
+                        periodName.includes(searchTerm) ||
+                        formattedDate.includes(searchTerm) ||
+                        typeName.includes(searchTerm)
+                    );
+                });
+            }
             
             renderTable(filtered);
         }
@@ -232,7 +259,9 @@
         function clearFilters() {
             document.getElementById('tcsFilter').value = '';
             document.getElementById('periodFilter').value = '';
-            renderTable(allAssessments);
+            const searchEl = document.getElementById('globalSearch');
+            if (searchEl) searchEl.value = '';
+            filterAssessments();
         }
 
         function renderTable(assessments) {

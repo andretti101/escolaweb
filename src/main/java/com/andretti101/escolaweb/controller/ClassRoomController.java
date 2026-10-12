@@ -31,10 +31,19 @@ public class ClassRoomController {
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<ClassRoomResponseDTO>> findAll(
-            @RequestParam(required = false, defaultValue = "true") boolean activeOnly) {
-        List<ClassRoom> classRooms = activeOnly
-                ? classRoomService.findAllActive()
-                : classRoomService.findAll();
+            @RequestParam(required = false, defaultValue = "true") boolean activeOnly,
+            @RequestParam(required = false) Integer academicYearId) {
+        List<ClassRoom> classRooms;
+        if (academicYearId != null) {
+            classRooms = classRoomService.findByAcademicYear(academicYearId);
+            if (activeOnly) {
+                classRooms = classRooms.stream().filter(ClassRoom::isActive).toList();
+            }
+        } else {
+            classRooms = activeOnly
+                    ? classRoomService.findAllActive()
+                    : classRoomService.findAll();
+        }
         return ResponseEntity.ok(classRooms.stream().map(this::toResponse).toList());
     }
 

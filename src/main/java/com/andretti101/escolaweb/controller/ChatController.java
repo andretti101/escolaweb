@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.security.Principal;
 import java.util.List;
 
@@ -311,6 +312,20 @@ public class ChatController {
                 
         chatMessageService.markGlobalTeacherAsRead(user.getId(), messageId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/classroom/{classroomId}/archived-history")
+    @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
+    public ResponseEntity<List<ChatMessageResponseDTO>> getArchivedHistory(
+            @PathVariable Integer classroomId) {
+        return ResponseEntity.ok(chatMessageService.getArchivedHistoryByClassroomId(classroomId));
+    }
+
+    @GetMapping("/teachers/archived-history")
+    @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
+    public ResponseEntity<List<ChatMessageResponseDTO>> getArchivedTeacherHistory(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer year) {
+        return ResponseEntity.ok(chatMessageService.getArchivedGlobalTeacherHistory(year));
     }
 }
 

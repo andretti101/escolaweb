@@ -37,9 +37,22 @@ public class AnnouncementController {
     public ResponseEntity<org.springframework.data.domain.Page<AnnouncementResponseDTO>> findAll(
             @org.springframework.web.bind.annotation.RequestParam(required = false) Integer authorId,
             @org.springframework.web.bind.annotation.RequestParam(required = false) Integer classRoomId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer academicYearId,
             @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean targetTeachers,
             org.springframework.data.domain.Pageable pageable) {
-        org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> page = announcementService.findWithFilters(authorId, classRoomId, targetTeachers, pageable);
+        org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> page = announcementService.findWithFilters(authorId, classRoomId, academicYearId, targetTeachers, pageable);
+        return ResponseEntity.ok(page.map(this::toResponse));
+    }
+
+    @GetMapping("/archived")
+    @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
+    public ResponseEntity<org.springframework.data.domain.Page<AnnouncementResponseDTO>> findArchived(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer authorId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer classRoomId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer academicYearId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean targetTeachers,
+            org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> page = announcementService.findArchivedWithFilters(authorId, classRoomId, academicYearId, targetTeachers, pageable);
         return ResponseEntity.ok(page.map(this::toResponse));
     }
 
@@ -129,7 +142,7 @@ public class AnnouncementController {
                 a.getCreatedAt(),
                 a.getAuthor().getId(),
                 a.getAuthor().getName(),
-                a.getAuthor().getRole().getLabel(),
+                a.getAuthor().getRole() != null ? a.getAuthor().getRole().getLabel() : "Desconhecido",
                 classRoomDtos,
                 a.getTargetTeachers() != null ? a.getTargetTeachers() : false
         );

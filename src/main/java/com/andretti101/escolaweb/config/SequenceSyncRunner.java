@@ -19,10 +19,11 @@ public class SequenceSyncRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Sincronizando Auto-Increments (Sequences) do PostgreSQL...");
         String[] tables = {
-            "academic_periods", "academic_years", "attendance_history", 
+            "academic_periods", "academic_years", "attendance_history", "grade_history",
             "attendances", "class_rooms", "enrollments", "lessons", 
             "students", "subjects", "teacher_class_subjects", "teachers", "users",
-            "assessments", "grades"
+            "assessments", "grades", "announcements", "chat_messages", 
+            "chat_hidden_messages", "chat_read_receipts"
         };
         
         for (String table : tables) {

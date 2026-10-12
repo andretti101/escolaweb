@@ -1,5 +1,7 @@
 package com.andretti101.escolaweb.dto;
 
+import com.andretti101.escolaweb.dto.request.GradeLaunchRequestDTO;
+import com.andretti101.escolaweb.dto.request.GradeUpdateRequestDTO;
 import com.andretti101.escolaweb.dto.request.StudentUpdateRequestDTO;
 import com.andretti101.escolaweb.dto.request.TeacherUpdateRequestDTO;
 import jakarta.validation.ConstraintViolation;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -301,4 +304,44 @@ class DtoValidationTest {
         assertEquals(1, violations.size());
         assertEquals("A senha deve ter entre 8 e 255 caracteres.", violations.iterator().next().getMessage());
     }
+
+    @Test
+    @DisplayName("GradeUpdateRequestDTO: valid with notes and trims whitespace")
+    void gradeUpdateRequest_validWithNotes() {
+        GradeUpdateRequestDTO dto = new GradeUpdateRequestDTO(
+                new BigDecimal("8.5"),
+                "  Nota revisada após recurso do aluno  "
+        );
+
+        Set<ConstraintViolation<GradeUpdateRequestDTO>> violations = validator.validate(dto);
+        assertTrue(violations.isEmpty());
+        assertEquals("Nota revisada após recurso do aluno", dto.notes());
+    }
+
+    @Test
+    @DisplayName("GradeUpdateRequestDTO: normalizes blank notes to null")
+    void gradeUpdateRequest_blankNotesNormalizedToNull() {
+        GradeUpdateRequestDTO dto = new GradeUpdateRequestDTO(
+                new BigDecimal("7.0"),
+                "   "
+        );
+
+        Set<ConstraintViolation<GradeUpdateRequestDTO>> violations = validator.validate(dto);
+        assertTrue(violations.isEmpty());
+        assertNull(dto.notes());
+    }
+
+    @Test
+    @DisplayName("GradeUpdateRequestDTO: invalid when notes exceed 500 characters")
+    void gradeUpdateRequest_invalidWhenNotesTooLong() {
+        GradeUpdateRequestDTO dto = new GradeUpdateRequestDTO(
+                new BigDecimal("9.0"),
+                "X".repeat(501)
+        );
+
+        Set<ConstraintViolation<GradeUpdateRequestDTO>> violations = validator.validate(dto);
+        assertEquals(1, violations.size());
+        assertEquals("A observação deve ter no máximo 500 caracteres.", violations.iterator().next().getMessage());
+    }
 }
+

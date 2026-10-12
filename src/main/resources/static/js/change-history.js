@@ -17,9 +17,11 @@
 
     let teacherClassSubjects = [];
     let allClassRooms = [];
+    let allPeriods = [];
 
     // Elementos DOM
     const filterYear = document.getElementById('filterYear');
+    const filterPeriod = document.getElementById('filterPeriod');
     const filterClassRoom = document.getElementById('filterClassRoom');
     const filterTeacher = document.getElementById('filterTeacher');
     const teacherFilterCol = document.getElementById('teacherFilterCol');
@@ -120,14 +122,12 @@
             if (yearsRes.ok) {
                 const years = await yearsRes.json();
                 filterYear.innerHTML = '<option value="">Todos os anos</option>';
-                let activeYearId = null;
                 years.forEach(y => {
                     const opt = document.createElement('option');
                     opt.value = y.id;
                     opt.textContent = y.year + (y.active ? ' (Atual)' : '');
                     if (y.active) {
                         opt.selected = true;
-                        activeYearId = y.id;
                     }
                     filterYear.appendChild(opt);
                 });
@@ -136,21 +136,64 @@
             console.error('Erro ao carregar anos acadêmicos:', err);
         }
 
+        try {
+            // 2. Carrega períodos letivos
+            const periodsRes = await apiFetch('/api/academic-periods');
+            if (periodsRes.ok) {
+                allPeriods = await periodsRes.json();
+                populatePeriods();
+            }
+        } catch (err) {
+            console.error('Erro ao carregar períodos letivos:', err);
+        }
+
         if (isTeacher) {
             await initTeacherFilters();
         } else {
             await initAdminFilters();
         }
 
-        // Eventos dos filtros
-        filterYear.addEventListener('change', onYearChange);
-        filterClassRoom.addEventListener('change', onClassRoomChange);
-        btnFilter.addEventListener('click', () => {
+        const triggerAutoFilter = () => {
             currentGradesPage = 0;
             currentAttendancePage = 0;
             loadAll();
+        };
+
+        // Eventos dos filtros (carregamento automático sem botão Filtrar)
+        if (filterYear) filterYear.addEventListener('change', onYearChange);
+        if (filterPeriod) filterPeriod.addEventListener('change', triggerAutoFilter);
+        if (filterClassRoom) filterClassRoom.addEventListener('change', onClassRoomChange);
+        if (filterTeacher) filterTeacher.addEventListener('change', triggerAutoFilter);
+        if (filterStudent) filterStudent.addEventListener('change', triggerAutoFilter);
+        if (filterFrom) filterFrom.addEventListener('change', triggerAutoFilter);
+        if (filterTo) filterTo.addEventListener('change', triggerAutoFilter);
+        if (btnFilter) btnFilter.addEventListener('click', triggerAutoFilter);
+        if (btnClear) btnClear.addEventListener('click', onClearFilters);
+    }
+
+    function populatePeriods() {
+        if (!filterPeriod) return;
+        const yearId = filterYear ? filterYear.value : '';
+        const previousVal = filterPeriod.value;
+
+        filterPeriod.innerHTML = '<option value="">Todos os períodos</option>';
+
+        const filtered = yearId
+            ? allPeriods.filter(p => String(p.academicYearId) === String(yearId))
+            : allPeriods;
+
+        filtered.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = yearId ? p.name : `${p.academicYear || ''} - ${p.name}`;
+            filterPeriod.appendChild(opt);
         });
-        btnClear.addEventListener('click', onClearFilters);
+
+        if (previousVal && filtered.some(p => String(p.id) === String(previousVal))) {
+            filterPeriod.value = previousVal;
+        } else {
+            filterPeriod.value = '';
+        }
     }
 
     async function initTeacherFilters() {
@@ -225,6 +268,7 @@
     }
 
     async function onYearChange() {
+        populatePeriods();
         if (isTeacher) {
             populateTeacherClassRooms();
         } else {
@@ -237,28 +281,31 @@
         const classRoomId = filterClassRoom.value;
         filterStudent.innerHTML = '<option value="">Todos os alunos</option>';
 
-        if (!classRoomId) {
-            return;
+        if (classRoomId) {
+            try {
+                const res = await apiFetch(`/api/enrollments/classroom/${classRoomId}`);
+                if (res.ok) {
+                    const enrollments = await res.json();
+                    enrollments.sort((a, b) => (a.studentName || '').localeCompare(b.studentName || ''));
+                    enrollments.forEach(e => {
+                        const opt = document.createElement('option');
+                        opt.value = e.studentId;
+                        opt.textContent = e.studentName;
+                        filterStudent.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error('Erro ao carregar alunos da turma:', err);
+            }
         }
 
-        try {
-            const res = await apiFetch(`/api/enrollments/classroom/${classRoomId}`);
-            if (res.ok) {
-                const enrollments = await res.json();
-                enrollments.sort((a, b) => (a.studentName || '').localeCompare(b.studentName || ''));
-                enrollments.forEach(e => {
-                    const opt = document.createElement('option');
-                    opt.value = e.studentId;
-                    opt.textContent = e.studentName;
-                    filterStudent.appendChild(opt);
-                });
-            }
-        } catch (err) {
-            console.error('Erro ao carregar alunos da turma:', err);
-        }
+        currentGradesPage = 0;
+        currentAttendancePage = 0;
+        loadAll();
     }
 
     function onClearFilters() {
+        if (filterPeriod) filterPeriod.value = '';
         if (filterClassRoom) filterClassRoom.value = '';
         if (filterStudent) filterStudent.innerHTML = '<option value="">Todos os alunos</option>';
         if (filterTeacher) filterTeacher.value = '';
@@ -278,6 +325,7 @@
         params.set('size', pageSize);
 
         if (filterYear && filterYear.value) params.set('yearId', filterYear.value);
+        if (filterPeriod && filterPeriod.value) params.set('periodId', filterPeriod.value);
         if (filterClassRoom && filterClassRoom.value) params.set('classRoomId', filterClassRoom.value);
         if (filterStudent && filterStudent.value) params.set('studentId', filterStudent.value);
         if (!isTeacher && filterTeacher && filterTeacher.value) params.set('teacherId', filterTeacher.value);

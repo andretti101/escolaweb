@@ -23,4 +23,8 @@ public interface ChatMessageService {
     Integer getGlobalTeacherLastReadMessageId(Integer userId);
     List<ChatMessageResponseDTO> getGlobalTeacherHistory(Integer userId);
     boolean hasUnreadGlobalTeacherMessages(Integer userId);
+
+    List<ChatMessageResponseDTO> getArchivedHistoryByClassroomId(Integer classroomId);
+    List<ChatMessageResponseDTO> getArchivedGlobalTeacherHistory();
+    List<ChatMessageResponseDTO> getArchivedGlobalTeacherHistory(Integer year);
 }

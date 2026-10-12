@@ -18,4 +18,7 @@ public interface AnnouncementService {
     boolean hasUnreadAnnouncements(Integer userId);
     void markAnnouncementsAsRead(Integer userId);
     org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> findWithFilters(Integer authorId, Integer classRoomId, Boolean targetTeachers, org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> findWithFilters(Integer authorId, Integer classRoomId, Integer academicYearId, Boolean targetTeachers, org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> findArchivedWithFilters(Integer authorId, Integer classRoomId, Boolean targetTeachers, org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> findArchivedWithFilters(Integer authorId, Integer classRoomId, Integer academicYearId, Boolean targetTeachers, org.springframework.data.domain.Pageable pageable);
 }

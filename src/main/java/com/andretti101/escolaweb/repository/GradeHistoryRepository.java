@@ -25,10 +25,14 @@ public interface GradeHistoryRepository extends JpaRepository<GradeHistory, Inte
             JOIN FETCH tcs.classRoom c
             JOIN FETCH tcs.teacher t
             LEFT JOIN FETCH h.changedBy u
-            WHERE (:teacherId IS NULL OR t.id = :teacherId)
+            WHERE h.previousGrade IS NOT NULL
+              AND h.newGrade IS NOT NULL
+              AND h.previousGrade <> h.newGrade
+              AND (:teacherId IS NULL OR t.id = :teacherId)
               AND (:classRoomId IS NULL OR c.id = :classRoomId)
               AND (:studentId IS NULL OR s.id = :studentId)
               AND (:yearId IS NULL OR c.academicYear.id = :yearId)
+              AND (:periodId IS NULL OR p.id = :periodId)
               AND h.changedAt >= :from
               AND h.changedAt < :to
             """,
@@ -37,13 +41,18 @@ public interface GradeHistoryRepository extends JpaRepository<GradeHistory, Inte
             JOIN h.grade g
             JOIN g.student s
             JOIN g.assessment a
+            LEFT JOIN a.period p
             JOIN a.teacherClassSubject tcs
             JOIN tcs.classRoom c
             JOIN tcs.teacher t
-            WHERE (:teacherId IS NULL OR t.id = :teacherId)
+            WHERE h.previousGrade IS NOT NULL
+              AND h.newGrade IS NOT NULL
+              AND h.previousGrade <> h.newGrade
+              AND (:teacherId IS NULL OR t.id = :teacherId)
               AND (:classRoomId IS NULL OR c.id = :classRoomId)
               AND (:studentId IS NULL OR s.id = :studentId)
               AND (:yearId IS NULL OR c.academicYear.id = :yearId)
+              AND (:periodId IS NULL OR p.id = :periodId)
               AND h.changedAt >= :from
               AND h.changedAt < :to
             """)
@@ -51,6 +60,7 @@ public interface GradeHistoryRepository extends JpaRepository<GradeHistory, Inte
                               @Param("classRoomId") Integer classRoomId,
                               @Param("studentId") Integer studentId,
                               @Param("yearId") Integer yearId,
+                              @Param("periodId") Integer periodId,
                               @Param("from") LocalDateTime from,
                               @Param("to") LocalDateTime to,
                               Pageable pageable);
@@ -67,6 +77,9 @@ public interface GradeHistoryRepository extends JpaRepository<GradeHistory, Inte
             JOIN FETCH tcs.teacher t
             LEFT JOIN FETCH h.changedBy u
             WHERE g.id = :gradeId
+              AND h.previousGrade IS NOT NULL
+              AND h.newGrade IS NOT NULL
+              AND h.previousGrade <> h.newGrade
             ORDER BY h.changedAt DESC, h.id DESC
             """)
     List<GradeHistory> findTimelineByGradeId(@Param("gradeId") Integer gradeId);

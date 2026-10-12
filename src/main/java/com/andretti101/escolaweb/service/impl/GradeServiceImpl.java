@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +42,12 @@ public class GradeServiceImpl implements GradeService {
     @Override
     @Transactional
     public Grade launch(Grade grade) {
+        return launch(grade, null);
+    }
+
+    @Override
+    @Transactional
+    public Grade launch(Grade grade, String notes) {
         Student student = resolveStudent(grade.getStudent());
         Assessment assessment = resolveAssessment(grade.getAssessment());
 
@@ -61,8 +66,6 @@ public class GradeServiceImpl implements GradeService {
 
         Grade saved = gradeRepository.save(grade);
 
-        recordHistory(saved, null, saved.getValue());
-
         updateStudentSituation(saved);
 
         return saved;
@@ -71,6 +74,12 @@ public class GradeServiceImpl implements GradeService {
     @Override
     @Transactional
     public Grade update(Integer id, Grade incoming) {
+        return update(id, incoming, null);
+    }
+
+    @Override
+    @Transactional
+    public Grade update(Integer id, Grade incoming, String notes) {
         Grade existing = findGradeOrThrow(id);
 
         validatePeriodOpen(existing.getAssessment());
@@ -80,8 +89,13 @@ public class GradeServiceImpl implements GradeService {
 
         existing.setValue(incoming.getValue());
 
-        if (!Objects.equals(previousValue, incoming.getValue())) {
-            recordHistory(existing, previousValue, existing.getValue());
+        String cleanNotes = (notes != null && !notes.isBlank()) ? notes.trim() : null;
+        boolean valueChanged = previousValue != null
+                && incoming.getValue() != null
+                && previousValue.compareTo(incoming.getValue()) != 0;
+
+        if (valueChanged) {
+            recordHistory(existing, previousValue, existing.getValue(), cleanNotes);
         }
 
         updateStudentSituation(existing);
@@ -203,11 +217,12 @@ public class GradeServiceImpl implements GradeService {
         allGrades.forEach(g -> g.setStudentSituation(situation));
     }
 
-    private void recordHistory(Grade grade, BigDecimal previousValue, BigDecimal newValue) {
+    private void recordHistory(Grade grade, BigDecimal previousValue, BigDecimal newValue, String notes) {
         GradeHistory history = GradeHistory.builder()
                 .grade(grade)
                 .previousGrade(previousValue)
                 .newGrade(newValue)
+                .notes(notes)
                 .changedBy(authenticatedUserService.findAuthenticatedUserOrNull())
                 .build();
         gradeHistoryRepository.save(history);

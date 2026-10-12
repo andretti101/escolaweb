@@ -41,15 +41,44 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Inte
     @Query("SELECT COUNT(a) FROM Announcement a WHERE a.archived = false AND a.author.id != :userId AND a.createdAt > :lastRead")
     long countAllUnread(@Param("userId") Integer userId, @Param("lastRead") java.time.LocalDateTime lastRead);
 
-    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"author", "classRooms"})
-    @Query("SELECT DISTINCT a FROM Announcement a LEFT JOIN a.classRooms c WHERE a.archived = false AND " +
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"author", "classRooms", "classRooms.academicYear"})
+    @Query(value = "SELECT DISTINCT a FROM Announcement a LEFT JOIN a.classRooms c LEFT JOIN c.academicYear ay WHERE a.archived = false AND " +
            "(:authorId IS NULL OR a.author.id = :authorId) AND " +
            "(:classRoomId IS NULL OR c.id = :classRoomId) AND " +
-           "(:targetTeachers IS NULL OR a.targetTeachers = :targetTeachers)")
+           "(:academicYearId IS NULL OR ay.id = :academicYearId OR ay.year = :yearNumber OR ((c.id IS NULL OR a.targetTeachers = true) AND YEAR(a.createdAt) = :yearNumber)) AND " +
+           "(:targetTeachers IS NULL OR COALESCE(a.targetTeachers, false) = :targetTeachers) " +
+           "ORDER BY a.createdAt DESC",
+           countQuery = "SELECT count(DISTINCT a) FROM Announcement a LEFT JOIN a.classRooms c LEFT JOIN c.academicYear ay WHERE a.archived = false AND " +
+           "(:authorId IS NULL OR a.author.id = :authorId) AND " +
+           "(:classRoomId IS NULL OR c.id = :classRoomId) AND " +
+           "(:academicYearId IS NULL OR ay.id = :academicYearId OR ay.year = :yearNumber OR ((c.id IS NULL OR a.targetTeachers = true) AND YEAR(a.createdAt) = :yearNumber)) AND " +
+           "(:targetTeachers IS NULL OR COALESCE(a.targetTeachers, false) = :targetTeachers)")
     org.springframework.data.domain.Page<Announcement> findWithFilters(
             @Param("authorId") Integer authorId,
             @Param("classRoomId") Integer classRoomId,
+            @Param("academicYearId") Integer academicYearId,
+            @Param("yearNumber") Integer yearNumber,
             @Param("targetTeachers") Boolean targetTeachers, org.springframework.data.domain.Pageable pageable);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"author", "classRooms", "classRooms.academicYear"})
+    @Query(value = "SELECT DISTINCT a FROM Announcement a LEFT JOIN a.classRooms c LEFT JOIN c.academicYear ay WHERE a.archived = true AND " +
+           "(:authorId IS NULL OR a.author.id = :authorId) AND " +
+           "(:classRoomId IS NULL OR c.id = :classRoomId) AND " +
+           "(:academicYearId IS NULL OR ay.id = :academicYearId OR ay.year = :yearNumber OR ((c.id IS NULL OR a.targetTeachers = true) AND YEAR(a.createdAt) = :yearNumber)) AND " +
+           "(:targetTeachers IS NULL OR COALESCE(a.targetTeachers, false) = :targetTeachers) " +
+           "ORDER BY a.createdAt DESC",
+           countQuery = "SELECT count(DISTINCT a) FROM Announcement a LEFT JOIN a.classRooms c LEFT JOIN c.academicYear ay WHERE a.archived = true AND " +
+           "(:authorId IS NULL OR a.author.id = :authorId) AND " +
+           "(:classRoomId IS NULL OR c.id = :classRoomId) AND " +
+           "(:academicYearId IS NULL OR ay.id = :academicYearId OR ay.year = :yearNumber OR ((c.id IS NULL OR a.targetTeachers = true) AND YEAR(a.createdAt) = :yearNumber)) AND " +
+           "(:targetTeachers IS NULL OR COALESCE(a.targetTeachers, false) = :targetTeachers)")
+    org.springframework.data.domain.Page<Announcement> findArchivedWithFilters(
+            @Param("authorId") Integer authorId,
+            @Param("classRoomId") Integer classRoomId,
+            @Param("academicYearId") Integer academicYearId,
+            @Param("yearNumber") Integer yearNumber,
+            @Param("targetTeachers") Boolean targetTeachers,
+            org.springframework.data.domain.Pageable pageable);
 
     @Modifying
     @Query("UPDATE Announcement a SET a.archived = true WHERE a.archived = false")

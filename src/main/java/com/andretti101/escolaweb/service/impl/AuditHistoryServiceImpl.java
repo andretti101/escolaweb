@@ -46,7 +46,7 @@ public class AuditHistoryServiceImpl implements AuditHistoryService {
     public Page<GradeHistoryResponseDTO> searchGradeHistory(HistoryFilter filter, int page, int size) {
         HistoryFilter f = scoped(filter);
         return gradeHistoryRepository.search(
-                f.teacherId(), f.classRoomId(), f.studentId(), f.yearId(),
+                f.teacherId(), f.classRoomId(), f.studentId(), f.yearId(), f.periodId(),
                 fromBound(f.from()), toBound(f.to()), pageable(page, size)
         ).map(this::toDto);
     }
@@ -56,7 +56,7 @@ public class AuditHistoryServiceImpl implements AuditHistoryService {
     public Page<AttendanceHistoryResponseDTO> searchAttendanceHistory(HistoryFilter filter, int page, int size) {
         HistoryFilter f = scoped(filter);
         return attendanceHistoryRepository.search(
-                f.teacherId(), f.classRoomId(), f.studentId(), f.yearId(),
+                f.teacherId(), f.classRoomId(), f.studentId(), f.yearId(), f.periodId(),
                 fromBound(f.from()), toBound(f.to()), pageable(page, size)
         ).map(this::toDto);
     }
@@ -85,10 +85,10 @@ public class AuditHistoryServiceImpl implements AuditHistoryService {
 
     /** Teachers are always restricted to their own TeacherClassSubjects, whatever teacherId was requested. */
     private HistoryFilter scoped(HistoryFilter filter) {
-        HistoryFilter f = filter != null ? filter : new HistoryFilter(null, null, null, null, null, null);
+        HistoryFilter f = filter != null ? filter : new HistoryFilter(null, null, null, null, null, null, null);
         if (authenticatedUserService.isTeacher()) {
             Integer ownId = authenticatedUserService.getAuthenticatedTeacher().getId();
-            return new HistoryFilter(ownId, f.classRoomId(), f.studentId(), f.yearId(), f.from(), f.to());
+            return new HistoryFilter(ownId, f.classRoomId(), f.studentId(), f.yearId(), f.periodId(), f.from(), f.to());
         }
         return f;
     }

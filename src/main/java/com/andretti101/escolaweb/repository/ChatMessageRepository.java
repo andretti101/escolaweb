@@ -35,6 +35,17 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
     List<ChatMessage> findTop50ByIsGlobalTeacherChatTrueAndArchivedFalseOrderByTimestampDesc();
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
+    List<ChatMessage> findByClassroom_IdAndArchivedTrueOrderByTimestampAsc(Integer classroomId);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
+    List<ChatMessage> findByIsGlobalTeacherChatTrueAndArchivedTrueOrderByTimestampAsc();
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
+    @Query("SELECT m FROM ChatMessage m WHERE m.isGlobalTeacherChat = true AND m.archived = true AND " +
+           "(:year IS NULL OR YEAR(m.timestamp) = :year) ORDER BY m.timestamp ASC")
+    List<ChatMessage> findArchivedGlobalTeacherHistory(@Param("year") Integer year);
+
     @Modifying
     @Query("UPDATE ChatMessage m SET m.archived = true WHERE m.archived = false AND m.isGlobalTeacherChat = false")
     int archiveAll();

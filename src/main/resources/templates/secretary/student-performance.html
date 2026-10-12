@@ -396,6 +396,7 @@
         
         
         let selectedPeriodNotes = null;
+        let periodSelectListenerAttached = false;
 
         function buildPeriodDropdown() {
             const select = document.getElementById('periodSelect');
@@ -409,19 +410,25 @@
 
             select.innerHTML = periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
 
-            select.value = periods[0];
-            selectedPeriodNotes = periods[0];
+            const periodToSelect = (selectedPeriodNotes && periods.includes(selectedPeriodNotes))
+                ? selectedPeriodNotes
+                : periods[0];
+            select.value = periodToSelect;
+            selectedPeriodNotes = periodToSelect;
             showSubjectsForPeriod();
 
-            select.addEventListener('change', (e) => {
-                selectedPeriodNotes = e.target.value;
-                document.getElementById('gradesTableContainer').classList.add('d-none');
-                if (selectedPeriodNotes) {
-                    showSubjectsForPeriod();
-                } else {
-                    document.getElementById('subjectsContainerNotes').classList.add('d-none');
-                }
-            });
+            if (!periodSelectListenerAttached) {
+                periodSelectListenerAttached = true;
+                select.addEventListener('change', (e) => {
+                    selectedPeriodNotes = e.target.value;
+                    document.getElementById('gradesTableContainer').classList.add('d-none');
+                    if (selectedPeriodNotes) {
+                        showSubjectsForPeriod();
+                    } else {
+                        document.getElementById('subjectsContainerNotes').classList.add('d-none');
+                    }
+                });
+            }
         }
 
         function showSubjectsForPeriod() {
@@ -454,7 +461,7 @@
             };
 
             if (gradesForSubj.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
             } else {
                 tbody.innerHTML = gradesForSubj.map(g => `
                     <tr>
@@ -462,7 +469,7 @@
                         <td><span class="badge bg-label-info">${escapeHtml(typeMap[g.assessmentType] || g.assessmentType)}</span></td>
                         <td>${new Date(g.createdAt).toLocaleDateString('pt-BR')}</td>
                         <td><strong>${g.value != null ? Number(g.value).toFixed(1) : '-'}</strong></td>
-                        <td><button class="btn btn-sm btn-icon btn-outline-primary" onclick="openEditGradeModal(${g.id}, '${g.assessmentTitle}', ${g.value})"><i class="bx bx-edit-alt"></i></button></td>
+                        <td><button class="btn btn-sm btn-icon btn-outline-primary" data-grade-id="${g.id}" data-assessment-title="${escapeHtml(g.assessmentTitle)}" data-grade-value="${g.value != null ? g.value : ''}" onclick="openEditGradeModal(this.dataset.gradeId, this.dataset.assessmentTitle, this.dataset.gradeValue)"><i class="bx bx-edit-alt"></i></button></td>
                     </tr>
                 `).join('');
             }
@@ -579,8 +586,68 @@
             document.getElementById('attendanceTableContainer').classList.remove('d-none');
         }
 
-        
-        
+        function openEditGradeModal(gradeId, assessmentTitle, currentValue) {
+            document.getElementById('existingGradeId').value = gradeId || '';
+            document.getElementById('assessmentName').value = assessmentTitle || '';
+            document.getElementById('gradeValue').value = currentValue !== undefined && currentValue !== null ? currentValue : '';
+            const notesInput = document.getElementById('gradeNotes');
+            if (notesInput) notesInput.value = '';
+            const modalEl = document.getElementById('gradeModal');
+            if (modalEl) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnSaveGrade = document.getElementById('btnSaveGrade');
+            if (btnSaveGrade) {
+                btnSaveGrade.addEventListener('click', async () => {
+                    const gradeId = document.getElementById('existingGradeId').value;
+                    const rawVal = document.getElementById('gradeValue').value;
+                    const notesEl = document.getElementById('gradeNotes');
+                    const notesVal = notesEl && notesEl.value.trim() !== '' ? notesEl.value.trim() : null;
+
+                    const normalizedVal = rawVal !== undefined && rawVal !== null ? String(rawVal).trim().replace(',', '.') : '';
+                    const gradeVal = parseFloat(normalizedVal);
+
+                    if (!gradeId || normalizedVal === '' || isNaN(gradeVal)) {
+                        if (window.showAlertModal) await window.showAlertModal('Aviso', 'Informe um valor de nota válido entre 0 e 10.');
+                        return;
+                    }
+                    if (gradeVal < 0 || gradeVal > 10) {
+                        if (window.showAlertModal) await window.showAlertModal('Aviso', 'A nota deve estar entre 0,0 e 10,0.');
+                        return;
+                    }
+
+                    btnSaveGrade.disabled = true;
+                    try {
+                        const res = await fetch(`/api/grades/${gradeId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${jwtToken}`
+                            },
+                            body: JSON.stringify({ value: gradeVal, notes: notesVal })
+                        });
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => null);
+                            const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao atualizar a nota.') : (err?.message || 'Erro ao atualizar a nota.');
+                            throw new Error(msg);
+                        }
+                        const modalEl = document.getElementById('gradeModal');
+                        if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                        const currentSubj = document.getElementById('currentSubjectNameNotes')?.textContent;
+                        await loadReportCard();
+                        if (currentSubj) showGradesForSubject(currentSubj);
+                    } catch (e) {
+                        if (window.showAlertModal) await window.showAlertModal('Erro', e.message || 'Erro ao salvar nota.');
+                    } finally {
+                        btnSaveGrade.disabled = false;
+                    }
+                });
+            }
+        });
+
         loadReportCard();
     </script>
 
@@ -600,12 +667,16 @@
                     <input type="hidden" id="existingGradeId">
                     
                     <div class="mb-3">
-                        <label class="form-label">Avaliação (Nome)</label>
-                        <input type="text" class="form-control" id="assessmentName" required>
+                        <label class="form-label" for="assessmentName">Avaliação (Nome)</label>
+                        <input type="text" class="form-control" id="assessmentName" readonly>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Nota</label>
-                        <input type="number" step="0.01" min="0" max="10" class="form-control" id="gradeValue" required>
+                        <label class="form-label" for="gradeValue">Nota (0 a 10) *</label>
+                        <input type="number" step="0.1" min="0" max="10" class="form-control" id="gradeValue" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="gradeNotes">Justificativa / Observação</label>
+                        <textarea class="form-control" id="gradeNotes" rows="2" maxlength="500" placeholder="Informe o motivo da alteração da nota para auditoria (opcional)"></textarea>
                     </div>
                 </form>
             </div>

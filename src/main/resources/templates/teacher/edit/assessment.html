@@ -34,7 +34,7 @@
                             <div class="nav-item d-flex align-items-center w-100" style="max-width: 500px;">
                                 <i class="bx bx-search fs-4 lh-0 me-2 text-muted"></i>
                                 <input type="text" class="form-control border-0 shadow-none px-0 w-100"
-                                       placeholder="Buscar..." aria-label="Buscar" id="globalSearch" style="min-width: 350px;" />
+                                       placeholder="Buscar aluno por nome..." aria-label="Buscar aluno" id="globalSearch" style="min-width: 350px;" />
                             </div>
                         </div>
                     </div>
@@ -100,7 +100,8 @@
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Nome do Aluno</th>
-                                                        <th class="text-center" style="width: 250px;">Nota (0 a 10)</th>
+                                                        <th class="text-center" style="width: 220px;">Nota (0 a 10)</th>
+                                                        <th>Justificativa / Observação</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="studentsTableBody">
@@ -166,6 +167,17 @@
                 return;
             }
 
+            const globalSearch = document.getElementById('globalSearch');
+            if (globalSearch) {
+                globalSearch.addEventListener('input', () => {
+                    const term = globalSearch.value.trim().toLowerCase();
+                    document.querySelectorAll('#studentsTableBody tr[data-student-name]').forEach(tr => {
+                        const name = tr.getAttribute('data-student-name') || '';
+                        tr.classList.toggle('d-none', term !== '' && !name.includes(term));
+                    });
+                });
+            }
+
             await loadAssessmentData(assessmentId);
         });
 
@@ -214,7 +226,7 @@
                     
                     const tbody = document.getElementById('studentsTableBody');
                     if (currentStudents.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">Nenhum aluno matriculado.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum aluno matriculado.</td></tr>';
                     } else {
                         renderGradesTable();
                         document.getElementById('btnSave').disabled = false;
@@ -222,7 +234,7 @@
                 }
             } catch(e) {
                 console.error('Erro ao carregar alunos/notas', e);
-                document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="2" class="text-center text-danger">Erro ao carregar diário.</td></tr>';
+                document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Erro ao carregar diário.</td></tr>';
             } finally {
                 document.getElementById('studentsLoading').classList.add('d-none');
                 document.getElementById('tableContainer').classList.remove('d-none');
@@ -239,22 +251,29 @@
             currentStudents.forEach(s => {
                 const safeName = s.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 const existingGrade = gradesMap[s.id];
-                const gradeValue = existingGrade ? existingGrade.value : '';
+                const gradeValue = (existingGrade && existingGrade.value != null) ? existingGrade.value : '';
                 const currentLabel = gradeValue !== '' ? `<small class="text-muted d-block mt-1">Nota Atual: <strong>${Number(gradeValue).toFixed(1).replace('.', ',')}</strong></small>` : '<small class="text-muted d-block mt-1">Sem nota lançada</small>';
                 
                 html += `
-                    <tr>
+                    <tr data-student-name="${safeName.toLowerCase()}">
                         <td class="align-middle fw-semibold">${safeName}</td>
-                        <td class="text-center">
+                        <td class="text-center align-middle">
                             <div class="w-75 mx-auto">
                                 <div class="input-group input-group-sm">
                                     <input type="number" class="form-control text-center fw-bold" 
                                         name="grade_${s.id}" id="grade_${s.id}" 
                                         data-grade-id="${existingGrade ? existingGrade.id : ''}"
+                                        data-original-value="${gradeValue}"
                                         value="${gradeValue}" step="0.1" min="0" max="10">
                                 </div>
                                 ${currentLabel}
                             </div>
+                        </td>
+                        <td class="align-middle">
+                            <input type="text" class="form-control form-control-sm"
+                                name="notes_${s.id}" id="notes_${s.id}"
+                                maxlength="500"
+                                placeholder="Informe o motivo da alteração da nota (opcional)">
                         </td>
                     </tr>
                 `;
@@ -271,6 +290,18 @@
             if (!date || !title || !type) {
                 showAlert('Por favor, preencha todos os campos obrigatórios (*).', 'warning');
                 return;
+            }
+
+            for (const student of currentStudents) {
+                const inputEl = document.getElementById(`grade_${student.id}`);
+                const gradeInput = inputEl ? inputEl.value.trim() : '';
+                if (gradeInput !== '') {
+                    const gradeVal = parseFloat(gradeInput.replace(',', '.'));
+                    if (isNaN(gradeVal) || gradeVal < 0 || gradeVal > 10) {
+                        showAlert(`A nota do aluno ${student.name} deve estar entre 0,0 e 10,0.`, 'warning');
+                        return;
+                    }
+                }
             }
 
             const btn = document.getElementById('btnSave');
@@ -302,26 +333,33 @@
                 const gradePromises = [];
                 currentStudents.forEach(student => {
                     const inputEl = document.getElementById(`grade_${student.id}`);
+                    const notesEl = document.getElementById(`notes_${student.id}`);
                     const gradeInput = inputEl.value;
                     const gradeId = inputEl.getAttribute('data-grade-id');
+                    const originalValStr = inputEl.getAttribute('data-original-value') || '';
+                    const notesVal = notesEl && notesEl.value.trim() !== '' ? notesEl.value.trim() : null;
 
                     if (gradeInput && gradeInput.trim() !== '') {
                         const gradeVal = parseFloat(gradeInput.replace(',', '.'));
                         
                         if (gradeId) {
-                            gradePromises.push(
-                                fetch(`/api/grades/${gradeId}`, {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                                    body: JSON.stringify({ value: gradeVal })
-                                })
-                            );
+                            const originalVal = originalValStr !== '' ? parseFloat(originalValStr) : null;
+                            const valueChanged = originalVal === null || Math.abs(originalVal - gradeVal) > 1e-6;
+                            if (valueChanged) {
+                                gradePromises.push(
+                                    fetch(`/api/grades/${gradeId}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                                        body: JSON.stringify({ value: gradeVal, notes: notesVal })
+                                    })
+                                );
+                            }
                         } else {
                             gradePromises.push(
                                 fetch('/api/grades', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                                    body: JSON.stringify({ studentId: student.id, assessmentId: assessmentId, value: gradeVal })
+                                    body: JSON.stringify({ studentId: student.id, assessmentId: Number(assessmentId), value: gradeVal })
                                 })
                             );
                         }
@@ -346,6 +384,7 @@
                     }
                 }
                 if (errors.length > 0) {
+                    await loadGradesAndStudents();
                     throw new Error('Algumas notas não puderam ser salvas: ' + errors.join(', '));
                 }
                 

@@ -25,6 +25,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final UserRepository userRepository;
     private final com.andretti101.escolaweb.repository.ChatReadReceiptRepository chatReadReceiptRepository;
     private final com.andretti101.escolaweb.repository.ChatHiddenMessageRepository chatHiddenMessageRepository;
+    private final com.andretti101.escolaweb.repository.AcademicYearRepository academicYearRepository;
 
     @Override
     @Transactional
@@ -359,5 +360,40 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             return unreadCount > 0;
         }
         return false;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponseDTO> getArchivedHistoryByClassroomId(Integer classroomId) {
+        if (!classRoomRepository.existsById(classroomId)) {
+            throw new EntityNotFoundException("Turma não encontrada.");
+        }
+        List<ChatMessage> messages = chatMessageRepository.findByClassroom_IdAndArchivedTrueOrderByTimestampAsc(classroomId);
+        return messages.stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponseDTO> getArchivedGlobalTeacherHistory() {
+        return getArchivedGlobalTeacherHistory(null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponseDTO> getArchivedGlobalTeacherHistory(Integer yearOrYearId) {
+        Integer year = null;
+        if (yearOrYearId != null) {
+            year = academicYearRepository.findById(yearOrYearId)
+                    .map(com.andretti101.escolaweb.model.entity.AcademicYear::getYear)
+                    .orElseGet(() -> academicYearRepository.findByYear(yearOrYearId)
+                            .map(com.andretti101.escolaweb.model.entity.AcademicYear::getYear)
+                            .orElse(yearOrYearId));
+        }
+        List<ChatMessage> messages = chatMessageRepository.findArchivedGlobalTeacherHistory(year);
+        return messages.stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
     }
 }

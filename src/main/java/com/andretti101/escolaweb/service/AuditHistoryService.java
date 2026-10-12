@@ -11,7 +11,12 @@ public interface AuditHistoryService {
 
     /** Filters for history searches. Any field may be null (= no filter). {@code to} is inclusive (whole day). */
     record HistoryFilter(Integer teacherId, Integer classRoomId, Integer studentId,
-                         Integer yearId, LocalDate from, LocalDate to) {}
+                         Integer yearId, Integer periodId, LocalDate from, LocalDate to) {
+        public HistoryFilter(Integer teacherId, Integer classRoomId, Integer studentId,
+                             Integer yearId, LocalDate from, LocalDate to) {
+            this(teacherId, classRoomId, studentId, yearId, null, from, to);
+        }
+    }
 
     Page<GradeHistoryResponseDTO> searchGradeHistory(HistoryFilter filter, int page, int size);
 

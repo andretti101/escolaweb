@@ -39,6 +39,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final TeacherService teacherService;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
     private final com.andretti101.escolaweb.repository.UserRepository userRepository;
+    private final com.andretti101.escolaweb.repository.AcademicYearRepository academicYearRepository;
 
     @Override
     @Transactional
@@ -240,6 +241,35 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public org.springframework.data.domain.Page<Announcement> findWithFilters(Integer authorId, Integer classRoomId, Boolean targetTeachers, org.springframework.data.domain.Pageable pageable) {
-        return announcementRepository.findWithFilters(authorId, classRoomId, targetTeachers, pageable);
+        return findWithFilters(authorId, classRoomId, null, targetTeachers, pageable);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Announcement> findWithFilters(Integer authorId, Integer classRoomId, Integer academicYearId, Boolean targetTeachers, org.springframework.data.domain.Pageable pageable) {
+        Integer yearNumber = resolveYearNumber(academicYearId);
+        return announcementRepository.findWithFilters(authorId, classRoomId, academicYearId, yearNumber, targetTeachers, pageable);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Announcement> findArchivedWithFilters(Integer authorId, Integer classRoomId, Boolean targetTeachers, org.springframework.data.domain.Pageable pageable) {
+        return findArchivedWithFilters(authorId, classRoomId, null, targetTeachers, pageable);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Announcement> findArchivedWithFilters(Integer authorId, Integer classRoomId, Integer academicYearId, Boolean targetTeachers, org.springframework.data.domain.Pageable pageable) {
+        Integer yearNumber = resolveYearNumber(academicYearId);
+        return announcementRepository.findArchivedWithFilters(authorId, classRoomId, academicYearId, yearNumber, targetTeachers, pageable);
+    }
+
+    private Integer resolveYearNumber(Integer academicYearId) {
+        if (academicYearId == null) return null;
+        return academicYearRepository.findById(academicYearId)
+                .map(com.andretti101.escolaweb.model.entity.AcademicYear::getYear)
+                .orElseGet(() -> academicYearRepository.findByYear(academicYearId)
+                        .map(com.andretti101.escolaweb.model.entity.AcademicYear::getYear)
+                        .orElse(academicYearId));
     }
 }
