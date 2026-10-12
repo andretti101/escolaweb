@@ -64,6 +64,14 @@
             background: #f5f5f9;
         }
 
+        .search-select-dropdown .dropdown-item.selected {
+            background: rgba(105, 108, 255, 0.08);
+        }
+
+        .search-select-dropdown .dropdown-item.selected:hover {
+            background: rgba(105, 108, 255, 0.14);
+        }
+
         .search-select-dropdown .dropdown-item.disabled {
             color: #a1acb8;
             cursor: default;
@@ -73,6 +81,7 @@
         .search-select-dropdown .dropdown-item .form-check-input {
             margin: 0;
             pointer-events: none;
+            flex-shrink: 0;
         }
 
         .search-select-dropdown .no-results {
@@ -87,6 +96,11 @@
             flex-wrap: wrap;
             gap: .25rem;
             margin-top: .5rem;
+        }
+
+        .selected-tags:empty {
+            display: none;
+            margin-top: 0;
         }
 
         .selected-tag {
@@ -173,27 +187,29 @@
                             <div class="card mb-4">
                                 <div class="card-header border-bottom d-flex justify-content-between align-items-center">
                                     <h5 class="m-0">Nova Matrícula</h5>
-                                    <small class="text-muted">Busque e matricule rapidamente</small>
+                                    <small class="text-muted">Selecione um ou mais alunos para matricular</small>
                                 </div>
                                 <div class="card-body pt-4">
                                     <form id="studentEnrollmentForm">
-                                        <div class="row g-3 align-items-end">
+                                        <div class="row g-3 align-items-start">
                                             <div class="col-md-3">
                                                 <label class="form-label" for="enrollmentDate">Data da Matrícula</label>
                                                 <input type="date" id="enrollmentDate" class="form-control" required/>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label" for="studentSearch">Selecionar Aluno</label>
+                                                <label class="form-label" for="studentSearch">Selecionar Aluno(s)</label>
                                                 <div class="search-select-container" id="studentSearchContainer">
                                                     <input type="text" class="form-control search-select-input"
                                                            id="studentSearch" placeholder="Buscar aluno por nome, matrícula ou e-mail..." autocomplete="off"/>
                                                     <div class="search-select-dropdown shadow-lg" id="studentDropdown" style="max-height: 350px;"></div>
                                                 </div>
+                                                <div class="selected-tags" id="selectedStudentsTags"></div>
                                                 <input type="hidden" id="studentId"/>
                                             </div>
                                             <div class="col-md-3">
+                                                <label class="form-label d-none d-md-block">&nbsp;</label>
                                                 <button type="submit" class="btn btn-primary w-100" id="btnSubmitStudent">
-                                                    <i class="bx bx-user-plus me-1"></i> Matricular
+                                                    <i class="bx bx-user-plus me-1"></i> Matricular <span id="enrollBtnCount"></span>
                                                 </button>
                                             </div>
                                         </div>
@@ -384,12 +400,17 @@
     let allTeachers = [];
     let allSubjects = [];
     let enrolledStudentIds = new Set();
+    let selectedStudentIds = new Set();
     let allEnrollments = [];
     let currentClassroom = null;
 
     function escapeHtml(unsafe) {
         if (!unsafe) return '';
         return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function normalizeSearch(str) {
+        return (str || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
     }
 
     async function showAlert(message, type) {
@@ -532,7 +553,14 @@
             if (res.ok) {
                 allEnrollments = await res.json();
                 enrolledStudentIds = new Set(allEnrollments.map(e => e.studentId));
-                renderEnrollmentsTable();
+                selectedStudentIds.forEach(id => {
+                    if (enrolledStudentIds.has(id)) selectedStudentIds.delete(id);
+                });
+                updateSelectedStudentsUI();
+                if (typeof studentDropdown !== 'undefined' && studentDropdown && studentDropdown.classList.contains('show')) {
+                    renderStudentDropdown(studentSearch.value);
+                }
+                renderEnrollmentsTable(document.getElementById('enrollmentTableSearch')?.value || '');
                 // Update badge
                 const badge = document.getElementById('enrollmentCountBadge');
                 badge.textContent = allEnrollments.length;
@@ -634,40 +662,64 @@
 
     const studentSearch = document.getElementById('studentSearch');
     const studentDropdown = document.getElementById('studentDropdown');
+    const selectedStudentsTags = document.getElementById('selectedStudentsTags');
+
+    function getFilteredAvailableStudents(query) {
+        const q = normalizeSearch(query);
+        const available = allStudents.filter(s => !enrolledStudentIds.has(s.id));
+        if (!q) return available;
+        return available.filter(s =>
+            normalizeSearch(s.name).includes(q) ||
+            normalizeSearch(s.registrationNumber).includes(q) ||
+            normalizeSearch(s.email).includes(q)
+        );
+    }
 
     studentSearch.addEventListener('focus', () => renderStudentDropdown(studentSearch.value));
-    studentSearch.addEventListener('input', () => {
-        document.getElementById('studentId').value = '';
-        renderStudentDropdown(studentSearch.value);
+    studentSearch.addEventListener('input', () => renderStudentDropdown(studentSearch.value));
+    studentSearch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!studentDropdown.classList.contains('show')) {
+            renderStudentDropdown(studentSearch.value);
+        }
+    });
+    studentSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            studentDropdown.classList.remove('show');
+        }
     });
 
-    // Keep dropdown open even if clicked outside? 
-    // Usually it's better to close if clicking entirely outside the container.
     document.addEventListener('click', (e) => {
-        if (!document.getElementById('studentSearchContainer').contains(e.target)) {
+        const container = document.getElementById('studentSearchContainer');
+        if (container && !container.contains(e.target) && (!selectedStudentsTags || !selectedStudentsTags.contains(e.target))) {
             studentDropdown.classList.remove('show');
         }
     });
 
     function renderStudentDropdown(query) {
         const q = (query || '').toLowerCase().trim();
-        const available = allStudents.filter(s => !enrolledStudentIds.has(s.id));
-        let filtered = available;
-        if (q) {
-            filtered = available.filter(s =>
-                (s.name || '').toLowerCase().includes(q) ||
-                (s.registrationNumber || '').toLowerCase().includes(q) ||
-                (s.email || '').toLowerCase().includes(q)
-            );
-        }
+        const filtered = getFilteredAvailableStudents(query);
 
         if (filtered.length === 0) {
             studentDropdown.innerHTML = `<div class="no-results">${q ? 'Nenhum aluno encontrado' : 'Todos os alunos desta lista já estão matriculados'}</div>`;
         } else {
-            studentDropdown.innerHTML = filtered.slice(0, 50).map(s => {
-                return `<div class="dropdown-item" data-id="${s.id}" data-label="${escapeHtml(s.name)}">
+            const visible = filtered.slice(0, 50);
+            const allVisibleSelected = visible.every(s => selectedStudentIds.has(s.id));
+            const someVisibleSelected = visible.some(s => selectedStudentIds.has(s.id));
+            let html = '';
+
+            if (visible.length > 1) {
+                html += `<div class="dropdown-item select-all fw-bold text-primary border-bottom" data-id="all">
+                    <input type="checkbox" class="form-check-input me-2" id="selectAllStudentsCheckbox" ${allVisibleSelected ? 'checked' : ''}/>
+                    <span>${allVisibleSelected ? `Desmarcar todos (${visible.length})` : `Selecionar todos (${visible.length})`}</span>
+                </div>`;
+            }
+
+            html += visible.map(s => {
+                const checked = selectedStudentIds.has(s.id);
+                return `<div class="dropdown-item ${checked ? 'selected' : ''}" data-id="${s.id}" data-label="${escapeHtml(s.name)}">
+                    <input type="checkbox" class="form-check-input me-2" ${checked ? 'checked' : ''}/>
                     <div class="d-flex align-items-center w-100">
-                        <i class="bx bx-user-plus text-primary me-2 fs-4"></i>
                         <div>
                             <strong>${escapeHtml(s.name)}</strong>
                             <br/><small class="text-muted">${escapeHtml(s.registrationNumber || '')}${s.email ? ' · ' + escapeHtml(s.email) : ''}</small>
@@ -677,21 +729,99 @@
             }).join('');
 
             if (filtered.length > 50) {
-                studentDropdown.innerHTML += `<div class="no-results border-top mt-2 pt-2 text-center text-muted"><small>Mostrando 50 de ${filtered.length} — refine a busca para ver mais</small></div>`;
+                html += `<div class="no-results border-top mt-2 pt-2 text-center text-muted"><small>Mostrando 50 de ${filtered.length} — refine a busca para ver mais</small></div>`;
+            }
+
+            studentDropdown.innerHTML = html;
+
+            const selectAllCb = document.getElementById('selectAllStudentsCheckbox');
+            if (selectAllCb) {
+                selectAllCb.indeterminate = someVisibleSelected && !allVisibleSelected;
             }
         }
         studentDropdown.classList.add('show');
     }
 
+    function updateSelectedStudentsUI() {
+        const countSpan = document.getElementById('enrollBtnCount');
+        const hiddenInput = document.getElementById('studentId');
+        const ids = Array.from(selectedStudentIds);
+
+        if (hiddenInput) {
+            hiddenInput.value = ids.join(',');
+        }
+        if (countSpan) {
+            countSpan.textContent = ids.length > 0 ? `(${ids.length})` : '';
+        }
+        if (!selectedStudentsTags) return;
+
+        if (ids.length === 0) {
+            selectedStudentsTags.innerHTML = '';
+        } else {
+            selectedStudentsTags.innerHTML = ids.map(id => {
+                const s = allStudents.find(st => st.id === id);
+                return `<span class="selected-tag">
+                    ${escapeHtml(s ? s.name : '#' + id)}
+                    <span class="remove-tag" data-id="${id}" title="Remover">&times;</span>
+                </span>`;
+            }).join('');
+        }
+    }
+
     studentDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
         const item = e.target.closest('.dropdown-item');
-        if (!item || item.classList.contains('disabled')) return;
-        const id = item.dataset.id;
-        const name = item.dataset.label || item.querySelector('strong')?.textContent || '';
-        document.getElementById('studentId').value = id;
-        studentSearch.value = name;
-        studentDropdown.classList.remove('show');
+        if (!item || item.classList.contains('disabled') || item.classList.contains('no-results')) return;
+
+        if (item.dataset.id === 'all') {
+            const visible = getFilteredAvailableStudents(studentSearch.value).slice(0, 50);
+            const allVisibleSelected = visible.every(s => selectedStudentIds.has(s.id));
+            visible.forEach(s => {
+                if (allVisibleSelected) {
+                    selectedStudentIds.delete(s.id);
+                } else {
+                    selectedStudentIds.add(s.id);
+                }
+            });
+        } else {
+            const id = parseInt(item.dataset.id, 10);
+            if (!isNaN(id) && !enrolledStudentIds.has(id)) {
+                if (selectedStudentIds.has(id)) {
+                    selectedStudentIds.delete(id);
+                } else {
+                    selectedStudentIds.add(id);
+                }
+            }
+        }
+
+        // If user had typed a search filter and all matching students are now selected,
+        // clear the search input so the remaining available students are immediately visible
+        if (studentSearch.value.trim()) {
+            const remainingFiltered = getFilteredAvailableStudents(studentSearch.value);
+            if (remainingFiltered.length > 0 && remainingFiltered.every(s => selectedStudentIds.has(s.id))) {
+                studentSearch.value = '';
+            }
+        }
+
+        updateSelectedStudentsUI();
+        renderStudentDropdown(studentSearch.value);
+        studentSearch.focus();
     });
+
+    if (selectedStudentsTags) {
+        selectedStudentsTags.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.remove-tag');
+            if (removeBtn) {
+                e.stopPropagation();
+                const id = parseInt(removeBtn.dataset.id, 10);
+                selectedStudentIds.delete(id);
+                updateSelectedStudentsUI();
+                if (studentDropdown.classList.contains('show')) {
+                    renderStudentDropdown(studentSearch.value);
+                }
+            }
+        });
+    }
 
     // ══════════════════════════════════════════════════════════
     // SEARCHABLE SINGLE-SELECT (Teacher / Subject)
@@ -767,27 +897,34 @@
 
     document.getElementById('studentEnrollmentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        let studentId = document.getElementById('studentId').value;
+        studentDropdown.classList.remove('show');
+
         const studentSearchInput = document.getElementById('studentSearch');
         const searchVal = studentSearchInput.value.trim().toLowerCase();
+        const hiddenVal = (document.getElementById('studentId').value || '').trim();
 
-        // Fallback: auto-match student by name, registrationNumber or email
-        if (!studentId && searchVal) {
-            const matched = allStudents.find(s => 
-                !enrolledStudentIds.has(s.id) && 
-                ((s.name && s.name.toLowerCase() === searchVal) || 
+        // Fallback: if selectedStudentIds is empty, check hidden input or exact text match
+        if (selectedStudentIds.size === 0 && hiddenVal) {
+            hiddenVal.split(',').map(v => parseInt(v.trim(), 10)).filter(v => !isNaN(v)).forEach(id => {
+                if (!enrolledStudentIds.has(id)) selectedStudentIds.add(id);
+            });
+        }
+        if (selectedStudentIds.size === 0 && searchVal) {
+            const matched = allStudents.find(s =>
+                !enrolledStudentIds.has(s.id) &&
+                ((s.name && s.name.toLowerCase() === searchVal) ||
                  (s.registrationNumber && s.registrationNumber.toLowerCase() === searchVal) ||
                  (s.email && s.email.toLowerCase() === searchVal))
             );
             if (matched) {
-                studentId = matched.id;
-                document.getElementById('studentId').value = matched.id;
+                selectedStudentIds.add(matched.id);
             }
         }
 
-        if (!studentId) {
-            showAlert('Selecione um aluno da lista.', 'warning');
-            showToast('Selecione um aluno da lista.', 'warning');
+        const idsToEnroll = Array.from(selectedStudentIds);
+        if (idsToEnroll.length === 0) {
+            showAlert('Selecione pelo menos um aluno da lista.', 'warning');
+            showToast('Selecione pelo menos um aluno da lista.', 'warning');
             return;
         }
 
@@ -799,55 +936,85 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Matriculando...';
 
+        let successCount = 0;
+        const errors = [];
+        const newlyCreated = [];
+
         try {
-            const res = await fetch('/api/enrollments', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwtToken || ''}`
-                },
-                body: JSON.stringify({
-                    studentId: parseInt(studentId),
-                    classRoomId: parseInt(classRoomId),
-                    enrollmentDate: date
-                })
-            });
+            for (const sId of idsToEnroll) {
+                const numericId = parseInt(sId, 10);
+                const studentObj = allStudents.find(st => st.id === numericId);
+                const studentLabel = studentObj ? studentObj.name : `#${sId}`;
 
-            if (res.ok) {
-                const newEnrollment = await res.json();
-                enrolledStudentIds.add(parseInt(studentId));
+                try {
+                    const res = await fetch('/api/enrollments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${jwtToken || ''}`
+                        },
+                        body: JSON.stringify({
+                            studentId: numericId,
+                            classRoomId: parseInt(classRoomId, 10),
+                            enrollmentDate: date
+                        })
+                    });
 
-                // Instantly update active UI table/list in DOM
-                allEnrollments.unshift(newEnrollment);
-                renderEnrollmentsTable();
+                    if (res.ok) {
+                        const newEnrollment = await res.json();
+                        enrolledStudentIds.add(numericId);
+                        selectedStudentIds.delete(numericId);
+                        allStudents = allStudents.filter(st => st.id !== numericId);
+                        if (!allEnrollments.some(en => en.id === newEnrollment.id) && !newlyCreated.some(en => en.id === newEnrollment.id)) {
+                            newlyCreated.push(newEnrollment);
+                        }
+                        successCount++;
+                    } else {
+                        const err = await res.json().catch(() => ({}));
+                        const errMsg = window.extractErrorMessage
+                            ? window.extractErrorMessage(err, 'Erro ao matricular aluno.')
+                            : (err.message || err.detail || 'Erro ao matricular aluno.');
+                        errors.push(idsToEnroll.length > 1 ? `${studentLabel}: ${errMsg}` : errMsg);
+                    }
+                } catch (innerEx) {
+                    errors.push(idsToEnroll.length > 1 ? `${studentLabel}: Erro de conexão.` : 'Erro de conexão.');
+                }
+            }
 
-                // Update badge
+            if (newlyCreated.length > 0) {
+                allEnrollments.unshift(...newlyCreated);
+            }
+
+            if (successCount > 0) {
+                renderEnrollmentsTable(document.getElementById('enrollmentTableSearch')?.value || '');
                 const badge = document.getElementById('enrollmentCountBadge');
                 badge.textContent = allEnrollments.length;
-                badge.style.display = '';
-
-                // Show success toast and alert without reload
-                showToast('Aluno matriculado com sucesso!', 'success');
-                showAlert('Aluno matriculado com sucesso!', 'success');
-
-                // Clear input
-                document.getElementById('studentSearch').value = '';
-                document.getElementById('studentId').value = '';
-
-                // Background sync removed to avoid reloading feeling
-                studentSearch.focus();
-            } else {
-                const err = await res.json().catch(() => ({}));
-                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao matricular aluno.') : (err.message || err.detail || 'Erro ao matricular aluno.');
-                showAlert(msg, 'danger');
-                showToast(msg, 'danger');
+                badge.style.display = allEnrollments.length > 0 ? '' : 'none';
             }
-        } catch (ex) {
-            showAlert('Erro de conexão.', 'danger');
-            showToast('Erro de conexão.', 'danger');
+
+            updateSelectedStudentsUI();
+            studentDropdown.innerHTML = '';
+
+            if (successCount > 0 && errors.length === 0) {
+                const msg = successCount === 1
+                    ? 'Aluno matriculado com sucesso!'
+                    : `${successCount} alunos matriculados com sucesso!`;
+                showToast(msg, 'success');
+                showAlert(msg, 'success');
+                studentSearchInput.value = '';
+            } else if (successCount > 0 && errors.length > 0) {
+                const msg = `${successCount} aluno(s) matriculado(s) com sucesso. Falha em ${errors.length}: ${errors.join(' | ')}`;
+                showToast(msg, 'warning');
+                showAlert(msg, 'warning');
+            } else if (errors.length > 0) {
+                const msg = errors.join(' | ');
+                showToast(msg, 'danger');
+                showAlert(msg, 'danger');
+            }
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="bx bx-user-plus me-1"></i> Matricular';
+            const remaining = selectedStudentIds.size;
+            btn.innerHTML = `<i class="bx bx-user-plus me-1"></i> Matricular <span id="enrollBtnCount">${remaining > 0 ? '(' + remaining + ')' : ''}</span>`;
         }
     });
 
@@ -949,7 +1116,7 @@
             });
             if (res.ok) {
                 showAlert("Status atualizado.", "success");
-                loadEnrollments();
+                await Promise.all([loadStudents(), loadEnrollments()]);
             } else {
                 const err = await res.json().catch(() => ({}));
                 const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao alterar status.") : (err.message || "Erro ao alterar status.");
@@ -969,7 +1136,7 @@
             });
             if (res.ok || res.status === 204) {
                 showAlert("Matrícula excluída.", "success");
-                loadEnrollments();
+                await Promise.all([loadStudents(), loadEnrollments()]);
             } else {
                 const err = await res.json().catch(() => ({}));
                 const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao excluir matrícula. O aluno pode ter notas ou presenças registradas.") : (err.message || "Erro ao excluir matrícula. O aluno pode ter notas ou presenças registradas.");
@@ -1061,7 +1228,8 @@
             if (res.ok) {
                 transferModalInstance.hide();
                 showAlert("Aluno transferido com sucesso!", "success");
-                loadEnrollments();
+                showToast("Aluno transferido com sucesso!", "success");
+                await Promise.all([loadStudents(), loadEnrollments()]);
             } else {
                 const err = await res.json().catch(() => ({}));
                 const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao transferir aluno.") : (err.message || "Erro ao transferir aluno.");

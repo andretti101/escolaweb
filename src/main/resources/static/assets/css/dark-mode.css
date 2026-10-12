@@ -715,6 +715,8 @@ html.dark-style .search-select-dropdown {
 }
 html.dark-style .search-select-dropdown .dropdown-item { color: var(--ew-text); }
 html.dark-style .search-select-dropdown .dropdown-item:hover { background: var(--ew-hover) !important; color: var(--ew-heading); }
+html.dark-style .search-select-dropdown .dropdown-item.selected { background: rgba(105, 108, 255, 0.16) !important; color: var(--ew-heading); }
+html.dark-style .search-select-dropdown .dropdown-item.selected:hover { background: rgba(105, 108, 255, 0.24) !important; color: var(--ew-heading); }
 html.dark-style .search-select-dropdown .dropdown-item.select-all { border-bottom-color: var(--ew-border) !important; }
 html.dark-style .selected-tag,
 html.dark-style .student-count-badge {

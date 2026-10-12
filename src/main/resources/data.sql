@@ -148,7 +148,12 @@ INSERT INTO users (id, role, active, created_at, email, last_read_announcements,
  (37, 'STUDENT', true, '2024-01-20 10:00:00', 'henrique.moura@example.com', NULL, 'Henrique Tavares Moura', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
  (38, 'STUDENT', true, '2024-01-20 10:00:00', 'manuela.quintana@example.com', NULL, 'Manuela Bastos Quintana', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
  (39, 'STUDENT', true, '2024-01-20 10:00:00', 'daniel.cunha@example.com', NULL, 'Daniel Figueiredo Cunha', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
- (40, 'STUDENT', true, '2024-01-20 10:00:00', 'livia.torres@example.com', NULL, 'Lívia Magalhães Torres', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00');
+ (40, 'STUDENT', true, '2024-01-20 10:00:00', 'livia.torres@example.com', NULL, 'Lívia Magalhães Torres', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (41, 'STUDENT', true, '2026-01-20 10:00:00', 'andre.santana@example.com', NULL, 'André Luiz Santana', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00'),
+ (42, 'STUDENT', true, '2026-01-20 10:00:00', 'bruna.melo@example.com', NULL, 'Bruna Rafaela Melo', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00'),
+ (43, 'STUDENT', true, '2026-01-20 10:00:00', 'caio.peixoto@example.com', NULL, 'Caio Henrique Peixoto', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00'),
+ (44, 'STUDENT', true, '2026-01-20 10:00:00', 'daniela.moraes@example.com', NULL, 'Daniela Cristina Moraes', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00'),
+ (45, 'STUDENT', true, '2026-01-20 10:00:00', 'enzo.rezende@example.com', NULL, 'Enzo Gabriel Rezende', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00');
 
 -- Perfis específicos (mesmo ID da tabela users).
 INSERT INTO principals (id) VALUES (1);
@@ -196,7 +201,12 @@ INSERT INTO students (id, birth_date, guardian_phone, is_chat_blocked, own_phone
  (37, '2009-11-21', '(48) 99569-4367', false, '(48) 98261-1629', '2024027'),
  (38, '2009-04-01', '(48) 99606-4458', false, '(48) 98314-1646', '2024028'),
  (39, '2009-09-08', '(48) 99643-4549', false, '(48) 98367-1663', '2024029'),
- (40, '2009-02-15', '(48) 99680-4640', false, '(48) 98420-1680', '2024030');
+ (40, '2009-02-15', '(48) 99680-4640', false, '(48) 98420-1680', '2024030'),
+ (41, '2010-03-12', '(48) 99701-4701', false, '(48) 98421-1701', '2026031'),
+ (42, '2010-07-19', '(48) 99702-4702', false, '(48) 98422-1702', '2026032'),
+ (43, '2010-11-05', '(48) 99703-4703', false, '(48) 98423-1703', '2026033'),
+ (44, '2009-04-25', '(48) 99704-4704', false, '(48) 98424-1704', '2026034'),
+ (45, '2009-09-14', '(48) 99705-4705', false, '(48) 98425-1705', '2026035');
 
 -- =====================================================================
 -- 4. DISCIPLINAS
@@ -234,9 +244,10 @@ INSERT INTO class_rooms (id, active, created_at, number, school_grade, shift, up
 -- =====================================================================
 -- 6. MATRÍCULAS
 -- =====================================================================
--- Cada aluno é matriculado, em cada ano, na turma da sua coorte:
+-- Cada aluno (IDs 11 a 40) é matriculado, em cada ano, na turma da sua coorte:
 --   coorte = (id_do_aluno - 11) / 10   (divisão inteira: 0, 1 ou 2)
 --   id_da_turma = (índice do ano) * 3 + coorte + 1
+-- Os alunos 41 a 45 permanecem sem matrícula ativa para testes de matrícula.
 -- Situação geral: APPROVED nos anos encerrados e PENDING em 2026 (o ano
 -- ainda não terminou). Matrículas de anos encerrados ficam inativas.
 INSERT INTO enrollments (active, created_at, enrollment_date, general_situation, class_room_id, student_id)
@@ -250,6 +261,7 @@ FROM students s
 CROSS JOIN generate_series(0, 2) AS y(i)                 -- y.i = índice do ano (0=2024, 1=2025, 2=2026)
 JOIN class_rooms c ON c.id = y.i * 3 + ((s.id - 11) / 10) + 1
 JOIN academic_years ay ON ay.id = c.academic_year_id
+WHERE s.id <= 40
 ORDER BY ay.year, s.id;
 
 -- =====================================================================
