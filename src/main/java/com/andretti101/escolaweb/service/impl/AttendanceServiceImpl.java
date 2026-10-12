@@ -31,6 +31,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final AttendanceHistoryRepository attendanceHistoryRepository;
+    private final com.andretti101.escolaweb.service.AuthenticatedUserService authenticatedUserService;
     private final EnrollmentRepository enrollmentRepository;
     private final LessonRepository lessonRepository;
     private final LessonService lessonService;
@@ -244,6 +245,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .attendance(attendance)
                 .previousStatus(previous != null ? previous.name() : null)
                 .newStatus(current != null ? current.name() : null)
+                .changedBy(authenticatedUserService.findAuthenticatedUserOrNull())
                 .build();
         attendanceHistoryRepository.save(history);
     }

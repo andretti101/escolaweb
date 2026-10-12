@@ -32,6 +32,7 @@ public class GradeServiceImpl implements GradeService {
 
     private final GradeRepository gradeRepository;
     private final GradeHistoryRepository gradeHistoryRepository;
+    private final com.andretti101.escolaweb.service.AuthenticatedUserService authenticatedUserService;
     private final EnrollmentRepository enrollmentRepository;
     private final StudentService studentService;
     private final AssessmentService assessmentService;
@@ -207,6 +208,7 @@ public class GradeServiceImpl implements GradeService {
                 .grade(grade)
                 .previousGrade(previousValue)
                 .newGrade(newValue)
+                .changedBy(authenticatedUserService.findAuthenticatedUserOrNull())
                 .build();
         gradeHistoryRepository.save(history);
     }

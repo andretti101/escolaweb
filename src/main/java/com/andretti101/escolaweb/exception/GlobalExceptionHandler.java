@@ -167,11 +167,11 @@ public class GlobalExceptionHandler {
     // 401 UNAUTHORIZED
     // ═════════════════════════════
 
-    @ExceptionHandler(BadCredentialsException.class)
+    @ExceptionHandler({BadCredentialsException.class, org.springframework.security.core.AuthenticationException.class})
     public ResponseEntity<ApiErrorResponse> handleBadCredentials(
-            BadCredentialsException ex, HttpServletRequest request) {
+            Exception ex, HttpServletRequest request) {
 
-        log.warn("Bad credentials on {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("Authentication failed on {}: {}", request.getRequestURI(), ex.getMessage());
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)

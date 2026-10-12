@@ -37,4 +37,7 @@ public interface GradeRepository extends JpaRepository<Grade, Integer> {
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query("UPDATE Grade g SET g.active = false WHERE g.assessment.period.academicYear = :year AND g.active = true")
     int deactivateAllByAcademicYear(@org.springframework.data.repository.query.Param("year") AcademicYear academicYear);
+
+    @Query("SELECT g FROM Grade g JOIN FETCH g.assessment a JOIN FETCH a.teacherClassSubject tcs JOIN FETCH tcs.teacher t WHERE g.id = :id")
+    Optional<Grade> findWithTcsById(@Param("id") Integer id);
 }

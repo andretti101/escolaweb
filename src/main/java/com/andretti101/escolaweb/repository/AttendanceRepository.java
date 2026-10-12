@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
@@ -28,4 +29,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query("UPDATE Attendance a SET a.active = false WHERE a.lesson.teacherClassSubject.classRoom.academicYear = :year AND a.active = true")
     int deactivateAllByAcademicYear(@org.springframework.data.repository.query.Param("year") AcademicYear academicYear);
+
+    @Query("SELECT a FROM Attendance a JOIN FETCH a.lesson l JOIN FETCH l.teacherClassSubject tcs JOIN FETCH tcs.teacher t WHERE a.id = :id")
+    Optional<Attendance> findWithTcsById(@Param("id") Integer id);
 }

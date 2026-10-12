@@ -335,9 +335,12 @@ ORDER BY l.id, e.student_id;
 
 -- Histórico de presença: toda falta justificada começou como ABSENT e foi
 -- alterada 2 dias depois para JUSTIFIED_ABSENCE (ex.: aluno entregou atestado).
-INSERT INTO attendance_history (changed_at, new_status, old_status, attendance_id)
-SELECT a.created_at + interval '2 days', 'JUSTIFIED_ABSENCE', 'ABSENT', a.id
+-- Registrado pelo professor responsável da turma/disciplina.
+INSERT INTO attendance_history (changed_at, new_status, old_status, attendance_id, changed_by)
+SELECT a.created_at + interval '2 days', 'JUSTIFIED_ABSENCE', 'ABSENT', a.id, tcs.teacher_id
 FROM attendances a
+JOIN lessons l ON l.id = a.lesson_id
+JOIN teacher_class_subject tcs ON tcs.id = l.teacher_class_subject_id
 WHERE a.status = 'JUSTIFIED_ABSENCE'
 ORDER BY a.id;
 
@@ -448,9 +451,12 @@ ORDER BY a.id, e.student_id;
 
 -- Histórico de notas: 1 em cada 20 notas foi revisada (a nota antiga era
 -- 0,5 ponto menor), simulando a correção de uma prova após pedido de revisão.
-INSERT INTO grade_history (changed_at, new_grade, notes, old_grade, grade_id)
-SELECT g.created_at + interval '1 day', g.score, 'Nota corrigida após revisão da avaliação', g.score - 0.5, g.id
+-- Registrado pelo professor responsável da turma/disciplina.
+INSERT INTO grade_history (changed_at, new_grade, notes, old_grade, grade_id, changed_by)
+SELECT g.created_at + interval '1 day', g.score, 'Nota corrigida após revisão da avaliação', g.score - 0.5, g.id, tcs.teacher_id
 FROM grades g
+JOIN assessments a ON a.id = g.assessment_id
+JOIN teacher_class_subject tcs ON tcs.id = a.teacher_class_subject_id
 WHERE g.id % 20 = 0
 ORDER BY g.id;
 

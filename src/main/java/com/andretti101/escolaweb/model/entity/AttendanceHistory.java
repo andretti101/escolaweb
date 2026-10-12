@@ -38,4 +38,8 @@ public class AttendanceHistory implements Serializable {
     @CreationTimestamp
     @Column(name = "changed_at", updatable = false)
     private LocalDateTime changedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "changed_by")
+    private User changedBy;
 }

@@ -15,4 +15,7 @@ public interface AuthenticatedUserService {
     boolean isStudent();
     void enforceTeacherOwnership(TeacherClassSubject tcs);
     void enforceStudentOwnership(Integer studentId);
+
+    /** Returns the logged-in user, or {@code null} when there is no authenticated user (e.g. background jobs). */
+    User findAuthenticatedUserOrNull();
 }

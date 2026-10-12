@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Histórico de Alterações | Escola Web</title>
+    <meta name="description" content="Consulta do histórico de alterações de notas e frequência escolar."/>
+
+    <script src="/js/auth-guard.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <script src="/js/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+    <script src="/js/global-modals.js"></script>
+    <style>
+        .layout-page,
+        .content-wrapper,
+        .container-xxl,
+        .nav-align-top,
+        .nav-align-top > .tab-content,
+        .nav-align-top > .tab-content > .tab-pane,
+        .history-table-card {
+            min-width: 0;
+            max-width: 100%;
+        }
+        .nav-align-top > .tab-content {
+            width: 100%;
+        }
+        .history-table th,
+        .history-table td {
+            vertical-align: middle;
+        }
+        .history-notes-cell {
+            min-width: 180px;
+            max-width: 260px;
+            white-space: normal;
+            word-break: break-word;
+        }
+        .badge-author {
+            text-transform: none !important;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body data-role="SECRETARY">
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+
+        <!-- Sidebar -->
+        <div id="sidebar-container" data-sidebar="/components/secretary-sidebar.html"></div>
+
+        <div class="layout-page">
+            <!-- Navbar -->
+            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+                 id="layout-navbar">
+                <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+                    <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)"><i class="bx bx-menu bx-sm"></i></a>
+                </div>
+                <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+                    <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
+                        <span class="fs-4 fw-bold text-primary">Portal da Secretaria</span>
+                    </div>
+                    <ul class="navbar-nav flex-row align-items-center ms-auto">
+                        <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                            <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                <div class="avatar avatar-online">
+                                    <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitial">S</span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="avatar avatar-online">
+                                                    <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitialInner">S</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <span class="fw-semibold d-block" id="dropdownUserName">Secretaria</span>
+                                                <small class="text-muted">Secretaria</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li><div class="dropdown-divider"></div></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="javascript:void(0);" id="btnLogoutNavbar">
+                                        <i class="bx bx-power-off me-2"></i>
+                                        <span class="align-middle">Sair</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h4 class="fw-bold mb-1">
+                                <span class="text-muted fw-light">Auditoria /</span> Histórico de Alterações
+                            </h4>
+                            <p class="text-muted mb-0">Auditoria completa de todas as alterações de notas e frequência escolar.</p>
+                        </div>
+                    </div>
+
+                    <!-- Card de Filtros -->
+                    <div class="card mb-4">
+                        <div class="card-header pb-2">
+                            <h6 class="mb-0 text-muted"><i class="bx bx-filter-alt me-1"></i> Filtros de Busca</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="filterYear" class="form-label">Ano Letivo</label>
+                                    <select id="filterYear" class="form-select">
+                                        <option value="">Carregando...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filterClassRoom" class="form-label">Turma</label>
+                                    <select id="filterClassRoom" class="form-select">
+                                        <option value="">Todas as turmas</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3" id="teacherFilterCol">
+                                    <label for="filterTeacher" class="form-label">Professor</label>
+                                    <select id="filterTeacher" class="form-select">
+                                        <option value="">Todos os professores</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filterStudent" class="form-label">Aluno</label>
+                                    <select id="filterStudent" class="form-select">
+                                        <option value="">Todos os alunos</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filterFrom" class="form-label">Data De</label>
+                                    <input type="date" id="filterFrom" class="form-control" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filterTo" class="form-label">Data Até</label>
+                                    <input type="date" id="filterTo" class="form-control" />
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end gap-2">
+                                    <button type="button" id="btnFilter" class="btn btn-primary">
+                                        <i class="bx bx-search me-1"></i> Filtrar
+                                    </button>
+                                    <button type="button" id="btnClear" class="btn btn-outline-secondary">
+                                        <i class="bx bx-reset me-1"></i> Limpar Filtros
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Abas: Notas e Frequência -->
+                    <div class="nav-align-top mb-4">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item">
+                                <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
+                                        data-bs-target="#tab-grades" aria-controls="tab-grades" aria-selected="true" id="tabGradesBtn">
+                                    <i class="bx bx-award me-1"></i> Notas
+                                    <span class="badge rounded-pill bg-label-primary ms-1" id="gradesBadgeCount">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+                                        data-bs-target="#tab-attendance" aria-controls="tab-attendance" aria-selected="false" id="tabAttendanceBtn">
+                                    <i class="bx bx-calendar-check me-1"></i> Frequência
+                                    <span class="badge rounded-pill bg-label-primary ms-1" id="attendanceBadgeCount">0</span>
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content p-0 bg-transparent shadow-none mt-3">
+                            <!-- Aba Notas -->
+                            <div class="tab-pane fade show active" id="tab-grades" role="tabpanel">
+                                <div class="card history-table-card">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover history-table mb-0">
+                                            <thead>
+                                            <tr>
+                                                <th>Data / Hora</th>
+                                                <th>Aluno / Turma</th>
+                                                <th>Matéria / Avaliação</th>
+                                                <th>Nota Anterior → Nova</th>
+                                                <th>Professor / Autor</th>
+                                                <th>Observação</th>
+                                                <th class="text-end">Linha do Tempo</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="gradesTableBody">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-5 text-muted">Carregando...</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="card-footer d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 border-top">
+                                        <span class="text-muted small" id="gradesInfo">Mostrando 0 registros</span>
+                                        <ul class="pagination pagination-sm mb-0" id="gradesPaginationControls"></ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Aba Frequência -->
+                            <div class="tab-pane fade" id="tab-attendance" role="tabpanel">
+                                <div class="card history-table-card">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover history-table mb-0">
+                                            <thead>
+                                            <tr>
+                                                <th>Data / Hora</th>
+                                                <th>Aluno / Turma</th>
+                                                <th>Matéria / Aula</th>
+                                                <th>Presença Anterior → Nova</th>
+                                                <th>Professor / Autor</th>
+                                                <th class="text-end">Linha do Tempo</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="attendanceTableBody">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-5 text-muted">Carregando...</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="card-footer d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 border-top">
+                                        <span class="text-muted small" id="attendanceInfo">Mostrando 0 registros</span>
+                                        <ul class="pagination pagination-sm mb-0" id="attendancePaginationControls"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <footer class="content-footer footer bg-footer-theme">
+                    <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                        <div class="mb-2 mb-md-0">
+                            Copyright © 2026 EscolaWEB. Todos os direitos reservados.
+                        </div>
+                    </div>
+                </footer>
+                <div class="content-backdrop fade"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<!-- Modal Linha do Tempo -->
+<div class="modal fade" id="timelineModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="timelineModalTitle">Linha do Tempo de Alterações</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="timelineModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script src="/js/load-sidebar.js"></script>
+<script src="/js/change-history.js"></script>
+</body>
+</html>

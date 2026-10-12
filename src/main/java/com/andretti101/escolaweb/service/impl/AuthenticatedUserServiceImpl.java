@@ -89,6 +89,15 @@ public class AuthenticatedUserServiceImpl implements AuthenticatedUserService {
 
     // ── Private helpers
 
+    @Override
+    public User findAuthenticatedUserOrNull() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getName() == null) {
+            return null;
+        }
+        return userRepository.findByEmail(auth.getName()).orElse(null);
+    }
+
     private String getAuthenticatedEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getName() == null) {
