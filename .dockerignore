@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Build outputs
+target/
+build/
+
+# Node / Frontend dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+*.env
+
+# IDE and editors
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
+
+# Logs
+*.log
+logs/
+
+# Antigravity / Agents
+.agents/
+.gemini/
+
+# Documentation and temporary files
+*.md
+LICENSE
+
+# Compose and local tools
+compose*.yaml
+docker-compose*.yml
+.mvn/
+mvnw
+mvnw.cmd
