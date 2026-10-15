@@ -57,6 +57,17 @@
                                                 </select>
                                             </div>
                                             <div class="col-md-6 mb-3">
+                                                <label class="form-label" for="periodType">Tipo de Divisão *</label>
+                                                <select class="form-select" id="periodType" required>
+                                                    <option value="" disabled selected>Selecione a divisão</option>
+                                                    <option value="BIMESTER">Bimestres: 4 partes</option>
+                                                    <option value="TRIMESTER">Trimestres: 3 partes</option>
+                                                    <option value="SEMESTER">Semestres: 2 partes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
                                                 <label class="form-label" for="name">Nome do Período *</label>
                                                 <div class="input-group input-group-merge">
                                                     <span class="input-group-text"><i
@@ -171,6 +182,7 @@
 
             const payload = {
                 academicYearId: parseInt(yearSelect.value),
+                periodType: document.getElementById('periodType').value,
                 name: document.getElementById('name').value,
                 startDate: parseDate(document.getElementById('startDate').value),
                 endDate: parseDate(document.getElementById('endDate').value)
@@ -185,6 +197,7 @@
                 if (response.ok) {
                     formMessage.innerHTML = '<div class="alert alert-success alert-dismissible text-wrap text-break" style="word-break: break-word;" role="alert">Período acadêmico cadastrado com sucesso!<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
                     document.getElementById('name').value = '';
+                    document.getElementById('periodType').value = '';
                     document.getElementById('startDate').value = '';
                     document.getElementById('endDate').value = '';
                 } else {

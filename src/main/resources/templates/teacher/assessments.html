@@ -168,6 +168,12 @@
                     activeYearId = (await activeYearRes.json()).id;
                 }
 
+                let classrooms = [];
+                try {
+                    const cRes = await fetch('/api/classrooms?activeOnly=false', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                    if (cRes.ok) classrooms = await cRes.json();
+                } catch(_) {}
+
                 const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (periodRes.ok) {
                     allPeriods = await periodRes.json();
@@ -175,13 +181,8 @@
                     if (activeYearId) {
                         dropdownPeriods = allPeriods.filter(p => p.academicYearId === activeYearId);
                     }
-                    const pSelect = document.getElementById('periodFilter');
-                    dropdownPeriods.forEach(p => {
-                        const opt = document.createElement('option');
-                        opt.value = p.id;
-                        opt.textContent = `${p.academicYear} - ${p.name}`;
-                        pSelect.appendChild(opt);
-                    });
+                    window.dropdownPeriods = dropdownPeriods;
+                    renderPeriodDropdown(dropdownPeriods);
                 }
                 
                 const tcsRes = await fetch('/api/teacher-class-subjects', { headers: { 'Authorization': `Bearer ${getToken()}` } });
@@ -194,8 +195,40 @@
                         opt.textContent = `${tcs.classRoomName} - ${tcs.subjectName}`;
                         cSelect.appendChild(opt);
                     });
+
+                    cSelect.addEventListener('change', () => {
+                        const selectedTcsId = cSelect.value;
+                        if (!selectedTcsId) {
+                            renderPeriodDropdown(window.dropdownPeriods || allPeriods);
+                        } else {
+                            const tcs = myTcsList.find(t => String(t.id) === String(selectedTcsId));
+                            if (tcs) {
+                                const cr = classrooms.find(c => c.id === tcs.classRoomId);
+                                if (cr && cr.periodType) {
+                                    const filtered = (window.dropdownPeriods || allPeriods).filter(p => p.periodType === cr.periodType);
+                                    renderPeriodDropdown(filtered);
+                                }
+                            }
+                        }
+                    });
                 }
             } catch(e) { console.error('Erro ao carregar filtros', e); }
+        }
+
+        function renderPeriodDropdown(periods) {
+            const pSelect = document.getElementById('periodFilter');
+            const currentVal = pSelect.value;
+            pSelect.innerHTML = '<option value="">Todos os Períodos</option>';
+            periods.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                const label = `${p.name}${p.periodTypeLabel ? ' (' + p.periodTypeLabel + ')' : ''}`;
+                opt.textContent = label;
+                pSelect.appendChild(opt);
+            });
+            if (currentVal && periods.some(p => String(p.id) === String(currentVal))) {
+                pSelect.value = currentVal;
+            }
         }
 
         async function loadAssessments() {
@@ -286,7 +319,7 @@
                 const typeHtml = typeLabels[ass.assessmentType] || ass.assessmentType;
                 
                 const period = allPeriods.find(p => p.id === ass.periodId);
-                const periodName = period ? `${period.academicYear} - ${period.name}` : `ID ${ass.periodId}`;
+                const periodName = period ? `${period.name}${period.periodTypeLabel ? ' (' + period.periodTypeLabel + ')' : ''}` : `ID ${ass.periodId}`;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `

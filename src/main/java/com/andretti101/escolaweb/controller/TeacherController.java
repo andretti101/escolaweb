@@ -1,8 +1,11 @@
 package com.andretti101.escolaweb.controller;
 
+import com.andretti101.escolaweb.dto.request.TeacherPatchRequestDTO;
 import com.andretti101.escolaweb.dto.request.TeacherRequestDTO;
 import com.andretti101.escolaweb.dto.request.TeacherUpdateRequestDTO;
+import com.andretti101.escolaweb.dto.response.SubjectResponseDTO;
 import com.andretti101.escolaweb.dto.response.TeacherResponseDTO;
+import com.andretti101.escolaweb.model.entity.Subject;
 import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.service.TeacherService;
 import jakarta.validation.Valid;
@@ -12,7 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/teachers")
@@ -54,8 +62,8 @@ public class TeacherController {
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<TeacherResponseDTO> patch(
-            @PathVariable Integer id, @Valid @RequestBody TeacherUpdateRequestDTO dto) {
-        return update(id, dto);
+            @PathVariable Integer id, @Valid @RequestBody TeacherPatchRequestDTO dto) {
+        return ResponseEntity.ok(toResponse(teacherService.patch(id, dto)));
     }
 
     @DeleteMapping("/{id}")
@@ -84,6 +92,7 @@ public class TeacherController {
         teacher.setName(dto.name());
         teacher.setEmail(dto.email());
         teacher.setPassword(dto.password()); // encoded by TeacherServiceImpl.create()
+        teacher.setSubjects(mapSubjectStubs(dto.subjectIds(), false));
         return teacher;
     }
 
@@ -92,15 +101,46 @@ public class TeacherController {
         teacher.setName(dto.name());
         teacher.setEmail(dto.email());
         teacher.setPassword(dto.password());
+        teacher.setSubjects(mapSubjectStubs(dto.subjectIds(), true));
         return teacher;
     }
 
+    private Set<Subject> mapSubjectStubs(List<Integer> subjectIds, boolean preserveNull) {
+        if (subjectIds == null) {
+            return preserveNull ? null : new LinkedHashSet<>();
+        }
+        return subjectIds.stream()
+                .filter(Objects::nonNull)
+                .map(id -> {
+                    Subject s = new Subject();
+                    s.setId(id);
+                    return s;
+                })
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
     private TeacherResponseDTO toResponse(Teacher t) {
+        List<SubjectResponseDTO> subjects = t.getSubjects() == null
+                ? List.of()
+                : t.getSubjects().stream()
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(
+                                (Subject s) -> s.getName() != null ? s.getName().toLowerCase() : "",
+                                Comparator.naturalOrder()))
+                        .map(s -> new SubjectResponseDTO(
+                                s.getId(),
+                                s.getName(),
+                                s.getDescription(),
+                                s.isActive(),
+                                s.getCreatedAt()))
+                        .toList();
+
         return new TeacherResponseDTO(
                 t.getId(),
                 t.getName(),
                 t.getEmail(),
                 t.isActive(),
-                t.getCreatedAt());
+                t.getCreatedAt(),
+                subjects);
     }
 }

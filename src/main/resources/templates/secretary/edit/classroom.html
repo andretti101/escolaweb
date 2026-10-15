@@ -81,6 +81,12 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
+                                                <label class="form-label" for="periodTypeDisplay">Divisão do Ano Letivo</label>
+                                                <input type="text" class="form-control" id="periodTypeDisplay" readonly disabled/>
+                                                <input type="hidden" id="periodType"/>
+                                                <small class="text-muted">A divisão é imutável após o cadastro.</small>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
                                                 <label class="form-label" for="shift">Turno *</label>
                                                 <select class="form-select" id="shift" required>
                                                     <option value="" disabled>Selecione o turno</option>
@@ -90,10 +96,12 @@
                                                     <option value="FULL_TIME">Integral</option>
                                                 </select>
                                             </div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label" for="schoolGrade">Série</label>
-                                                <select class="form-select" id="schoolGrade">
-                                                    <option value="" selected>Sem série definida</option>
+                                                <label class="form-label" for="schoolGrade">Série *</label>
+                                                <select class="form-select" id="schoolGrade" required>
+                                                    <option value="" disabled selected>Selecione a série</option>
                                                     <optgroup label="Pré-Escola">
                                                         <option value="PRE_1">Pré-Escola 1</option>
                                                         <option value="PRE_2">Pré-Escola 2</option>
@@ -189,15 +197,25 @@
 
         // 2. Carregar dados da turma
         try {
-            const resClass = await fetch(`/api/classrooms/${classId}`, {
-                headers: {'Authorization': `Bearer ${token || ''}`}
-            });
+            const [resClass, resEnrollments, resAssignments] = await Promise.all([
+                fetch(`/api/classrooms/${classId}`, {
+                    headers: {'Authorization': `Bearer ${token || ''}`}
+                }),
+                fetch(`/api/enrollments/classroom/${classId}`, {
+                    headers: {'Authorization': `Bearer ${token || ''}`}
+                }),
+                fetch(`/api/teacher-class-subjects/classroom/${classId}`, {
+                    headers: {'Authorization': `Bearer ${token || ''}`}
+                })
+            ]);
 
             if (resClass.ok) {
                 loadedClassroom = await resClass.json();
 
                 document.getElementById('name').value = loadedClassroom.name;
                 document.getElementById('shift').value = loadedClassroom.shift;
+                document.getElementById('periodTypeDisplay').value = loadedClassroom.periodTypeLabel || loadedClassroom.periodType || '';
+                document.getElementById('periodType').value = loadedClassroom.periodType || '';
                 if (loadedClassroom.schoolGrade) {
                     document.getElementById('schoolGrade').value = loadedClassroom.schoolGrade;
                 }
@@ -205,6 +223,39 @@
                 // Set year select
                 if (loadedClassroom.academicYearId) {
                     yearSelect.value = loadedClassroom.academicYearId;
+                }
+
+                let hasEnrollments = false;
+                if (resEnrollments.ok) {
+                    const enrollments = await resEnrollments.json();
+                    if (Array.isArray(enrollments) && enrollments.length > 0) {
+                        hasEnrollments = true;
+                    }
+                }
+
+                let hasAssignments = false;
+                if (resAssignments.ok) {
+                    const assignments = await resAssignments.json();
+                    if (Array.isArray(assignments) && assignments.length > 0) {
+                        hasAssignments = true;
+                    }
+                }
+
+                if (hasEnrollments || hasAssignments) {
+                    yearSelect.disabled = true;
+                    if (!document.getElementById('academicYearHelp')) {
+                        const helper = document.createElement('small');
+                        helper.className = 'text-muted d-block mt-1';
+                        helper.id = 'academicYearHelp';
+                        if (hasEnrollments && hasAssignments) {
+                            helper.textContent = 'O ano letivo não pode ser alterado pois a turma já possui matrículas e atribuições de disciplinas/professores vinculadas.';
+                        } else if (hasEnrollments) {
+                            helper.textContent = 'O ano letivo não pode ser alterado pois a turma já possui matrículas de alunos vinculadas.';
+                        } else {
+                            helper.textContent = 'O ano letivo não pode ser alterado pois a turma já possui disciplinas ou professores vinculados.';
+                        }
+                        yearSelect.parentNode.appendChild(helper);
+                    }
                 }
 
                 loadingIndicator.style.display = 'none';
@@ -226,7 +277,8 @@
 
             const payload = {
                 name: document.getElementById('name').value,
-                academicYearId: parseInt(yearSelect.value),
+                academicYearId: parseInt(yearSelect.value) || (loadedClassroom ? loadedClassroom.academicYearId : null),
+                periodType: document.getElementById('periodType').value || (loadedClassroom ? loadedClassroom.periodType : null),
                 shift: document.getElementById('shift').value,
                 schoolGrade: document.getElementById('schoolGrade').value || null
             };

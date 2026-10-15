@@ -18,6 +18,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
     List<Attendance> findByLesson(Lesson lesson);
     List<Attendance> findByStudent(Student student);
     boolean existsByStudent(Student student);
+    boolean existsByStudentAndLesson_TeacherClassSubject_ClassRoom(Student student, com.andretti101.escolaweb.model.entity.ClassRoom classRoom);
     boolean existsByLessonAndStudent(Lesson lesson, Student student);
     boolean existsByLesson(Lesson lesson);
     List<Attendance> findByLessonInAndStudentAndStatus(List<Lesson> lessons, Student student, AttendanceStatus status);

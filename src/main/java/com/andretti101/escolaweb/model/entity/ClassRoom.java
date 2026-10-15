@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.model.entity;
 
+import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.model.enums.SchoolGrade;
 import com.andretti101.escolaweb.model.enums.Shift;
 import jakarta.persistence.*;
@@ -35,14 +36,20 @@ public class ClassRoom implements Serializable {
     @Column(name = "number", nullable = false, length = 20)
     private String name;
 
+    @NotNull(message = "A série é obrigatória.")
     @Enumerated(EnumType.STRING)
-    @Column(name = "school_grade", length = 30)
+    @Column(name = "school_grade", nullable = false, length = 30)
     private SchoolGrade schoolGrade;
 
     @NotNull(message = "O turno é obrigatório.")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Shift shift;
+
+    @NotNull(message = "O tipo de divisão da turma é obrigatório.")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "period_type", nullable = false, updatable = false, length = 20)
+    private AcademicPeriodType periodType;
 
     @NotNull(message = "O ano letivo é obrigatório.")
     @ManyToOne(fetch = FetchType.LAZY)

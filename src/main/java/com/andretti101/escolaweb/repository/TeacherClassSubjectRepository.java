@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface TeacherClassSubjectRepository extends JpaRepository<TeacherClassSubject, Integer> {
     List<TeacherClassSubject> findByTeacher(Teacher teacher);
+    List<TeacherClassSubject> findByTeacherIdAndActiveTrue(Integer teacherId);
     List<TeacherClassSubject> findByClassRoom(ClassRoom classRoom);
     List<TeacherClassSubject> findBySubject(Subject subject);
     boolean existsByClassRoomAndSubject(ClassRoom classRoom, Subject subject);

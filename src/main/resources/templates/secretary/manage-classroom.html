@@ -178,6 +178,12 @@
                                 <span id="tcsCountBadge" class="badge bg-info ms-1" style="display:none;">0</span>
                             </button>
                         </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+                                    data-bs-target="#navs-periods" aria-controls="navs-periods" aria-selected="false">
+                                <i class="bx bx-calendar me-1"></i> Calendário e Divisão
+                            </button>
+                        </li>
                     </ul>
 
                     <div class="tab-content px-0 pb-0 bg-transparent shadow-none">
@@ -323,6 +329,38 @@
                                         </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB CALENDÁRIO E DIVISÃO -->
+                        <div class="tab-pane fade" id="navs-periods" role="tabpanel">
+                            <div class="card mb-4">
+                                <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                                    <h5 class="m-0"><i class="bx bx-calendar text-primary me-2"></i>Divisão e Períodos Letivos da Turma</h5>
+                                    <span id="classroomDivisionHeaderBadge" class="badge bg-label-primary"></span>
+                                </div>
+                                <div class="card-body pt-4">
+                                    <div class="mb-4">
+                                        <p class="text-muted">Esta turma está vinculada à divisão <strong id="divisionNameText">-</strong> do ano letivo <strong id="divisionYearText">-</strong>.</p>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Período</th>
+                                                    <th>Data de Início</th>
+                                                    <th>Data de Término</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="classroomPeriodsTableBody">
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-4 text-muted">Carregando períodos...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -511,6 +549,41 @@
                 const c = await res.json();
                 currentClassroom = c;
                 document.getElementById('classroomNameTitle').textContent = `Gerenciar Turma: ${escapeHtml(c.name)}`;
+
+                const divBadge = document.getElementById('classroomDivisionHeaderBadge');
+                const divText = document.getElementById('divisionNameText');
+                const divYear = document.getElementById('divisionYearText');
+                const periodsBody = document.getElementById('classroomPeriodsTableBody');
+
+                if (divBadge) divBadge.textContent = c.periodTypeLabel || c.periodType || 'Padrão';
+                if (divText) divText.textContent = c.periodTypeLabel || c.periodType || '-';
+                if (divYear) divYear.textContent = c.academicYear || c.academicYearId || '-';
+
+                if (periodsBody) {
+                    const periods = c.periods || [];
+                    if (periods.length === 0) {
+                        periodsBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">Nenhum período cadastrado nesta divisão.</td></tr>';
+                    } else {
+                        const formatDateShort = d => {
+                            if (!d) return '—';
+                            const parts = d.split('-');
+                            return parts.length === 3 ? `${parts[2]}/${parts[1]}` : d;
+                        };
+                        periodsBody.innerHTML = periods.map(p => {
+                            const statusBadge = p.closed
+                                ? '<span class="badge bg-label-danger"><i class="bx bx-lock-alt me-1"></i>Fechado</span>'
+                                : '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i>Aberto</span>';
+                            return `
+                                <tr>
+                                    <td><strong>${escapeHtml(p.name)}</strong></td>
+                                    <td>${formatDateShort(p.startDate)}</td>
+                                    <td>${formatDateShort(p.endDate)}</td>
+                                    <td>${statusBadge}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
             }
         } catch (e) {
         }
@@ -613,15 +686,11 @@
             const tbody = document.getElementById('tcsTableBody');
             if (res.ok) {
                 const data = await res.json();
+                window._tcsData = Array.isArray(data) ? data : [];
                 const badge = document.getElementById('tcsCountBadge');
-                badge.textContent = data.length;
-                badge.style.display = data.length > 0 ? '' : 'none';
-                if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhuma grade definida para esta turma.</td></tr>';
-                    return;
-                }
-                window._tcsData = data;
-                renderTCSTable();
+                badge.textContent = window._tcsData.length;
+                badge.style.display = window._tcsData.length > 0 ? '' : 'none';
+                renderTCSTable(document.getElementById('tcsTableSearch')?.value || '');
             } else {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar grade.</td></tr>';
             }
@@ -632,13 +701,14 @@
 
     function renderTCSTable(filter = '') {
         const tbody = document.getElementById('tcsTableBody');
-        let data = window._tcsData || [];
+        const allTcs = Array.isArray(window._tcsData) ? window._tcsData : [];
+        let data = allTcs;
         if (filter) {
             const q = filter.toLowerCase();
             data = data.filter(t => (t.subjectName || '').toLowerCase().includes(q) || (t.teacherName || '').toLowerCase().includes(q));
         }
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">${filter ? 'Nenhum resultado.' : 'Nenhuma grade definida.'}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">${allTcs.length > 0 && filter ? 'Nenhum resultado.' : 'Nenhuma grade definida para esta turma.'}</td></tr>`;
             return;
         }
         tbody.innerHTML = data.map(t => `
@@ -827,11 +897,37 @@
     // SEARCHABLE SINGLE-SELECT (Teacher / Subject)
     // ══════════════════════════════════════════════════════════
 
-    function setupSingleSearchSelect(inputId, dropdownId, containerId, hiddenId, getItems, formatItem) {
+    function teacherCanTeachSubject(teacher, subjectId) {
+        if (!teacher) return false;
+        if (!Array.isArray(teacher.subjects) || teacher.subjects.length === 0) return true;
+        return teacher.subjects.some(s => String(s.id) === String(subjectId));
+    }
+
+    function getAvailableTeachersForSubject() {
+        const selectedSubjectId = document.getElementById('subjectId')?.value;
+        if (!selectedSubjectId) return allTeachers;
+        return allTeachers.filter(t => teacherCanTeachSubject(t, selectedSubjectId));
+    }
+
+    function getAvailableSubjectsForTeacher() {
+        const selectedTeacherId = document.getElementById('teacherId')?.value;
+        if (!selectedTeacherId) return allSubjects;
+        const teacher = allTeachers.find(t => String(t.id) === String(selectedTeacherId));
+        if (!teacher || !Array.isArray(teacher.subjects) || teacher.subjects.length === 0) {
+            return allSubjects;
+        }
+        const allowedIds = new Set(teacher.subjects.map(s => String(s.id)));
+        return allSubjects.filter(s => allowedIds.has(String(s.id)));
+    }
+
+    function setupSingleSearchSelect(inputId, dropdownId, containerId, hiddenId, getItems, formatItem, onSelect) {
         const input = document.getElementById(inputId);
         const dropdown = document.getElementById(dropdownId);
 
-        input.addEventListener('focus', () => render(input.value));
+        input.addEventListener('focus', () => {
+            const hasSelection = Boolean(document.getElementById(hiddenId).value);
+            render(hasSelection ? '' : input.value);
+        });
         input.addEventListener('input', () => {
             document.getElementById(hiddenId).value = '';
             render(input.value);
@@ -844,17 +940,23 @@
         });
 
         function render(query) {
-            const q = (query || '').toLowerCase().trim();
+            const q = normalizeSearch(query);
             let items = getItems();
             if (q) {
-                items = items.filter(i => formatItem(i).text.toLowerCase().includes(q));
+                items = items.filter(i => {
+                    const f = formatItem(i);
+                    return normalizeSearch(f.text).includes(q) || normalizeSearch(f.subtext || '').includes(q);
+                });
             }
             if (items.length === 0) {
                 dropdown.innerHTML = '<div class="no-results">Nenhum resultado</div>';
             } else {
                 dropdown.innerHTML = items.map(i => {
                     const f = formatItem(i);
-                    return `<div class="dropdown-item" data-id="${f.id}" data-label="${escapeHtml(f.text)}">${escapeHtml(f.text)}</div>`;
+                    const subHtml = f.subtext
+                        ? `<br/><small class="text-muted">${escapeHtml(f.subtext)}</small>`
+                        : '';
+                    return `<div class="dropdown-item" data-id="${f.id}" data-label="${escapeHtml(f.text)}"><div>${escapeHtml(f.text)}${subHtml}</div></div>`;
                 }).join('');
             }
             dropdown.classList.add('show');
@@ -866,17 +968,51 @@
             input.value = item.dataset.label;
             document.getElementById(hiddenId).value = item.dataset.id;
             dropdown.classList.remove('show');
+            if (typeof onSelect === 'function') {
+                onSelect(item.dataset.id);
+            }
         });
     }
 
     setupSingleSearchSelect('teacherSearch', 'teacherDropdown', 'teacherSearchContainer', 'teacherId',
-        () => allTeachers,
-        (t) => ({id: t.id, text: t.name})
+        () => getAvailableTeachersForSubject(),
+        (t) => ({
+            id: t.id,
+            text: t.name,
+            subtext: (Array.isArray(t.subjects) && t.subjects.length > 0)
+                ? t.subjects.map(s => s.name).join(', ')
+                : ''
+        }),
+        (selectedTeacherId) => {
+            const teacher = allTeachers.find(t => String(t.id) === String(selectedTeacherId));
+            if (!teacher || !Array.isArray(teacher.subjects) || teacher.subjects.length === 0) return;
+
+            const currentSubjectId = document.getElementById('subjectId').value;
+            if (currentSubjectId && !teacherCanTeachSubject(teacher, currentSubjectId)) {
+                document.getElementById('subjectId').value = '';
+                document.getElementById('subjectSearch').value = '';
+            }
+
+            const availableSubjects = getAvailableSubjectsForTeacher();
+            if (!document.getElementById('subjectId').value && availableSubjects.length === 1) {
+                document.getElementById('subjectId').value = availableSubjects[0].id;
+                document.getElementById('subjectSearch').value = availableSubjects[0].name;
+            }
+        }
     );
 
     setupSingleSearchSelect('subjectSearch', 'subjectDropdown', 'subjectSearchContainer', 'subjectId',
-        () => allSubjects,
-        (s) => ({id: s.id, text: s.name})
+        () => getAvailableSubjectsForTeacher(),
+        (s) => ({id: s.id, text: s.name}),
+        (selectedSubjectId) => {
+            const currentTeacherId = document.getElementById('teacherId').value;
+            if (!currentTeacherId) return;
+            const teacher = allTeachers.find(t => String(t.id) === String(currentTeacherId));
+            if (teacher && !teacherCanTeachSubject(teacher, selectedSubjectId)) {
+                document.getElementById('teacherId').value = '';
+                document.getElementById('teacherSearch').value = '';
+            }
+        }
     );
 
     // ══════════════════════════════════════════════════════════
@@ -1045,6 +1181,13 @@
             return;
         }
 
+        const selectedTeacherObj = allTeachers.find(t => String(t.id) === String(teacherId));
+        if (selectedTeacherObj && !teacherCanTeachSubject(selectedTeacherObj, subjectId)) {
+            showAlert('O professor selecionado não está habilitado para lecionar esta disciplina.', 'warning');
+            showToast('O professor selecionado não está habilitado para lecionar esta disciplina.', 'warning');
+            return;
+        }
+
         const minVal = parseInt(document.getElementById('minAssessments').value);
         const maxVal = parseInt(document.getElementById('maxAssessments').value);
         if (minVal > maxVal) {
@@ -1072,14 +1215,7 @@
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
-                const newTcs = await res.json();
-                if (!window._tcsData) window._tcsData = [];
-                window._tcsData.unshift(newTcs);
-                renderTCSTable();
-
-                const tcsBadge = document.getElementById('tcsCountBadge');
-                tcsBadge.textContent = window._tcsData.length;
-                tcsBadge.style.display = '';
+                await loadTCS();
 
                 showToast("Grade vinculada com sucesso!", "success");
                 showAlert("Grade vinculada com sucesso!", "success");
@@ -1155,8 +1291,11 @@
                 headers: {'Authorization': `Bearer ${jwtToken || ''}`}
             });
             if (res.ok || res.status === 204) {
+                if (Array.isArray(window._tcsData)) {
+                    window._tcsData = window._tcsData.filter(t => t.id !== id);
+                }
                 showAlert("Vínculo excluído.", "success");
-                loadTCS();
+                await loadTCS();
             } else {
                 const err = await res.json().catch(() => ({}));
                 const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao excluir vínculo. Pode haver aulas ou avaliações registradas.") : (err.message || "Erro ao excluir vínculo. Pode haver aulas ou avaliações registradas.");

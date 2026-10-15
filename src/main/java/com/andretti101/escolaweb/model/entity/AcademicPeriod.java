@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.model.entity;
 
+import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,6 +33,11 @@ public class AcademicPeriod implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "academic_year_id", nullable = false)
     private AcademicYear academicYear;
+
+    @NotNull(message = "O tipo de divisão do período é obrigatório.")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "period_type", nullable = false, length = 20)
+    private AcademicPeriodType periodType;
 
     @NotBlank(message = "O nome do período é obrigatório.")
     @Size(max = 100, message = "O nome do período deve ter no máximo 100 caracteres.")

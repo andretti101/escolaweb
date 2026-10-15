@@ -31,6 +31,7 @@ public class AssessmentServiceImpl implements AssessmentService {
         AcademicPeriod period = resolvePeriod(assessment.getPeriod());
 
         validateCrossAcademicYear(tcs, period);
+        validatePeriodType(tcs, period);
         validatePeriodOpen(period);
         validateDate(assessment, period);
 
@@ -53,6 +54,7 @@ public class AssessmentServiceImpl implements AssessmentService {
         AcademicPeriod period = resolvePeriod(incoming.getPeriod());
 
         validateCrossAcademicYear(tcs, period);
+        validatePeriodType(tcs, period);
         validatePeriodOpen(period);
         validateDate(incoming, period);
 
@@ -177,6 +179,14 @@ public class AssessmentServiceImpl implements AssessmentService {
             throw new IllegalStateException("Conflito de ano letivo: a turma selecionada pertence ao ano '" 
                     + tcs.getClassRoom().getAcademicYear().getYear() 
                     + "', mas o período escolhido pertence a outro ano letivo. Selecione um período correspondente ao ano da turma.");
+        }
+    }
+
+    private void validatePeriodType(TeacherClassSubject tcs, AcademicPeriod period) {
+        if (tcs.getClassRoom() != null && tcs.getClassRoom().getPeriodType() != null && period.getPeriodType() != null) {
+            if (tcs.getClassRoom().getPeriodType() != period.getPeriodType()) {
+                throw new IllegalStateException("O período selecionado pertence a outra divisão de ano letivo diferente da turma.");
+            }
         }
     }
 }

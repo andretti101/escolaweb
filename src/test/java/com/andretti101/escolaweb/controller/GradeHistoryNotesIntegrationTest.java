@@ -120,6 +120,7 @@ class GradeHistoryNotesIntegrationTest {
 
         AcademicPeriod period = academicPeriodRepository.save(AcademicPeriod.builder()
                 .name("1º Período Teste Auditoria")
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .startDate(LocalDate.of(2026, 2, 1))
                 .endDate(LocalDate.of(2026, 5, 30))
                 .closed(false)
@@ -129,6 +130,7 @@ class GradeHistoryNotesIntegrationTest {
         ClassRoom classRoom = classRoomRepository.save(ClassRoom.builder()
                 .name("Turma Auditoria 9A")
                 .shift(Shift.MORNING)
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .schoolGrade(SchoolGrade.FUNDAMENTAL_2)
                 .academicYear(year)
                 .build());

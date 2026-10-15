@@ -8,7 +8,7 @@
     <script src="/js/auth-guard.js"></script>
 
     <meta name="description" content="Dashboard do Aluno - EscolaWEB" />
-    <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico?v=5" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,19 +18,50 @@
     <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css" />
     <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
     <script src="/js/theme.js"></script>
-    <link rel="stylesheet" href="/assets/css/demo.css" />
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
     <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/apex-charts/apex-charts.css" />
 
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
 
     <style>
-        .icon-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; transition: all .3s ease; }
+        .icon-pulse {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .card-hover {
+            transition: all 0.22s ease-in-out;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 .5rem 1rem rgba(105, 108, 255, 0.16) !important;
+        }
+        .kpi-card {
+            transition: all 0.25s ease;
+            border-radius: 0.75rem;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+        }
+        .announcement-item {
+            border-left: 3px solid #696cff;
+            transition: background 0.2s;
+        }
+        .announcement-item:hover {
+            background-color: rgba(105, 108, 255, 0.04);
+        }
     </style>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
-<script src="/js/global-modals.js"></script>
+    <script src="/js/global-modals.js"></script>
 </head>
 <body>
     <div class="layout-wrapper layout-content-navbar">
@@ -38,6 +69,7 @@
             <div id="sidebar-container" data-sidebar="/components/student-sidebar.html"></div>
 
             <div class="layout-page">
+                <!-- Navbar -->
                 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm" id="layout-navbar">
                     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
                         <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
@@ -53,6 +85,7 @@
                             </span>
                         </div>
 
+                        <!-- ELEMENTO OBRIGATÓRIO MANTIDO: Avatar do usuário no topo direito -->
                         <ul class="navbar-nav flex-row align-items-center ms-auto">
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -78,9 +111,9 @@
                                     </li>
                                     <li><div class="dropdown-divider"></div></li>
                                     <li>
-                                        <a class="dropdown-item" href="javascript:void(0);" id="btnLogoutNavbar">
-                                            <i class="bx bx-power-off me-2 text-danger"></i>
-                                            <span class="align-middle text-danger">Sair</span>
+                                        <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="logout()">
+                                            <i class="bx bx-power-off me-2"></i>
+                                            <span class="align-middle">Sair</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -91,56 +124,307 @@
 
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
-                                        <div>
-                                            <h3 class="text-white mb-2" id="welcomeMessage">Olá, Aluno!</h3>
-                                            <p class="mb-0 text-white-50">Bem-vindo(a) ao seu portal acadêmico. Aqui você acompanha seu desempenho, faltas e boletim em tempo real.</p>
-                                        </div>
-                                        <div>
-                                            <img src="/assets/img/illustrations/man-with-laptop-light.png" alt="Aluno" class="d-none d-sm-block" height="120" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <h5 class="pb-1 mb-3">Meu Desempenho</h5>
+                        <!-- 1. Banner de Boas-Vindas (ELEMENTO OBRIGATÓRIO MANTIDO) -->
                         <div class="row mb-4">
-                            <!-- Ver Notas -->
-                            <div class="col-md-6 col-lg-6 mb-4">
-                                <div class="card h-100 card-hover cursor-pointer" onclick="window.location.href='/student/grades.html'">
-                                    <div class="card-body text-center">
-                                        <div class="avatar avatar-md mx-auto mb-3">
-                                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-certification fs-3"></i></span>
-                                        </div>
-                                        <h5 class="card-title mb-2">Boletim Escolar</h5>
-                                        <p class="text-muted mb-0">Consulte suas notas e avaliações lançadas pelos professores.</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="col-12">
+                                <div class="card overflow-hidden border-0 shadow-sm"
+                                     style="background: linear-gradient(135deg, #696cff 0%, #4558c8 100%); min-height: 130px;">
+                                    <div class="card-body p-4 d-flex align-items-center justify-content-between"
+                                         style="position: relative; overflow: hidden;">
 
-                            <!-- Ver Frequência -->
-                            <div class="col-md-6 col-lg-6 mb-4">
-                                <div class="card h-100 card-hover cursor-pointer" onclick="window.location.href='/student/attendances.html'">
-                                    <div class="card-body text-center">
-                                        <div class="avatar avatar-md mx-auto mb-3">
-                                            <span class="avatar-initial rounded-circle bg-label-warning"><i class="bx bx-check-shield fs-3"></i></span>
+                                        <!-- Círculos decorativos de fundo -->
+                                        <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.05);top:-60px;right:120px;pointer-events:none;"></div>
+                                        <div style="position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.07);bottom:-80px;right:40px;pointer-events:none;"></div>
+
+                                        <!-- Lado esquerdo: avatar + texto -->
+                                        <div class="d-flex align-items-center gap-3" style="position:relative;z-index:1;">
+
+                                            <!-- Avatar com inicial do nome -->
+                                            <div class="flex-shrink-0">
+                                                <div class="d-flex align-items-center justify-content-center rounded-circle bg-white shadow-sm"
+                                                     style="width:60px;height:60px;">
+                                                    <span class="fw-bold fs-4 text-primary" id="avatarInitial">A</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Texto -->
+                                            <div>
+                                                <p class="text-white-50 mb-1 text-uppercase fw-semibold"
+                                                   style="font-size:0.70rem;letter-spacing:1.2px;">
+                                                    Portal do Estudante — Aluno
+                                                </p>
+                                                <h4 class="text-white fw-bold mb-1">
+                                                    <span id="greetingText">Bom dia</span>, <span id="userNameDisplay">Estudante</span>.
+                                                </h4>
+                                                <p class="text-white-50 mb-0" style="font-size:0.85rem;max-width:500px;">
+                                                    Acompanhe seu desempenho acadêmico, notas, frequência e comunicados em tempo real.
+                                                </p>
+                                            </div>
                                         </div>
-                                        <h5 class="card-title mb-2">Frequência e Faltas</h5>
-                                        <p class="text-muted mb-0">Acompanhe sua presença nas aulas e evite reprovação por falta.</p>
+
+                                        <!-- Lado direito: data atual -->
+                                        <div class="text-end flex-shrink-0 ms-4 d-none d-md-block"
+                                             style="position:relative;z-index:1;">
+                                            <p class="text-white-50 mb-1 text-uppercase fw-semibold"
+                                               style="font-size:0.70rem;letter-spacing:1.2px;">
+                                                EscolaWEB
+                                            </p>
+                                            <h5 class="text-white fw-bold mb-0" id="currentDate">—</h5>
+                                            <small class="text-white-50" id="currentDayOfWeek"></small>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Contexto Acadêmico do Aluno -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-body py-3 px-4">
+                                <div class="row align-items-center gy-3">
+                                    <div class="col-md-4 d-flex align-items-center">
+                                        <div class="avatar avatar-md me-3 flex-shrink-0">
+                                            <span class="avatar-initial rounded-circle bg-label-primary">
+                                                <i class="bx bxs-graduation fs-4"></i>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted text-uppercase fw-semibold d-block" style="font-size: 0.75rem;">Turma & Série</small>
+                                            <span class="fs-5 fw-bold text-dark" id="studentClassRoomName">Carregando...</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 d-flex flex-wrap gap-4 align-items-center border-start-md ps-md-4">
+                                        <div>
+                                            <small class="text-muted d-block">Divisão do Ano</small>
+                                            <span class="badge bg-label-info fw-bold" id="studentPeriodType">—</span>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Ano Letivo</small>
+                                            <span class="fw-bold fs-6 text-dark" id="studentAcademicYear">—</span>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Matrícula</small>
+                                            <span class="badge bg-label-secondary" id="studentRegistrationNumber">—</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 text-md-end">
+                                        <a href="/student/report-card.html" class="btn btn-sm btn-outline-primary">
+                                            <i class="bx bx-id-card me-1"></i> Boletim Completo
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Cards de Indicadores do Aluno -->
+                        <div class="row mb-4">
+                            <div class="col-lg-3 col-md-6 col-6 mb-3">
+                                <div class="card kpi-card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-muted mb-1">Situação Geral</span>
+                                                <h4 class="mb-1" id="studentSituationContainer">
+                                                    <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+                                                </h4>
+                                                <small class="text-muted" id="studentSituationHint">Status acadêmico</small>
+                                            </div>
+                                            <div class="avatar flex-shrink-0">
+                                                <span class="avatar-initial rounded-circle bg-label-primary shadow-sm">
+                                                    <i class="bx bx-award fs-4"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 col-6 mb-3">
+                                <div class="card kpi-card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-muted mb-1">Frequência Geral</span>
+                                                <h4 class="mb-1 fw-bold" id="studentAttendanceRate">
+                                                    <span class="spinner-border spinner-border-sm text-success" role="status"></span>
+                                                </h4>
+                                                <small class="text-success fw-semibold" id="studentAttendanceHint">Presença regular</small>
+                                            </div>
+                                            <div class="avatar flex-shrink-0">
+                                                <span class="avatar-initial rounded-circle bg-label-success shadow-sm">
+                                                    <i class="bx bx-check-shield fs-4"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 col-6 mb-3">
+                                <div class="card kpi-card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-muted mb-1">Média Global</span>
+                                                <h4 class="mb-1 fw-bold text-info" id="studentAverageGrade">
+                                                    <span class="spinner-border spinner-border-sm text-info" role="status"></span>
+                                                </h4>
+                                                <small class="text-info fw-semibold" id="studentGradeHint">Notas computadas</small>
+                                            </div>
+                                            <div class="avatar flex-shrink-0">
+                                                <span class="avatar-initial rounded-circle bg-label-info shadow-sm">
+                                                    <i class="bx bx-line-chart fs-4"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 col-6 mb-3">
+                                <div class="card kpi-card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-muted mb-1">Disciplinas</span>
+                                                <h4 class="mb-1 fw-bold" id="studentSubjectsCount">
+                                                    <span class="spinner-border spinner-border-sm text-warning" role="status"></span>
+                                                </h4>
+                                                <small class="text-warning fw-semibold">Grade curricular</small>
+                                            </div>
+                                            <div class="avatar flex-shrink-0">
+                                                <span class="avatar-initial rounded-circle bg-label-warning shadow-sm">
+                                                    <i class="bx bx-book-open fs-4"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Gráfico de Rendimento & Resumo por Disciplina -->
+                        <div class="row mb-4">
+                            <!-- Gráfico de Rendimento por Disciplina -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                        <div>
+                                            <h5 class="card-title mb-0">Desempenho por Disciplina</h5>
+                                            <small class="text-muted">Média acumulada em cada matéria</small>
+                                        </div>
+                                        <span class="badge bg-label-primary"><i class="bx bx-bar-chart-alt-2"></i> Notas</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="chartStudentPerformance" style="min-height: 290px; width: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabela Resumo das Matérias -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                        <div>
+                                            <h5 class="card-title mb-0"><i class="bx bx-book text-primary me-2"></i>Minhas Disciplinas</h5>
+                                            <small class="text-muted">Rendimento por matéria no período atual</small>
+                                        </div>
+                                        <a href="/student/grades.html" class="btn btn-sm btn-outline-primary">Ver Avaliações</a>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light">
+                                                <tr>
+                                                    <th>Matéria</th>
+                                                    <th>Média Atual</th>
+                                                    <th>Meta</th>
+                                                    <th>Situação</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="studentSubjectsTableBody">
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-4">
+                                                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Mural de Comunicados da Turma & Ações Rápidas -->
+                        <div class="row">
+                            <!-- Ações Rápidas -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header pb-2">
+                                        <h5 class="card-title mb-0"><i class="bx bx-bolt-circle text-warning me-2"></i>Acessos Rápidos do Aluno</h5>
+                                        <small class="text-muted">Navegue pelas principais áreas do seu portal</small>
+                                    </div>
+                                    <div class="card-body pt-3">
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <a href="/student/report-card.html" class="card-hover card bg-label-primary border-0 p-3 text-center h-100">
+                                                    <i class="bx bx-id-card fs-2 mb-2 text-primary"></i>
+                                                    <h6 class="mb-1 text-primary fw-semibold">Boletim Escolar</h6>
+                                                    <small class="text-muted" style="font-size:0.75rem;">Médias e resultados</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-6">
+                                                <a href="/student/grades.html" class="card-hover card bg-label-success border-0 p-3 text-center h-100">
+                                                    <i class="bx bx-certification fs-2 mb-2 text-success"></i>
+                                                    <h6 class="mb-1 text-success fw-semibold">Provas & Trabalhos</h6>
+                                                    <small class="text-muted" style="font-size:0.75rem;">Notas detalhadas</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-6">
+                                                <a href="/student/attendances.html" class="card-hover card bg-label-warning border-0 p-3 text-center h-100">
+                                                    <i class="bx bx-check-shield fs-2 mb-2 text-warning"></i>
+                                                    <h6 class="mb-1 text-warning fw-semibold">Frequência</h6>
+                                                    <small class="text-muted" style="font-size:0.75rem;">Aulas e faltas</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-6">
+                                                <a href="/student/classmates.html" class="card-hover card bg-label-info border-0 p-3 text-center h-100">
+                                                    <i class="bx bx-group fs-2 mb-2 text-info"></i>
+                                                    <h6 class="mb-1 text-info fw-semibold">Colegas de Turma</h6>
+                                                    <small class="text-muted" style="font-size:0.75rem;">Lista da classe</small>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mural de Comunicados da Turma -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                        <h5 class="card-title mb-0"><i class="bx bx-bell text-warning me-2"></i>Mural de Avisos da Turma</h5>
+                                        <span class="badge bg-label-warning">Comunicados</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="studentAnnouncementsFeed" class="d-flex flex-column gap-3">
+                                            <div class="text-center py-4">
+                                                <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                     
                     <footer class="content-footer footer bg-footer-theme">
                         <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                             <div class="mb-2 mb-md-0">
-                                © <script>document.write(new Date().getFullYear());</script> EscolaWEB
+                                © <script>document.write(new Date().getFullYear());</script> EscolaWEB. Todos os direitos reservados.
                             </div>
                         </div>
                     </footer>
@@ -156,26 +440,239 @@
     <script src="/assets/vendor/js/bootstrap.js"></script>
     <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/vendor/libs/apex-charts/apexcharts.js"></script>
     <script src="/assets/js/main.js"></script>
     <script src="/js/load-sidebar.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userName = localStorage.getItem('user_name') || 'Estudante';
-            const firstName = userName.split(' ')[0];
-            document.getElementById('welcomeMessage').textContent = `Olá, ${firstName}!`;
-            
-            const initial = firstName.charAt(0).toUpperCase();
-            const initialElem = document.getElementById('dropdownAvatarInitial');
-            const initialInnerElem = document.getElementById('dropdownAvatarInitialInner');
-            if (initialElem) initialElem.textContent = initial;
-            if (initialInnerElem) initialInnerElem.textContent = initial;
-            
-            const nameElem = document.getElementById('dropdownUserName');
-            if (nameElem) nameElem.textContent = userName;
+        function logout() {
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('user_name');
+            window.location.href = '/login.html';
+        }
 
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('jwt_token');
+            const studentId = localStorage.getItem('user_id');
+            let userName = localStorage.getItem('user_name') || 'Aluno';
+
+            // ── Saudação por horário ──────────────────────────────────────────
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+            document.getElementById('greetingText').textContent = greeting;
+
+            // ── Data atual em PT-BR ───────────────────────────────────────────
+            const now = new Date();
+            const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+            const weekDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+            document.getElementById('currentDate').textContent =
+                `${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
+            document.getElementById('currentDayOfWeek').textContent = weekDays[now.getDay()];
+
+            const firstName = userName.split(' ')[0];
+            document.getElementById('userNameDisplay').textContent = firstName;
+            document.getElementById('dropdownUserName').textContent = userName;
+            const initial = firstName.charAt(0).toUpperCase();
+            document.getElementById('avatarInitial').textContent = initial;
+            document.getElementById('dropdownAvatarInitial').textContent = initial;
+            const innerElem = document.getElementById('dropdownAvatarInitialInner');
+            if (innerElem) innerElem.textContent = initial;
+
+            const headers = {'Authorization': `Bearer ${token || ''}`};
+
+            async function fetchSafe(endpoint) {
+                try {
+                    const res = await fetch(endpoint, {headers});
+                    if (res.ok) return await res.json();
+                } catch (e) {
+                    console.error('Erro ao buscar dados de', endpoint, e);
+                }
+                return null;
+            }
+
+            if (!studentId) return;
+
+            // 1. Carrega Anos Acadêmicos e Matrículas do Aluno
+            const [yearsData, enrollmentsData] = await Promise.all([
+                fetchSafe('/api/academic-years'),
+                fetchSafe(`/api/enrollments/student/${studentId}`)
+            ]);
+
+            const years = Array.isArray(yearsData) ? yearsData : [];
+            const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
+            const activeEnrollment = enrollments.find(e => e.active) || enrollments[enrollments.length - 1];
+
+            let reportCard = null;
+            if (activeEnrollment) {
+                document.getElementById('studentClassRoomName').textContent = `Turma ${activeEnrollment.classRoomName || '—'}`;
+                document.getElementById('studentAcademicYear').textContent = activeEnrollment.academicYear || '2026';
+                document.getElementById('studentRegistrationNumber').textContent = activeEnrollment.studentRegistrationNumber || 'N/A';
+
+                // Encontra o ID do ano acadêmico correspondente no sistema
+                const matchedYear = years.find(y => y.year === activeEnrollment.academicYear);
+                const yearIdToFetch = matchedYear ? matchedYear.id : (years.length > 0 ? years[years.length - 1].id : 1);
+
+                reportCard = await fetchSafe(`/api/report-cards/student/${studentId}/year/${yearIdToFetch}`);
+            } else {
+                document.getElementById('studentClassRoomName').textContent = 'Nenhuma Matrícula';
+                document.getElementById('studentAcademicYear').textContent = '—';
+                document.getElementById('studentRegistrationNumber').textContent = '—';
+            }
+
+            // 2. Preenche Indicadores e Contexto a partir do Boletim
+            const situationMap = {
+                'ENROLLED': { text: 'Cursando', badge: 'bg-label-primary' },
+                'APPROVED': { text: 'Aprovado', badge: 'bg-label-success' },
+                'FAILED': { text: 'Reprovado', badge: 'bg-label-danger' },
+                'REPROVED': { text: 'Reprovado', badge: 'bg-label-danger' },
+                'RECOVERY': { text: 'Recuperação', badge: 'bg-label-warning' },
+                'IN_RECOVERY': { text: 'Recuperação', badge: 'bg-label-warning' },
+                'PENDING': { text: 'Pendente', badge: 'bg-label-warning' }
+            };
+
+            if (reportCard) {
+                document.getElementById('studentPeriodType').textContent = reportCard.periodTypeLabel || reportCard.periodType || 'Regular';
+
+                // Situação Geral
+                const sitObj = situationMap[reportCard.generalSituation] || { text: reportCard.generalSituation || 'Cursando', badge: 'bg-label-primary' };
+                document.getElementById('studentSituationContainer').innerHTML = `<span class="badge ${sitObj.badge} fs-6">${sitObj.text}</span>`;
+
+                // Frequência
+                if (reportCard.frequency && reportCard.frequency.generalFrequency != null) {
+                    const freq = Number(reportCard.frequency.generalFrequency).toFixed(1);
+                    document.getElementById('studentAttendanceRate').textContent = `${freq}%`;
+                    const minAtt = reportCard.frequency.minimumAttendance || 75;
+                    if (Number(freq) < Number(minAtt)) {
+                        document.getElementById('studentAttendanceHint').className = 'text-danger fw-semibold';
+                        document.getElementById('studentAttendanceHint').textContent = `Abaixo do mínimo (${minAtt}%)`;
+                    } else {
+                        document.getElementById('studentAttendanceHint').className = 'text-success fw-semibold';
+                        document.getElementById('studentAttendanceHint').textContent = `Mínimo exigido: ${minAtt}%`;
+                    }
+                } else {
+                    document.getElementById('studentAttendanceRate').textContent = '100%';
+                }
+
+                // Matérias e Médias (calculadas dividindo pelo totalPeriods da turma)
+                const subjects = reportCard.subjects || [];
+                const totalPeriods = reportCard.totalPeriods || 3;
+                const minGrade = reportCard.minimumGrade != null ? Number(reportCard.minimumGrade).toFixed(1) : '6.0';
+                document.getElementById('studentSubjectsCount').textContent = `${subjects.length} matérias`;
+
+                let calculatedAveragesSum = 0;
+                let subjectsCounted = 0;
+
+                const subjectsCalculated = subjects.map(s => {
+                    let avgVal = null;
+                    if (s.totalScore != null) {
+                        avgVal = Number(s.totalScore) / totalPeriods;
+                        calculatedAveragesSum += avgVal;
+                        subjectsCounted++;
+                    }
+                    return {
+                        ...s,
+                        calculatedAverage: avgVal
+                    };
+                });
+
+                const globalAverage = subjectsCounted > 0 ? (calculatedAveragesSum / subjectsCounted).toFixed(1) : '—';
+                document.getElementById('studentAverageGrade').textContent = globalAverage;
+
+                // Tabela de Matérias
+                const subjectsTbody = document.getElementById('studentSubjectsTableBody');
+                if (subjectsCalculated.length > 0) {
+                    subjectsTbody.innerHTML = subjectsCalculated.map(s => {
+                        const score = s.calculatedAverage != null ? s.calculatedAverage.toFixed(1) : '-';
+                        const sSit = situationMap[s.situation] || { text: s.situation || 'Cursando', badge: 'bg-label-secondary' };
+                        return `
+                            <tr>
+                                <td><span class="fw-bold">${s.subjectName}</span></td>
+                                <td><span class="badge bg-label-primary fw-bold">${score}</span></td>
+                                <td><small class="text-muted">${minGrade}</small></td>
+                                <td><span class="badge ${sSit.badge}">${sSit.text}</span></td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    subjectsTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhuma disciplina cadastrada na turma.</td></tr>';
+                }
+
+                // Gráfico de Rendimento
+                const subjectNames = subjectsCalculated.map(s => s.subjectName);
+                const subjectAverages = subjectsCalculated.map(s => s.calculatedAverage != null ? Number(s.calculatedAverage.toFixed(1)) : 0);
+                const hasScores = subjectAverages.some(v => v > 0);
+
+                const chartOptions = {
+                    chart: {
+                        type: 'bar',
+                        height: 290,
+                        toolbar: { show: false }
+                    },
+                    series: [{
+                        name: 'Média Atual',
+                        data: hasScores ? subjectAverages : subjects.map(() => 0)
+                    }],
+                    xaxis: {
+                        categories: subjectNames.length > 0 ? subjectNames : ['Sem matérias'],
+                        labels: { rotate: -25, style: { fontSize: '11px' } }
+                    },
+                    colors: ['#696cff'],
+                    plotOptions: {
+                        bar: {
+                            borderRadius: 6,
+                            columnWidth: '40%'
+                        }
+                    },
+                    dataLabels: { enabled: false },
+                    yaxis: {
+                        min: 0,
+                        max: 10,
+                        labels: {
+                            formatter: (val) => Number(val).toFixed(0)
+                        }
+                    }
+                };
+                new ApexCharts(document.querySelector("#chartStudentPerformance"), chartOptions).render();
+
+            } else {
+                document.getElementById('studentSituationContainer').innerHTML = '<span class="badge bg-label-secondary">Sem Matrícula</span>';
+                document.getElementById('studentAttendanceRate').textContent = '—';
+                document.getElementById('studentAverageGrade').textContent = '—';
+                document.getElementById('studentSubjectsCount').textContent = '0';
+                document.getElementById('studentSubjectsTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum dado avaliativo encontrado.</td></tr>';
+            }
+
+            // 3. Mural de Comunicados da Turma
+            const announcementsFeed = document.getElementById('studentAnnouncementsFeed');
+            const announcementsData = await fetchSafe('/api/announcements/my-classroom');
+            const announcementsList = Array.isArray(announcementsData) ? announcementsData : [];
+
+            if (announcementsList.length > 0) {
+                announcementsFeed.innerHTML = announcementsList.slice(0, 4).map(a => {
+                    const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('pt-BR') : '—';
+                    return `
+                        <div class="announcement-item p-3 rounded bg-light">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h6 class="mb-0 fw-bold text-dark">${a.title}</h6>
+                                <small class="text-muted">${date}</small>
+                            </div>
+                            <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${a.message || a.content || ''}</p>
+                            <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${a.authorName || 'Coordenação'}</small>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                announcementsFeed.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="bx bx-bell-off fs-2 mb-2 d-block"></i>
+                        Nenhum comunicado recente para a sua turma.
+                    </div>
+                `;
+            }
         });
     </script>
 </body>
 </html>
-

@@ -1,9 +1,17 @@
 package com.andretti101.escolaweb.dto;
 
+import com.andretti101.escolaweb.dto.request.AcademicPeriodRequestDTO;
+import com.andretti101.escolaweb.dto.request.ClassRoomRequestDTO;
 import com.andretti101.escolaweb.dto.request.GradeLaunchRequestDTO;
 import com.andretti101.escolaweb.dto.request.GradeUpdateRequestDTO;
+import com.andretti101.escolaweb.dto.request.StudentPatchRequestDTO;
 import com.andretti101.escolaweb.dto.request.StudentUpdateRequestDTO;
+import com.andretti101.escolaweb.dto.request.TeacherPatchRequestDTO;
+import com.andretti101.escolaweb.dto.request.TeacherRequestDTO;
 import com.andretti101.escolaweb.dto.request.TeacherUpdateRequestDTO;
+import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
+import com.andretti101.escolaweb.model.enums.SchoolGrade;
+import com.andretti101.escolaweb.model.enums.Shift;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -14,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -342,6 +351,163 @@ class DtoValidationTest {
         Set<ConstraintViolation<GradeUpdateRequestDTO>> violations = validator.validate(dto);
         assertEquals(1, violations.size());
         assertEquals("A observação deve ter no máximo 500 caracteres.", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    @DisplayName("ClassRoomRequestDTO: invalid when schoolGrade is null")
+    void classRoomRequest_invalidWhenSchoolGradeNull() {
+        ClassRoomRequestDTO dto = new ClassRoomRequestDTO(
+                1,
+                "1º Ano A",
+                Shift.MORNING,
+                AcademicPeriodType.TRIMESTER,
+                null
+        );
+
+        Set<ConstraintViolation<ClassRoomRequestDTO>> violations = validator.validate(dto);
+        assertEquals(1, violations.size());
+        assertEquals("A série é obrigatória.", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    @DisplayName("ClassRoomRequestDTO: valid when schoolGrade is provided")
+    void classRoomRequest_validWhenSchoolGradeProvided() {
+        ClassRoomRequestDTO dto = new ClassRoomRequestDTO(
+                1,
+                "1º Ano A",
+                Shift.MORNING,
+                AcademicPeriodType.TRIMESTER,
+                SchoolGrade.MEDIO_1
+        );
+
+        Set<ConstraintViolation<ClassRoomRequestDTO>> violations = validator.validate(dto);
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    @DisplayName("ClassRoomRequestDTO: invalid when periodType is null")
+    void classRoomRequest_invalidWhenPeriodTypeNull() {
+        ClassRoomRequestDTO dto = new ClassRoomRequestDTO(
+                1,
+                "1º Ano A",
+                Shift.MORNING,
+                null,
+                SchoolGrade.MEDIO_1
+        );
+
+        Set<ConstraintViolation<ClassRoomRequestDTO>> violations = validator.validate(dto);
+        assertEquals(1, violations.size());
+        assertEquals("O tipo de divisão é obrigatório.", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    @DisplayName("AcademicPeriodRequestDTO: invalid when periodType is null")
+    void academicPeriodRequest_invalidWhenPeriodTypeNull() {
+        AcademicPeriodRequestDTO dto = new AcademicPeriodRequestDTO(
+                1,
+                null,
+                "1º Trimestre",
+                LocalDate.now(),
+                LocalDate.now().plusMonths(3)
+        );
+
+        Set<ConstraintViolation<AcademicPeriodRequestDTO>> violations = validator.validate(dto);
+        assertEquals(1, violations.size());
+        assertEquals("O tipo de divisão é obrigatório.", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    @DisplayName("TeacherRequestDTO: valid with zero, one, or multiple subjects")
+    void teacherRequest_validWithOptionalSubjectIds() {
+        TeacherRequestDTO withoutSubjects = new TeacherRequestDTO(
+                "Prof Sem Disciplina",
+                "sem.disc@escola.com",
+                "senha12345",
+                null
+        );
+        TeacherRequestDTO emptySubjects = new TeacherRequestDTO(
+                "Prof Lista Vazia",
+                "vazia.disc@escola.com",
+                "senha12345",
+                List.of()
+        );
+        TeacherRequestDTO multiSubjects = new TeacherRequestDTO(
+                "Prof Multi Disciplinas",
+                "multi.disc@escola.com",
+                "senha12345",
+                List.of(1, 2, 3)
+        );
+
+        assertTrue(validator.validate(withoutSubjects).isEmpty());
+        assertTrue(validator.validate(emptySubjects).isEmpty());
+        assertTrue(validator.validate(multiSubjects).isEmpty());
+    }
+
+    @Test
+    @DisplayName("TeacherPatchRequestDTO: valid when all fields are null (empty patch)")
+    void teacherPatchRequest_validWhenAllFieldsNull() {
+        TeacherPatchRequestDTO dto = new TeacherPatchRequestDTO(null, null, null, null);
+        assertTrue(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("TeacherPatchRequestDTO: invalid when name is blank whitespace")
+    void teacherPatchRequest_invalidWhenNameBlank() {
+        TeacherPatchRequestDTO dto = new TeacherPatchRequestDTO("   ", null, null, null);
+        assertFalse(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("TeacherPatchRequestDTO: invalid when email is blank or malformed")
+    void teacherPatchRequest_invalidWhenEmailMalformed() {
+        TeacherPatchRequestDTO blankEmail = new TeacherPatchRequestDTO(null, "", null, null);
+        assertFalse(validator.validate(blankEmail).isEmpty());
+
+        TeacherPatchRequestDTO malformedEmail = new TeacherPatchRequestDTO(null, "invalido", null, null);
+        assertFalse(validator.validate(malformedEmail).isEmpty());
+    }
+
+    @Test
+    @DisplayName("TeacherPatchRequestDTO: normalizes empty/blank password to null")
+    void teacherPatchRequest_normalizesBlankPassword() {
+        TeacherPatchRequestDTO dto = new TeacherPatchRequestDTO(null, null, "   ", null);
+        assertNull(dto.password());
+        assertTrue(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("TeacherPatchRequestDTO: invalid when password is shorter than 8 chars")
+    void teacherPatchRequest_invalidWhenPasswordTooShort() {
+        TeacherPatchRequestDTO dto = new TeacherPatchRequestDTO(null, null, "12345", null);
+        assertFalse(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("StudentPatchRequestDTO: valid when all fields are null")
+    void studentPatchRequest_validWhenAllFieldsNull() {
+        StudentPatchRequestDTO dto = new StudentPatchRequestDTO(null, null, null, null, null, null, null);
+        assertTrue(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("StudentPatchRequestDTO: invalid when name is blank whitespace")
+    void studentPatchRequest_invalidWhenNameBlank() {
+        StudentPatchRequestDTO dto = new StudentPatchRequestDTO("   ", null, null, null, null, null, null);
+        assertFalse(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("StudentPatchRequestDTO: invalid when birthDate is in future")
+    void studentPatchRequest_invalidWhenBirthDateInFuture() {
+        StudentPatchRequestDTO dto = new StudentPatchRequestDTO(null, null, null, null, null, null, LocalDate.now().plusDays(1));
+        assertFalse(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("StudentPatchRequestDTO: invalid when registrationNumber is blank")
+    void studentPatchRequest_invalidWhenRegistrationNumberBlank() {
+        StudentPatchRequestDTO dto = new StudentPatchRequestDTO(null, null, null, null, null, "   ", null);
+        assertFalse(validator.validate(dto).isEmpty());
     }
 }
 

@@ -128,7 +128,8 @@ public class StudentAiTools {
             if (active.isEmpty()) return "Aluno não possui matrícula ativa.";
             
             var classRoom = active.get().getClassRoom();
-            return "Sua turma é " + classRoom.getName() + " e sua série é " + classRoom.getSchoolGrade() + " no turno " + classRoom.getShift() + ".";
+            String gradeInfo = classRoom.getSchoolGrade() != null ? classRoom.getSchoolGrade().getLabel() : "Não informada";
+            return "Sua turma é " + classRoom.getName() + " e sua série é " + gradeInfo + " no turno " + classRoom.getShift() + ".";
         });
     }
 
@@ -202,7 +203,7 @@ public class StudentAiTools {
             return "Escola: " + settings.getSchoolName() +
                    "\nMédia mínima para aprovação: " + settings.getMinimumGrade() +
                    "\nFrequência mínima (%): " + settings.getMinimumAttendance() +
-                   "\nTipo de período: " + settings.getPeriodType();
+                   "\nDivisão de períodos: varia por turma (cada turma possui sua divisão)";
         });
     }
 }

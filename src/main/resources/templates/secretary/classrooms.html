@@ -80,7 +80,9 @@
                                 <thead>
                                 <tr>
                                     <th>Nome / Código</th>
+                                    <th>Série</th>
                                     <th>Ano Acadêmico</th>
+                                    <th>Divisão</th>
                                     <th>Turno</th>
                                     <th>Status</th>
                                     <th>Ações</th>
@@ -88,7 +90,7 @@
                                 </thead>
                                 <tbody id="tableBody">
                                 <tr>
-                                    <td colspan="5" class="text-center py-4">
+                                    <td colspan="7" class="text-center py-4">
                                         <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                                         <span class="ms-2">Carregando turmas...</span>
                                     </td>
@@ -216,10 +218,10 @@
                 classroomsData = await response.json();
                 renderTable();
             } else {
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar dados.</td></tr>';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Erro ao carregar dados.</td></tr>';
             }
         } catch (error) {
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Falha de conexão.</td></tr>';
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Falha de conexão.</td></tr>';
         }
     }
 
@@ -232,25 +234,29 @@
         let filtered = classroomsData.filter(c => {
             const nameMatch = (c.name || '').toLowerCase().includes(searchTerm);
             const shiftMatch = (shiftMap[c.shift] || '').toLowerCase().includes(searchTerm);
-            const matchSearch = nameMatch || shiftMatch;
+            const gradeMatch = (c.schoolGradeLabel || c.schoolGrade || '').toLowerCase().includes(searchTerm);
+            const divisionMatch = (c.periodTypeLabel || c.periodType || '').toLowerCase().includes(searchTerm);
+            const matchSearch = nameMatch || shiftMatch || gradeMatch || divisionMatch;
             const matchStatus = statusFilter === 'all' ? true : (statusFilter === 'active' ? c.active : !c.active);
             const matchYear = yearFilter === 'all' ? true : (c.academicYearId == yearFilter);
             return matchSearch && matchStatus && matchYear;
         });
 
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhuma turma encontrada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhuma turma encontrada.</td></tr>';
             return;
         }
 
         tbody.innerHTML = filtered.map(c => {
             const shiftLabel = shiftMap[c.shift] || c.shift || 'N/A';
+            const schoolGradeLabel = c.schoolGradeLabel || c.schoolGrade || '-';
             const badgeClass = c.active ? 'bg-label-success' : 'bg-label-secondary';
             const badgeText = c.active ? 'Ativa' : 'Inativa';
             const actionIcon = c.active ? 'bx-block' : 'bx-check-circle';
             const actionText = c.active ? 'Desativar' : 'Ativar';
             const actionColor = c.active ? 'text-warning' : 'text-success';
             const academicYearText = c.academicYear || c.academicYearId || '-';
+            const periodTypeBadge = `<span class="badge bg-label-primary">${escapeHtml(c.periodTypeLabel || c.periodType || '-')}</span>`;
 
             let actionsHtml = '';
             if (window.isSecretary) {
@@ -283,7 +289,9 @@
             return `
                 <tr class="${c.active ? '' : 'inactive-row'}">
                     <td><strong>${escapeHtml(c.name)}</strong></td>
+                    <td>${escapeHtml(schoolGradeLabel)}</td>
                     <td>${academicYearText}</td>
+                    <td>${periodTypeBadge}</td>
                     <td><span class="badge bg-label-info">${shiftLabel}</span></td>
                     <td><span class="badge ${badgeClass}">${badgeText}</span></td>
                     <td>

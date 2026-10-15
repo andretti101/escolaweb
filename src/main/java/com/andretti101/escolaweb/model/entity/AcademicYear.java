@@ -46,6 +46,8 @@ public class AcademicYear implements Serializable {
     @Column(name = "minimum_attendance")
     private java.math.BigDecimal minimumAttendance;
 
+    // Legado: fonte da migração; não é mais escrito
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @Column(name = "period_type")
     private com.andretti101.escolaweb.model.enums.AcademicPeriodType periodType;

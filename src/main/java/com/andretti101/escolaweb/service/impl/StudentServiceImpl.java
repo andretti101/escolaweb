@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.service.impl;
 
+import com.andretti101.escolaweb.dto.request.StudentPatchRequestDTO;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.repository.StudentRepository;
 import com.andretti101.escolaweb.repository.UserRepository;
@@ -53,6 +54,58 @@ public class StudentServiceImpl implements StudentService {
         }
 
         String incomingPassword = incoming.getPassword();
+        if (incomingPassword != null && !incomingPassword.isBlank() && !incomingPassword.equals("SenhaTemporaria123")) {
+            existing.setPassword(passwordEncoder.encode(incomingPassword));
+        }
+
+        return studentRepository.save(existing);
+    }
+
+    @Override
+    @Transactional
+    public Student patch(Integer id, StudentPatchRequestDTO dto) {
+        Student existing = findStudentOrThrow(id);
+
+        if (dto.name() != null) {
+            if (dto.name().isBlank()) {
+                throw new IllegalArgumentException("O nome não pode ser vazio.");
+            }
+            existing.setName(dto.name().trim());
+        }
+
+        if (dto.email() != null) {
+            if (dto.email().isBlank()) {
+                throw new IllegalArgumentException("O e-mail não pode ser vazio.");
+            }
+            if (!existing.getEmail().equalsIgnoreCase(dto.email().trim())) {
+                validateEmailNotTakenByAnother(dto.email().trim(), id);
+            }
+            existing.setEmail(dto.email().trim());
+        }
+
+        if (dto.registrationNumber() != null) {
+            if (dto.registrationNumber().isBlank()) {
+                throw new IllegalArgumentException("A matrícula não pode ser vazia.");
+            }
+            if (!dto.registrationNumber().trim().equals(existing.getRegistrationNumber())) {
+                validateRegistrationNumberNotTakenByAnother(dto.registrationNumber().trim(), id);
+            }
+            existing.setRegistrationNumber(dto.registrationNumber().trim());
+        }
+
+        if (dto.ownPhone() != null) {
+            existing.setOwnPhone(dto.ownPhone());
+        }
+
+        if (dto.guardianPhone() != null) {
+            existing.setGuardianPhone(dto.guardianPhone());
+        }
+
+        if (dto.birthDate() != null) {
+            existing.setBirthDate(dto.birthDate());
+        }
+
+        String incomingPassword = dto.password();
         if (incomingPassword != null && !incomingPassword.isBlank() && !incomingPassword.equals("SenhaTemporaria123")) {
             existing.setPassword(passwordEncoder.encode(incomingPassword));
         }

@@ -30,6 +30,7 @@ public interface GradeRepository extends JpaRepository<Grade, Integer> {
     long countByStudent_IdAndAssessment_Id(Integer studentId, Integer assessmentId);
 
     boolean existsByStudent(Student student);
+    boolean existsByStudentAndAssessment_TeacherClassSubject_ClassRoom(Student student, com.andretti101.escolaweb.model.entity.ClassRoom classRoom);
     boolean existsByStudentAndAssessment(Student student, Assessment assessment);
     List<Grade> findByStudent(Student student);
     List<Grade> findByAssessment(Assessment assessment);

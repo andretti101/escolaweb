@@ -59,7 +59,7 @@
                                                 <input type="text" id="tcsDisplay" class="form-control" disabled />
                                             </div>
                                             <div class="col-md-3">
-                                                <label class="form-label">Período Letivo</label>
+                                                <label class="form-label">Período Letivo <span id="divisionTypeBadge" class="badge bg-label-info ms-1 d-none"></span></label>
                                                 <input type="text" id="periodDisplay" class="form-control" disabled />
                                             </div>
                                             <div class="col-md-3">
@@ -192,7 +192,12 @@
                 const pRes = await fetch(`/api/academic-periods/${currentAssessment.periodId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (pRes.ok) {
                     const period = await pRes.json();
-                    document.getElementById('periodDisplay').value = `${period.academicYear} - ${period.name}`;
+                    document.getElementById('periodDisplay').value = `${period.name}${period.periodTypeLabel ? ' (' + period.periodTypeLabel + ')' : ''}`;
+                    const badge = document.getElementById('divisionTypeBadge');
+                    if (badge && (period.periodTypeLabel || period.periodType)) {
+                        badge.textContent = period.periodTypeLabel || period.periodType;
+                        badge.classList.remove('d-none');
+                    }
                 } else {
                     document.getElementById('periodDisplay').value = `ID ${currentAssessment.periodId}`;
                 }

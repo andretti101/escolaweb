@@ -3,6 +3,7 @@ package com.andretti101.escolaweb.service.impl;
 import com.andretti101.escolaweb.model.entity.Subject;
 import com.andretti101.escolaweb.repository.SubjectRepository;
 import com.andretti101.escolaweb.repository.TeacherClassSubjectRepository;
+import com.andretti101.escolaweb.repository.TeacherRepository;
 import com.andretti101.escolaweb.service.SubjectService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     private final SubjectRepository subjectRepository;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
+    private final TeacherRepository teacherRepository;
 
     @Override
     @Transactional
@@ -49,6 +51,10 @@ public class SubjectServiceImpl implements SubjectService {
         if (teacherClassSubjectRepository.existsBySubject(subject)) {
             throw new IllegalStateException(
                     "Não é possível excluir a disciplina '" + subject.getName() + "' pois ela está vinculada a turmas. Remova as atribuições antes de excluir.");
+        }
+        if (teacherRepository.existsBySubjectsContaining(subject)) {
+            throw new IllegalStateException(
+                    "Não é possível excluir a disciplina '" + subject.getName() + "' pois ela está vinculada a professores. Remova as atribuições antes de excluir.");
         }
 
         subjectRepository.deleteById(id);

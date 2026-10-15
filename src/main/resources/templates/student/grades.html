@@ -86,7 +86,9 @@
                             <div class="card-body">
                                 <div class="row justify-content-center text-center">
                                     <div class="col-md-6 col-lg-4">
-                                        <label for="periodSelect" class="form-label text-uppercase fw-bold text-muted small mb-3">Selecione o Período Acadêmico</label>
+                                        <label for="periodSelect" class="form-label text-uppercase fw-bold text-muted small mb-3">
+                                            Selecione o Período Acadêmico <span id="divisionBadge" class="badge bg-label-info ms-2 d-none"></span>
+                                        </label>
                                         <select id="periodSelect" class="form-select form-select-lg">
                                             <option value="">Carregando...</option>
                                         </select>
@@ -161,6 +163,23 @@
                     allGrades = await res.json();
                     buildPeriodDropdown();
                 }
+
+                // Carregar divisão da turma do aluno
+                try {
+                    const enrRes = await fetch(`/api/enrollments/student/${studentId}`, { headers: {'Authorization': `Bearer ${jwtToken}`} });
+                    if (enrRes.ok) {
+                        const enrollments = await enrRes.json();
+                        const activeEnr = (activeYear ? enrollments.find(e => e.academicYearId === activeYear.id && e.active) : null)
+                            || (activeYear ? enrollments.find(e => e.academicYearId === activeYear.id) : null)
+                            || enrollments.find(e => e.active)
+                            || enrollments[0];
+                        if (activeEnr && (activeEnr.periodTypeLabel || activeEnr.periodType)) {
+                            const badge = document.getElementById('divisionBadge');
+                            badge.textContent = activeEnr.periodTypeLabel || activeEnr.periodType;
+                            badge.classList.remove('d-none');
+                        }
+                    }
+                } catch (_) {}
             } catch (e) {
                 console.error(e);
             }

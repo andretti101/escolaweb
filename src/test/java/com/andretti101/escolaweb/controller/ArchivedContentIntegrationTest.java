@@ -90,6 +90,7 @@ class ArchivedContentIntegrationTest {
         classRoom = ClassRoom.builder()
                 .name("Turma Arquivada A")
                 .shift(Shift.MORNING)
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .schoolGrade(SchoolGrade.FUNDAMENTAL_1)
                 .academicYear(academicYear)
                 .build();
@@ -340,6 +341,7 @@ class ArchivedContentIntegrationTest {
         ClassRoom classRoom2 = ClassRoom.builder()
                 .name("Turma Arquivada B")
                 .shift(Shift.AFTERNOON)
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .schoolGrade(SchoolGrade.FUNDAMENTAL_2)
                 .academicYear(academicYear)
                 .build();
@@ -396,6 +398,7 @@ class ArchivedContentIntegrationTest {
         ClassRoom room2024 = classRoomRepository.save(ClassRoom.builder()
                 .name("Turma 2024 Alpha")
                 .shift(Shift.MORNING)
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .schoolGrade(SchoolGrade.FUNDAMENTAL_1)
                 .academicYear(ay2024)
                 .build());
@@ -403,6 +406,7 @@ class ArchivedContentIntegrationTest {
         ClassRoom room2025 = classRoomRepository.save(ClassRoom.builder()
                 .name("Turma 2025 Beta")
                 .shift(Shift.MORNING)
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .schoolGrade(SchoolGrade.FUNDAMENTAL_1)
                 .academicYear(ay2025)
                 .build());
@@ -506,6 +510,7 @@ class ArchivedContentIntegrationTest {
         ClassRoom room2024 = classRoomRepository.save(ClassRoom.builder()
                 .name("Turma Teste Ano 2024")
                 .shift(Shift.MORNING)
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .schoolGrade(SchoolGrade.FUNDAMENTAL_1)
                 .academicYear(ay2024)
                 .build());
@@ -513,6 +518,7 @@ class ArchivedContentIntegrationTest {
         ClassRoom room2025 = classRoomRepository.save(ClassRoom.builder()
                 .name("Turma Teste Ano 2025")
                 .shift(Shift.MORNING)
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .schoolGrade(SchoolGrade.FUNDAMENTAL_1)
                 .academicYear(ay2025)
                 .build());
@@ -540,6 +546,7 @@ class ArchivedContentIntegrationTest {
         ClassRoom room2024 = classRoomRepository.save(ClassRoom.builder()
                 .name("Turma Ano 2024 Cal")
                 .shift(Shift.MORNING)
+                .periodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType.TRIMESTER)
                 .schoolGrade(SchoolGrade.FUNDAMENTAL_1)
                 .academicYear(ay2024)
                 .build());

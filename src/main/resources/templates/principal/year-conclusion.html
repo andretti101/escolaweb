@@ -135,32 +135,28 @@
 
                                 <form id="conclusionForm">
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <label for="nextYear" class="form-label">Ano Letivo <span class="text-danger">*</span></label>
                                             <input type="number" class="form-control" id="nextYear" required min="2020" max="2100" placeholder="Ex: 2027"/>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="newPeriodType" class="form-label">Divisão do Ano Letivo <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="newPeriodType" required>
-                                                <option value="BIMESTER">Bimestre (4 períodos)</option>
-                                                <option value="TRIMESTER" selected>Trimestre (3 períodos)</option>
-                                                <option value="QUADRIMESTER">Quadrimestre (3 períodos)</option>
-                                                <option value="SEMESTER">Semestre (2 períodos)</option>
-                                                <option value="ANNUAL">Anual (1 período)</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <label for="newMinGrade" class="form-label">Média Mínima para Aprovação <span class="text-danger">*</span></label>
                                             <div class="input-group">
                                                 <input type="number" class="form-control" id="newMinGrade" min="0" max="10" step="0.1" value="6.0" required/>
                                                 <span class="input-group-text">/ 10</span>
                                             </div>
                                         </div>
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <label for="newMinAttendance" class="form-label">Frequência Mínima (%) <span class="text-danger">*</span></label>
                                             <div class="input-group">
                                                 <input type="number" class="form-control" id="newMinAttendance" min="0" max="100" step="0.01" value="75.00" required/>
                                                 <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <div class="alert alert-info d-flex align-items-center mb-0" role="alert">
+                                                <i class="bx bx-info-circle fs-4 me-2"></i>
+                                                <div>Após a conclusão, a direção deverá criar as divisões do novo ano antes do cadastro de turmas.</div>
                                             </div>
                                         </div>
                                     </div>
@@ -172,7 +168,7 @@
                                             <li>Calcular a situação final de todos os alunos</li>
                                             <li>Desativar todas as matrículas do ano atual</li>
                                             <li>Arquivar todos os chats e recados</li>
-                                            <li>Criar o novo ano letivo com os períodos gerados automaticamente</li>
+                                            <li>Criar o novo ano letivo (as divisões e turmas serão configuradas em seguida)</li>
                                         </ul>
                                     </div>
 
@@ -236,7 +232,6 @@
                                     <li class="list-group-item d-flex justify-content-between"><span>Novo Ano</span><strong id="detailNewYear">—</strong></li>
                                     <li class="list-group-item d-flex justify-content-between"><span>Mensagens Arquivadas</span><strong id="detailMessages">—</strong></li>
                                     <li class="list-group-item d-flex justify-content-between"><span>Recados Arquivados</span><strong id="detailAnnouncements">—</strong></li>
-                                    <li class="list-group-item d-flex justify-content-between"><span>Divisão do Novo Ano</span><strong id="detailPeriodType">—</strong></li>
                                     <li class="list-group-item d-flex justify-content-between"><span>Nova Média Mínima</span><strong id="detailMinGrade">—</strong></li>
                                     <li class="list-group-item d-flex justify-content-between"><span>Nova Frequência Mínima</span><strong id="detailMinAttendance">—</strong></li>
                                 </ul>
@@ -309,9 +304,33 @@
             });
             const allPeriods = await periodsRes.json();
             const yearPeriods = allPeriods.filter(p => p.academicYearId === activeYear.id);
-            const closedCount = yearPeriods.filter(p => p.closed).length;
-            const totalPeriods = yearPeriods.length;
-            document.getElementById('closedPeriodsCount').textContent = `${closedCount}/${totalPeriods}`;
+
+            // Buscar turmas ativas do ano para identificar as divisões em uso
+            let closedPeriodsText = '—';
+            try {
+                const classRoomsRes = await fetch(`/api/classrooms?academicYearId=${activeYear.id}&activeOnly=true`, {
+                    headers: {'Authorization': `Bearer ${getToken()}`}
+                });
+                if (classRoomsRes.ok) {
+                    const classRooms = await classRoomsRes.json();
+                    const usedTypes = [...new Set(classRooms.map(c => c.periodType).filter(Boolean))];
+                    if (usedTypes.length === 0) {
+                        closedPeriodsText = 'Sem turmas ativas';
+                    } else {
+                        const parts = usedTypes.map(type => {
+                            const typePeriods = yearPeriods.filter(p => p.periodType === type);
+                            const label = typePeriods[0]?.periodTypeLabel || type;
+                            const closed = typePeriods.filter(p => p.closed).length;
+                            return `${label} ${closed}/${typePeriods.length}`;
+                        });
+                        closedPeriodsText = parts.join(' · ');
+                    }
+                }
+            } catch (e) {
+                const closedCount = yearPeriods.filter(p => p.closed).length;
+                closedPeriodsText = `${closedCount}/${yearPeriods.length}`;
+            }
+            document.getElementById('closedPeriodsCount').textContent = closedPeriodsText;
 
             // Buscar matrículas ativas
             const enrollRes = await fetch('/api/enrollments?activeOnly=true', {
@@ -376,8 +395,7 @@
                 const payload = {
                     nextYear: parseInt(document.getElementById('nextYear').value),
                     minimumGrade: parseFloat(document.getElementById('newMinGrade').value),
-                    minimumAttendance: parseFloat(document.getElementById('newMinAttendance').value),
-                    periodType: document.getElementById('newPeriodType').value
+                    minimumAttendance: parseFloat(document.getElementById('newMinAttendance').value)
                 };
 
                 try {
@@ -431,7 +449,6 @@
         document.getElementById('detailNewYear').textContent = result.newYear || '—';
         document.getElementById('detailMessages').textContent = result.archivedChatMessages || 0;
         document.getElementById('detailAnnouncements').textContent = result.archivedAnnouncements || 0;
-        document.getElementById('detailPeriodType').textContent = result.newPeriodType || '—';
         document.getElementById('detailMinGrade').textContent = result.newMinimumGrade || '—';
         document.getElementById('detailMinAttendance').textContent = (result.newMinimumAttendance || '—') + '%';
     }

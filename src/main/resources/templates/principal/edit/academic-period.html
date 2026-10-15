@@ -65,12 +65,21 @@
 
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label" for="academicYearId">Ano Acadêmico *</label>
-                                                <select class="form-select" id="academicYearId" required>
+                                                <label class="form-label" for="academicYearId">Ano Acadêmico</label>
+                                                <select class="form-select" id="academicYearId" disabled>
                                                     <option value="" disabled selected>Carregando anos...</option>
                                                 </select>
+                                                <small class="text-muted">O ano letivo não pode ser alterado.</small>
                                             </div>
                                             <div class="col-md-6 mb-3">
+                                                <label class="form-label" for="periodTypeDisplay">Tipo de Divisão</label>
+                                                <input type="text" class="form-control" id="periodTypeDisplay" readonly disabled/>
+                                                <input type="hidden" id="periodType"/>
+                                                <small class="text-muted">A divisão não pode ser alterada.</small>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
                                                 <label class="form-label" for="name">Nome do Período *</label>
                                                 <div class="input-group input-group-merge">
                                                     <span class="input-group-text"><i
@@ -198,6 +207,8 @@
                 document.getElementById('name').value = data.name;
                 document.getElementById('startDate').value = formatDateToMMDD(data.startDate);
                 document.getElementById('endDate').value = formatDateToMMDD(data.endDate);
+                document.getElementById('periodTypeDisplay').value = data.periodTypeLabel || data.periodType || '';
+                document.getElementById('periodType').value = data.periodType || '';
                 yearSelect.value = data.academicYearId;
 
                 formWrapper.classList.remove('d-none');
@@ -238,6 +249,7 @@
 
             const payload = {
                 academicYearId: parseInt(yearSelect.value),
+                periodType: document.getElementById('periodType').value,
                 name: document.getElementById('name').value,
                 startDate: parseDate(document.getElementById('startDate').value),
                 endDate: parseDate(document.getElementById('endDate').value)

@@ -1,9 +1,12 @@
 package com.andretti101.escolaweb.controller;
 
 import com.andretti101.escolaweb.dto.request.ClassRoomRequestDTO;
+import com.andretti101.escolaweb.dto.response.AcademicPeriodResponseDTO;
 import com.andretti101.escolaweb.dto.response.ClassRoomResponseDTO;
+import com.andretti101.escolaweb.model.entity.AcademicPeriod;
 import com.andretti101.escolaweb.model.entity.AcademicYear;
 import com.andretti101.escolaweb.model.entity.ClassRoom;
+import com.andretti101.escolaweb.repository.AcademicPeriodRepository;
 import com.andretti101.escolaweb.service.ClassRoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/classrooms")
@@ -20,6 +27,7 @@ import java.util.List;
 public class ClassRoomController {
 
     private final ClassRoomService classRoomService;
+    private final AcademicPeriodRepository academicPeriodRepository;
 
     @PostMapping
     @PreAuthorize("hasRole('SECRETARY')")
@@ -44,7 +52,7 @@ public class ClassRoomController {
                     ? classRoomService.findAllActive()
                     : classRoomService.findAll();
         }
-        return ResponseEntity.ok(classRooms.stream().map(this::toResponse).toList());
+        return ResponseEntity.ok(toResponseList(classRooms));
     }
 
     @GetMapping("/{id}")
@@ -56,8 +64,7 @@ public class ClassRoomController {
     @GetMapping("/academic-year/{yearId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<ClassRoomResponseDTO>> findByAcademicYear(@PathVariable Integer yearId) {
-        return ResponseEntity.ok(
-                classRoomService.findByAcademicYear(yearId).stream().map(this::toResponse).toList());
+        return ResponseEntity.ok(toResponseList(classRoomService.findByAcademicYear(yearId)));
     }
 
     @PutMapping("/{id}")
@@ -95,20 +102,69 @@ public class ClassRoomController {
         ClassRoom classRoom = new ClassRoom();
         classRoom.setName(dto.name());
         classRoom.setShift(dto.shift());
+        classRoom.setPeriodType(dto.periodType());
         classRoom.setSchoolGrade(dto.schoolGrade());
         classRoom.setAcademicYear(year);
         return classRoom;
     }
 
+    private List<ClassRoomResponseDTO> toResponseList(List<ClassRoom> classRooms) {
+        if (classRooms == null || classRooms.isEmpty()) {
+            return List.of();
+        }
+        Set<AcademicYear> years = classRooms.stream()
+                .map(ClassRoom::getAcademicYear)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<String, List<AcademicPeriodResponseDTO>> periodsByYearAndType = years.isEmpty()
+                ? Map.of()
+                : academicPeriodRepository.findByAcademicYearInOrderByIdAsc(years).stream()
+                        .map(this::toPeriodResponse)
+                        .collect(Collectors.groupingBy(p -> p.academicYearId() + "_" + (p.periodType() != null ? p.periodType().name() : "")));
+
+        return classRooms.stream().map(c -> {
+            String key = (c.getAcademicYear() != null ? c.getAcademicYear().getId() : null)
+                    + "_" + (c.getPeriodType() != null ? c.getPeriodType().name() : "");
+            List<AcademicPeriodResponseDTO> periods = periodsByYearAndType.getOrDefault(key, List.of());
+            return toResponseWithPeriods(c, periods);
+        }).toList();
+    }
+
     private ClassRoomResponseDTO toResponse(ClassRoom c) {
+        if (c == null) {
+            return null;
+        }
+        return toResponseList(List.of(c)).get(0);
+    }
+
+    private ClassRoomResponseDTO toResponseWithPeriods(ClassRoom c, List<AcademicPeriodResponseDTO> periods) {
         return new ClassRoomResponseDTO(
                 c.getId(),
                 c.getName(),
                 c.getShift(),
                 c.getSchoolGrade(),
-                c.getAcademicYear().getId(),
-                c.getAcademicYear().getYear(),
+                c.getSchoolGrade() != null ? c.getSchoolGrade().getLabel() : null,
+                c.getPeriodType(),
+                c.getPeriodType() != null ? c.getPeriodType().getLabel() : null,
+                c.getAcademicYear() != null ? c.getAcademicYear().getId() : null,
+                c.getAcademicYear() != null ? c.getAcademicYear().getYear() : null,
                 c.isActive(),
-                c.getCreatedAt());
+                c.getCreatedAt(),
+                periods);
+    }
+
+    private AcademicPeriodResponseDTO toPeriodResponse(AcademicPeriod p) {
+        return new AcademicPeriodResponseDTO(
+                p.getId(),
+                p.getName(),
+                p.getPeriodType(),
+                p.getPeriodType() != null ? p.getPeriodType().getLabel() : null,
+                p.getStartDate(),
+                p.getEndDate(),
+                p.isClosed(),
+                p.getAcademicYear() != null ? p.getAcademicYear().getId() : null,
+                p.getAcademicYear() != null ? p.getAcademicYear().getYear() : null,
+                p.getCreatedAt());
     }
 }

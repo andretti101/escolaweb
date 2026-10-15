@@ -6,10 +6,10 @@ import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.repository.AcademicPeriodRepository;
 import com.andretti101.escolaweb.repository.AssessmentRepository;
+import com.andretti101.escolaweb.repository.ClassRoomRepository;
 import com.andretti101.escolaweb.repository.TeacherClassSubjectRepository;
 import com.andretti101.escolaweb.service.AcademicPeriodService;
 import com.andretti101.escolaweb.service.AcademicYearService;
-import com.andretti101.escolaweb.service.SchoolSettingsService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,9 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +27,7 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
     private final AssessmentRepository assessmentRepository;
     private final AcademicYearService academicYearService;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
-    private final SchoolSettingsService schoolSettingsService;
+    private final ClassRoomRepository classRoomRepository;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -57,9 +55,52 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
     @Override
     @Transactional
     public AcademicPeriod create(AcademicPeriod period) {
-        validateAcademicYearExists(period.getAcademicYear());
+        if (period.getPeriodType() == null) {
+            throw new IllegalArgumentException("O tipo de divisão do período é obrigatório.");
+        }
+        AcademicYear year = validateAcademicYearExists(period.getAcademicYear());
+        period.setAcademicYear(year);
+
+        List<AcademicPeriod> existing = academicPeriodRepository
+                .findByAcademicYearAndPeriodTypeOrderByIdAsc(year, period.getPeriodType());
+        if (existing.size() >= period.getPeriodType().getPeriodsCount()) {
+            throw new IllegalStateException("O ano letivo " + year.getYear() + " já atingiu o limite de "
+                    + period.getPeriodType().getPeriodsCount() + " período(s) para a divisão "
+                    + period.getPeriodType().getLabel() + ".");
+        }
+
         period.setClosed(false);
         return academicPeriodRepository.save(period);
+    }
+
+    @Override
+    @Transactional
+    public List<AcademicPeriod> createDivision(Integer academicYearId, AcademicPeriodType type) {
+        if (type == null) {
+            throw new IllegalArgumentException("O tipo de divisão é obrigatório.");
+        }
+        AcademicYear year = academicYearService.findById(academicYearId);
+
+        if (academicPeriodRepository.existsByAcademicYearAndPeriodType(year, type)) {
+            throw new IllegalStateException("O ano letivo " + year.getYear()
+                    + " já possui uma divisão do tipo " + type.getLabel() + ".");
+        }
+
+        int count = type.getPeriodsCount();
+        String label = type.getLabel();
+        List<AcademicPeriod> periods = new ArrayList<>();
+        for (int i = 1; i <= count; i++) {
+            String name = i + "º " + label;
+            AcademicPeriod period = AcademicPeriod.builder()
+                    .academicYear(year)
+                    .periodType(type)
+                    .name(name)
+                    .closed(false)
+                    .build();
+            periods.add(academicPeriodRepository.save(period));
+        }
+
+        return periods;
     }
 
     @Override
@@ -71,9 +112,15 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             throw new IllegalStateException("Não é possível atualizar o período '" + existing.getName() + "' pois ele já está fechado.");
         }
 
-        validateAcademicYearExists(incoming.getAcademicYear());
+        if (incoming.getPeriodType() != null && incoming.getPeriodType() != existing.getPeriodType()) {
+            throw new IllegalStateException("O tipo de divisão do período não pode ser alterado.");
+        }
+        if (incoming.getAcademicYear() != null && incoming.getAcademicYear().getId() != null
+                && !incoming.getAcademicYear().getId().equals(existing.getAcademicYear().getId())) {
+            throw new IllegalStateException("O ano letivo do período não pode ser alterado.");
+        }
 
-        // Validação de cronologia: garantir que as datas não se sobrepõem com períodos adjacentes
+        // Validação de cronologia: garantir que as datas não se sobrepõem com períodos adjacentes da mesma divisão
         if (incoming.getStartDate() != null || incoming.getEndDate() != null) {
             validateChronology(existing, incoming.getStartDate(), incoming.getEndDate());
         }
@@ -81,9 +128,8 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         existing.setName(incoming.getName());
         existing.setStartDate(incoming.getStartDate());
         existing.setEndDate(incoming.getEndDate());
-        existing.setAcademicYear(incoming.getAcademicYear());
 
-        return existing;
+        return academicPeriodRepository.save(existing);
     }
 
     @Override
@@ -98,8 +144,36 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             throw new IllegalStateException(
                     "Não é possível excluir o período '" + period.getName() + "' pois ele possui avaliações vinculadas. Remova as avaliações antes de excluir.");
         }
+        if (classRoomRepository.existsByAcademicYearAndPeriodTypeAndActiveTrue(period.getAcademicYear(), period.getPeriodType())) {
+            throw new IllegalStateException("Não é possível excluir: existem turmas usando esta divisão.");
+        }
 
         academicPeriodRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void deleteDivision(Integer academicYearId, AcademicPeriodType type) {
+        AcademicYear year = academicYearService.findById(academicYearId);
+
+        if (classRoomRepository.existsByAcademicYearAndPeriodTypeAndActiveTrue(year, type)) {
+            throw new IllegalStateException("Não é possível excluir: existem turmas usando esta divisão.");
+        }
+
+        List<AcademicPeriod> periods = academicPeriodRepository.findByAcademicYearAndPeriodTypeOrderByIdAsc(year, type);
+        if (periods.isEmpty()) {
+            throw new EntityNotFoundException("Nenhum período encontrado para a divisão " + type.getLabel() + " no ano letivo " + year.getYear() + ".");
+        }
+        for (AcademicPeriod p : periods) {
+            if (p.isClosed()) {
+                throw new IllegalStateException("Não é possível excluir a divisão pois o período '" + p.getName() + "' já está fechado.");
+            }
+            if (assessmentRepository.existsByPeriod(p)) {
+                throw new IllegalStateException("Não é possível excluir a divisão pois o período '" + p.getName() + "' possui avaliações vinculadas.");
+            }
+        }
+
+        academicPeriodRepository.deleteAll(periods);
     }
 
     @Override
@@ -125,45 +199,29 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         return list;
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    // PRÉ-GERAÇÃO AUTOMÁTICA
-    // ══════════════════════════════════════════════════════════════════════
-
     @Override
-    @Transactional
-    public List<AcademicPeriod> generatePeriodsForYear(Integer academicYearId) {
+    @Transactional(readOnly = true)
+    public List<AcademicPeriod> findByAcademicYearAndType(Integer academicYearId, AcademicPeriodType type) {
         AcademicYear year = academicYearService.findById(academicYearId);
-
-        // Impedir duplicação
-        List<AcademicPeriod> existing = academicPeriodRepository.findByAcademicYear(year);
-        if (!existing.isEmpty()) {
-            throw new IllegalStateException(
-                    "O ano letivo " + year.getYear() + " já possui " + existing.size()
-                    + " período(s) acadêmico(s) gerado(s). Remova-os antes de gerar novamente.");
-        }
-
-        AcademicPeriodType periodType = schoolSettingsService.findSettings().getPeriodType();
-        int count = getPeriodsCount(periodType);
-        String label = periodType.getLabel();
-
-        List<AcademicPeriod> periods = new ArrayList<>();
-        for (int i = 1; i <= count; i++) {
-            String name = count == 1 ? "Período Anual" : i + "º " + label;
-            AcademicPeriod period = AcademicPeriod.builder()
-                    .academicYear(year)
-                    .name(name)
-                    .closed(false)
-                    .build();
-            periods.add(academicPeriodRepository.save(period));
-        }
-
-        periods.sort(CHRONOLOGICAL_DESC);
-        return periods;
+        List<AcademicPeriod> list = new ArrayList<>(academicPeriodRepository.findByAcademicYearAndPeriodTypeOrderByIdAsc(year, type));
+        list.sort(CHRONOLOGICAL_DESC);
+        return list;
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    // FECHAMENTO DE PERÍODO
-    // ══════════════════════════════════════════════════════════════════════
+    @Override
+    @Transactional(readOnly = true)
+    public Map<AcademicPeriodType, List<AcademicPeriod>> findDivisions(Integer academicYearId) {
+        AcademicYear year = academicYearService.findById(academicYearId);
+        List<AcademicPeriod> allPeriods = academicPeriodRepository.findByAcademicYearOrderByIdAsc(year);
+
+        Map<AcademicPeriodType, List<AcademicPeriod>> map = new LinkedHashMap<>();
+        for (AcademicPeriod p : allPeriods) {
+            if (p.getPeriodType() != null) {
+                map.computeIfAbsent(p.getPeriodType(), k -> new ArrayList<>()).add(p);
+            }
+        }
+        return map;
+    }
 
     @Override
     @Transactional
@@ -177,51 +235,41 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         validateCanClose(period);
 
         period.setClosed(true);
-        return period;
+        return academicPeriodRepository.save(period);
     }
-
-    // ══════════════════════════════════════════════════════════════════════
-    // TRANSIÇÃO: ABRIR PRÓXIMO PERÍODO
-    // ══════════════════════════════════════════════════════════════════════
 
     @Override
     @Transactional
-    public AcademicPeriod openNextPeriod(Integer academicYearId) {
+    public AcademicPeriod openNextPeriod(Integer academicYearId, AcademicPeriodType type) {
+        if (type == null) {
+            throw new IllegalArgumentException("O tipo de divisão é obrigatório para abrir o próximo período.");
+        }
         AcademicYear year = academicYearService.findById(academicYearId);
-        List<AcademicPeriod> allPeriods = academicPeriodRepository.findByAcademicYearOrderByIdAsc(year);
-
+        List<AcademicPeriod> allPeriods = academicPeriodRepository.findByAcademicYearAndPeriodTypeOrderByIdAsc(year, type);
         if (allPeriods.isEmpty()) {
             throw new IllegalStateException(
-                    "O ano letivo " + year.getYear() + " não possui períodos acadêmicos. Gere-os primeiro.");
+                    "O ano letivo " + year.getYear() + " não possui períodos da divisão " + type.getLabel() + ".");
         }
 
-        // Encontrar o período atualmente ativo (não fechado)
         AcademicPeriod currentOpen = allPeriods.stream()
                 .filter(p -> !p.isClosed())
                 .findFirst()
                 .orElse(null);
 
-        if (currentOpen != null) {
-            // Validar e fechar o período atual
-            validateCanClose(currentOpen);
-            currentOpen.setClosed(true);
+        if (currentOpen == null) {
+            throw new IllegalStateException("Todos os períodos da divisão " + type.getLabel() + " já foram fechados. Não há mais períodos para abrir.");
         }
 
-        // Encontrar o próximo período pendente (não fechado e diferente do atual)
-        AcademicPeriod nextPeriod = allPeriods.stream()
-                .filter(p -> !p.isClosed())
-                .filter(p -> currentOpen == null || !p.getId().equals(currentOpen.getId()))
-                .findFirst()
-                .orElse(null);
-
-        if (nextPeriod == null) {
-            throw new IllegalStateException(
-                    "Todos os períodos do ano letivo " + year.getYear()
-                    + " já foram fechados. Não há mais períodos para abrir.");
+        int currentIndex = allPeriods.indexOf(currentOpen);
+        if (currentIndex < 0 || currentIndex >= allPeriods.size() - 1) {
+            throw new IllegalStateException("O período '" + currentOpen.getName() + "' é o último da divisão " + type.getLabel() + ". Para encerrar o ciclo, feche o período diretamente.");
         }
 
-        // Validar cronologia: novo período não pode começar antes do anterior terminar
-        if (currentOpen != null && nextPeriod.getStartDate() != null && currentOpen.getEndDate() != null) {
+        AcademicPeriod nextPeriod = allPeriods.get(currentIndex + 1);
+
+        validateCanClose(currentOpen);
+
+        if (nextPeriod.getStartDate() != null && currentOpen.getEndDate() != null) {
             if (nextPeriod.getStartDate().isBefore(currentOpen.getEndDate())) {
                 throw new IllegalStateException(
                         "A data de início do período '" + nextPeriod.getName()
@@ -232,26 +280,19 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             }
         }
 
+        currentOpen.setClosed(true);
+        academicPeriodRepository.save(currentOpen);
+
         return nextPeriod;
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    // VALIDADORES ISOLADOS
-    // ══════════════════════════════════════════════════════════════════════
-
-    /**
-     * Valida se um período pode ser fechado.
-     * Roda 3 regras: datas definidas, data de término atingida, mínimo de avaliações.
-     */
     private void validateCanClose(AcademicPeriod period) {
-        // Regra 1: Data de término deve estar definida
         if (period.getEndDate() == null) {
             throw new IllegalStateException(
                     "Não é possível fechar o período '" + period.getName()
                     + "': a data de término deve ser definida antes do fechamento.");
         }
 
-        // Regra 2: Data atual deve ser >= data de término
         if (LocalDate.now().isBefore(period.getEndDate())) {
             throw new IllegalStateException(
                     "Não é possível fechar o período '" + period.getName()
@@ -259,19 +300,17 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
                     + ") ainda não foi atingida.");
         }
 
-        // Regra 3: Mínimo de avaliações por matéria/turma
         validateMinimumAssessments(period);
     }
 
-    /**
-     * Valida que todas as matérias/turmas DO MESMO ANO LETIVO atingiram
-     * o mínimo de avaliações obrigatórias para o período.
-     */
     private void validateMinimumAssessments(AcademicPeriod period) {
-        // Filtrar apenas TCS do mesmo ano letivo do período
         List<TeacherClassSubject> relevantTcs = teacherClassSubjectRepository.findAll().stream()
-                .filter(tcs -> tcs.getClassRoom().getAcademicYear() != null
-                        && tcs.getClassRoom().getAcademicYear().getId().equals(period.getAcademicYear().getId()))
+                .filter(tcs -> tcs.isActive()
+                        && tcs.getClassRoom() != null
+                        && tcs.getClassRoom().isActive()
+                        && tcs.getClassRoom().getAcademicYear() != null
+                        && tcs.getClassRoom().getAcademicYear().getId().equals(period.getAcademicYear().getId())
+                        && tcs.getClassRoom().getPeriodType() == period.getPeriodType())
                 .toList();
 
         for (TeacherClassSubject tcs : relevantTcs) {
@@ -292,13 +331,9 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         }
     }
 
-    /**
-     * Valida a cronologia das datas de um período em relação aos seus vizinhos.
-     * Impede sobreposição de datas entre períodos adjacentes.
-     */
     private void validateChronology(AcademicPeriod existing, LocalDate newStartDate, LocalDate newEndDate) {
         List<AcademicPeriod> allPeriods = academicPeriodRepository
-                .findByAcademicYearOrderByIdAsc(existing.getAcademicYear());
+                .findByAcademicYearAndPeriodTypeOrderByIdAsc(existing.getAcademicYear(), existing.getPeriodType());
 
         int currentIndex = -1;
         for (int i = 0; i < allPeriods.size(); i++) {
@@ -309,7 +344,6 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         }
         if (currentIndex < 0) return;
 
-        // Validar contra o período ANTERIOR
         if (currentIndex > 0) {
             AcademicPeriod previous = allPeriods.get(currentIndex - 1);
             if (previous.getEndDate() != null && newStartDate != null) {
@@ -324,7 +358,6 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             }
         }
 
-        // Validar contra o período POSTERIOR
         if (currentIndex < allPeriods.size() - 1) {
             AcademicPeriod next = allPeriods.get(currentIndex + 1);
             if (next.getStartDate() != null && newEndDate != null) {
@@ -339,7 +372,6 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
             }
         }
 
-        // Validar que startDate < endDate
         if (newStartDate != null && newEndDate != null && !newStartDate.isBefore(newEndDate)) {
             throw new IllegalStateException(
                     "A data de início (" + newStartDate.format(DATE_FMT)
@@ -348,30 +380,15 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    // HELPERS INTERNOS
-    // ══════════════════════════════════════════════════════════════════════
-
-    private int getPeriodsCount(AcademicPeriodType type) {
-        if (type == null) return 3;
-        return switch (type) {
-            case BIMESTER -> 4;
-            case TRIMESTER -> 3;
-            case QUADRIMESTER -> 3;
-            case SEMESTER -> 2;
-            case ANNUAL -> 1;
-        };
-    }
-
     AcademicPeriod findPeriodOrThrow(Integer id) {
         return academicPeriodRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Período acadêmico não encontrado."));
     }
 
-    private void validateAcademicYearExists(AcademicYear academicYear) {
+    private AcademicYear validateAcademicYearExists(AcademicYear academicYear) {
         if (academicYear == null || academicYear.getId() == null) {
             throw new IllegalArgumentException("A seleção do ano letivo é obrigatória.");
         }
-        academicYearService.findById(academicYear.getId());
+        return academicYearService.findById(academicYear.getId());
     }
 }

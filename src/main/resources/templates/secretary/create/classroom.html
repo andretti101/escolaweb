@@ -65,6 +65,15 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
+                                                <label class="form-label" for="periodType">Divisão do Ano Letivo *</label>
+                                                <select class="form-select" id="periodType" required>
+                                                    <option value="" disabled selected>Selecione o ano primeiro...</option>
+                                                </select>
+                                                <div id="divisionAlert" class="text-danger small mt-1 d-none">
+                                                    <i class="bx bx-error-circle me-1"></i> A direção ainda não criou divisões para este ano. Não é possível cadastrar turmas.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
                                                 <label class="form-label" for="shift">Turno *</label>
                                                 <select class="form-select" id="shift" required>
                                                     <option value="" disabled selected>Selecione o turno</option>
@@ -74,10 +83,12 @@
                                                     <option value="FULL_TIME">Integral</option>
                                                 </select>
                                             </div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label" for="schoolGrade">Série</label>
-                                                <select class="form-select" id="schoolGrade">
-                                                    <option value="" selected>Sem série definida</option>
+                                                <label class="form-label" for="schoolGrade">Série *</label>
+                                                <select class="form-select" id="schoolGrade" required>
+                                                    <option value="" disabled selected>Selecione a série</option>
                                                     <optgroup label="Pré-Escola">
                                                         <option value="PRE_1">Pré-Escola 1</option>
                                                         <option value="PRE_2">Pré-Escola 2</option>
@@ -145,6 +156,50 @@
         const yearSelect = document.getElementById("academicYearId");
         const token = localStorage.getItem('jwt_token');
 
+        const periodTypeSelect = document.getElementById("periodType");
+        const divisionAlert = document.getElementById("divisionAlert");
+
+        async function loadDivisionsForYear(yearId) {
+            if (!yearId) {
+                periodTypeSelect.innerHTML = '<option value="" disabled selected>Selecione o ano primeiro...</option>';
+                divisionAlert.classList.add('d-none');
+                btnSubmit.disabled = false;
+                return;
+            }
+
+            periodTypeSelect.innerHTML = '<option value="" disabled selected>Carregando divisões...</option>';
+            divisionAlert.classList.add('d-none');
+
+            try {
+                const res = await fetch(`/api/academic-periods/divisions?yearId=${yearId}`, {
+                    headers: {'Authorization': 'Bearer ' + (token || '')}
+                });
+                if (res.ok) {
+                    const divisions = await res.json();
+                    if (divisions.length === 0) {
+                        periodTypeSelect.innerHTML = '<option value="" disabled selected>Nenhuma divisão cadastrada para este ano</option>';
+                        divisionAlert.classList.remove('d-none');
+                        btnSubmit.disabled = true;
+                    } else {
+                        periodTypeSelect.innerHTML = '<option value="" disabled selected>Selecione a divisão</option>';
+                        divisions.forEach(d => {
+                            periodTypeSelect.innerHTML += `<option value="${d.periodType}">${d.label} (${d.periodsCount} períodos)</option>`;
+                        });
+                        divisionAlert.classList.add('d-none');
+                        btnSubmit.disabled = false;
+                    }
+                } else {
+                    periodTypeSelect.innerHTML = '<option value="" disabled selected>Erro ao carregar divisões</option>';
+                }
+            } catch (e) {
+                periodTypeSelect.innerHTML = '<option value="" disabled selected>Erro de conexão</option>';
+            }
+        }
+
+        yearSelect.addEventListener("change", () => {
+            loadDivisionsForYear(yearSelect.value);
+        });
+
         // Carregar anos acadêmicos
         try {
             const response = await fetch('/api/academic-years', {
@@ -154,12 +209,16 @@
                 const years = await response.json();
                 yearSelect.innerHTML = '<option value="" disabled selected>Selecione o ano acadêmico</option>';
                 years.sort((a, b) => b.year - a.year);
+                let selectedId = null;
                 years.forEach(y => {
                     const label = y.active ? `${y.year} (Ativo)` : `${y.year}`;
+                    if (y.active && !selectedId) selectedId = y.id;
                     yearSelect.innerHTML += `<option value="${y.id}" ${y.active ? 'selected' : ''}>${label}</option>`;
                 });
                 if (years.length === 0) {
                     yearSelect.innerHTML = '<option value="" disabled selected>Nenhum ano cadastrado</option>';
+                } else if (selectedId) {
+                    await loadDivisionsForYear(selectedId);
                 }
             } else {
                 yearSelect.innerHTML = '<option value="" disabled selected>Não foi possível carregar os anos letivos</option>';
@@ -179,6 +238,7 @@
             const payload = {
                 name: document.getElementById('name').value,
                 academicYearId: parseInt(yearSelect.value),
+                periodType: periodTypeSelect.value,
                 shift: document.getElementById('shift').value,
                 schoolGrade: document.getElementById('schoolGrade').value || null
             };

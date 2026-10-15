@@ -2,6 +2,7 @@ package com.andretti101.escolaweb.service.impl;
 
 import com.andretti101.escolaweb.model.entity.AcademicYear;
 import com.andretti101.escolaweb.model.entity.ClassRoom;
+import com.andretti101.escolaweb.repository.AcademicPeriodRepository;
 import com.andretti101.escolaweb.repository.ClassRoomRepository;
 import com.andretti101.escolaweb.repository.EnrollmentRepository;
 import com.andretti101.escolaweb.repository.TeacherClassSubjectRepository;
@@ -19,6 +20,7 @@ import java.util.List;
 public class ClassRoomServiceImpl implements ClassRoomService {
 
     private final ClassRoomRepository classRoomRepository;
+    private final AcademicPeriodRepository academicPeriodRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
     private final AcademicYearService academicYearService;
@@ -29,6 +31,19 @@ public class ClassRoomServiceImpl implements ClassRoomService {
     public ClassRoom create(ClassRoom classRoom) {
         AcademicYear year = resolveAcademicYear(classRoom.getAcademicYear());
         classRoom.setAcademicYear(year);
+
+        if (classRoom.getPeriodType() == null) {
+            throw new IllegalArgumentException("O tipo de divisão da turma é obrigatório.");
+        }
+
+        if (classRoom.getSchoolGrade() == null) {
+            throw new IllegalArgumentException("A série da turma é obrigatória.");
+        }
+
+        if (!academicPeriodRepository.existsByAcademicYearAndPeriodType(year, classRoom.getPeriodType())) {
+            throw new IllegalStateException("A direção ainda não criou a divisão de "
+                    + classRoom.getPeriodType().getLabel() + " para o ano letivo " + year.getYear() + ".");
+        }
 
         if (classRoomRepository.existsByAcademicYearAndName(year, classRoom.getName())) {
             throw new IllegalStateException(
@@ -45,8 +60,32 @@ public class ClassRoomServiceImpl implements ClassRoomService {
         ClassRoom existing = findClassRoomOrThrow(id);
         AcademicYear year = resolveAcademicYear(incoming.getAcademicYear());
 
+        if (incoming.getPeriodType() != null && incoming.getPeriodType() != existing.getPeriodType()) {
+            throw new IllegalStateException("O tipo de divisão da turma não pode ser alterado.");
+        }
+
+        if (incoming.getSchoolGrade() == null) {
+            throw new IllegalArgumentException("A série da turma é obrigatória.");
+        }
+
         boolean nameChanged = !existing.getName().equals(incoming.getName());
         boolean yearChanged = !existing.getAcademicYear().getId().equals(year.getId());
+
+        if (yearChanged) {
+            if (!academicPeriodRepository.existsByAcademicYearAndPeriodType(year, existing.getPeriodType())) {
+                throw new IllegalStateException("A direção ainda não criou a divisão "
+                        + existing.getPeriodType().getLabel() + " para o ano letivo " + year.getYear()
+                        + ". Crie a divisão antes de vincular a turma a este ano.");
+            }
+            if (enrollmentRepository.existsByClassRoom(existing)) {
+                throw new IllegalStateException("Não é possível alterar o ano letivo da turma '"
+                        + existing.getName() + "' pois ela já possui matrículas vinculadas.");
+            }
+            if (teacherClassSubjectRepository.existsByClassRoom(existing)) {
+                throw new IllegalStateException("Não é possível alterar o ano letivo da turma '"
+                        + existing.getName() + "' pois ela já possui disciplinas ou professores vinculados.");
+            }
+        }
 
         if ((nameChanged || yearChanged)
                 && classRoomRepository.existsByAcademicYearAndName(year, incoming.getName())) {

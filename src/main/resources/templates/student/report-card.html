@@ -82,7 +82,7 @@
 
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                                <h5 class="mb-0">Resultado Consolidado</h5>
+                                <h5 class="mb-0">Resultado Consolidado <span id="divisionBadge" class="badge bg-label-info ms-2 d-none"></span></h5>
                                 <div id="generalStatusContainer" class="d-flex align-items-center gap-2 mt-1 mt-sm-0">
                                     <span class="text-muted fw-semibold">Situação Geral:</span>
                                     <span id="generalStatusBadge" class="badge bg-label-secondary">Carregando...</span>
@@ -136,6 +136,11 @@
                     const rcRes = await fetch(`/api/report-cards/student/${studentId}/year/${activeYear.id}`, { headers: {'Authorization': 'Bearer ' + jwtToken} });
                     if (rcRes.ok) {
                         const rc = await rcRes.json();
+                        if (rc.periodTypeLabel || rc.periodType) {
+                            const badge = document.getElementById('divisionBadge');
+                            badge.textContent = 'Divisão: ' + (rc.periodTypeLabel || rc.periodType);
+                            badge.classList.remove('d-none');
+                        }
                         const periodNames = new Set();
                         rc.subjects.forEach(s => s.periodGrades.forEach(pg => periodNames.add(pg.periodName)));
                         const sortedPeriods = Array.from(periodNames).sort();

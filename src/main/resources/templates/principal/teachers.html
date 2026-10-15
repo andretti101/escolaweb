@@ -102,6 +102,7 @@
                                 <tr>
                                     <th>Professor</th>
                                     <th>E-mail</th>
+                                    <th>Disciplinas</th>
                                     <th>Adicionado em</th>
                                     <th>Status</th>
                                 </tr>
@@ -251,7 +252,8 @@
             const term = searchTerm.toLowerCase().trim();
             filtered = filtered.filter(t =>
                 (t.name && t.name.toLowerCase().includes(term)) ||
-                (t.email && t.email.toLowerCase().includes(term))
+                (t.email && t.email.toLowerCase().includes(term)) ||
+                (Array.isArray(t.subjects) && t.subjects.some(s => s.name && s.name.toLowerCase().includes(term)))
             );
         }
 
@@ -292,6 +294,10 @@
             const initial = getInitials(t.name);
             const colorClass = avatarColor(t.id);
 
+            const subjectsHtml = (Array.isArray(t.subjects) && t.subjects.length > 0)
+                ? t.subjects.map(s => `<span class="badge bg-label-primary me-1 mb-1">${escapeHtml(s.name)}</span>`).join('')
+                : '<span class="text-muted">—</span>';
+
             return `
                     <tr class="${!t.active ? 'opacity-75 bg-lighter' : ''}">
                         <td>
@@ -306,6 +312,7 @@
                             </div>
                         </td>
                         <td>${escapeHtml(t.email)}</td>
+                        <td>${subjectsHtml}</td>
                         <td>${formatDate(t.createdAt)}</td>
                         <td>${statusBadge}</td>
                     </tr>

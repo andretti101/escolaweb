@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.dto.request;
 
+import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.model.enums.SchoolGrade;
 import com.andretti101.escolaweb.model.enums.Shift;
 import jakarta.validation.constraints.NotBlank;
@@ -18,6 +19,10 @@ public record ClassRoomRequestDTO(
         @NotNull(message = "O turno é obrigatório.")
         Shift shift,
 
+        @NotNull(message = "O tipo de divisão é obrigatório.")
+        AcademicPeriodType periodType,
+
+        @NotNull(message = "A série é obrigatória.")
         SchoolGrade schoolGrade
 
 ) {}

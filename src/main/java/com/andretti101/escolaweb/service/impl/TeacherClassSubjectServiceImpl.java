@@ -45,6 +45,7 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
         if (!subject.isActive()) {
             throw new IllegalStateException("Não é possível vincular uma matéria inativa.");
         }
+        validateTeacherCanTeachSubject(teacher, subject);
         if (teacherClassSubjectRepository.existsByClassRoomAndSubject(classRoom, subject)) {
             throw new IllegalStateException("Esta matéria já está vinculada a esta turma (apenas um professor por matéria).");
         }
@@ -67,6 +68,8 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
         ClassRoom classRoom = resolveClassRoom(incoming.getClassRoom());
         Subject subject = resolveSubject(incoming.getSubject());
 
+        validateTeacherCanTeachSubject(teacher, subject);
+
         boolean changed = !existing.getClassRoom().getId().equals(classRoom.getId())
                 || !existing.getSubject().getId().equals(subject.getId());
 
@@ -85,6 +88,14 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
         return existing;
     }
 
+    private void validateTeacherCanTeachSubject(Teacher teacher, Subject subject) {
+        if (teacher.getSubjects() != null && !teacher.getSubjects().isEmpty()
+                && !teacher.getSubjects().contains(subject)) {
+            throw new IllegalStateException(
+                    "O professor '" + teacher.getName() + "' não está habilitado para lecionar a matéria '" + subject.getName() + "'.");
+        }
+    }
+
     @Override
     @Transactional
     public void delete(Integer id) {
@@ -97,7 +108,8 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
             throw new IllegalStateException("Não é possível excluir este vínculo pois já existem avaliações registradas.");
         }
 
-        teacherClassSubjectRepository.deleteById(id);
+        teacherClassSubjectRepository.delete(tcs);
+        teacherClassSubjectRepository.flush();
     }
 
     @Override

@@ -10,7 +10,6 @@
     <script src="/js/auth-guard.js"></script>
 
     <meta name="description" content="Dashboard do Professor - EscolaWEB" />
-    
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,6 +23,7 @@
     <script src="/js/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/demo.css" />
     <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="/assets/vendor/libs/apex-charts/apex-charts.css" />
 
     <!-- Helpers -->
     <script src="/assets/vendor/js/helpers.js"></script>
@@ -31,21 +31,50 @@
 
     <style>
         .icon-pulse {
-            animation: pulse 2s infinite;
+            animation: pulse-animation 2s infinite;
         }
-        @keyframes pulse {
+        @keyframes pulse-animation {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
+        .card-hover {
+            transition: all 0.22s ease-in-out;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
         .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-            transition: all .3s ease;
+            transform: translateY(-4px);
+            box-shadow: 0 .5rem 1rem rgba(105, 108, 255, 0.16) !important;
+        }
+        .kpi-card {
+            transition: all 0.25s ease;
+            border-radius: 0.75rem;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+        }
+        .class-card {
+            border-radius: 0.75rem;
+            border: 1px solid rgba(67, 89, 113, 0.1);
+            transition: all 0.2s ease;
+        }
+        .class-card:hover {
+            border-color: #696cff;
+            box-shadow: 0 0.25rem 0.75rem rgba(105, 108, 255, 0.12);
+        }
+        .announcement-item {
+            border-left: 3px solid #696cff;
+            transition: background 0.2s;
+        }
+        .announcement-item:hover {
+            background-color: rgba(105, 108, 255, 0.04);
         }
     </style>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
-<script src="/js/global-modals.js"></script>
+    <script src="/js/global-modals.js"></script>
 </head>
 <body>
     <div class="layout-wrapper layout-content-navbar">
@@ -71,8 +100,8 @@
                             </span>
                         </div>
 
+                        <!-- ELEMENTO OBRIGATÓRIO MANTIDO: Avatar do usuário no topo direito -->
                         <ul class="navbar-nav flex-row align-items-center ms-auto">
-                            <!-- User Dropdown -->
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
@@ -90,7 +119,7 @@
                                                 </div>
                                                 <div class="flex-grow-1">
                                                     <span class="fw-semibold d-block" id="dropdownUserName">Professor</span>
-                                                    <small class="text-muted">Professor</small>
+                                                    <small class="text-muted">Corpo Docente</small>
                                                 </div>
                                             </div>
                                         </a>
@@ -99,9 +128,9 @@
                                         <div class="dropdown-divider"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="javascript:void(0);" id="btnLogoutNavbar">
-                                            <i class="bx bx-power-off me-2 text-danger"></i>
-                                            <span class="align-middle text-danger">Sair</span>
+                                        <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="logout()">
+                                            <i class="bx bx-power-off me-2"></i>
+                                            <span class="align-middle">Sair</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -112,53 +141,276 @@
 
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
-                    <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
-                                        <div>
-                                            <h3 class="text-white mb-2" id="welcomeMessage">Olá, Professor!</h3>
-                                            <p class="mb-0 text-white-50">Bem-vindo(a) ao seu diário de classe digital. Aqui você pode gerenciar faltas e lançar avaliações.</p>
-                                        </div>
-                                        <div>
-                                            <img src="/assets/img/illustrations/man-with-laptop-light.png" alt="Professor" class="d-none d-sm-block" height="120" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Ações Rápidas -->
-                        <h5 class="pb-1 mb-3">Ações Rápidas</h5>
+                        <!-- 1. Banner de Boas-Vindas (ELEMENTO OBRIGATÓRIO MANTIDO) -->
                         <div class="row mb-4">
-                            <!-- Diário de Classe -->
-                            <div class="col-md-6 col-lg-6 mb-4">
-                                <div class="card h-100 card-hover cursor-pointer" onclick="window.location.href='/teacher/lessons.html'">
-                                    <div class="card-body text-center">
-                                        <div class="avatar avatar-md mx-auto mb-3">
-                                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-book-reader fs-3"></i></span>
-                                        </div>
-                                        <h5 class="card-title mb-2">Meu Diário de Classe</h5>
-                                        <p class="text-muted mb-0">Faça chamadas, veja alunos e registre suas aulas diárias.</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="col-12">
+                                <div class="card overflow-hidden border-0 shadow-sm"
+                                     style="background: linear-gradient(135deg, #696cff 0%, #4558c8 100%); min-height: 130px;">
+                                    <div class="card-body p-4 d-flex align-items-center justify-content-between"
+                                         style="position: relative; overflow: hidden;">
 
-                            <!-- Lançar Notas -->
-                            <div class="col-md-6 col-lg-6 mb-4">
-                                <div class="card h-100 card-hover cursor-pointer" onclick="window.location.href='/teacher/assessments.html'">
-                                    <div class="card-body text-center">
-                                        <div class="avatar avatar-md mx-auto mb-3">
-                                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-task fs-3"></i></span>
+                                        <!-- Círculos decorativos de fundo -->
+                                        <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.05);top:-60px;right:120px;pointer-events:none;"></div>
+                                        <div style="position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.07);bottom:-80px;right:40px;pointer-events:none;"></div>
+
+                                        <!-- Lado esquerdo: avatar + texto -->
+                                        <div class="d-flex align-items-center gap-3" style="position:relative;z-index:1;">
+
+                                            <!-- Avatar com inicial do nome -->
+                                            <div class="flex-shrink-0">
+                                                <div class="d-flex align-items-center justify-content-center rounded-circle bg-white shadow-sm"
+                                                     style="width:60px;height:60px;">
+                                                    <span class="fw-bold fs-4 text-primary" id="avatarInitial">P</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Texto -->
+                                            <div>
+                                                <p class="text-white-50 mb-1 text-uppercase fw-semibold"
+                                                   style="font-size:0.70rem;letter-spacing:1.2px;">
+                                                    Painel Docente — Professor
+                                                </p>
+                                                <h4 class="text-white fw-bold mb-1">
+                                                    <span id="greetingText">Bom dia</span>, <span id="userNameDisplay">Professor(a)</span>.
+                                                </h4>
+                                                <p class="text-white-50 mb-0" style="font-size:0.85rem;max-width:500px;">
+                                                    Gerencie suas turmas, registre frequências e lance notas acadêmicas com agilidade.
+                                                </p>
+                                            </div>
                                         </div>
-                                        <h5 class="card-title mb-2">Avaliações e Notas</h5>
-                                        <p class="text-muted mb-0">Crie provas, trabalhos e lance notas para suas turmas.</p>
+
+                                        <!-- Lado direito: data atual -->
+                                        <div class="text-end flex-shrink-0 ms-4 d-none d-md-block"
+                                             style="position:relative;z-index:1;">
+                                            <p class="text-white-50 mb-1 text-uppercase fw-semibold"
+                                               style="font-size:0.70rem;letter-spacing:1.2px;">
+                                                EscolaWEB
+                                            </p>
+                                            <h5 class="text-white fw-bold mb-0" id="currentDate">—</h5>
+                                            <small class="text-white-50" id="currentDayOfWeek"></small>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 2. Cards de Métricas do Professor -->
+                        <div class="row mb-4">
+                            <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                                <div class="card kpi-card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-muted mb-1">Minhas Turmas</span>
+                                                <h3 class="mb-1" id="countClasses">
+                                                    <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+                                                </h3>
+                                                <small class="text-primary fw-semibold"><i class="bx bx-building-house"></i> Turmas ativas</small>
+                                            </div>
+                                            <div class="avatar flex-shrink-0">
+                                                <span class="avatar-initial rounded-circle bg-label-primary shadow-sm">
+                                                    <i class="bx bx-building-house fs-4"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                                <div class="card kpi-card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-muted mb-1">Disciplinas</span>
+                                                <h3 class="mb-1" id="countSubjects">
+                                                    <span class="spinner-border spinner-border-sm text-info" role="status"></span>
+                                                </h3>
+                                                <small class="text-info fw-semibold"><i class="bx bx-book-bookmark"></i> Matérias lecionadas</small>
+                                            </div>
+                                            <div class="avatar flex-shrink-0">
+                                                <span class="avatar-initial rounded-circle bg-label-info shadow-sm">
+                                                    <i class="bx bx-book-open fs-4"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                                <div class="card kpi-card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-muted mb-1">Aulas Registradas</span>
+                                                <h3 class="mb-1" id="countLessons">
+                                                    <span class="spinner-border spinner-border-sm text-success" role="status"></span>
+                                                </h3>
+                                                <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> No ano vigente</small>
+                                            </div>
+                                            <div class="avatar flex-shrink-0">
+                                                <span class="avatar-initial rounded-circle bg-label-success shadow-sm">
+                                                    <i class="bx bx-book-reader fs-4"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                                <div class="card kpi-card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold text-muted mb-1">Avaliações Criadas</span>
+                                                <h3 class="mb-1" id="countAssessments">
+                                                    <span class="spinner-border spinner-border-sm text-warning" role="status"></span>
+                                                </h3>
+                                                <small class="text-warning fw-semibold"><i class="bx bx-task"></i> Provas e trabalhos</small>
+                                            </div>
+                                            <div class="avatar flex-shrink-0">
+                                                <span class="avatar-initial rounded-circle bg-label-warning shadow-sm">
+                                                    <i class="bx bx-task fs-4"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Minhas Turmas e Disciplinas Atribuídas -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                        <div>
+                                            <h5 class="card-title mb-0"><i class="bx bx-chalkboard text-primary me-2"></i>Minhas Turmas e Disciplinas</h5>
+                                            <small class="text-muted">Turmas sob sua responsabilidade pedagógica no ano letivo ativo</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="myClassesContainer" class="row g-3">
+                                            <div class="col-12 text-center py-4">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                                <p class="text-muted mt-2 mb-0">Carregando turmas atribuídas...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Gráfico e Aulas Recentes -->
+                        <div class="row mb-4">
+                            <!-- Gráfico de Aulas -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                        <div>
+                                            <h5 class="card-title mb-0">Aulas por Turma e Disciplina</h5>
+                                            <small class="text-muted">Total de aulas ministradas registradas</small>
+                                        </div>
+                                        <span class="badge bg-label-primary"><i class="bx bx-bar-chart-alt-2"></i> Diário</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="chartTeacherLessons" style="min-height: 280px; width: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Últimas Aulas Registradas -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                        <div>
+                                            <h5 class="card-title mb-0"><i class="bx bx-history text-info me-2"></i>Últimas Aulas Registradas</h5>
+                                            <small class="text-muted">Histórico recente do seu diário de classe</small>
+                                        </div>
+                                        <a href="/teacher/lessons.html" class="btn btn-sm btn-outline-primary">Ver Diário</a>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light">
+                                                <tr>
+                                                    <th>Data</th>
+                                                    <th>Conteúdo / Resumo</th>
+                                                    <th>Aulas</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="recentLessonsTable">
+                                                <tr>
+                                                    <td colspan="3" class="text-center py-4">
+                                                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Ações Rápidas & Mural Docente -->
+                        <div class="row">
+                            <div class="col-lg-7 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header pb-2">
+                                        <h5 class="card-title mb-0"><i class="bx bx-bolt-circle text-warning me-2"></i>Ações Rápidas Docentes</h5>
+                                        <small class="text-muted">Acessos rápidos para sua rotina diária em sala</small>
+                                    </div>
+                                    <div class="card-body pt-3">
+                                        <div class="row g-3">
+                                            <div class="col-md-4 col-12">
+                                                <a href="/teacher/lessons.html" class="card-hover card bg-label-info border-0 p-3 text-center h-100">
+                                                    <i class="bx bx-book-reader fs-2 mb-2 text-info"></i>
+                                                    <h6 class="mb-1 text-info fw-semibold">Diário de Classe</h6>
+                                                    <small class="text-muted" style="font-size:0.75rem;">Fazer chamada e notas</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-md-4 col-12">
+                                                <a href="/teacher/assessments.html" class="card-hover card bg-label-success border-0 p-3 text-center h-100">
+                                                    <i class="bx bx-task fs-2 mb-2 text-success"></i>
+                                                    <h6 class="mb-1 text-success fw-semibold">Avaliações</h6>
+                                                    <small class="text-muted" style="font-size:0.75rem;">Criar provas e trabalhos</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-md-4 col-12">
+                                                <a href="/teacher/my-students.html" class="card-hover card bg-label-primary border-0 p-3 text-center h-100">
+                                                    <i class="bx bx-bar-chart-alt-2 fs-2 mb-2 text-primary"></i>
+                                                    <h6 class="mb-1 text-primary fw-semibold">Desempenho</h6>
+                                                    <small class="text-muted" style="font-size:0.75rem;">Acompanhar alunos</small>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                        <h5 class="card-title mb-0"><i class="bx bx-bell text-warning me-2"></i>Mural da Escola</h5>
+                                        <span class="badge bg-label-warning">Avisos</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="teacherAnnouncementsFeed" class="d-flex flex-column gap-3">
+                                            <div class="text-center py-4">
+                                                <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                     
                     <!-- Footer -->
@@ -183,46 +435,215 @@
     <script src="/assets/vendor/js/bootstrap.js"></script>
     <script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="/assets/vendor/js/menu.js"></script>
+    <script src="/assets/vendor/libs/apex-charts/apexcharts.js"></script>
     <script src="/assets/js/main.js"></script>
     <script src="/js/load-sidebar.js"></script>
 
-    <!-- Inicialização -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
+        function logout() {
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('user_name');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('jwt_token');
+            let userEmail = '';
+            let userName = localStorage.getItem('user_name') || 'Professor';
+
+            // ── Saudação por horário ──────────────────────────────────────────
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+            document.getElementById('greetingText').textContent = greeting;
+
+            // ── Data atual em PT-BR ───────────────────────────────────────────
+            const now = new Date();
+            const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+            const weekDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+            document.getElementById('currentDate').textContent =
+                `${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
+            document.getElementById('currentDayOfWeek').textContent = weekDays[now.getDay()];
+
+            // ── Nome e avatar a partir do token ou localStorage ──────────────
+            if (token) {
                 try {
-                    const user = JSON.parse(userStr);
-                    if (user && user.name) {
-                        const firstName = user.name.split(' ')[0];
-                        document.getElementById('welcomeMessage').textContent = `Olá, Prof. ${firstName}!`;
-                        
-                        const initial = firstName.charAt(0).toUpperCase();
-                        const initialElem = document.getElementById('dropdownAvatarInitial');
-                        const initialInnerElem = document.getElementById('dropdownAvatarInitialInner');
-                        if (initialElem) initialElem.textContent = initial;
-                        if (initialInnerElem) initialInnerElem.textContent = initial;
-                        
-                        const nameElem = document.getElementById('dropdownUserName');
-                        if (nameElem) nameElem.textContent = user.name;
+                    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                    const payload = JSON.parse(atob(base64));
+                    if (payload.sub) {
+                        userEmail = payload.sub;
                     }
-                } catch (e) {
-                    console.error("Erro ao fazer parse do usuário", e);
-                }
+                } catch (_) {}
             }
 
-            const btnLogoutNavbar = document.getElementById('btnLogoutNavbar');
-            if (btnLogoutNavbar) {
-                btnLogoutNavbar.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    localStorage.removeItem('jwt_token');
-                    localStorage.removeItem('refresh_token');
-                    localStorage.removeItem('user');
-                    window.location.href = '/login.html';
-                });
+            const firstName = userName.split(' ')[0];
+            document.getElementById('userNameDisplay').textContent = firstName;
+            document.getElementById('dropdownUserName').textContent = userName;
+            const initial = firstName.charAt(0).toUpperCase();
+            document.getElementById('avatarInitial').textContent = initial;
+            document.getElementById('dropdownAvatarInitial').textContent = initial;
+            const innerElem = document.getElementById('dropdownAvatarInitialInner');
+            if (innerElem) innerElem.textContent = initial;
+
+            const headers = {'Authorization': `Bearer ${token || ''}`};
+
+            async function fetchSafe(endpoint) {
+                try {
+                    const res = await fetch(endpoint, {headers});
+                    if (res.ok) return await res.json();
+                } catch (e) {
+                    console.error('Erro ao buscar dados de', endpoint, e);
+                }
+                return null;
+            }
+
+            // 1. Carrega dados do Professor
+            const [myTcsData, myLessonsData, myAssessmentsData, announcementsData] = await Promise.all([
+                fetchSafe('/api/teacher-class-subjects'),
+                fetchSafe('/api/lessons'),
+                fetchSafe('/api/assessments'),
+                fetchSafe('/api/announcements/for-teachers')
+            ]);
+
+            const myTcs = Array.isArray(myTcsData) ? myTcsData : [];
+            const myLessons = Array.isArray(myLessonsData) ? myLessonsData : [];
+            const myAssessments = Array.isArray(myAssessmentsData) ? myAssessmentsData : [];
+
+            // Contadores
+            const uniqueClasses = new Set(myTcs.map(t => t.classRoomId));
+            const uniqueSubjects = new Set(myTcs.map(t => t.subjectId));
+
+            document.getElementById('countClasses').textContent = uniqueClasses.size;
+            document.getElementById('countSubjects').textContent = uniqueSubjects.size;
+            document.getElementById('countLessons').textContent = myLessons.length;
+            document.getElementById('countAssessments').textContent = myAssessments.length;
+
+            // 2. Renderiza Cards de Turmas e Disciplinas
+            const myClassesContainer = document.getElementById('myClassesContainer');
+            if (myTcs.length > 0) {
+                myClassesContainer.innerHTML = myTcs.map(t => {
+                    return `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="class-card card h-100 p-3 shadow-none">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-label-primary fs-6 fw-bold">Turma ${t.classRoomName}</span>
+                                    <span class="badge bg-label-info">${t.subjectName}</span>
+                                </div>
+                                <div class="mb-3 text-muted small">
+                                    <div><i class="bx bx-calendar-star me-1 text-primary"></i> ${t.minAssessmentsPerPeriod || 1} a ${t.maxAssessmentsPerPeriod || 3} avaliações / período</div>
+                                </div>
+                                <div class="d-flex gap-2 mt-auto">
+                                    <a href="/teacher/lessons.html" class="btn btn-sm btn-outline-info flex-grow-1">
+                                        <i class="bx bx-book-reader me-1"></i> Aulas
+                                    </a>
+                                    <a href="/teacher/assessments.html" class="btn btn-sm btn-outline-success flex-grow-1">
+                                        <i class="bx bx-task me-1"></i> Notas
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                myClassesContainer.innerHTML = `
+                    <div class="col-12 text-center py-4 text-muted">
+                        <i class="bx bx-folder-open fs-1 text-secondary mb-2 d-block"></i>
+                        <h6 class="fw-bold mb-1">Nenhuma turma atribuída no ano letivo ativo</h6>
+                        <small>Quando a secretaria vincular você a uma turma e matéria, ela aparecerá aqui.</small>
+                    </div>
+                `;
+            }
+
+            // 3. Renderiza Gráfico de Aulas por Turma
+            const lessonsByClass = {};
+            myLessons.forEach(l => {
+                const name = l.classRoomName || (l.teacherClassSubject ? l.teacherClassSubject.classRoomName : 'Turma');
+                lessonsByClass[name] = (lessonsByClass[name] || 0) + 1;
+            });
+
+            const classLabels = Object.keys(lessonsByClass).length > 0 ? Object.keys(lessonsByClass) : ['Sem registros'];
+            const classSeries = Object.keys(lessonsByClass).length > 0 ? Object.values(lessonsByClass) : [0];
+
+            const teacherLessonsChartOptions = {
+                chart: {
+                    type: 'bar',
+                    height: 280,
+                    toolbar: { show: false }
+                },
+                series: [{
+                    name: 'Aulas Registradas',
+                    data: classSeries
+                }],
+                xaxis: {
+                    categories: classLabels,
+                    labels: { style: { fontSize: '11px' } }
+                },
+                colors: ['#03c3ec'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 6,
+                        columnWidth: '40%'
+                    }
+                },
+                dataLabels: { enabled: false },
+                yaxis: {
+                    labels: {
+                        formatter: (val) => Math.floor(val)
+                    }
+                }
+            };
+            new ApexCharts(document.querySelector("#chartTeacherLessons"), teacherLessonsChartOptions).render();
+
+            // 4. Últimas Aulas Registradas
+            const recentLessonsTable = document.getElementById('recentLessonsTable');
+            if (myLessons.length > 0) {
+                const sortedLessons = [...myLessons].sort((a, b) => b.id - a.id).slice(0, 5);
+                recentLessonsTable.innerHTML = sortedLessons.map(l => {
+                    const date = l.date ? new Date(l.date + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+                    const title = l.title || l.content || 'Aula ministrada';
+                    const count = l.lessonCount || 1;
+                    return `
+                        <tr>
+                            <td><small class="fw-semibold">${date}</small></td>
+                            <td><span class="text-truncate d-block" style="max-width: 250px;">${title}</span></td>
+                            <td><span class="badge bg-label-info">${count} aula(s)</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                recentLessonsTable.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Nenhuma aula registrada ainda no diário.</td></tr>';
+            }
+
+            // 5. Mural de Comunicados para Professores
+            const announcementsFeed = document.getElementById('teacherAnnouncementsFeed');
+            const announcementsList = Array.isArray(announcementsData) ? announcementsData : [];
+
+            if (announcementsList.length > 0) {
+                announcementsFeed.innerHTML = announcementsList.slice(0, 4).map(a => {
+                    const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('pt-BR') : '—';
+                    return `
+                        <div class="announcement-item p-3 rounded bg-light">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h6 class="mb-0 fw-bold text-dark">${a.title}</h6>
+                                <small class="text-muted">${date}</small>
+                            </div>
+                            <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${a.message || a.content || ''}</p>
+                            <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${a.authorName || 'Direção / Secretaria'}</small>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                announcementsFeed.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="bx bx-bell-off fs-2 mb-2 d-block"></i>
+                        Nenhum comunicado recente para a equipe docente.
+                    </div>
+                `;
             }
         });
     </script>
 </body>
 </html>
-

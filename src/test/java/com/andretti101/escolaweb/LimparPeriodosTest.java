@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,6 +9,7 @@ import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
+@Disabled("Manual utility test only")
 public class LimparPeriodosTest {
 
     @Autowired

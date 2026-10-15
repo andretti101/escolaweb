@@ -11,14 +11,23 @@
 -- CENÁRIO
 --   * 3 anos letivos: 2024 e 2025 ENCERRADOS (active = false e todos os
 --     períodos closed = true) e 2026 ATIVO (active = true).
---   * Período letivo: TRIMESTRE (3 períodos por ano).
---   * Em 2026 o 1º e o 2º trimestres estão encerrados e o 3º está em
---     andamento. A data de referência do seed é 06/10/2026: não existem
---     aulas nem notas posteriores a essa data.
---   * 30 alunos divididos em 3 coortes de 10. Cada coorte avança uma série
---     por ano (ex.: coorte A cursa 8º ano em 2024, 9º ano em 2025 e
---     1º ano do Ensino Médio em 2026).
---   * 8 professores (um por disciplina), 1 diretora e 1 secretário.
+--   * Período letivo: definido por divisão no ano letivo (academic_periods.period_type)
+--     e associado de forma imutável a cada turma (class_rooms.period_type).
+--     Divisões disponíveis no sistema: BIMESTER (4 partes), TRIMESTER (3 partes) e
+--     SEMESTER (2 partes).
+--   * O seed possui cenários reais multivariados:
+--     - Cada ano letivo (2024, 2025 e 2026) possui períodos cadastrados tanto para
+--       TRIMESTER quanto para BIMESTER.
+--     - Turmas divididas entre tipos de período: por exemplo, no ano ativo (2026),
+--       M1-A utiliza TRIMESTER e M2-A utiliza BIMESTER.
+--   * Em 2026:
+--     - Trimestres: 1º e 2º fechados, 3º em andamento.
+--     - Bimestres: 1º, 2º e 3º fechados, 4º em andamento.
+--     A data de referência do seed é 06/10/2026: não existem aulas nem notas posteriores a essa data.
+--   * 30 alunos matriculados divididos em 3 coortes de 10. Cada coorte avança
+--     uma série por ano (ex.: coorte A cursa 8º ano em 2024, 9º ano em 2025 e 1º ano do Ensino Médio em 2026).
+--   * 8 professores com disciplinas habilitadas (teacher_subjects — 1 ou mais matérias),
+--     1 diretora e 1 secretário.
 --
 -- ACESSO
 --   Senha de TODOS os usuários: senha123
@@ -27,7 +36,7 @@
 --   Logins de exemplo:
 --     Diretora   : direcao@example.com
 --     Secretário : secretaria@example.com
---     Professora : mariana.ribeiro@example.com  (Língua Portuguesa)
+--     Professora : mariana.ribeiro@example.com  (Língua Portuguesa e Inglês)
 --     Aluno      : lucas.almeida@example.com
 --
 -- OBSERVAÇÃO
@@ -50,7 +59,7 @@ BEGIN; -- tudo é executado em uma única transação: ou entra tudo, ou nada.
 TRUNCATE TABLE
     -- Histórico e dados acadêmicos (tabelas "folha", que dependem de outras)
     grade_history, grades, attendance_history, attendances,
-    lessons, assessments, teacher_class_subject, enrollments,
+    lessons, assessments, teacher_class_subject, teacher_subjects, enrollments,
     -- Avisos e chat
     announcement_classrooms, chat_hidden_messages, chat_read_receipts,
     chat_messages, chat_message_history, announcements,
@@ -67,37 +76,61 @@ RESTART IDENTITY CASCADE;
 -- =====================================================================
 -- 1. CONFIGURAÇÕES DA ESCOLA
 -- =====================================================================
--- Registro único com os parâmetros globais: frequência mínima exigida (%),
--- média mínima para aprovação e o tipo de período letivo (TRIMESTER).
-INSERT INTO school_settings (id, address, created_at, email, minimum_attendance, minimum_average, period_type, phone, school_name)
+-- Registro único com os parâmetros globais: frequência mínima exigida (%)
+-- e média mínima para aprovação (sem period_type global, pois a divisão
+-- agora pertence a academic_periods e class_rooms).
+INSERT INTO school_settings (id, address, created_at, email, minimum_attendance, minimum_average, phone, school_name)
 VALUES (1, 'Rua das Acácias, 120 - Centro - Criciúma/SC', '2024-01-15 09:00:00', 'contato@escolamodelo.example.com',
-        75.00, 6.0, 'TRIMESTER', '(48) 3433-0000', 'Escola Modelo EscolaWeb');
+        75.00, 6.0, '(48) 3433-0000', 'Escola Modelo EscolaWeb');
 
 -- =====================================================================
 -- 2. CALENDÁRIO LETIVO (anos e períodos)
 -- =====================================================================
--- Cada ano letivo guarda suas próprias regras (frequência mínima, nota
--- mínima e tipo de período). O campo "active" indica o ano em vigor:
--- apenas 2026 está ativo; 2024 e 2025 estão encerrados (active = false).
+-- Cada ano letivo guarda suas próprias regras (frequência mínima e nota
+-- mínima). O campo period_type em academic_years é mantido como legado/histórico.
+-- O campo "active" indica o ano em vigor: apenas 2026 está ativo; 2024 e 2025
+-- estão encerrados (active = false).
 INSERT INTO academic_years (id, active, created_at, end_date, start_date, year, minimum_attendance, minimum_grade, period_type) VALUES
  (1, false, '2024-01-15 09:00:00', '2024-12-13', '2024-02-05', 2024, 75.00, 6.00, 'TRIMESTER'),
  (2, false, '2025-01-15 09:00:00', '2025-12-12', '2025-02-10', 2025, 75.00, 6.00, 'TRIMESTER'),
  (3, true,  '2026-01-15 09:00:00', '2026-12-11', '2026-02-09', 2026, 75.00, 6.00, 'TRIMESTER');
 
--- Períodos (trimestres). "closed = true" significa período encerrado
--- (notas e frequências fechadas). Nos anos de 2024 e 2025 todos os
--- trimestres estão fechados. Em 2026: 1º e 2º fechados, 3º aberto
--- (em andamento na data de referência, 06/10/2026).
-INSERT INTO academic_periods (id, closed, created_at, end_date, name, start_date, academic_year_id) VALUES
- (1, true, '2024-01-15 09:00:00', '2024-05-10', '1º Trimestre', '2024-02-05', 1),
- (2, true, '2024-01-15 09:00:00', '2024-08-30', '2º Trimestre', '2024-05-13', 1),
- (3, true, '2024-01-15 09:00:00', '2024-12-13', '3º Trimestre', '2024-09-02', 1),
- (4, true, '2025-01-15 09:00:00', '2025-05-09', '1º Trimestre', '2025-02-10', 2),
- (5, true, '2025-01-15 09:00:00', '2025-08-29', '2º Trimestre', '2025-05-12', 2),
- (6, true, '2025-01-15 09:00:00', '2025-12-12', '3º Trimestre', '2025-09-01', 2),
- (7, true, '2026-01-15 09:00:00', '2026-05-08', '1º Trimestre', '2026-02-09', 3),
- (8, true, '2026-01-15 09:00:00', '2026-08-28', '2º Trimestre', '2026-05-11', 3),
- (9, false, '2026-01-15 09:00:00', '2026-12-11', '3º Trimestre', '2026-08-31', 3);
+-- Períodos acadêmicos com tipo de divisão (period_type: BIMESTER, TRIMESTER ou SEMESTER).
+-- "closed = true" significa período encerrado (notas e frequências fechadas).
+-- TRIMESTRES:
+--   2024 e 2025: todos os trimestres fechados.
+--   2026: 1º e 2º trimestres fechados, 3º aberto (em andamento na data de referência, 06/10/2026).
+-- BIMESTRES:
+--   2024 e 2025: todos os bimestres fechados.
+--   2026: 1º, 2º e 3º bimestres fechados, 4º aberto (em andamento na data de referência, 06/10/2026).
+INSERT INTO academic_periods (id, closed, created_at, end_date, name, period_type, start_date, academic_year_id) VALUES
+ -- 2024: Trimestres (IDs 1-3)
+ (1, true, '2024-01-15 09:00:00', '2024-05-10', '1º Trimestre', 'TRIMESTER', '2024-02-05', 1),
+ (2, true, '2024-01-15 09:00:00', '2024-08-30', '2º Trimestre', 'TRIMESTER', '2024-05-13', 1),
+ (3, true, '2024-01-15 09:00:00', '2024-12-13', '3º Trimestre', 'TRIMESTER', '2024-09-02', 1),
+ -- 2025: Trimestres (IDs 4-6)
+ (4, true, '2025-01-15 09:00:00', '2025-05-09', '1º Trimestre', 'TRIMESTER', '2025-02-10', 2),
+ (5, true, '2025-01-15 09:00:00', '2025-08-29', '2º Trimestre', 'TRIMESTER', '2025-05-12', 2),
+ (6, true, '2025-01-15 09:00:00', '2025-12-12', '3º Trimestre', 'TRIMESTER', '2025-09-01', 2),
+ -- 2026: Trimestres (IDs 7-9)
+ (7, true,  '2026-01-15 09:00:00', '2026-05-08', '1º Trimestre', 'TRIMESTER', '2026-02-09', 3),
+ (8, true,  '2026-01-15 09:00:00', '2026-08-28', '2º Trimestre', 'TRIMESTER', '2026-05-11', 3),
+ (9, false, '2026-01-15 09:00:00', '2026-10-14', '3º Trimestre', 'TRIMESTER', '2026-08-31', 3),
+ -- 2024: Bimestres (IDs 10-13)
+ (10, true, '2024-01-15 09:00:00', '2024-04-19', '1º Bimestre', 'BIMESTER', '2024-02-05', 1),
+ (11, true, '2024-01-15 09:00:00', '2024-06-28', '2º Bimestre', 'BIMESTER', '2024-04-22', 1),
+ (12, true, '2024-01-15 09:00:00', '2024-09-27', '3º Bimestre', 'BIMESTER', '2024-07-22', 1),
+ (13, true, '2024-01-15 09:00:00', '2024-12-13', '4º Bimestre', 'BIMESTER', '2024-09-30', 1),
+ -- 2025: Bimestres (IDs 14-17)
+ (14, true, '2025-01-15 09:00:00', '2025-04-18', '1º Bimestre', 'BIMESTER', '2025-02-10', 2),
+ (15, true, '2025-01-15 09:00:00', '2025-06-27', '2º Bimestre', 'BIMESTER', '2025-04-22', 2),
+ (16, true, '2025-01-15 09:00:00', '2025-09-26', '3º Bimestre', 'BIMESTER', '2025-07-21', 2),
+ (17, true, '2025-01-15 09:00:00', '2025-12-12', '4º Bimestre', 'BIMESTER', '2025-09-29', 2),
+ -- 2026: Bimestres (IDs 18-21)
+ (18, true,  '2026-01-15 09:00:00', '2026-04-17', '1º Bimestre', 'BIMESTER', '2026-02-09', 3),
+ (19, true,  '2026-01-15 09:00:00', '2026-06-26', '2º Bimestre', 'BIMESTER', '2026-04-20', 3),
+ (20, true,  '2026-01-15 09:00:00', '2026-09-25', '3º Bimestre', 'BIMESTER', '2026-07-20', 3),
+ (21, false, '2026-01-15 09:00:00', '2026-10-14', '4º Bimestre', 'BIMESTER', '2026-09-28', 3);
 
 -- =====================================================================
 -- 3. USUÁRIOS E PERFIS
@@ -148,12 +181,7 @@ INSERT INTO users (id, role, active, created_at, email, last_read_announcements,
  (37, 'STUDENT', true, '2024-01-20 10:00:00', 'henrique.moura@example.com', NULL, 'Henrique Tavares Moura', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
  (38, 'STUDENT', true, '2024-01-20 10:00:00', 'manuela.quintana@example.com', NULL, 'Manuela Bastos Quintana', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
  (39, 'STUDENT', true, '2024-01-20 10:00:00', 'daniel.cunha@example.com', NULL, 'Daniel Figueiredo Cunha', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
- (40, 'STUDENT', true, '2024-01-20 10:00:00', 'livia.torres@example.com', NULL, 'Lívia Magalhães Torres', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
- (41, 'STUDENT', true, '2026-01-20 10:00:00', 'andre.santana@example.com', NULL, 'André Luiz Santana', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00'),
- (42, 'STUDENT', true, '2026-01-20 10:00:00', 'bruna.melo@example.com', NULL, 'Bruna Rafaela Melo', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00'),
- (43, 'STUDENT', true, '2026-01-20 10:00:00', 'caio.peixoto@example.com', NULL, 'Caio Henrique Peixoto', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00'),
- (44, 'STUDENT', true, '2026-01-20 10:00:00', 'daniela.moraes@example.com', NULL, 'Daniela Cristina Moraes', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00'),
- (45, 'STUDENT', true, '2026-01-20 10:00:00', 'enzo.rezende@example.com', NULL, 'Enzo Gabriel Rezende', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2026-01-20 10:00:00');
+ (40, 'STUDENT', true, '2024-01-20 10:00:00', 'livia.torres@example.com', NULL, 'Lívia Magalhães Torres', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00');
 
 -- Perfis específicos (mesmo ID da tabela users).
 INSERT INTO principals (id) VALUES (1);
@@ -201,18 +229,12 @@ INSERT INTO students (id, birth_date, guardian_phone, is_chat_blocked, own_phone
  (37, '2009-11-21', '(48) 99569-4367', false, '(48) 98261-1629', '2024027'),
  (38, '2009-04-01', '(48) 99606-4458', false, '(48) 98314-1646', '2024028'),
  (39, '2009-09-08', '(48) 99643-4549', false, '(48) 98367-1663', '2024029'),
- (40, '2009-02-15', '(48) 99680-4640', false, '(48) 98420-1680', '2024030'),
- (41, '2010-03-12', '(48) 99701-4701', false, '(48) 98421-1701', '2026031'),
- (42, '2010-07-19', '(48) 99702-4702', false, '(48) 98422-1702', '2026032'),
- (43, '2010-11-05', '(48) 99703-4703', false, '(48) 98423-1703', '2026033'),
- (44, '2009-04-25', '(48) 99704-4704', false, '(48) 98424-1704', '2026034'),
- (45, '2009-09-14', '(48) 99705-4705', false, '(48) 98425-1705', '2026035');
+ (40, '2009-02-15', '(48) 99680-4640', false, '(48) 98420-1680', '2024030');
 
 -- =====================================================================
--- 4. DISCIPLINAS
+-- 4. DISCIPLINAS E HABILITAÇÃO DOS PROFESSORES (teacher_subjects)
 -- =====================================================================
--- 8 disciplinas, cada uma lecionada por um professor (professor = ID da
--- disciplina + 2, ex.: Língua Portuguesa -> professora de ID 3).
+-- 8 disciplinas cadastradas.
 INSERT INTO subjects (id, active, created_at, description, name, updated_at) VALUES
  (1, true, '2024-01-12 09:00:00', 'Leitura, interpretação, gramática e produção textual', 'Língua Portuguesa', '2024-01-12 09:00:00'),
  (2, true, '2024-01-12 09:00:00', 'Aritmética, álgebra, geometria e raciocínio lógico', 'Matemática', '2024-01-12 09:00:00'),
@@ -223,23 +245,49 @@ INSERT INTO subjects (id, active, created_at, description, name, updated_at) VAL
  (7, true, '2024-01-12 09:00:00', 'Práticas corporais, esportes e saúde', 'Educação Física', '2024-01-12 09:00:00'),
  (8, true, '2024-01-12 09:00:00', 'Artes visuais, música e expressão cultural', 'Artes', '2024-01-12 09:00:00');
 
+-- Vínculo entre professores e disciplinas habilitadas (teacher_subjects).
+-- Um professor pode ter uma ou mais disciplinas habilitadas no seu perfil:
+--   - Mariana (3)  : Língua Portuguesa (1) e Inglês (6)
+--   - Carlos (4)   : Matemática (2) e Ciências (5)
+--   - Patrícia (5) : História (3) e Geografia (4)
+--   - Roberto (6)  : Geografia (4) e História (3)
+--   - Fernanda (7) : Ciências (5)
+--   - Juliana (8)  : Inglês (6) e Artes (8)
+--   - Marcos (9)   : Educação Física (7)
+--   - Luciana (10) : Artes (8) e Língua Portuguesa (1)
+INSERT INTO teacher_subjects (teacher_id, subject_id) VALUES
+ (3, 1), (3, 6),
+ (4, 2), (4, 5),
+ (5, 3), (5, 4),
+ (6, 4), (6, 3),
+ (7, 5),
+ (8, 6), (8, 8),
+ (9, 7),
+ (10, 8), (10, 1);
+
 -- =====================================================================
 -- 5. TURMAS
 -- =====================================================================
+-- Cada turma possui série obrigatória (school_grade NOT NULL) e define seu
+-- próprio period_type (divisão letiva imutável: BIMESTER, TRIMESTER ou SEMESTER).
 -- 3 turmas por ano letivo (9 no total). Fórmula do ID: (ano-2024)*3 + coorte + 1
 --   IDs 1 a 3 = turmas de 2024 | 4 a 6 = turmas de 2025 | 7 a 9 = turmas de 2026.
 -- Cada coorte avança uma série por ano. A coorte C estuda à tarde.
 -- Turmas de anos encerrados ficam com active = false.
-INSERT INTO class_rooms (id, active, created_at, number, school_grade, shift, updated_at, academic_year_id) VALUES
- (1, false, '2024-01-20 09:00:00', 'F8-A', 'FUNDAMENTAL_8', 'MORNING', '2024-01-20 09:00:00', 1),
- (2, false, '2024-01-20 09:00:00', 'F9-A', 'FUNDAMENTAL_9', 'MORNING', '2024-01-20 09:00:00', 1),
- (3, false, '2024-01-20 09:00:00', 'M1-A', 'MEDIO_1', 'AFTERNOON', '2024-01-20 09:00:00', 1),
- (4, false, '2025-01-20 09:00:00', 'F9-A', 'FUNDAMENTAL_9', 'MORNING', '2025-01-20 09:00:00', 2),
- (5, false, '2025-01-20 09:00:00', 'M1-A', 'MEDIO_1', 'MORNING', '2025-01-20 09:00:00', 2),
- (6, false, '2025-01-20 09:00:00', 'M2-A', 'MEDIO_2', 'AFTERNOON', '2025-01-20 09:00:00', 2),
- (7, true, '2026-01-20 09:00:00', 'M1-A', 'MEDIO_1', 'MORNING', '2026-01-20 09:00:00', 3),
- (8, true, '2026-01-20 09:00:00', 'M2-A', 'MEDIO_2', 'MORNING', '2026-01-20 09:00:00', 3),
- (9, true, '2026-01-20 09:00:00', 'M3-A', 'MEDIO_3', 'AFTERNOON', '2026-01-20 09:00:00', 3);
+-- Divisões no seed:
+--   - Coorte A (IDs 1, 4, 7): TRIMESTER (Lucas Almeida e coorte A)
+--   - Coorte B (IDs 2, 5, 8): BIMESTER (Guilherme Freitas e coorte B)
+--   - Coorte C (IDs 3, 6, 9): TRIMESTER (Bruno Matos e coorte C)
+INSERT INTO class_rooms (id, active, created_at, number, period_type, school_grade, shift, updated_at, academic_year_id) VALUES
+ (1, false, '2024-01-20 09:00:00', 'F8-A', 'TRIMESTER', 'FUNDAMENTAL_8', 'MORNING',   '2024-01-20 09:00:00', 1),
+ (2, false, '2024-01-20 09:00:00', 'F9-A', 'BIMESTER',  'FUNDAMENTAL_9', 'MORNING',   '2024-01-20 09:00:00', 1),
+ (3, false, '2024-01-20 09:00:00', 'M1-A', 'TRIMESTER', 'MEDIO_1',        'AFTERNOON', '2024-01-20 09:00:00', 1),
+ (4, false, '2025-01-20 09:00:00', 'F9-A', 'TRIMESTER', 'FUNDAMENTAL_9', 'MORNING',   '2025-01-20 09:00:00', 2),
+ (5, false, '2025-01-20 09:00:00', 'M1-A', 'BIMESTER',  'MEDIO_1',        'MORNING',   '2025-01-20 09:00:00', 2),
+ (6, false, '2025-01-20 09:00:00', 'M2-A', 'TRIMESTER', 'MEDIO_2',        'AFTERNOON', '2025-01-20 09:00:00', 2),
+ (7, true,  '2026-01-20 09:00:00', 'M1-A', 'TRIMESTER', 'MEDIO_1',        'MORNING',   '2026-01-20 09:00:00', 3),
+ (8, true,  '2026-01-20 09:00:00', 'M2-A', 'BIMESTER',  'MEDIO_2',        'MORNING',   '2026-01-20 09:00:00', 3),
+ (9, true,  '2026-01-20 09:00:00', 'M3-A', 'TRIMESTER', 'MEDIO_3',        'AFTERNOON', '2026-01-20 09:00:00', 3);
 
 -- =====================================================================
 -- 6. MATRÍCULAS
@@ -247,7 +295,6 @@ INSERT INTO class_rooms (id, active, created_at, number, school_grade, shift, up
 -- Cada aluno (IDs 11 a 40) é matriculado, em cada ano, na turma da sua coorte:
 --   coorte = (id_do_aluno - 11) / 10   (divisão inteira: 0, 1 ou 2)
 --   id_da_turma = (índice do ano) * 3 + coorte + 1
--- Os alunos 41 a 45 permanecem sem matrícula ativa para testes de matrícula.
 -- Situação geral: APPROVED nos anos encerrados e PENDING em 2026 (o ano
 -- ainda não terminou). Matrículas de anos encerrados ficam inativas.
 INSERT INTO enrollments (active, created_at, enrollment_date, general_situation, class_room_id, student_id)
@@ -379,7 +426,7 @@ SELECT
 FROM teacher_class_subject t
 JOIN class_rooms c ON c.id = t.class_room_id
 JOIN subjects sb ON sb.id = t.subject_id
-JOIN academic_periods p ON p.academic_year_id = c.academic_year_id
+JOIN academic_periods p ON p.academic_year_id = c.academic_year_id AND p.period_type = c.period_type
 CROSS JOIN generate_series(0, 5) AS n(i)                 -- n.i = número da aula no trimestre (0 a 5)
 CROSS JOIN LATERAL (SELECT p.start_date + (n.i * 14) + ((t.subject_id - 1) % 5) AS d) x  -- x.d = data da aula
 WHERE x.d <= p.end_date AND x.d <= DATE '2026-10-06'
@@ -468,47 +515,47 @@ SELECT k.typ,
                    ELSE 'Visto do caderno pedagógico, anotações de aula e resolução de listas semanais'
                END
        END,
-       CASE k.n
-           WHEN 1 THEN 
-               CASE sb.id
-                   WHEN 1 THEN 'Prova Bimestral de Língua Portuguesa (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                   WHEN 2 THEN 'Avaliação de Matemática: Álgebra e Geometria (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                   WHEN 3 THEN 'Prova de História: Sociedade e Transformações (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                   WHEN 4 THEN 'Avaliação de Geografia: Espaço e Dinâmica (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                   WHEN 5 THEN 'Prova Trimestral de Ciências Naturais (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                   WHEN 6 THEN 'English Written Assessment: Unit Progress (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                   WHEN 7 THEN 'Avaliação Teórica de Educação Física (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                   WHEN 8 THEN 'Avaliação de História da Arte e Expressão (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                   ELSE 'Prova Escrita do ' || ((p.id - 1) % 3 + 1) || 'º Trimestre'
-               END
-           ELSE 
-               CASE 
-                   WHEN k.typ = 'ASSIGNMENT' THEN 
-                       CASE sb.id
-                           WHEN 1 THEN 'Redação e Seminário de Literatura (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                           WHEN 2 THEN 'Projeto Prático de Estatística e Resolução de Problemas (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                           WHEN 3 THEN 'Pesquisa Documental e Apresentação em Grupo (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                           WHEN 4 THEN 'Estudo de Caso Socioambiental (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                           WHEN 5 THEN 'Relatório Investigativo de Laboratório (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                           WHEN 6 THEN 'Speaking Project & Cultural Essay (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                           WHEN 7 THEN 'Avaliação Prática de Habilidades Esportivas (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                           WHEN 8 THEN 'Painel Artístico e Portfólio de Criação (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-                           ELSE 'Trabalho Prático do ' || ((p.id - 1) % 3 + 1) || 'º Trimestre'
-                       END
-                   ELSE 'Acompanhamento de Caderno e Listas (' || ((p.id - 1) % 3 + 1) || 'º Tri)'
-               END
-       END,
-       p.start_date::timestamp + interval '7 days',
-       p.id,
-       t.id,
-       true
+        CASE k.n
+            WHEN 1 THEN 
+                CASE sb.id
+                    WHEN 1 THEN 'Prova de Língua Portuguesa (' || p.name || ')'
+                    WHEN 2 THEN 'Avaliação de Matemática: Álgebra e Geometria (' || p.name || ')'
+                    WHEN 3 THEN 'Prova de História: Sociedade e Transformações (' || p.name || ')'
+                    WHEN 4 THEN 'Avaliação de Geografia: Espaço e Dinâmica (' || p.name || ')'
+                    WHEN 5 THEN 'Prova de Ciências Naturais (' || p.name || ')'
+                    WHEN 6 THEN 'English Written Assessment: Unit Progress (' || p.name || ')'
+                    WHEN 7 THEN 'Avaliação Teórica de Educação Física (' || p.name || ')'
+                    WHEN 8 THEN 'Avaliação de História da Arte e Expressão (' || p.name || ')'
+                    ELSE 'Prova Escrita (' || p.name || ')'
+                END
+            ELSE 
+                CASE 
+                    WHEN k.typ = 'ASSIGNMENT' THEN 
+                        CASE sb.id
+                            WHEN 1 THEN 'Redação e Seminário de Literatura (' || p.name || ')'
+                            WHEN 2 THEN 'Projeto Prático de Estatística e Resolução de Problemas (' || p.name || ')'
+                            WHEN 3 THEN 'Pesquisa Documental e Apresentação em Grupo (' || p.name || ')'
+                            WHEN 4 THEN 'Estudo de Caso Socioambiental (' || p.name || ')'
+                            WHEN 5 THEN 'Relatório Investigativo de Laboratório (' || p.name || ')'
+                            WHEN 6 THEN 'Speaking Project & Cultural Essay (' || p.name || ')'
+                            WHEN 7 THEN 'Avaliação Prática de Habilidades Esportivas (' || p.name || ')'
+                            WHEN 8 THEN 'Painel Artístico e Portfólio de Criação (' || p.name || ')'
+                            ELSE 'Trabalho Prático (' || p.name || ')'
+                        END
+                    ELSE 'Acompanhamento de Caderno e Listas (' || p.name || ')'
+                END
+        END,
+        p.start_date::timestamp + interval '7 days',
+        p.id,
+        t.id,
+        true
 FROM teacher_class_subject t
 JOIN class_rooms c ON c.id = t.class_room_id
 JOIN subjects sb ON sb.id = t.subject_id
-JOIN academic_periods p ON p.academic_year_id = c.academic_year_id
+JOIN academic_periods p ON p.academic_year_id = c.academic_year_id AND p.period_type = c.period_type
 CROSS JOIN LATERAL (
-    VALUES (1, 'EXAM', 28),
-           (2, CASE WHEN ((p.id - 1) % 3 + 1) % 2 = 1 THEN 'ASSIGNMENT' ELSE 'NOTEBOOK' END, 63)
+    VALUES (1, 'EXAM', CASE WHEN p.id = 21 THEN 2 ELSE 28 END),
+           (2, CASE WHEN (p.id % 2 = 1) THEN 'ASSIGNMENT' ELSE 'NOTEBOOK' END, 63)
 ) AS k(n, typ, off)
 ORDER BY t.id, p.id, k.n;
 
@@ -538,6 +585,7 @@ SELECT (a.assessment_date + 1)::timestamp + interval '10 hours',
        e.student_id,
        true
 FROM assessments a
+JOIN academic_periods ap ON ap.id = a.period_id
 JOIN teacher_class_subject t ON t.id = a.teacher_class_subject_id
 JOIN class_rooms c ON c.id = t.class_room_id
 JOIN academic_years ay ON ay.id = c.academic_year_id
@@ -550,31 +598,31 @@ CROSS JOIN LATERAL (
           6.0 + ((e.student_id * 31 + a.id * 17) % 35) / 10.0
 
         -- 2026: Ano ativo em andamento
-        -- 1. Matematicamente Aprovados no 2º Trimestre (Soma Tri1 + Tri2 >= 18.0)
+        -- 1. Matematicamente Aprovados nos períodos fechados
         WHEN e.student_id IN (11, 12, 13, 21, 22, 23, 31, 32, 33) THEN
           9.0 + ((e.student_id * 13 + a.id * 7) % 11) / 10.0
 
-        -- 2. Matematicamente Reprovados no 2º Trimestre por NOTA (Soma Tri1 + Tri2 < 8.0)
+        -- 2. Matematicamente Reprovados nos períodos fechados por NOTA
         WHEN e.student_id IN (17, 27, 37, 38) THEN
           2.5 + ((e.student_id * 11 + a.id * 5) % 11) / 10.0
 
-        -- 3. Reprovados no 3º Trimestre por NOTA (Tri1/Tri2 medianos ~5.0, Tri3 baixo ~3.5)
+        -- 3. Reprovados no período atual por NOTA (períodos fechados medianos ~5.0, atual baixo ~3.5)
         WHEN e.student_id IN (18, 28, 39) THEN
           CASE 
-            WHEN ((a.period_id - 1) % 3 + 1) IN (1, 2) THEN
+            WHEN ap.closed THEN
               4.8 + ((e.student_id * 7 + a.id * 3) % 9) / 10.0
             ELSE
               3.0 + ((e.student_id * 7 + a.id * 3) % 11) / 10.0
           END
 
-        -- 4. Reprovados no 3º Trimestre por FALTA (Notas boas ~7.5, frequência insuficiente)
+        -- 4. Reprovados no período atual por FALTA (Notas boas ~7.5, frequência insuficiente)
         WHEN e.student_id IN (19, 29, 40) THEN
           7.0 + ((e.student_id * 17 + a.id * 11) % 15) / 10.0
 
-        -- 5. Aprovados no 3º Trimestre (Tri1/Tri2 regulares ~6.8, Tri3 garantindo aprovação ~8.0)
+        -- 5. Aprovados no período atual (períodos fechados regulares ~6.8, atual garantindo aprovação ~8.0)
         ELSE
           CASE 
-            WHEN ((a.period_id - 1) % 3 + 1) IN (1, 2) THEN
+            WHEN ap.closed THEN
               6.4 + ((e.student_id * 23 + a.id * 13) % 12) / 10.0
             ELSE
               8.0 + ((e.student_id * 23 + a.id * 13) % 15) / 10.0

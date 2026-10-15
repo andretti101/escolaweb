@@ -132,12 +132,13 @@
                                         <th>Matrícula</th>
                                         <th>Turma</th>
                                         <th>Grau</th>
+                                        <th>Divisão</th>
                                         <th class="text-center">Situação Geral</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentsTableBody">
                                     <tr>
-                                        <td colspan="4" class="text-center py-5 text-muted">
+                                        <td colspan="6" class="text-center py-5 text-muted">
                                             <i class="bx bx-loader-alt bx-spin" style="font-size: 2rem;"></i>
                                             <p class="mt-2 mb-0">Carregando resultados...</p>
                                         </td>
@@ -160,8 +161,9 @@
                                             <option value="">Selecione uma turma...</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6 d-flex align-items-end">
+                                    <div class="col-md-6 d-flex align-items-end gap-2">
                                         <span id="classGradeBadge" class="badge bg-primary fs-6 mb-1" style="display:none;"></span>
+                                        <span id="classPeriodTypeBadge" class="badge bg-label-primary fs-6 mb-1" style="display:none;"></span>
                                     </div>
                                 </div>
                                 
@@ -256,6 +258,16 @@
     let allEnrollments = [];
     let currentFilter = 'ALL';
     let allYears = [];
+
+    const periodTypeMap = {
+        'BIMESTER': 'Bimestre',
+        'TRIMESTER': 'Trimestre',
+        'SEMESTER': 'Semestre'
+    };
+
+    function formatPeriodType(periodTypeLabel, periodType) {
+        return periodTypeLabel || periodTypeMap[periodType] || periodType || '-';
+    }
 
     // ══════════════════════════════════════════════════════════════
     // CARREGAMENTO INICIAL
@@ -380,7 +392,7 @@
         if (filtered.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center py-5 text-muted">
+                    <td colspan="6" class="text-center py-5 text-muted">
                         <i class="bx bx-search-alt" style="font-size: 2rem;"></i>
                         <p class="mt-2 mb-0">Nenhum aluno encontrado.</p>
                     </td>
@@ -394,6 +406,7 @@
             if(gradeText.startsWith('PRE_')) gradeText = gradeText.replace('PRE_', 'Pré-Escola ');
             if(gradeText.startsWith('FUNDAMENTAL_')) gradeText = gradeText.replace('FUNDAMENTAL_', '') + 'º Ano Fundamental';
             if(gradeText.startsWith('MEDIO_')) gradeText = gradeText.replace('MEDIO_', '') + 'º Ano Médio';
+            const periodLabel = formatPeriodType(e.periodTypeLabel, e.periodType);
             
             return `
             <tr class="student-row">
@@ -410,6 +423,7 @@
                 <td><code>${e.studentRegistrationNumber || '—'}</code></td>
                 <td>${e.classRoomName || '—'}</td>
                 <td>${gradeText}</td>
+                <td><span class="badge bg-label-primary">${escapeHtml(periodLabel)}</span></td>
                 <td class="text-center">
                     <span class="badge bg-label-${getSituationColor(e.generalSituation)} rounded-pill">
                         ${getSituationIcon(e.generalSituation)} ${getSituationLabel(e.generalSituation)}
@@ -484,6 +498,7 @@
         const classSelect = document.getElementById('classSelect');
         document.getElementById('classHistoryContent').style.display = 'none';
         document.getElementById('classGradeBadge').style.display = 'none';
+        document.getElementById('classPeriodTypeBadge').style.display = 'none';
         document.getElementById('classHistoryEmpty').style.display = 'block';
         
         const targetYearObj = allYears.find(y => y.year == yearValue);
@@ -496,7 +511,7 @@
             if (res.ok) {
                 const classes = await res.json();
                 classSelect.innerHTML = '<option value="">Selecione uma turma...</option>' + 
-                    classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                    classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(formatPeriodType(c.periodTypeLabel, c.periodType))})</option>`).join('');
             }
         } catch(e) {
             console.error(e);
@@ -508,11 +523,13 @@
         const contentDiv = document.getElementById('classHistoryContent');
         const emptyDiv = document.getElementById('classHistoryEmpty');
         const badge = document.getElementById('classGradeBadge');
+        const periodBadge = document.getElementById('classPeriodTypeBadge');
         
         if (!classId) {
             contentDiv.style.display = 'none';
             emptyDiv.style.display = 'block';
             badge.style.display = 'none';
+            periodBadge.style.display = 'none';
             return;
         }
 
@@ -528,12 +545,14 @@
                 const subjects = await tcsRes.json();
                 const students = await enrRes.json();
                 
-                let gradeText = classroom.schoolGrade || '';
+                let gradeText = classroom.schoolGradeLabel || classroom.schoolGrade || '';
                 if(gradeText.startsWith('PRE_')) gradeText = gradeText.replace('PRE_', 'Pré-Escola ');
                 if(gradeText.startsWith('FUNDAMENTAL_')) gradeText = gradeText.replace('FUNDAMENTAL_', '') + 'º Ano Fundamental';
                 if(gradeText.startsWith('MEDIO_')) gradeText = gradeText.replace('MEDIO_', '') + 'º Ano Médio';
                 
                 badge.textContent = gradeText;
+                const periodLabel = formatPeriodType(classroom.periodTypeLabel, classroom.periodType);
+                periodBadge.textContent = periodLabel !== '-' ? periodLabel : '';
 
                 const tcsTable = document.getElementById('historySubjectsTable');
                 if (subjects.length === 0) {
@@ -563,7 +582,8 @@
 
                 contentDiv.style.display = 'block';
                 emptyDiv.style.display = 'none';
-                badge.style.display = 'inline-block';
+                badge.style.display = gradeText ? 'inline-block' : 'none';
+                periodBadge.style.display = periodLabel !== '-' ? 'inline-block' : 'none';
             }
         } catch(e) {
             console.error(e);

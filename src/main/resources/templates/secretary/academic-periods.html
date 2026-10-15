@@ -23,7 +23,7 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
-<script src="/js/global-modals.js"></script>
+    <script src="/js/global-modals.js"></script>
 </head>
 <body>
 <div class="layout-wrapper layout-content-navbar">
@@ -50,73 +50,64 @@
             <div class="content-wrapper">
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Períodos Acadêmicos /</span> Listagem
-                        </h4>
+                        <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Períodos Acadêmicos /</span> Listagem</h4>
                     </div>
 
-                    <div class="card">
-                        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-                            <h5 class="mb-0">Períodos Cadastrados</h5>
-
-                            <div class="d-flex align-items-center gap-3">
-                                <select id="yearFilter" class="form-select form-select-sm w-auto">
-                                    <option value="">Todos os Anos</option>
+                    <!-- Filtros -->
+                    <div class="card mb-4">
+                        <div class="card-body py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="yearFilter" class="form-label mb-0 fw-semibold">Ano Letivo:</label>
+                                <select id="yearFilter" class="form-select form-select-sm w-auto" style="min-width: 200px;">
+                                    <option value="" disabled selected>Carregando anos...</option>
                                 </select>
+                            </div>
 
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-semibold text-muted small">Status:</span>
                                 <div class="btn-group" role="group">
-                                    <input type="radio" class="btn-check" name="statusFilter" id="filterOpen"
-                                           value="open"/>
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterOpen" value="open"/>
                                     <label class="btn btn-outline-success btn-sm" for="filterOpen">Abertos</label>
-
-                                    <input type="radio" class="btn-check" name="statusFilter" id="filterClosed"
-                                           value="closed"/>
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterClosed" value="closed"/>
                                     <label class="btn btn-outline-secondary btn-sm" for="filterClosed">Fechados</label>
-
-                                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all"
-                                           checked/>
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all" checked/>
                                     <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
                                 </div>
                             </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                <tr>
-                                    <th>Nome do Período</th>
-                                    <th>Ano</th>
-                                    <th>Início</th>
-                                    <th>Término</th>
-                                    <th>Status</th>
-                                </tr>
-                                </thead>
-                                <tbody id="periodsTableBody"></tbody>
-                            </table>
-                            <div id="loadingState" class="text-center py-5">
-                                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span>
-                                </div>
-                                <p class="mt-2 text-muted">Carregando períodos acadêmicos...</p>
-                            </div>
-                            <div id="emptyState" class="text-center py-5 d-none">
-                                <i class="bx bx-time-five fs-1 text-muted"></i>
-                                <p class="mt-2 text-muted mb-0">Nenhum período acadêmico encontrado.</p>
-                            </div>
-                            <div id="errorState" class="text-center py-5 d-none">
-                                <i class="bx bx-error-circle fs-1 text-danger"></i>
-                                <p class="mt-2 text-muted mb-0" id="errorMessage">Não foi possível carregar os períodos acadêmicos.</p>
-                                <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadPeriods()"><i
-                                        class="bx bx-refresh me-1"></i> Tentar novamente
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-footer"><small class="text-muted" id="recordCount"></small></div>
                     </div>
+
+                    <!-- Estados de Carregamento e Vazio -->
+                    <div id="loadingState" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div>
+                        <p class="mt-2 text-muted">Carregando períodos acadêmicos...</p>
+                    </div>
+
+                    <div id="emptyState" class="card text-center py-5 d-none">
+                        <div class="card-body">
+                            <i class="bx bx-calendar-event fs-1 text-muted"></i>
+                            <h5 class="mt-3">Nenhuma divisão encontrada</h5>
+                            <p class="text-muted mb-0">Não há períodos cadastrados para os filtros selecionados.</p>
+                        </div>
+                    </div>
+
+                    <div id="errorState" class="text-center py-5 d-none">
+                        <i class="bx bx-error-circle fs-1 text-danger"></i>
+                        <p class="mt-2 text-muted mb-0" id="errorMessage">Não foi possível carregar os períodos acadêmicos.</p>
+                        <button class="btn btn-outline-primary btn-sm mt-3" onclick="loadDivisions()">
+                            <i class="bx bx-refresh me-1"></i> Tentar novamente
+                        </button>
+                    </div>
+
+                    <!-- Divisões agrupadas -->
+                    <div id="divisionsContainer" class="d-flex flex-column gap-4"></div>
                 </div>
 
                 <footer class="content-footer footer bg-footer-theme">
                     <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">
-                                Copyright © 2026 EscolaWEB. Todos os direitos reservados.
-                            </div>
+                            Copyright © 2026 EscolaWEB. Todos os direitos reservados.
+                        </div>
                     </div>
                 </footer>
                 <div class="content-backdrop fade"></div>
@@ -135,11 +126,10 @@
 <script src="/js/load-sidebar.js"></script>
 
 <script>
-    let allPeriods = [];
-    let allYears = [];
+    let allDivisions = [];
     let searchTerm = '';
     let statusFilter = 'all';
-    let yearFilter = '';
+    let selectedYearId = null;
 
     function getToken() {
         return localStorage.getItem('jwt_token') || '';
@@ -171,57 +161,72 @@
             const response = await fetch('/api/academic-years', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
+            if (response.status === 401 || response.status === 403) return handleUnauthorized();
             if (response.ok) {
-                allYears = await response.json();
-                allYears.sort((a, b) => b.year - a.year);
+                const years = await response.json();
+                years.sort((a, b) => b.year - a.year);
                 const yearSelect = document.getElementById('yearFilter');
-                allYears.forEach(y => {
+                yearSelect.innerHTML = '';
+                let defaultYearId = null;
+                years.forEach(y => {
                     const opt = document.createElement('option');
                     opt.value = y.id;
-                    opt.textContent = y.year;
+                    opt.textContent = y.active ? `${y.year} (Ativo)` : `${y.year}`;
+                    if (y.active) {
+                        opt.selected = true;
+                        defaultYearId = y.id;
+                    }
                     yearSelect.appendChild(opt);
                 });
+                if (!defaultYearId && years.length > 0) {
+                    defaultYearId = years[0].id;
+                }
+                selectedYearId = defaultYearId;
             }
         } catch (e) {
             console.error('Erro ao carregar filtro de anos', e);
         }
     }
 
-    async function loadPeriods() {
-        const tableBody = document.getElementById('periodsTableBody');
+    async function loadDivisions() {
+        if (!selectedYearId) return;
+
+        const container = document.getElementById('divisionsContainer');
         const loadingState = document.getElementById('loadingState');
         const emptyState = document.getElementById('emptyState');
         const errorState = document.getElementById('errorState');
-        tableBody.innerHTML = '';
+
+        container.innerHTML = '';
         loadingState.classList.remove('d-none');
         emptyState.classList.add('d-none');
         errorState.classList.add('d-none');
 
         try {
-            const response = await fetch('/api/academic-periods', {
+            const response = await fetch(`/api/academic-periods/divisions?yearId=${selectedYearId}`, {
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
-            if (!response.ok) throw new Error('Não foi possível carregar os períodos acadêmicos.');
-            allPeriods = await response.json();
+            if (!response.ok) throw new Error('Não foi possível carregar as divisões.');
+            allDivisions = await response.json();
 
-            // Computed Status
-            const sortedAsc = [...allPeriods].sort((a, b) => a.id - b.id);
-            const yearOpenFound = {};
-            sortedAsc.forEach(p => {
-                if (p.closed) {
-                    p.computedStatus = 'fechado';
-                } else {
-                    if (!yearOpenFound[p.academicYearId]) {
+            // Computed status
+            allDivisions.forEach(div => {
+                const sorted = [...(div.periods || [])].sort((a, b) => a.id - b.id);
+                let openFound = false;
+                sorted.forEach(p => {
+                    if (p.closed) {
+                        p.computedStatus = 'fechado';
+                    } else if (!openFound) {
                         p.computedStatus = 'aberto';
-                        yearOpenFound[p.academicYearId] = true;
+                        openFound = true;
                     } else {
                         p.computedStatus = 'pendente';
                     }
-                }
+                });
+                div.periods = sorted;
             });
 
-            applyFilters();
+            renderDivisions();
         } catch (error) {
             console.error(error);
             loadingState.classList.add('d-none');
@@ -229,65 +234,107 @@
         }
     }
 
-    function applyFilters() {
-        let filtered = allPeriods;
-
-        if (statusFilter === 'open') filtered = filtered.filter(p => !p.closed);
-        else if (statusFilter === 'closed') filtered = filtered.filter(p => p.closed);
-
-        if (yearFilter) filtered = filtered.filter(p => String(p.academicYearId) === String(yearFilter));
-
-        if (searchTerm.trim()) {
-            const term = searchTerm.trim().toLowerCase();
-            filtered = filtered.filter(p => p.name.toLowerCase().includes(term));
-        }
-
-        filtered.sort((a, b) => {
-            const yearA = parseInt(a.academicYear) || 0;
-            const yearB = parseInt(b.academicYear) || 0;
-            if (yearB !== yearA) return yearB - yearA;
-            return b.id - a.id;
-        });
-
-        renderTable(filtered);
-    }
-
-    function renderTable(periods) {
-        const tableBody = document.getElementById('periodsTableBody');
+    function renderDivisions() {
+        const container = document.getElementById('divisionsContainer');
         const loadingState = document.getElementById('loadingState');
         const emptyState = document.getElementById('emptyState');
-        const recordCount = document.getElementById('recordCount');
-        loadingState.classList.add('d-none');
 
-        if (periods.length === 0) {
-            tableBody.innerHTML = '';
+        loadingState.classList.add('d-none');
+        container.innerHTML = '';
+
+        if (!allDivisions || allDivisions.length === 0) {
             emptyState.classList.remove('d-none');
-            recordCount.textContent = '0 registros';
             return;
         }
         emptyState.classList.add('d-none');
-        recordCount.textContent = `${periods.length} período${periods.length !== 1 ? 's' : ''} listado${periods.length !== 1 ? 's' : ''}`;
 
-        tableBody.innerHTML = periods.map(p => {
-            let statusBadge = '';
-            if (p.computedStatus === 'fechado') {
-                statusBadge = '<span class="badge bg-label-secondary"><i class="bx bx-lock-alt me-1"></i> Fechado</span>';
-            } else if (p.computedStatus === 'aberto') {
-                statusBadge = '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i> Aberto</span>';
-            } else {
-                statusBadge = '<span class="badge bg-label-warning"><i class="bx bx-time me-1"></i> Pendente</span>';
+        allDivisions.forEach(div => {
+            let filteredPeriods = div.periods || [];
+
+            if (statusFilter === 'open') {
+                filteredPeriods = filteredPeriods.filter(p => !p.closed);
+            } else if (statusFilter === 'closed') {
+                filteredPeriods = filteredPeriods.filter(p => p.closed);
             }
 
-            return `
-                    <tr class="${p.closed ? 'table-light text-muted' : ''}">
-                        <td class="fw-semibold">${escapeHtml(p.name)}</td>
-                        <td>${escapeHtml(String(p.academicYear))}</td>
-                        <td>${formatDate(p.startDate)}</td>
-                        <td>${formatDate(p.endDate)}</td>
-                        <td>${statusBadge}</td>
-                    </tr>
-                `;
-        }).join('');
+            if (searchTerm.trim()) {
+                const term = searchTerm.toLowerCase().trim();
+                filteredPeriods = filteredPeriods.filter(p => p.name && p.name.toLowerCase().includes(term));
+            }
+
+            const divCard = document.createElement('div');
+            divCard.className = 'card';
+
+            const activeClassBadge = div.hasActiveClasses
+                ? '<span class="badge bg-label-info"><i class="bx bx-check-circle me-1"></i>Turmas ativas</span>'
+                : '<span class="badge bg-label-secondary"><i class="bx bx-info-circle me-1"></i>Sem turmas ativas</span>';
+
+            divCard.innerHTML = `
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avatar avatar-sm bg-label-primary rounded p-2 d-flex align-items-center justify-content-center">
+                            <i class="bx bx-calendar fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0 fw-bold">${escapeHtml(div.label)}</h5>
+                            <small class="text-muted">${div.periodsCount} períodos na divisão</small>
+                        </div>
+                        ${activeClassBadge}
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nome do Período</th>
+                                <th>Início</th>
+                                <th>Término</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredPeriods.length === 0 ? `
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        Nenhum período encontrado para os filtros selecionados nesta divisão.
+                                    </td>
+                                </tr>
+                            ` : filteredPeriods.map(p => {
+                                let statusBadge = '';
+                                let avatarClass = '';
+                                if (p.computedStatus === 'fechado') {
+                                    statusBadge = '<span class="badge bg-label-danger"><i class="bx bx-lock-alt me-1"></i>Fechado</span>';
+                                    avatarClass = 'bg-label-danger';
+                                } else if (p.computedStatus === 'aberto') {
+                                    statusBadge = '<span class="badge bg-label-success"><i class="bx bx-lock-open-alt me-1"></i>Aberto</span>';
+                                    avatarClass = 'bg-label-success';
+                                } else {
+                                    statusBadge = '<span class="badge bg-label-warning"><i class="bx bx-time me-1"></i>Pendente</span>';
+                                    avatarClass = 'bg-label-warning';
+                                }
+
+                                return `
+                                    <tr class="${p.closed ? 'opacity-75 bg-lighter' : ''}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar avatar-sm me-3">
+                                                    <span class="avatar-initial rounded-circle ${avatarClass}"><i class="bx bx-time-five"></i></span>
+                                                </div>
+                                                <span class="fw-semibold text-heading">${escapeHtml(p.name)}</span>
+                                            </div>
+                                        </td>
+                                        <td>${formatDate(p.startDate)}</td>
+                                        <td>${formatDate(p.endDate)}</td>
+                                        <td>${statusBadge}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            container.appendChild(divCard);
+        });
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -296,21 +343,22 @@
         document.querySelectorAll('input[name="statusFilter"]').forEach(r => {
             r.addEventListener('change', e => {
                 statusFilter = e.target.value;
-                applyFilters();
+                renderDivisions();
             });
         });
+
         document.getElementById('yearFilter').addEventListener('change', e => {
-            yearFilter = e.target.value;
-            applyFilters();
-        });
-        document.getElementById('globalSearch').addEventListener('input', e => {
-            searchTerm = e.target.value;
-            applyFilters();
+            selectedYearId = e.target.value;
+            loadDivisions();
         });
 
-        loadPeriods();
+        document.getElementById('globalSearch').addEventListener('input', e => {
+            searchTerm = e.target.value;
+            renderDivisions();
+        });
+
+        loadDivisions();
     });
 </script>
 </body>
 </html>
-

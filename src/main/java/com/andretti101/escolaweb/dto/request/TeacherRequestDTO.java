@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
 public record TeacherRequestDTO(
 
         @NotBlank(message = "O nome é obrigatório.")
@@ -17,6 +19,12 @@ public record TeacherRequestDTO(
 
         @NotBlank(message = "A senha é obrigatória.")
         @Size(min = 8, max = 255, message = "A senha deve ter entre 8 e 255 caracteres.")
-        String password
+        String password,
 
-) {}
+        List<Integer> subjectIds
+
+) {
+    public TeacherRequestDTO(String name, String email, String password) {
+        this(name, email, password, null);
+    }
+}

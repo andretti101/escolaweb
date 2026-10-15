@@ -51,22 +51,22 @@ public class ReportCardServiceImpl implements ReportCardService {
         Map<Integer, List<com.andretti101.escolaweb.model.entity.Grade>> gradesByStudent = allGrades.stream().collect(Collectors.groupingBy(g -> g.getStudent().getId()));
         Map<Integer, List<com.andretti101.escolaweb.model.entity.Attendance>> attendancesByStudent = allAttendances.stream().collect(Collectors.groupingBy(a -> a.getStudent().getId()));
         
-        com.andretti101.escolaweb.model.entity.SchoolSettings settings = schoolSettingsService.findSettings();
-        java.math.BigDecimal minimumGrade = year.getMinimumGrade() != null ? year.getMinimumGrade() : settings.getMinimumGrade();
-        java.math.BigDecimal minimumAttendance = year.getMinimumAttendance() != null ? year.getMinimumAttendance() : settings.getMinimumAttendance();
-        com.andretti101.escolaweb.model.enums.AcademicPeriodType periodType = year.getPeriodType() != null ? year.getPeriodType() : settings.getPeriodType();
+        SchoolSettings settings = schoolSettingsService.findSettings();
+        BigDecimal minimumGrade = year.getMinimumGrade() != null ? year.getMinimumGrade() : settings.getMinimumGrade();
+        BigDecimal minimumAttendance = year.getMinimumAttendance() != null ? year.getMinimumAttendance() : settings.getMinimumAttendance();
         
-        List<ReportCardDTO> results = new java.util.ArrayList<>();
+        List<ReportCardDTO> results = new ArrayList<>();
         
-        for (com.andretti101.escolaweb.model.entity.Enrollment enrollment : enrollments) {
-            com.andretti101.escolaweb.model.entity.Student student = enrollment.getStudent();
-            com.andretti101.escolaweb.model.entity.ClassRoom classRoom = enrollment.getClassRoom();
+        for (Enrollment enrollment : enrollments) {
+            Student student = enrollment.getStudent();
+            ClassRoom classRoom = enrollment.getClassRoom();
             
-            List<com.andretti101.escolaweb.model.entity.TeacherClassSubject> tcsList = teacherClassSubjectRepository.findByClassRoom(classRoom);
-            List<com.andretti101.escolaweb.model.entity.AcademicPeriod> periods = academicPeriodRepository.findByAcademicYearOrderByIdAsc(year);
+            List<TeacherClassSubject> tcsList = teacherClassSubjectRepository.findByClassRoom(classRoom);
+            AcademicPeriodType periodType = classRoom.getPeriodType();
+            List<AcademicPeriod> periods = academicPeriodRepository.findByAcademicYearAndPeriodTypeOrderByIdAsc(year, periodType);
             
-            int totalPeriods = getPeriodsCount(periodType);
-            java.math.BigDecimal targetScore = minimumGrade.multiply(java.math.BigDecimal.valueOf(totalPeriods));
+            int totalPeriods = !periods.isEmpty() ? periods.size() : (periodType != null ? periodType.getPeriodsCount() : 3);
+            BigDecimal targetScore = minimumGrade.multiply(BigDecimal.valueOf(totalPeriods));
             
             List<com.andretti101.escolaweb.model.entity.Grade> studentGrades = gradesByStudent.getOrDefault(student.getId(), new java.util.ArrayList<>());
             List<com.andretti101.escolaweb.model.entity.Attendance> studentAttendances = attendancesByStudent.getOrDefault(student.getId(), new java.util.ArrayList<>());
@@ -90,7 +90,7 @@ public class ReportCardServiceImpl implements ReportCardService {
                     if (!gradesInPeriod.isEmpty()) {
                         java.math.BigDecimal sum = gradesInPeriod.stream().filter(g -> g.getValue() != null).map(com.andretti101.escolaweb.model.entity.Grade::getValue)
                                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-                        periodAverage = sum.divide(java.math.BigDecimal.valueOf(gradesInPeriod.size()), 1, java.math.RoundingMode.HALF_UP);
+                        periodAverage = sum.divide(java.math.BigDecimal.valueOf(gradesInPeriod.size()), 2, java.math.RoundingMode.HALF_UP);
                     }
                     if (period.isClosed() && periodAverage != null) {
                         closedPeriodSum = closedPeriodSum.add(periodAverage);
@@ -100,12 +100,14 @@ public class ReportCardServiceImpl implements ReportCardService {
                             period.getId(), period.getName(), period.isClosed(), periodAverage));
                 }
                 
-                int remainingPeriods = totalPeriods - closedPeriodsWithGrades;
+                int remainingPeriods = !periods.isEmpty() ? (int) periods.stream().filter(p -> !p.isClosed()).count() : totalPeriods;
                 java.math.BigDecimal maxPossibleScore = closedPeriodSum.add(java.math.BigDecimal.TEN.multiply(java.math.BigDecimal.valueOf(remainingPeriods)));
                 
                 com.andretti101.escolaweb.model.enums.StudentSituation situation;
-                if (closedPeriodsWithGrades == 0) {
-                    situation = com.andretti101.escolaweb.model.enums.StudentSituation.PENDING;
+                if (remainingPeriods == 0) {
+                    situation = closedPeriodSum.compareTo(targetScore) >= 0
+                            ? com.andretti101.escolaweb.model.enums.StudentSituation.APPROVED
+                            : com.andretti101.escolaweb.model.enums.StudentSituation.FAILED;
                 } else if (closedPeriodSum.compareTo(targetScore) >= 0) {
                     situation = com.andretti101.escolaweb.model.enums.StudentSituation.APPROVED;
                 } else if (maxPossibleScore.compareTo(targetScore) < 0) {
@@ -154,6 +156,7 @@ public class ReportCardServiceImpl implements ReportCardService {
             results.add(new ReportCardDTO(
                     student.getId(), student.getName(), student.getRegistrationNumber(),
                     year.getId(), year.getYear(), classRoom.getName(),
+                    periodType, periodType != null ? periodType.getLabel() : null,
                     minimumGrade, totalPeriods, targetScore,
                     subjectSituations, frequency, generalSituation
             ));
@@ -168,23 +171,21 @@ public class ReportCardServiceImpl implements ReportCardService {
         AcademicYear year = academicYearService.findById(academicYearId);
         SchoolSettings settings = schoolSettingsService.findSettings();
         
-        java.math.BigDecimal minimumGrade = year.getMinimumGrade() != null ? year.getMinimumGrade() : settings.getMinimumGrade();
-        java.math.BigDecimal minimumAttendance = year.getMinimumAttendance() != null ? year.getMinimumAttendance() : settings.getMinimumAttendance();
-        com.andretti101.escolaweb.model.enums.AcademicPeriodType periodType = year.getPeriodType() != null ? year.getPeriodType() : settings.getPeriodType();
+        BigDecimal minimumGrade = year.getMinimumGrade() != null ? year.getMinimumGrade() : settings.getMinimumGrade();
+        BigDecimal minimumAttendance = year.getMinimumAttendance() != null ? year.getMinimumAttendance() : settings.getMinimumAttendance();
 
         Enrollment enrollment = enrollmentRepository.findByStudent(student).stream()
                 .filter(e -> e.getClassRoom().getAcademicYear().getId().equals(academicYearId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
-                        "O aluno '" + student.getName() + "' No possui matrícula No ano letivo " + year.getYear() + "."));
+                        "O aluno '" + student.getName() + "' não possui matrícula no ano letivo " + year.getYear() + "."));
 
         ClassRoom classRoom = enrollment.getClassRoom();
+        AcademicPeriodType periodType = classRoom.getPeriodType();
 
-        List<AcademicPeriod> allPeriods = academicPeriodRepository.findByAcademicYearOrderByIdAsc(year);
-        int totalPeriods = allPeriods.size();
-        if (totalPeriods == 0) {
-            totalPeriods = getPeriodsCount(periodType);
-        }
+        List<AcademicPeriod> allPeriods = academicPeriodRepository
+                .findByAcademicYearAndPeriodTypeOrderByIdAsc(year, periodType);
+        int totalPeriods = !allPeriods.isEmpty() ? allPeriods.size() : (periodType != null ? periodType.getPeriodsCount() : 3);
 
         BigDecimal targetScore = minimumGrade.multiply(BigDecimal.valueOf(totalPeriods));
 
@@ -209,6 +210,8 @@ public class ReportCardServiceImpl implements ReportCardService {
                 year.getId(),
                 year.getYear(),
                 classRoom.getName(),
+                periodType,
+                periodType != null ? periodType.getLabel() : null,
                 minimumGrade,
                 totalPeriods,
                 targetScore,
@@ -259,13 +262,15 @@ public class ReportCardServiceImpl implements ReportCardService {
             ));
         }
 
-        int remainingPeriods = totalPeriods - closedPeriodsWithGrades;
+        int remainingPeriods = !allPeriods.isEmpty() ? (int) allPeriods.stream().filter(p -> !p.isClosed()).count() : totalPeriods;
         BigDecimal maxPossibleScore = closedPeriodSum.add(
                 BigDecimal.TEN.multiply(BigDecimal.valueOf(remainingPeriods)));
 
         StudentSituation situation;
-        if (closedPeriodsWithGrades == 0) {
-            situation = StudentSituation.PENDING;
+        if (remainingPeriods == 0) {
+            situation = closedPeriodSum.compareTo(targetScore) >= 0
+                    ? StudentSituation.APPROVED
+                    : StudentSituation.FAILED;
         } else if (closedPeriodSum.compareTo(targetScore) >= 0) {
             situation = StudentSituation.APPROVED;
         } else if (maxPossibleScore.compareTo(targetScore) < 0) {
@@ -333,19 +338,6 @@ public class ReportCardServiceImpl implements ReportCardService {
             return StudentSituation.PENDING;
         }
         return StudentSituation.APPROVED;
-    }
-
-    // HELPERS
-
-    private int getPeriodsCount(AcademicPeriodType type) {
-        if (type == null) return 3;
-        return switch (type) {
-            case BIMESTER -> 4;
-            case TRIMESTER -> 3;
-            case QUADRIMESTER -> 3;
-            case SEMESTER -> 2;
-            case ANNUAL -> 1;
-        };
     }
 }
 

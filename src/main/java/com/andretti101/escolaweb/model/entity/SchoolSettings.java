@@ -1,6 +1,5 @@
 package com.andretti101.escolaweb.model.entity;
 
-import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -45,11 +44,6 @@ public class SchoolSettings implements Serializable {
     @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres.")
     @Column(length = 150)
     private String email;
-
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(name = "period_type", length = 20)
-    private AcademicPeriodType periodType = AcademicPeriodType.TRIMESTER;
 
     @Builder.Default
     @DecimalMin(value = "0.0", message = "A frequência mínima deve ser de pelo menos 0.")

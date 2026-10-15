@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.controller;
 
+import com.andretti101.escolaweb.dto.request.StudentPatchRequestDTO;
 import com.andretti101.escolaweb.dto.request.StudentRequestDTO;
 import com.andretti101.escolaweb.dto.request.StudentUpdateRequestDTO;
 import com.andretti101.escolaweb.dto.response.StudentResponseDTO;
@@ -105,8 +106,9 @@ public class StudentController {
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<StudentResponseDTO> patch(
             @PathVariable Integer id,
-            @Valid @RequestBody StudentUpdateRequestDTO dto) {
-        return update(id, dto);
+            @Valid @RequestBody StudentPatchRequestDTO dto) {
+        Student updated = studentService.patch(id, dto);
+        return ResponseEntity.ok(toResponse(updated));
     }
 
     @DeleteMapping("/{id}")

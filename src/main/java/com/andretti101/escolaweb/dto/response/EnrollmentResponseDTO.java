@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.dto.response;
 
+import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.model.enums.StudentSituation;
 
 import java.time.LocalDate;
@@ -13,9 +14,30 @@ public record EnrollmentResponseDTO(
         Integer classRoomId,
         String classRoomName,
         String schoolGrade,
+        AcademicPeriodType periodType,
+        String periodTypeLabel,
+        Integer academicYearId,
         Integer academicYear,
         LocalDate enrollmentDate,
         boolean active,
         StudentSituation generalSituation,
         LocalDateTime createdAt
-) {}
+) {
+    public EnrollmentResponseDTO(
+            Integer id,
+            Integer studentId,
+            String studentName,
+            String studentRegistrationNumber,
+            Integer classRoomId,
+            String classRoomName,
+            String schoolGrade,
+            Integer academicYear,
+            LocalDate enrollmentDate,
+            boolean active,
+            StudentSituation generalSituation,
+            LocalDateTime createdAt
+    ) {
+        this(id, studentId, studentName, studentRegistrationNumber, classRoomId, classRoomName,
+                schoolGrade, null, null, null, academicYear, enrollmentDate, active, generalSituation, createdAt);
+    }
+}

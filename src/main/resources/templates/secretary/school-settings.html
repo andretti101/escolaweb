@@ -89,18 +89,9 @@
                                                     Acadêmicos</h6>
                                             </div>
 
-                                            <div class="col-md-4 mb-3">
-                                                <label for="periodType" class="form-label">Divisão do Ano Letivo</label>
-                                                <select id="periodType" class="form-select" disabled>
-                                                    <option value="BIMESTER">Bimestre</option>
-                                                    <option value="TRIMESTER">Trimestre</option>
-                                                    <option value="QUADRIMESTER">Quadrimestre</option>
-                                                    <option value="SEMESTER">Semestre</option>
-                                                    <option value="ANNUAL">Anual</option>
-                                                </select>
-                                            </div>
 
-                                            <div class="col-md-4 mb-3">
+
+                                            <div class="col-md-6 mb-3">
                                                 <label for="minimumGrade" class="form-label">Média Mínima para
                                                     Aprovação</label>
                                                 <div class="input-group">
@@ -110,7 +101,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4 mb-3">
+                                            <div class="col-md-6 mb-3">
                                                 <label for="minimumAttendance" class="form-label">Frequência Mínima
                                                     (%)</label>
                                                 <div class="input-group">
@@ -174,7 +165,6 @@
                 document.getElementById('email').value = data.email || '';
                 document.getElementById('phone').value = data.phone || '';
                 document.getElementById('address').value = data.address || '';
-                document.getElementById('periodType').value = data.periodType || 'TRIMESTER';
                 document.getElementById('minimumGrade').value = data.minimumGrade || '6.0';
                 document.getElementById('minimumAttendance').value = data.minimumAttendance || '70.00';
             } else if (response.status === 404) {

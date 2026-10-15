@@ -42,14 +42,16 @@
                                         <div class="row g-3">
                                             <div class="col-md-6">
                                                 <label class="form-label" for="tcsId">Turma e Matéria *</label>
-                                                <select id="tcsId" class="form-select" onchange="loadStudentsForTcs(this.value)" required>
+                                                <select id="tcsId" class="form-select" onchange="handleTcsChange(this.value)" required>
                                                     <option value="" disabled selected>Selecione uma turma...</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-3">
-                                                <label class="form-label" for="periodId">Período Letivo *</label>
+                                                <label class="form-label" for="periodId">
+                                                    Período Letivo * <span id="divisionTypeBadge" class="badge bg-label-info ms-1 d-none"></span>
+                                                </label>
                                                 <select id="periodId" class="form-select" required>
-                                                    <option value="" disabled selected>Selecione...</option>
+                                                    <option value="" disabled selected>Selecione uma turma primeiro...</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-3">
@@ -148,33 +150,54 @@
 
         document.addEventListener("DOMContentLoaded", async function() {
             document.getElementById('date').valueAsDate = new Date();
-            await loadPeriods();
             await loadTcs();
         });
 
-        async function loadPeriods() {
-            try {
-                const activeYearRes = await fetch('/api/academic-years/active', { headers: { 'Authorization': `Bearer ${getToken()}` } });
-                let activeYearId = null;
-                if (activeYearRes.ok) {
-                    activeYearId = (await activeYearRes.json()).id;
-                }
+        async function handleTcsChange(tcsId) {
+            await loadPeriodsForTcs(tcsId);
+            await loadStudentsForTcs(tcsId);
+        }
 
-                const res = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        async function loadPeriodsForTcs(tcsId) {
+            const tcs = myTcsList.find(t => String(t.id) === String(tcsId));
+            const select = document.getElementById('periodId');
+            const badge = document.getElementById('divisionTypeBadge');
+            if (!tcs) {
+                select.innerHTML = '<option value="" disabled selected>Selecione uma turma primeiro...</option>';
+                badge.classList.add('d-none');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/classrooms/${tcs.classRoomId}`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
                 if (res.ok) {
-                    let periods = await res.json();
-                    if (activeYearId) {
-                        periods = periods.filter(p => p.academicYearId === activeYearId);
+                    const classroom = await res.json();
+                    if (classroom.periodTypeLabel || classroom.periodType) {
+                        badge.textContent = classroom.periodTypeLabel || classroom.periodType;
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
                     }
-                    const select = document.getElementById('periodId');
-                    periods.forEach(p => {
-                        const opt = document.createElement('option');
-                        opt.value = p.id;
-                        opt.textContent = `${p.academicYear} - ${p.name}`;
-                        select.appendChild(opt);
-                    });
+
+                    const periods = classroom.periods || [];
+                    if (periods.length === 0) {
+                        select.innerHTML = '<option value="" disabled selected>Nenhum período cadastrado para esta divisão</option>';
+                    } else {
+                        select.innerHTML = '<option value="" disabled selected>Selecione o período...</option>';
+                        periods.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = `${p.name}${p.closed ? ' (Fechado)' : ''}`;
+                            if (p.closed) opt.disabled = true;
+                            select.appendChild(opt);
+                        });
+                    }
                 }
-            } catch(e) { console.error('Erro ao carregar períodos', e); }
+            } catch(e) {
+                console.error('Erro ao carregar períodos da turma', e);
+            }
         }
 
         async function loadTcs() {

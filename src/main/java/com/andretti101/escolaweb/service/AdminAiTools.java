@@ -24,6 +24,7 @@ public class AdminAiTools {
     private final ReportCardService reportCardService;
     private final GradeRepository gradeRepository;
     private final TeacherClassSubjectRepository tcsRepository;
+    private final TeacherRepository teacherRepository;
     private final SubjectRepository subjectRepository;
     private final ClassRoomService classRoomService;
     private final JdbcTemplate jdbcTemplate;
@@ -105,25 +106,62 @@ public class AdminAiTools {
         });
     }
 
-    @Tool(description = "Conta quantos professores existem por matéria")
+    private boolean isAssignmentActivelyTeaching(TeacherClassSubject tcs) {
+        if (tcs == null || !tcs.isActive()) return false;
+        if (tcs.getTeacher() == null || !tcs.getTeacher().isActive()) return false;
+        if (tcs.getClassRoom() == null || !tcs.getClassRoom().isActive()) return false;
+        return tcs.getClassRoom().getAcademicYear() == null || tcs.getClassRoom().getAcademicYear().isActive();
+    }
+
+    @Tool(description = "Conta quantos professores existem por matéria, detalhando quantos estão lecionando ativamente e quantos estão habilitados no cadastro")
     public String getTeacherCountBySubject(String subjectName) {
         return transactionTemplate.execute(status -> {
             if (subjectName != null && !subjectName.trim().isEmpty()) {
                 var subjectOpt = subjectRepository.findByNameIgnoreCase(subjectName.trim());
                 if (subjectOpt.isEmpty()) return "Matéria não encontrada: " + subjectName;
-                var tcsList = tcsRepository.findBySubject(subjectOpt.get());
-                long count = tcsList.stream().map(t -> t.getTeacher().getId()).distinct().count();
-                return "Professores ensinando " + subjectName + ": " + count;
+                Subject subject = subjectOpt.get();
+                Set<Integer> activeTeachingTeacherIds = new HashSet<>();
+                for (var tcs : tcsRepository.findBySubject(subject)) {
+                    if (isAssignmentActivelyTeaching(tcs)) {
+                        activeTeachingTeacherIds.add(tcs.getTeacher().getId());
+                    }
+                }
+                Set<Integer> qualifiedTeacherIds = new HashSet<>();
+                for (var teacher : teacherRepository.findAll()) {
+                    if (teacher.isActive() && teacher.getSubjects() != null && teacher.getSubjects().contains(subject)) {
+                        qualifiedTeacherIds.add(teacher.getId());
+                    }
+                }
+                return String.format("Matéria %s:\n- Professores lecionando ativamente: %d\n- Professores habilitados no cadastro: %d",
+                        subject.getName(), activeTeachingTeacherIds.size(), qualifiedTeacherIds.size());
             } else {
                 var allTcs = tcsRepository.findAll();
-                Map<String, Set<Integer>> teachersBySubject = new HashMap<>();
+                Map<String, Set<Integer>> activeTeaching = new HashMap<>();
                 for (var tcs : allTcs) {
-                    teachersBySubject.computeIfAbsent(tcs.getSubject().getName(), k -> new HashSet<>())
-                        .add(tcs.getTeacher().getId());
+                    if (isAssignmentActivelyTeaching(tcs)) {
+                        activeTeaching.computeIfAbsent(tcs.getSubject().getName(), k -> new HashSet<>())
+                                .add(tcs.getTeacher().getId());
+                    }
                 }
-                return teachersBySubject.entrySet().stream()
-                    .map(e -> "Matéria: " + e.getKey() + " -> " + e.getValue().size() + " professores")
-                    .collect(Collectors.joining("\n"));
+                Map<String, Set<Integer>> qualified = new HashMap<>();
+                for (var teacher : teacherRepository.findAll()) {
+                    if (teacher.isActive() && teacher.getSubjects() != null) {
+                        for (var subject : teacher.getSubjects()) {
+                            qualified.computeIfAbsent(subject.getName(), k -> new HashSet<>())
+                                    .add(teacher.getId());
+                        }
+                    }
+                }
+                Set<String> allSubjects = new TreeSet<>();
+                allSubjects.addAll(activeTeaching.keySet());
+                allSubjects.addAll(qualified.keySet());
+
+                return allSubjects.stream()
+                        .map(sub -> String.format("Matéria: %s -> Lecionando ativamente: %d | Habilitados no cadastro: %d",
+                                sub,
+                                activeTeaching.getOrDefault(sub, Set.of()).size(),
+                                qualified.getOrDefault(sub, Set.of()).size()))
+                        .collect(Collectors.joining("\n"));
             }
         });
     }

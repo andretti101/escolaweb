@@ -1,7 +1,6 @@
 package com.andretti101.escolaweb.service.impl;
 
 import com.andretti101.escolaweb.model.entity.SchoolSettings;
-import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.repository.SchoolSettingsRepository;
 import com.andretti101.escolaweb.service.SchoolSettingsService;
 import lombok.RequiredArgsConstructor;
@@ -48,9 +47,6 @@ public class SchoolSettingsServiceImpl implements SchoolSettingsService {
             validateAttendanceRange(incoming.getMinimumAttendance());
             existing.setMinimumAttendance(incoming.getMinimumAttendance());
         }
-        if (incoming.getPeriodType() != null) {
-            existing.setPeriodType(incoming.getPeriodType());
-        }
 
         return existing;
     }
@@ -60,7 +56,6 @@ public class SchoolSettingsServiceImpl implements SchoolSettingsService {
                 .schoolName("Escola")
                 .minimumGrade(new BigDecimal("6.0"))
                 .minimumAttendance(new BigDecimal("75.00"))
-                .periodType(AcademicPeriodType.TRIMESTER)
                 .build();
         return schoolSettingsRepository.save(defaults);
     }

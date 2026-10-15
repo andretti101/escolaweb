@@ -7,6 +7,7 @@ import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.repository.AcademicYearRepository;
 import com.andretti101.escolaweb.repository.ClassRoomRepository;
 import com.andretti101.escolaweb.service.AcademicYearConclusionService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Disabled("Manual debug test only")
 public class ConcludeYearDebug {
 
     @Autowired
@@ -54,6 +56,7 @@ public class ConcludeYearDebug {
         if (periods.isEmpty()) {
             com.andretti101.escolaweb.model.entity.AcademicPeriod p = new com.andretti101.escolaweb.model.entity.AcademicPeriod();
             p.setAcademicYear(year);
+            p.setPeriodType(AcademicPeriodType.TRIMESTER);
             p.setName("Test Period");
             p.setClosed(true);
             academicPeriodRepository.save(p);
@@ -65,7 +68,7 @@ public class ConcludeYearDebug {
         }
 
         YearConclusionRequestDTO req = new YearConclusionRequestDTO(
-            2028, new BigDecimal("6.0"), new BigDecimal("75.0"), AcademicPeriodType.BIMESTER
+            2028, new BigDecimal("6.0"), new BigDecimal("75.0")
         );
 
         conclusionService.concludeYear(req);

@@ -2,6 +2,7 @@ package com.andretti101.escolaweb.repository;
 
 import com.andretti101.escolaweb.model.entity.AcademicPeriod;
 import com.andretti101.escolaweb.model.entity.AcademicYear;
+import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,8 +25,18 @@ public interface AcademicPeriodRepository extends JpaRepository<AcademicPeriod, 
 
     List<AcademicPeriod> findByAcademicYearOrderByIdDesc(AcademicYear academicYear);
 
+    List<AcademicPeriod> findByAcademicYearInOrderByIdAsc(java.util.Collection<AcademicYear> academicYears);
+
+    List<AcademicPeriod> findByAcademicYearAndPeriodTypeOrderByIdAsc(AcademicYear year, AcademicPeriodType type);
+
     boolean existsByAcademicYear(AcademicYear academicYear);
+
+    boolean existsByAcademicYearAndPeriodType(AcademicYear year, AcademicPeriodType type);
 
     @Query("SELECT CASE WHEN COUNT(p) = 0 THEN false ELSE (COUNT(CASE WHEN p.closed = false THEN 1 END) = 0) END FROM AcademicPeriod p WHERE p.academicYear = :year")
     boolean areAllPeriodsClosed(@Param("year") AcademicYear year);
+
+    @Query("SELECT CASE WHEN COUNT(p) = 0 THEN false ELSE (COUNT(CASE WHEN p.closed = false THEN 1 END) = 0) END " +
+           "FROM AcademicPeriod p WHERE p.academicYear = :year AND p.periodType = :type")
+    boolean areAllPeriodsClosedByType(@Param("year") AcademicYear year, @Param("type") AcademicPeriodType type);
 }

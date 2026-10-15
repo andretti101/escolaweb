@@ -149,7 +149,12 @@ public class AnnouncementController {
     }
 
     private ClassRoomSimpleDTO toClassRoomSimple(ClassRoom c) {
-        return new ClassRoomSimpleDTO(c.getId(), c.getName());
+        return new ClassRoomSimpleDTO(
+                c.getId(),
+                c.getName(),
+                c.getPeriodType(),
+                c.getPeriodType() != null ? c.getPeriodType().getLabel() : null
+        );
     }
 
     @GetMapping("/has-unread")

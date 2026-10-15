@@ -82,11 +82,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public void delete(Integer id) {
         Enrollment enrollment = findEnrollmentOrThrow(id);
         Student student = enrollment.getStudent();
+        ClassRoom classRoom = enrollment.getClassRoom();
 
-        if (gradeRepository.existsByStudent(student)) {
+        if (gradeRepository.existsByStudentAndAssessment_TeacherClassSubject_ClassRoom(student, classRoom)) {
             throw new IllegalStateException("Não é possível excluir esta matrícula pois o aluno já possui notas registradas. Considere desativar a matrícula em vez de excluir.");
         }
-        if (attendanceRepository.existsByStudent(student)) {
+        if (attendanceRepository.existsByStudentAndLesson_TeacherClassSubject_ClassRoom(student, classRoom)) {
             throw new IllegalStateException("Não é possível excluir esta matrícula pois o aluno já possui presenças registradas. Considere desativar a matrícula em vez de excluir.");
         }
 

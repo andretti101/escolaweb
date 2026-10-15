@@ -107,15 +107,11 @@
                                     <h6 class="mb-3 text-muted"><i class="bx bx-book-bookmark me-2"></i>Parâmetros Acadêmicos</h6>
                                     
                                     <div class="row">
-                                        <div class="mb-3 col-md-4">
-                                            <label for="periodType" class="form-label">Divisão do Ano Letivo</label>
-                                            <input class="form-control" type="text" id="periodType" readonly />
-                                        </div>
-                                        <div class="mb-3 col-md-4">
+                                        <div class="mb-3 col-md-6">
                                             <label for="minimumGrade" class="form-label">Média Mínima para Aprovação</label>
                                             <input class="form-control" type="text" id="minimumGrade" readonly />
                                         </div>
-                                        <div class="mb-3 col-md-4">
+                                        <div class="mb-3 col-md-6">
                                             <label for="minimumAttendance" class="form-label">Frequência Mínima (%)</label>
                                             <input class="form-control" type="text" id="minimumAttendance" readonly />
                                         </div>
@@ -154,15 +150,6 @@
                     document.getElementById('contactEmail').value = data.email || '';
                     document.getElementById('phone').value = data.phone || '';
                     document.getElementById('address').value = data.address || '';
-                    
-                    const periodTypes = {
-                        'BIMESTER': 'Bimestral (4 Períodos)',
-                        'TRIMESTER': 'Trimestral (3 Períodos)',
-                        'QUADRIMESTER': 'Quadrimestral (3 Períodos)',
-                        'SEMESTER': 'Semestral (2 Períodos)',
-                        'ANNUAL': 'Anual (1 Período)'
-                    };
-                    document.getElementById('periodType').value = periodTypes[data.periodType] || data.periodType || '';
                     document.getElementById('minimumGrade').value = data.minimumGrade != null ? Number(data.minimumGrade).toFixed(1) : '';
                     document.getElementById('minimumAttendance').value = data.minimumAttendance != null ? data.minimumAttendance + '%' : '';
                 }

@@ -158,6 +158,16 @@
                                             </div>
                                         </div>
 
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <label class="form-label">Disciplinas Habilitadas (Opcional)</label>
+                                                <div id="subjectsContainer" class="border rounded p-3 bg-lighter">
+                                                    <span class="text-muted small">Carregando disciplinas...</span>
+                                                </div>
+                                                <div class="form-text">Selecione zero, uma ou mais disciplinas que o professor pode lecionar.</div>
+                                            </div>
+                                        </div>
+
                                         <!-- Local para mensagens de sucesso ou erro -->
                                         <div id="formMessage" class="mt-3 mb-3"></div>
 
@@ -211,6 +221,7 @@
 
         const btnSubmit = document.getElementById("btnSubmit");
         const formMessage = document.getElementById("formMessage");
+        const subjectsContainer = document.getElementById("subjectsContainer");
 
         const urlParams = new URLSearchParams(window.location.search);
         const teacherId = urlParams.get('id');
@@ -223,6 +234,46 @@
         }
 
         const token = localStorage.getItem('jwt_token');
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.toString()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        async function renderSubjects(selectedIdsSet) {
+            if (!subjectsContainer) return;
+            try {
+                const res = await fetch('/api/subjects?activeOnly=false', {
+                    headers: {'Authorization': 'Bearer ' + (token || '')}
+                });
+                if (res.ok) {
+                    const subjects = await res.json();
+                    const visibleSubjects = (Array.isArray(subjects) ? subjects : [])
+                        .filter(s => s.active || selectedIdsSet.has(s.id));
+                    if (visibleSubjects.length === 0) {
+                        subjectsContainer.innerHTML = '<span class="text-muted small">Nenhuma disciplina cadastrada.</span>';
+                        return;
+                    }
+                    visibleSubjects.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    subjectsContainer.innerHTML = '<div class="row g-2">' + visibleSubjects.map(s => `
+                        <div class="col-md-4 col-sm-6">
+                            <div class="form-check">
+                                <input class="form-check-input subject-checkbox" type="checkbox" value="${s.id}" id="subject_${s.id}" ${selectedIdsSet.has(s.id) ? 'checked' : ''}>
+                                <label class="form-check-label" for="subject_${s.id}">${escapeHtml(s.name)}${!s.active ? ' (Inativa)' : ''}</label>
+                            </div>
+                        </div>
+                    `).join('') + '</div>';
+                } else {
+                    subjectsContainer.innerHTML = '<span class="text-danger small">Não foi possível carregar as disciplinas.</span>';
+                }
+            } catch (e) {
+                subjectsContainer.innerHTML = '<span class="text-danger small">Erro de conexão ao carregar disciplinas.</span>';
+            }
+        }
 
         async function loadTeacherData() {
             formWrapper.classList.add('d-none');
@@ -250,6 +301,11 @@
                 document.getElementById('name').value = data.name;
                 document.getElementById('email').value = data.email;
 
+                const selectedIds = new Set(
+                    Array.isArray(data.subjects) ? data.subjects.map(s => s.id) : []
+                );
+                await renderSubjects(selectedIds);
+
                 formWrapper.classList.remove('d-none');
 
             } catch (error) {
@@ -272,10 +328,15 @@
             btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
 
             const senhaDigitada = document.getElementById('password').value;
+            const selectedSubjectIds = Array.from(document.querySelectorAll('.subject-checkbox:checked'))
+                .map(cb => parseInt(cb.value, 10))
+                .filter(id => !isNaN(id));
+
             const payload = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
-                password: senhaDigitada.trim() !== '' ? senhaDigitada : null
+                password: senhaDigitada.trim() !== '' ? senhaDigitada : null,
+                subjectIds: selectedSubjectIds
             };
 
             try {

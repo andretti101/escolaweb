@@ -126,10 +126,11 @@
     <script>
         let allLessons = [];
         let allPeriods = [];
+        let classroomsMap = new Map();
+        let activeYearId = null;
         let searchTerm = '';
         let periodFilter = '';
         let classRoomFilter = '';
-
         let subjectFilter = '';
 
         function getToken() { return localStorage.getItem('jwt_token') || ''; }
@@ -150,7 +151,9 @@
                 const e = new Date(p.endDate + 'T23:59:59');
                 return lDate >= s && lDate <= e;
             });
-            return p ? p.name : '-';
+            if (!p) return '-';
+            const typeLabel = p.periodTypeLabel || p.periodType || '';
+            return typeLabel ? `${p.name} (${typeLabel})` : p.name;
         }
 
         function escapeHtml(str) {
@@ -164,10 +167,42 @@
             window.location.href = '/login.html';
         }
 
+        function updatePeriodDropdown() {
+            const pSelect = document.getElementById('periodFilter');
+            const currentValue = pSelect.value;
+            pSelect.innerHTML = '<option value="">Todos os Períodos</option>';
+
+            let dropdownPeriods = allPeriods;
+            if (activeYearId) {
+                dropdownPeriods = dropdownPeriods.filter(p => p.academicYearId === activeYearId);
+            }
+            if (classRoomFilter && classroomsMap.has(classRoomFilter)) {
+                const cr = classroomsMap.get(classRoomFilter);
+                if (cr.periodType) {
+                    dropdownPeriods = dropdownPeriods.filter(p => p.periodType === cr.periodType);
+                }
+            }
+            dropdownPeriods.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                const typeLabel = p.periodTypeLabel || p.periodType || '';
+                opt.textContent = typeLabel ? `${p.name} (${typeLabel})` : p.name;
+                pSelect.appendChild(opt);
+            });
+
+            const exists = Array.from(pSelect.options).some(o => o.value === currentValue);
+            if (exists && currentValue) {
+                pSelect.value = currentValue;
+                periodFilter = currentValue;
+            } else {
+                pSelect.value = '';
+                periodFilter = '';
+            }
+        }
+
         async function loadFilters() {
             try {
                 const activeYearRes = await fetch('/api/academic-years/active', { headers: { 'Authorization': `Bearer ${getToken()}` } });
-                let activeYearId = null;
                 if (activeYearRes.ok) {
                     activeYearId = (await activeYearRes.json()).id;
                 }
@@ -176,18 +211,17 @@
                 const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (periodRes.ok) {
                     allPeriods = await periodRes.json();
-                    let dropdownPeriods = allPeriods;
-                    if (activeYearId) {
-                        dropdownPeriods = allPeriods.filter(p => p.academicYearId === activeYearId);
-                    }
-                    const pSelect = document.getElementById('periodFilter');
-                    dropdownPeriods.forEach(p => {
-                        const opt = document.createElement('option');
-                        opt.value = p.id;
-                        opt.textContent = `${p.academicYear} - ${p.name}`;
-                        pSelect.appendChild(opt);
-                    });
                 }
+
+                // Fetch classrooms to map division types
+                const crUrl = activeYearId ? `/api/classrooms?academicYearId=${activeYearId}` : '/api/classrooms';
+                const crRes = await fetch(crUrl, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                if (crRes.ok) {
+                    const classrooms = await crRes.json();
+                    classrooms.forEach(cr => classroomsMap.set(cr.name, cr));
+                }
+
+                updatePeriodDropdown();
                 
                 // Fetch teacher's classrooms and subjects
                 const tcsRes = await fetch('/api/teacher-class-subjects', { headers: { 'Authorization': `Bearer ${getToken()}` } });
@@ -417,7 +451,7 @@
             await loadFilters();
             
             document.getElementById('periodFilter').addEventListener('change', e => { periodFilter = e.target.value; applyFilters(); });
-            document.getElementById('classRoomFilter').addEventListener('change', e => { classRoomFilter = e.target.value; applyFilters(); });
+            document.getElementById('classRoomFilter').addEventListener('change', e => { classRoomFilter = e.target.value; updatePeriodDropdown(); applyFilters(); });
             document.getElementById('subjectFilter').addEventListener('change', e => { subjectFilter = e.target.value; applyFilters(); });
             document.getElementById('globalSearch').addEventListener('input', e => { searchTerm = e.target.value; applyFilters(); });
             

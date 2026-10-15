@@ -1,6 +1,5 @@
 package com.andretti101.escolaweb.dto.request;
 
-import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
@@ -29,8 +28,6 @@ public record SchoolSettingsRequestDTO(
 
         @DecimalMin(value = "0.0", message = "A frequência mínima exigida deve ser no mínimo 0%.")
         @DecimalMax(value = "100.0", message = "A frequência mínima exigida deve ser no máximo 100%.")
-        BigDecimal minimumAttendance,
-
-        AcademicPeriodType periodType
+        BigDecimal minimumAttendance
 
 ) {}

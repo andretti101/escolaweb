@@ -22,6 +22,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     boolean existsByClassRoom(ClassRoom classRoom);
     boolean existsByStudent_IdAndClassRoom_IdAndActiveTrue(Integer studentId, Integer classRoomId);
 
+    List<Enrollment> findByClassRoom_AcademicYear(AcademicYear academicYear);
     List<Enrollment> findByClassRoom_AcademicYearAndActiveTrue(AcademicYear academicYear);
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query("UPDATE Enrollment e SET e.active = false WHERE e.classRoom.academicYear = :year AND e.active = true")

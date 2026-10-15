@@ -171,18 +171,6 @@ public class GradeServiceImpl implements GradeService {
         return sumOfPeriodAverages.divide(BigDecimal.valueOf(periodsWithGrades), 2, RoundingMode.CEILING);
     }
 
-    private int getDivisorForPeriodType(com.andretti101.escolaweb.model.enums.AcademicPeriodType type) {
-        if (type == null) return 1;
-        switch (type) {
-            case BIMESTER: return 4;
-            case TRIMESTER: return 3;
-            case QUADRIMESTER: return 3;
-            case SEMESTER: return 2;
-            case ANNUAL: return 1;
-            default: return 1;
-        }
-    }
-
     // ── Private helpers
 
     private void updateStudentSituation(Grade grade) {
@@ -197,7 +185,9 @@ public class GradeServiceImpl implements GradeService {
                 .distinct()
                 .count();
 
-        int divisor = getDivisorForPeriodType(settings.getPeriodType());
+        int divisor = (tcs.getClassRoom() != null && tcs.getClassRoom().getPeriodType() != null)
+                ? tcs.getClassRoom().getPeriodType().getDivisor()
+                : 1;
 
         if (periodsWithGrades < divisor) {
             allGrades.forEach(g -> g.setStudentSituation(StudentSituation.PENDING));

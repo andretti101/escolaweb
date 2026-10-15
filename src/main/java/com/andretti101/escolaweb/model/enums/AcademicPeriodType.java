@@ -3,9 +3,7 @@ package com.andretti101.escolaweb.model.enums;
 public enum AcademicPeriodType {
     BIMESTER("Bimestre"),
     TRIMESTER("Trimestre"),
-    QUADRIMESTER("Quadrimestre"),
-    SEMESTER("Semestre"),
-    ANNUAL("Anual");
+    SEMESTER("Semestre");
 
     private final String label;
 
@@ -15,5 +13,17 @@ public enum AcademicPeriodType {
 
     public String getLabel() {
         return label;
+    }
+
+    public int getPeriodsCount() {
+        return switch (this) {
+            case BIMESTER -> 4;
+            case TRIMESTER -> 3;
+            case SEMESTER -> 2;
+        };
+    }
+
+    public int getDivisor() {
+        return getPeriodsCount();
     }
 }

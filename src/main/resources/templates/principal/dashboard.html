@@ -19,8 +19,6 @@
 
     <meta name="description" content="Dashboard da Direção - Sistema Escolar"/>
 
-    
-
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
@@ -38,54 +36,48 @@
     <script src="/assets/js/config.js"></script>
 
     <style>
-        .animated-gradient-text {
-            background: linear-gradient(270deg, #696cff, #03c3ec, #71dd37, #696cff);
-            background-size: 800% 800%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient-animation 8s ease infinite;
-            display: inline-block;
-        }
-
-        @keyframes gradient-animation {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
         .icon-pulse {
             animation: pulse-animation 2s infinite;
         }
 
         @keyframes pulse-animation {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .action-card {
-            transition: all 0.2s ease-in-out;
+            transition: all 0.25s ease-in-out;
+            border-radius: 0.75rem;
+            text-decoration: none;
         }
 
         .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            transform: translateY(-4px);
+            box-shadow: 0 0.5rem 1.25rem rgba(105, 108, 255, 0.18) !important;
+        }
+
+        .kpi-card {
+            transition: all 0.25s ease;
+            border-radius: 0.75rem;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .announcement-item {
+            border-left: 3px solid #696cff;
+            transition: background 0.2s;
+        }
+
+        .announcement-item:hover {
+            background-color: rgba(105, 108, 255, 0.04);
         }
     </style>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
-<script src="/js/global-modals.js"></script>
+    <script src="/js/global-modals.js"></script>
 </head>
 
 <body>
@@ -96,7 +88,8 @@
 
         <div class="layout-page">
 
-            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+            <!-- Navbar -->
+            <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme shadow-sm"
                  id="layout-navbar">
                 <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
                     <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
@@ -117,7 +110,7 @@
                             <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
                                data-bs-toggle="dropdown">
                                 <div class="avatar avatar-online">
-                                    <span class="avatar-initial rounded-circle bg-label-primary">D</span>
+                                    <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitial">D</span>
                                 </div>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -126,7 +119,7 @@
                                         <div class="d-flex">
                                             <div class="flex-shrink-0 me-3">
                                                 <div class="avatar avatar-online">
-                                                    <span class="avatar-initial rounded-circle bg-label-primary">D</span>
+                                                    <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitialInner">D</span>
                                                 </div>
                                             </div>
                                             <div class="flex-grow-1">
@@ -154,13 +147,10 @@
             <div class="content-wrapper">
                 <div class="container-xxl flex-grow-1 container-p-y">
 
-                    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Painel da Direção /</span> Página
-                        Principal</h4>
-
-                    <!-- 1. Banner de Boas-Vindas -->
+                    <!-- 1. Banner de Boas-Vindas (ELEMENTO OBRIGATÓRIO MANTIDO) -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <div class="card overflow-hidden border-0"
+                            <div class="card overflow-hidden border-0 shadow-sm"
                                  style="background: linear-gradient(135deg, #696cff 0%, #4558c8 100%); min-height: 130px;">
                                 <div class="card-body p-4 d-flex align-items-center justify-content-between"
                                      style="position: relative; overflow: hidden;">
@@ -189,9 +179,8 @@
                                             <h4 class="text-white fw-bold mb-1">
                                                 <span id="greetingText">Bom dia</span>, <span id="userNameDisplay">Diretor(a)</span>.
                                             </h4>
-                                            <p class="text-white-50 mb-0" style="font-size:0.85rem;max-width:480px;">
-                                                Gestão de anos acadêmicos, períodos letivos e acompanhamento dos
-                                                indicadores institucionais.
+                                            <p class="text-white-50 mb-0" style="font-size:0.85rem;max-width:520px;">
+                                                Gestão estratégica institucional, acompanhamento de turmas, períodos acadêmicos e indicadores globais.
                                             </p>
                                         </div>
                                     </div>
@@ -212,190 +201,286 @@
                         </div>
                     </div>
 
-                    <!-- 2. Cards de Métricas -->
-                    <div class="row">
-                        <div class="col-lg-3 col-md-6 col-6 mb-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="card-title d-flex align-items-start justify-content-between">
-                                        <div class="avatar flex-shrink-0">
-                                            <span class="avatar-initial rounded bg-label-primary"><i
-                                                    class="bx bx-user"></i></span>
+                    <!-- Contexto: Ano Letivo Vigente -->
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-body py-3 px-4">
+                            <div class="row align-items-center gy-3">
+                                <div class="col-md-4 d-flex align-items-center">
+                                    <div class="avatar avatar-md me-3 flex-shrink-0">
+                                        <span class="avatar-initial rounded-circle bg-label-primary">
+                                            <i class="bx bx-calendar-star fs-4"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted text-uppercase fw-semibold d-block" style="font-size: 0.75rem;">Ano Letivo Vigente</small>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fs-4 fw-bold text-dark" id="activeYearLabel">Carregando...</span>
+                                            <span class="badge bg-success" id="activeYearBadge">Ativo</span>
                                         </div>
                                     </div>
-                                    <span class="fw-semibold d-block mb-1">Alunos Ativos</span>
-                                    <h3 class="card-title mb-2" id="countStudents">
-                                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                                    </h3>
-                                    <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i>
-                                        Matriculados</small>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-6 col-6 mb-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="card-title d-flex align-items-start justify-content-between">
-                                        <div class="avatar flex-shrink-0">
-                                            <span class="avatar-initial rounded bg-label-info"><i
-                                                    class="bx bx-chalkboard"></i></span>
-                                        </div>
+                                <div class="col-md-5 d-flex flex-wrap gap-4 align-items-center border-start-md ps-md-4">
+                                    <div>
+                                        <small class="text-muted d-block">Média Mínima de Aprovação</small>
+                                        <span class="fw-bold fs-5 text-primary" id="minGradeValue">—</span>
                                     </div>
-                                    <span class="fw-semibold d-block mb-1">Professores</span>
-                                    <h3 class="card-title text-nowrap mb-1" id="countTeachers">
-                                        <div class="spinner-border spinner-border-sm text-info" role="status"></div>
-                                    </h3>
-                                    <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> Equipe
-                                        Docente</small>
+                                    <div>
+                                        <small class="text-muted d-block">Frequência Mínima Exigida</small>
+                                        <span class="fw-bold fs-5 text-info" id="minAttendanceValue">—</span>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Períodos Cadastrados</small>
+                                        <span class="fw-bold fs-5 text-warning" id="periodsCountValue">—</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-6 col-6 mb-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="card-title d-flex align-items-start justify-content-between">
-                                        <div class="avatar flex-shrink-0">
-                                            <span class="avatar-initial rounded bg-label-success"><i
-                                                    class="bx bx-building-house"></i></span>
-                                        </div>
-                                    </div>
-                                    <span class="d-block mb-1 fw-semibold">Turmas</span>
-                                    <h3 class="card-title text-nowrap mb-2" id="countClasses">
-                                        <div class="spinner-border spinner-border-sm text-success" role="status"></div>
-                                    </h3>
-                                    <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> Em
-                                        andamento</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-6 col-6 mb-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="card-title d-flex align-items-start justify-content-between">
-                                        <div class="avatar flex-shrink-0">
-                                            <span class="avatar-initial rounded bg-label-warning"><i
-                                                    class="bx bx-calendar"></i></span>
-                                        </div>
-                                    </div>
-                                    <span class="d-block mb-1 fw-semibold">Matrículas</span>
-                                    <h3 class="card-title text-nowrap mb-2" id="countEnrollments">
-                                        <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
-                                    </h3>
-                                    <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> Total
-                                        Geral</small>
+                                <div class="col-md-3 text-md-end">
+                                    <a href="/principal/academic-years.html" class="btn btn-sm btn-outline-primary">
+                                        <i class="bx bx-cog me-1"></i> Configurar Anos
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. Ações e Avisos -->
-                    <div class="row">
-                        <!-- Ações Rápidas -->
-                        <div class="col-md-6 col-lg-6 mb-4 order-1 order-md-0">
-                            <div class="card h-100">
-                                <div class="card-header d-flex align-items-center justify-content-between pb-0">
-                                    <div class="card-title mb-0">
-                                        <h5 class="m-0 me-2">Ações Rápidas Administrativas</h5>
+                    <!-- 2. Cards de Métricas Principais -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-md-6 col-6 mb-3">
+                            <div class="card kpi-card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="fw-semibold text-muted d-block mb-1">Alunos Ativos</span>
+                                            <h3 class="card-title mb-0" id="countStudents">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                            </h3>
+                                        </div>
+                                        <div class="avatar flex-shrink-0">
+                                            <span class="avatar-initial rounded-circle bg-label-primary shadow-sm"><i class="bx bx-user fs-4"></i></span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="card-body pt-4">
-                                    <div class="row gap-3 pe-2 ps-2">
-                                        <a href="/principal/create/academic-year.html"
-                                           class="col action-card btn btn-outline-primary d-flex flex-column justify-content-center align-items-center p-3">
-                                            <i class="bx bx-calendar-star fs-3 mb-2"></i>
-                                            <span>Novo Ano Acadêmico</span>
-                                        </a>
-                                        <a href="/principal/create/academic-period.html"
-                                           class="col action-card btn btn-outline-info d-flex flex-column justify-content-center align-items-center p-3">
-                                            <i class="bx bx-time-five fs-3 mb-2"></i>
-                                            <span>Novo Período</span>
-                                        </a>
-                                    </div>
-
+                                    <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> Cadastrados no sistema</small>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Avisos do Sistema -->
-                        <div class="col-md-6 col-lg-6 order-2 mb-4">
-                            <div class="card h-100">
-                                <div class="card-header d-flex align-items-center justify-content-between">
-                                    <h5 class="card-title m-0 me-2">Status Acadêmico</h5>
-                                    <i class="bx bx-bell text-primary fs-4 icon-pulse"></i>
-                                </div>
+                        <div class="col-lg-3 col-md-6 col-6 mb-3">
+                            <div class="card kpi-card h-100 shadow-sm">
                                 <div class="card-body">
-                                    <ul class="p-0 m-0">
-                                        <li class="d-flex mb-4 pb-1">
-                                            <div class="avatar flex-shrink-0 me-3">
-                                                <span class="avatar-initial rounded bg-label-primary"><i
-                                                        class="bx bx-calendar-check"></i></span>
-                                            </div>
-                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                                <div class="me-2">
-                                                    <h6 class="mb-0">Ano Acadêmico</h6>
-                                                    <small class="text-muted d-block mb-1">Verifique se o ano acadêmico
-                                                        atual está ativo.</small>
-                                                </div>
-                                                <div class="user-progress d-flex align-items-center gap-1">
-                                                    <a href="/principal/academic-years.html"
-                                                       class="badge bg-primary text-white">Gerenciar</a>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li class="d-flex mb-4 pb-1">
-                                            <div class="avatar flex-shrink-0 me-3">
-                                                <span class="avatar-initial rounded bg-label-warning"><i
-                                                        class="bx bx-time"></i></span>
-                                            </div>
-                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                                <div class="me-2">
-                                                    <h6 class="mb-0">Período Acadêmico</h6>
-                                                    <small class="text-muted d-block mb-1">Fechamento e abertura de
-                                                        Bimestres/Trimestres.</small>
-                                                </div>
-                                                <div class="user-progress d-flex align-items-center gap-1">
-                                                    <a href="/principal/academic-periods.html"
-                                                       class="badge bg-warning text-dark">Gerenciar</a>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="fw-semibold text-muted d-block mb-1">Professores</span>
+                                            <h3 class="card-title mb-0" id="countTeachers">
+                                                <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+                                            </h3>
+                                        </div>
+                                        <div class="avatar flex-shrink-0">
+                                            <span class="avatar-initial rounded-circle bg-label-info shadow-sm"><i class="bx bx-chalkboard fs-4"></i></span>
+                                        </div>
+                                    </div>
+                                    <small class="text-info fw-semibold"><i class="bx bx-book-open"></i> Equipe docente ativa</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6 col-6 mb-3">
+                            <div class="card kpi-card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="fw-semibold text-muted d-block mb-1">Turmas Ativas</span>
+                                            <h3 class="card-title mb-0" id="countClasses">
+                                                <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                                            </h3>
+                                        </div>
+                                        <div class="avatar flex-shrink-0">
+                                            <span class="avatar-initial rounded-circle bg-label-success shadow-sm"><i class="bx bx-building-house fs-4"></i></span>
+                                        </div>
+                                    </div>
+                                    <small class="text-success fw-semibold"><i class="bx bx-layer"></i> No ano vigente</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6 col-6 mb-3">
+                            <div class="card kpi-card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="fw-semibold text-muted d-block mb-1">Matrículas no Ano</span>
+                                            <h3 class="card-title mb-0" id="countEnrollments">
+                                                <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                                            </h3>
+                                        </div>
+                                        <div class="avatar flex-shrink-0">
+                                            <span class="avatar-initial rounded-circle bg-label-warning shadow-sm"><i class="bx bx-id-card fs-4"></i></span>
+                                        </div>
+                                    </div>
+                                    <small class="text-warning fw-semibold"><i class="bx bx-user-check"></i> Alunos enturmados</small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 4. Tabela Recentes -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
+                    <!-- 3. Gráficos Analíticos com ApexCharts -->
+                    <div class="row mb-4">
+                        <!-- Gráfico 1: Divisão do Ano por Turma -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                    <div>
+                                        <h5 class="card-title mb-0">Divisão do Ano Letivo por Turmas</h5>
+                                        <small class="text-muted">Proporção de turmas por modelo avaliativo</small>
+                                    </div>
+                                    <span class="badge bg-label-primary"><i class="bx bx-pie-chart-alt"></i> Visão Geral</span>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                                    <div id="chartDivision" style="min-height: 280px; width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico 2: Turmas por Série -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header d-flex justify-content-between align-items-center pb-2">
+                                    <div>
+                                        <h5 class="card-title mb-0">Turmas por Série Escolar</h5>
+                                        <small class="text-muted">Distribuição dos níveis de ensino</small>
+                                    </div>
+                                    <span class="badge bg-label-success"><i class="bx bx-bar-chart-alt-2"></i> Séries</span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chartGrades" style="min-height: 280px; width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Períodos do Ano Letivo & Ações Rápidas -->
+                    <div class="row mb-4">
+                        <!-- Períodos Acadêmicos do Ano -->
+                        <div class="col-lg-7 mb-4">
+                            <div class="card h-100 shadow-sm">
                                 <div class="card-header d-flex align-items-center justify-content-between">
-                                    <h5 class="card-title m-0 me-2">Últimos Alunos Cadastrados</h5>
-                                    <a href="/secretary/students.html" class="btn btn-sm btn-outline-primary">Ver
-                                        todos</a>
+                                    <div>
+                                        <h5 class="card-title mb-0"><i class="bx bx-time-five text-primary me-2"></i>Períodos do Ano Letivo</h5>
+                                        <small class="text-muted">Abertura e encerramento dos ciclos de notas</small>
+                                    </div>
+                                    <a href="/principal/academic-periods.html" class="btn btn-sm btn-outline-primary">
+                                        Gerenciar
+                                    </a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                            <tr>
+                                                <th>Período</th>
+                                                <th>Divisão</th>
+                                                <th>Início / Término</th>
+                                                <th>Status</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="activePeriodsTableBody">
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4">
+                                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hub de Ações Estratégicas -->
+                        <div class="col-lg-5 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header pb-2">
+                                    <h5 class="card-title mb-0"><i class="bx bx-rocket text-warning me-2"></i>Ações Estratégicas da Direção</h5>
+                                    <small class="text-muted">Acessos rápidos para fluxos administrativos</small>
+                                </div>
+                                <div class="card-body pt-3">
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <a href="/principal/create/academic-year.html" class="action-card card bg-label-primary border-0 p-3 text-center h-100">
+                                                <i class="bx bx-calendar-star fs-2 mb-2 text-primary"></i>
+                                                <h6 class="mb-0 text-primary fw-semibold">Novo Ano</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Criar ano letivo</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/principal/create/academic-period.html" class="action-card card bg-label-info border-0 p-3 text-center h-100">
+                                                <i class="bx bx-time fs-2 mb-2 text-info"></i>
+                                                <h6 class="mb-0 text-info fw-semibold">Novo Período</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Bimestre / Trimestre</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/principal/year-conclusion.html" class="action-card card bg-label-warning border-0 p-3 text-center h-100">
+                                                <i class="bx bx-check-shield fs-2 mb-2 text-warning"></i>
+                                                <h6 class="mb-0 text-warning fw-semibold">Conclusão de Ano</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Fechar ano letivo</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/principal/year-conclusion-results.html" class="action-card card bg-label-success border-0 p-3 text-center h-100">
+                                                <i class="bx bx-bar-chart-alt-2 fs-2 mb-2 text-success"></i>
+                                                <h6 class="mb-0 text-success fw-semibold">Histórico de Ano</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Resultados e médias</small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Tabela de Últimos Alunos & Mural de Comunicados -->
+                    <div class="row">
+                        <!-- Últimos Alunos Cadastrados -->
+                        <div class="col-lg-7 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title m-0 me-2"><i class="bx bx-user text-primary me-2"></i>Últimos Alunos Cadastrados</h5>
+                                    <a href="/secretary/students.html" class="btn btn-sm btn-outline-primary">Ver todos</a>
                                 </div>
                                 <div class="table-responsive">
-                                    <table class="table table-hover table-borderless mb-0">
+                                    <table class="table table-hover align-middle mb-0">
                                         <thead class="table-light">
                                         <tr>
                                             <th>Aluno</th>
                                             <th>E-mail</th>
                                             <th>Matrícula</th>
-                                            <th>Data de Cadastro</th>
+                                            <th>Cadastro</th>
                                         </tr>
                                         </thead>
                                         <tbody id="recentStudentsTable">
                                         <tr>
                                             <td colspan="4" class="text-center py-4">
-                                                <div class="spinner-border spinner-border-sm text-primary"
-                                                     role="status"></div>
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                                             </td>
                                         </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mural de Comunicados -->
+                        <div class="col-lg-5 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title m-0 me-2"><i class="bx bx-bell text-warning me-2"></i>Comunicados Recentes</h5>
+                                    <a href="/principal/create/announcement.html" class="btn btn-sm btn-outline-warning">Novo</a>
+                                </div>
+                                <div class="card-body">
+                                    <div id="announcementsFeed" class="d-flex flex-column gap-3">
+                                        <div class="text-center py-4">
+                                            <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -406,8 +491,8 @@
                 <footer class="content-footer footer bg-footer-theme">
                     <div class="container-fluid d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
                         <div class="mb-2 mb-md-0">
-                                Copyright © 2026 EscolaWEB. Todos os direitos reservados.
-                            </div>
+                            Copyright © 2026 EscolaWEB. Todos os direitos reservados.
+                        </div>
                     </div>
                 </footer>
                 <div class="content-backdrop fade"></div>
@@ -427,16 +512,24 @@
 <script src="/js/load-sidebar.js"></script>
 
 <script>
+    function logout() {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('user_name');
+        window.location.href = '/login.html';
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
         const token = localStorage.getItem('jwt_token');
         let userEmail = '';
 
-// ── Saudação por horário ──────────────────────────────────────────
+        // ── Saudação por horário ──────────────────────────────────────────
         const hour = new Date().getHours();
         const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
         document.getElementById('greetingText').textContent = greeting;
 
-// ── Data atual em PT-BR ───────────────────────────────────────────
+        // ── Data atual em PT-BR ───────────────────────────────────────────
         const now = new Date();
         const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
         const weekDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
@@ -445,7 +538,7 @@
             `${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
         document.getElementById('currentDayOfWeek').textContent = weekDays[now.getDay()];
 
-// ── Nome e avatar a partir do token ──────────────────────────────
+        // ── Nome e avatar a partir do token ──────────────────────────────
         if (token) {
             try {
                 const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
@@ -455,15 +548,18 @@
                     const emailName = userEmail.split('@')[0];
                     document.getElementById('userNameDisplay').textContent = emailName;
                     document.getElementById('dropdownUserName').textContent = emailName;
-                    document.getElementById('avatarInitial').textContent = emailName.charAt(0).toUpperCase();
+                    const initial = emailName.charAt(0).toUpperCase();
+                    document.getElementById('avatarInitial').textContent = initial;
+                    document.getElementById('dropdownAvatarInitial').textContent = initial;
+                    const innerElem = document.getElementById('dropdownAvatarInitialInner');
+                    if (innerElem) innerElem.textContent = initial;
                 }
-            } catch (_) {
-            }
+            } catch (_) {}
         }
 
         const headers = {'Authorization': `Bearer ${token || ''}`};
 
-// Busca o nome real do diretor para substituir o nome do e-mail
+        // Busca o nome real do diretor
         if (userEmail) {
             fetch('/api/principals', {headers})
                 .then(res => res.ok ? res.json() : Promise.reject())
@@ -474,69 +570,248 @@
                     const firstName = me.name.split(' ')[0];
                     document.getElementById('userNameDisplay').textContent = firstName;
                     document.getElementById('dropdownUserName').textContent = firstName;
-                    document.getElementById('avatarInitial').textContent = firstName.charAt(0).toUpperCase();
+                    const initial = firstName.charAt(0).toUpperCase();
+                    document.getElementById('avatarInitial').textContent = initial;
+                    document.getElementById('dropdownAvatarInitial').textContent = initial;
+                    const innerElem = document.getElementById('dropdownAvatarInitialInner');
+                    if (innerElem) innerElem.textContent = initial;
                 })
-                .catch(() => {
-                });
+                .catch(() => {});
         }
 
-        async function fetchCount(endpoint, elementId) {
+        async function fetchSafe(endpoint) {
             try {
                 const res = await fetch(endpoint, {headers});
-                if (res.ok) {
-                    const data = await res.json();
-                    document.getElementById(elementId).textContent = Array.isArray(data) ? data.length : 0;
-                    return data;
-                }
+                if (res.ok) return await res.json();
             } catch (e) {
                 console.error('Erro ao buscar dados de', endpoint, e);
             }
-            document.getElementById(elementId).textContent = '0';
-            return [];
+            return null;
         }
 
-        const students = await fetchCount('/api/students?activeOnly=true', 'countStudents');
-        await fetchCount('/api/teachers?activeOnly=true', 'countTeachers');
-        await fetchCount('/api/classrooms', 'countClasses');
-        await fetchCount('/api/enrollments', 'countEnrollments');
+        // 1. Carrega Métricas Principais em paralelo
+        const [studentsData, teachersData, classroomsData, enrollmentsData, activeYearData] = await Promise.all([
+            fetchSafe('/api/students?activeOnly=true'),
+            fetchSafe('/api/teachers?activeOnly=true'),
+            fetchSafe('/api/classrooms?activeOnly=true'),
+            fetchSafe('/api/enrollments?activeOnly=true'),
+            fetchSafe('/api/academic-years/active')
+        ]);
 
-        const recentTable = document.getElementById('recentStudentsTable');
-        if (students && students.length > 0) {
-            const sorted = students.sort((a, b) => b.id - a.id).slice(0, 5);
+        const students = Array.isArray(studentsData) ? studentsData : [];
+        const teachers = Array.isArray(teachersData) ? teachersData : [];
+        const classrooms = Array.isArray(classroomsData) ? classroomsData : [];
+        const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
 
-            const avatarColors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-warning', 'bg-label-danger'];
+        document.getElementById('countStudents').textContent = students.length;
+        document.getElementById('countTeachers').textContent = teachers.length;
+        document.getElementById('countClasses').textContent = classrooms.length;
+        document.getElementById('countEnrollments').textContent = enrollments.length;
 
-            recentTable.innerHTML = sorted.map(s => {
-                const color = avatarColors[s.id % avatarColors.length];
-                const initial = s.name.charAt(0).toUpperCase();
-                const date = s.createdAt ? new Date(s.createdAt).toLocaleDateString('pt-BR') : '—';
+        // 2. Ano Letivo Ativo e Períodos
+        let activePeriods = [];
+        if (activeYearData && activeYearData.id) {
+            document.getElementById('activeYearLabel').textContent = `Ano Letivo ${activeYearData.year}`;
+            document.getElementById('minGradeValue').textContent = activeYearData.minimumGrade != null ? Number(activeYearData.minimumGrade).toFixed(1) : '6.0';
+            document.getElementById('minAttendanceValue').textContent = activeYearData.minimumAttendance != null ? `${Number(activeYearData.minimumAttendance)}%` : '75%';
+
+            const periodsData = await fetchSafe(`/api/academic-periods/academic-year/${activeYearData.id}`);
+            if (Array.isArray(periodsData)) {
+                activePeriods = periodsData;
+                document.getElementById('periodsCountValue').textContent = `${periodsData.length} períodos`;
+            } else {
+                document.getElementById('periodsCountValue').textContent = '0 períodos';
+            }
+        } else {
+            document.getElementById('activeYearLabel').textContent = 'Nenhum Ano Ativo';
+            document.getElementById('activeYearBadge').className = 'badge bg-warning';
+            document.getElementById('activeYearBadge').textContent = 'Inativo';
+            document.getElementById('minGradeValue').textContent = '—';
+            document.getElementById('minAttendanceValue').textContent = '—';
+            document.getElementById('periodsCountValue').textContent = '0';
+        }
+
+        // Preenche Tabela de Períodos
+        const periodsTbody = document.getElementById('activePeriodsTableBody');
+        if (activePeriods.length > 0) {
+            periodsTbody.innerHTML = activePeriods.map(p => {
+                const start = p.startDate ? new Date(p.startDate + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+                const end = p.endDate ? new Date(p.endDate + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+                const statusBadge = p.closed
+                    ? '<span class="badge bg-label-secondary">Fechado</span>'
+                    : '<span class="badge bg-label-success">Aberto / Em Andamento</span>';
+                const divisionBadge = p.periodTypeLabel
+                    ? `<span class="badge bg-label-info">${p.periodTypeLabel}</span>`
+                    : '<span class="badge bg-label-secondary">—</span>';
+
                 return `
                     <tr>
-                        <td>
-                            <div class="d-flex justify-content-start align-items-center">
-                                <div class="avatar avatar-sm me-3">
-                                    <span class="avatar-initial rounded-circle ${color}">${initial}</span>
-                                </div>
-                                <div class="d-flex flex-column">
-                                    <span class="fw-semibold lh-1">${s.name}</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td>${s.email}</td>
-                        <td>${s.registrationNumber || 'N/A'}</td>
-                        <td>${date}</td>
+                        <td><strong>${p.name}</strong></td>
+                        <td>${divisionBadge}</td>
+                        <td><small class="text-muted">${start} até ${end}</small></td>
+                        <td>${statusBadge}</td>
                     </tr>
                 `;
             }).join('');
         } else {
-            recentTable.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Nenhum aluno encontrado.</td></tr>`;
+            periodsTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Nenhum período cadastrado para o ano ativo.</td></tr>';
         }
 
+        // 3. Renderiza Gráfico 1: Divisão do Ano Letivo por Turmas
+        const divisionCounts = { 'BIMESTER': 0, 'TRIMESTER': 0, 'SEMESTER': 0 };
+        classrooms.forEach(c => {
+            if (c.periodType && divisionCounts[c.periodType] !== undefined) {
+                divisionCounts[c.periodType]++;
+            } else if (c.periodType === 'BIMESTRE' || c.periodType === 'BIMESTER') {
+                divisionCounts['BIMESTER']++;
+            } else if (c.periodType === 'TRIMESTRE' || c.periodType === 'TRIMESTER') {
+                divisionCounts['TRIMESTER']++;
+            } else if (c.periodType === 'SEMESTRE' || c.periodType === 'SEMESTER') {
+                divisionCounts['SEMESTER']++;
+            }
+        });
+
+        const divisionLabels = ['Bimestres (4 partes)', 'Trimestres (3 partes)', 'Semestres (2 partes)'];
+        const divisionSeries = [divisionCounts['BIMESTER'], divisionCounts['TRIMESTER'], divisionCounts['SEMESTER']];
+        const hasDivisionData = divisionSeries.some(v => v > 0);
+
+        const divisionOptions = {
+            chart: {
+                type: 'donut',
+                height: 280,
+                toolbar: { show: false }
+            },
+            labels: divisionLabels,
+            series: hasDivisionData ? divisionSeries : [1, 1, 1],
+            colors: hasDivisionData ? ['#696cff', '#03c3ec', '#71dd37'] : ['#e0e0e0', '#e0e0e0', '#e0e0e0'],
+            dataLabels: { enabled: hasDivisionData },
+            legend: { position: 'bottom' },
+            tooltip: {
+                enabled: hasDivisionData,
+                y: {
+                    formatter: function(val) {
+                        return val + ' turma(s)';
+                    }
+                }
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '65%',
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: 'Turmas',
+                                formatter: () => hasDivisionData ? classrooms.length : '0'
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        new ApexCharts(document.querySelector("#chartDivision"), divisionOptions).render();
+
+        // 4. Renderiza Gráfico 2: Turmas por Série
+        const gradeCounts = {};
+        classrooms.forEach(c => {
+            const label = c.schoolGradeLabel || c.schoolGrade || 'Outras';
+            gradeCounts[label] = (gradeCounts[label] || 0) + 1;
+        });
+
+        const gradeLabels = Object.keys(gradeCounts).length > 0 ? Object.keys(gradeCounts) : ['Sem turmas'];
+        const gradeSeriesData = Object.keys(gradeCounts).length > 0 ? Object.values(gradeCounts) : [0];
+
+        const gradesChartOptions = {
+            chart: {
+                type: 'bar',
+                height: 280,
+                toolbar: { show: false }
+            },
+            series: [{
+                name: 'Turmas',
+                data: gradeSeriesData
+            }],
+            xaxis: {
+                categories: gradeLabels,
+                labels: { rotate: -20, style: { fontSize: '11px' } }
+            },
+            colors: ['#696cff'],
+            plotOptions: {
+                bar: {
+                    borderRadius: 6,
+                    columnWidth: '40%',
+                    distributed: false
+                }
+            },
+            dataLabels: { enabled: false },
+            yaxis: {
+                labels: {
+                    formatter: (val) => Math.floor(val)
+                }
+            }
+        };
+        new ApexCharts(document.querySelector("#chartGrades"), gradesChartOptions).render();
+
+        // 5. Tabela de Últimos Alunos
+        const recentTable = document.getElementById('recentStudentsTable');
+        if (students.length > 0) {
+            const sorted = [...students].sort((a, b) => b.id - a.id).slice(0, 5);
+            const avatarColors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-warning', 'bg-label-danger'];
+
+            recentTable.innerHTML = sorted.map(s => {
+                const color = avatarColors[s.id % avatarColors.length];
+                const initial = s.name ? s.name.charAt(0).toUpperCase() : 'A';
+                const date = s.createdAt ? new Date(s.createdAt).toLocaleDateString('pt-BR') : '—';
+                return `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm me-2">
+                                    <span class="avatar-initial rounded-circle ${color}">${initial}</span>
+                                </div>
+                                <span class="fw-semibold">${s.name}</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">${s.email}</small></td>
+                        <td><span class="badge bg-label-secondary">${s.registrationNumber || 'N/A'}</span></td>
+                        <td><small class="text-muted">${date}</small></td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            recentTable.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Nenhum aluno cadastrado.</td></tr>`;
+        }
+
+        // 6. Mural de Comunicados
+        const announcementsFeed = document.getElementById('announcementsFeed');
+        const announcementsData = await fetchSafe('/api/announcements?size=4');
+        const announcementsList = announcementsData?.content || (Array.isArray(announcementsData) ? announcementsData : []);
+
+        if (announcementsList.length > 0) {
+            announcementsFeed.innerHTML = announcementsList.slice(0, 4).map(a => {
+                const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('pt-BR') : '—';
+                return `
+                    <div class="announcement-item p-3 rounded bg-light">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <h6 class="mb-0 fw-bold text-dark">${a.title}</h6>
+                            <small class="text-muted">${date}</small>
+                        </div>
+                        <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${a.message || a.content || ''}</p>
+                        <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${a.authorName || 'Direção'}</small>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            announcementsFeed.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <i class="bx bx-bell-off fs-2 mb-2 d-block"></i>
+                    Nenhum comunicado recente publicado.
+                </div>
+            `;
+        }
     });
 </script>
 
 </body>
 </html>
-
-
-

@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.dto.response;
 
+import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.model.enums.StudentSituation;
 
 import java.math.BigDecimal;
@@ -12,6 +13,8 @@ public record ReportCardDTO(
         Integer academicYearId,
         Integer academicYear,
         String classRoomName,
+        AcademicPeriodType periodType,
+        String periodTypeLabel,
         BigDecimal minimumGrade,
         int totalPeriods,
         BigDecimal targetScore,

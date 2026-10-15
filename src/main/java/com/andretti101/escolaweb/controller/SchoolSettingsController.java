@@ -42,7 +42,7 @@ public class SchoolSettingsController {
         settings.setAddress(dto.address());
         settings.setPhone(dto.phone());
         settings.setEmail(dto.email());
-        // Sensitive fields (minimumGrade, minimumAttendance, periodType) are intentionally NOT mapped
+        // Sensitive fields (minimumGrade, minimumAttendance) are intentionally NOT mapped
         // They should only be updated by the AcademicYearConclusionService
         return settings;
     }
@@ -56,7 +56,6 @@ public class SchoolSettingsController {
                 s.getEmail(),
                 s.getMinimumGrade(),
                 s.getMinimumAttendance(),
-                s.getPeriodType(),
                 s.getCreatedAt()
         );
     }

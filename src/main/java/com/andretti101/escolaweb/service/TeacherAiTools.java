@@ -137,7 +137,7 @@ public class TeacherAiTools {
             return "Escola: " + settings.getSchoolName() +
                    "\nMédia mínima para aprovação: " + settings.getMinimumGrade() +
                    "\nFrequência mínima (%): " + settings.getMinimumAttendance() +
-                   "\nTipo de período: " + settings.getPeriodType();
+                   "\nDivisão de períodos: varia por turma (cada turma possui sua divisão)";
         });
     }
 }
