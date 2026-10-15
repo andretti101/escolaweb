@@ -21,6 +21,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Turmas", description = "Endpoints para gerenciamento de turmas escolares, turnos, séries e vinculação ao ano letivo")
 @RestController
 @RequestMapping("/api/classrooms")
 @RequiredArgsConstructor
@@ -29,6 +36,12 @@ public class ClassRoomController {
     private final ClassRoomService classRoomService;
     private final AcademicPeriodRepository academicPeriodRepository;
 
+    @Operation(summary = "Criar turma", description = "Cadastra uma nova turma informando nome, turno, série escolar, tipo de divisão de períodos e ano letivo. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Turma criada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @PostMapping
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<ClassRoomResponseDTO> create(@Valid @RequestBody ClassRoomRequestDTO dto) {
@@ -36,12 +49,17 @@ public class ClassRoomController {
                 .body(toResponse(classRoomService.create(toEntity(dto))));
     }
 
+    @Operation(summary = "Listar turmas", description = "Retorna uma lista paginada de turmas com suporte a filtro por status ativo/inativo e ano letivo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Página de turmas retornada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado")
+    })
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
     public ResponseEntity<org.springframework.data.domain.Page<ClassRoomResponseDTO>> findAll(
-            @RequestParam(required = false, defaultValue = "true") boolean activeOnly,
-            @RequestParam(required = false) Integer academicYearId,
-            org.springframework.data.domain.Pageable pageable) {
+            @Parameter(description = "Filtrar apenas turmas ativas (padrão: true)") @RequestParam(required = false, defaultValue = "true") boolean activeOnly,
+            @Parameter(description = "ID do ano letivo para filtro") @RequestParam(required = false) Integer academicYearId,
+            @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
         org.springframework.data.domain.Page<ClassRoom> page;
         if (academicYearId != null) {
             page = activeOnly
@@ -56,41 +74,79 @@ public class ClassRoomController {
         return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
+    @Operation(summary = "Buscar turma por ID", description = "Retorna as informações completas de uma turma específica, incluindo períodos acadêmicos associados.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Turma encontrada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Turma não encontrada")
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
-    public ResponseEntity<ClassRoomResponseDTO> findById(@PathVariable Integer id) {
+    public ResponseEntity<ClassRoomResponseDTO> findById(
+            @Parameter(description = "ID da turma") @PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(classRoomService.findById(id)));
     }
 
+    @Operation(summary = "Listar turmas por ano letivo", description = "Retorna todas as turmas cadastradas em um determinado ano letivo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de turmas retornada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Ano letivo não encontrado")
+    })
     @GetMapping("/academic-year/{yearId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
-    public ResponseEntity<List<ClassRoomResponseDTO>> findByAcademicYear(@PathVariable Integer yearId) {
+    public ResponseEntity<List<ClassRoomResponseDTO>> findByAcademicYear(
+            @Parameter(description = "ID do ano letivo") @PathVariable Integer yearId) {
         return ResponseEntity.ok(toResponseList(classRoomService.findByAcademicYear(yearId)));
     }
 
+    @Operation(summary = "Atualizar turma", description = "Atualiza os dados de identificação, turno, série ou divisão de uma turma. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Turma atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+            @ApiResponse(responseCode = "404", description = "Turma não encontrada")
+    })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<ClassRoomResponseDTO> update(
-            @PathVariable Integer id, @Valid @RequestBody ClassRoomRequestDTO dto) {
+            @Parameter(description = "ID da turma") @PathVariable Integer id,
+            @Valid @RequestBody ClassRoomRequestDTO dto) {
         return ResponseEntity.ok(toResponse(classRoomService.update(id, toEntity(dto))));
     }
 
+    @Operation(summary = "Excluir turma", description = "Exclui uma turma caso não possua alunos matriculados ou aulas vinculadas. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Turma excluída com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Não é possível excluir turma com matrículas ativas"),
+            @ApiResponse(responseCode = "404", description = "Turma não encontrada")
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "ID da turma a ser excluída") @PathVariable Integer id) {
         classRoomService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Ativar turma", description = "Reativa uma turma desativada. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Turma ativada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Turma não encontrada")
+    })
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<ClassRoomResponseDTO> activate(@PathVariable Integer id) {
+    public ResponseEntity<ClassRoomResponseDTO> activate(
+            @Parameter(description = "ID da turma") @PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(classRoomService.activate(id)));
     }
 
+    @Operation(summary = "Desativar turma", description = "Desativa uma turma, impedindo novas matrículas. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Turma desativada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Turma não encontrada")
+    })
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<ClassRoomResponseDTO> deactivate(@PathVariable Integer id) {
+    public ResponseEntity<ClassRoomResponseDTO> deactivate(
+            @Parameter(description = "ID da turma") @PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(classRoomService.deactivate(id)));
     }
 

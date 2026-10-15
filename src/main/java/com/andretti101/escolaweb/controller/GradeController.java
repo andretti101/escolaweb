@@ -36,6 +36,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Notas e Avaliações", description = "Endpoints para lançamento, edição e cálculo de médias das notas escolares")
 @RestController
 @RequestMapping("/api/grades")
 @RequiredArgsConstructor
@@ -46,6 +53,13 @@ public class GradeController {
     private final AssessmentService assessmentService;
     private final TeacherClassSubjectService teacherClassSubjectService;
 
+    @Operation(summary = "Lançar nota do estudante", description = "Registra a nota obtida por um estudante em uma avaliação específica. Professores só lançam notas em suas próprias avaliações.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Nota lançada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Valor de nota inválido ou estudante já avaliado"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Estudante ou avaliação não encontrada")
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<GradeResponseDTO> launch(@Valid @RequestBody GradeLaunchRequestDTO dto) {
@@ -57,10 +71,15 @@ public class GradeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(launched));
     }
 
+    @Operation(summary = "Listar todas as notas", description = "Retorna uma lista paginada de todas as notas registradas no sistema. Exclusivo para Secretaria e Direção.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Página de notas retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<PagedResponse<GradeResponseDTO>> findAll(
-            @PageableDefault(size = 20) Pageable pageable) {
+            @org.springdoc.core.annotations.ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         Page<Grade> page = gradeService.findAll(pageable);
         return ResponseEntity.ok(PagedResponse.of(
                 page.getContent().stream().map(this::toResponse).toList(),
@@ -69,20 +88,33 @@ public class GradeController {
         ));
     }
 
+    @Operation(summary = "Buscar nota por ID", description = "Retorna o detalhamento de uma nota específica. Estudantes só acessam suas próprias notas.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Nota encontrada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Nota não encontrada")
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
-    public ResponseEntity<GradeResponseDTO> findById(@PathVariable Integer id) {
+    public ResponseEntity<GradeResponseDTO> findById(
+            @Parameter(description = "ID da nota lançada") @PathVariable Integer id) {
         Grade grade = gradeService.findById(id);
         authenticatedUserService.enforceStudentOwnership(grade.getStudent().getId());
         authenticatedUserService.enforceTeacherOwnership(grade.getAssessment().getTeacherClassSubject());
         return ResponseEntity.ok(toResponse(grade));
     }
 
+    @Operation(summary = "Listar notas por estudante", description = "Retorna todas as notas de um estudante, com filtro opcional por ano letivo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de notas retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<List<GradeResponseDTO>> findByStudent(
-            @PathVariable Integer studentId,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
+            @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
+            @Parameter(description = "ID do ano letivo opcional") @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
 
         List<Grade> grades = gradeService.findByStudent(studentId);
@@ -106,9 +138,16 @@ public class GradeController {
         return ResponseEntity.ok(grades.stream().map(this::toResponse).toList());
     }
 
+    @Operation(summary = "Listar notas por avaliação", description = "Retorna todas as notas atribuídas aos estudantes para uma avaliação específica.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de notas da avaliação retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Avaliação não encontrada")
+    })
     @GetMapping("/assessment/{assessmentId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<GradeResponseDTO>> findByAssessment(@PathVariable Integer assessmentId) {
+    public ResponseEntity<List<GradeResponseDTO>> findByAssessment(
+            @Parameter(description = "ID da avaliação") @PathVariable Integer assessmentId) {
         if (authenticatedUserService.isTeacher()) {
             Assessment assessment = assessmentService.findById(assessmentId);
             authenticatedUserService.enforceTeacherOwnership(assessment.getTeacherClassSubject());
@@ -118,11 +157,17 @@ public class GradeController {
         );
     }
 
+    @Operation(summary = "Calcular média do estudante na disciplina", description = "Calcula a média ponderada/aritmética das notas do estudante para a atribuição docente especificada.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Média calculada com sucesso (ex: 8.75)"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Estudante ou atribuição não encontrada")
+    })
     @GetMapping("/average/student/{studentId}/tcs/{tcsId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<BigDecimal> calculateAverage(
-            @PathVariable Integer studentId,
-            @PathVariable Integer tcsId) {
+            @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
+            @Parameter(description = "ID da atribuição professor-turma-disciplina") @PathVariable Integer tcsId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
         if (authenticatedUserService.isTeacher()) {
             TeacherClassSubject tcs = teacherClassSubjectService.findById(tcsId);
@@ -131,10 +176,17 @@ public class GradeController {
         return ResponseEntity.ok(gradeService.calculateAverage(studentId, tcsId));
     }
 
+    @Operation(summary = "Atualizar nota", description = "Altera o valor numérico de uma nota lançada e grava o motivo da alteração no histórico de auditoria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Nota atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Novo valor inválido ou período encerrado"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Nota não encontrada")
+    })
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<GradeResponseDTO> update(
-            @PathVariable Integer id,
+            @Parameter(description = "ID da nota") @PathVariable Integer id,
             @Valid @RequestBody GradeUpdateRequestDTO dto) {
         if (authenticatedUserService.isTeacher()) {
             Grade existing = gradeService.findById(id);
@@ -146,9 +198,16 @@ public class GradeController {
         return ResponseEntity.ok(toResponse(gradeService.update(id, incoming, dto.notes())));
     }
 
+    @Operation(summary = "Excluir nota", description = "Remove um lançamento de nota do sistema. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Nota excluída com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Nota não encontrada")
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "ID da nota a ser excluída") @PathVariable Integer id) {
         gradeService.delete(id);
         return ResponseEntity.noContent().build();
     }

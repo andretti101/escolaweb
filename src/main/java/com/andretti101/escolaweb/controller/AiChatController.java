@@ -22,9 +22,15 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "Assistente de IA", description = "Endpoints para interação e gerenciamento do histórico com o assistente inteligente escolar")
 @Controller
 @RequiredArgsConstructor
 public class AiChatController {
@@ -38,19 +44,34 @@ public class AiChatController {
     public record ChatResponse(String reply, String conversationId) {}
     public record HistoryMessage(String role, String content) {}
 
+    @Operation(summary = "Obter histórico de conversa com a IA", description = "Retorna a lista de mensagens trocadas entre o usuário e o assistente de IA para a conversa informada.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Histórico retornado com sucesso")
+    })
     @GetMapping("/api/chat/history")
     @ResponseBody
-    public List<HistoryMessage> getHistory(@RequestParam String conversationId) {
+    public List<HistoryMessage> getHistory(
+            @Parameter(description = "Identificador único da conversa / sessão de chat")
+            @RequestParam String conversationId) {
         return chatMemory.get(conversationId).stream()
                 .filter(m -> m.getMessageType().name().equals("USER") || m.getMessageType().name().equals("ASSISTANT"))
                 .map(m -> new HistoryMessage(m.getMessageType().name(), m.getText()))
                 .toList();
     }
 
+    @Operation(summary = "Apagar histórico a partir de um índice", description = "Remove as mensagens do histórico da IA a partir do índice informado, permitindo reiniciar ou ramificar a conversa.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Histórico podado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Parâmetros inválidos")
+    })
     @DeleteMapping("/api/chat/history/{conversationId}/after/{messageIndex}")
     @ResponseBody
     @Transactional
-    public ResponseEntity<?> deleteHistoryAfter(@PathVariable String conversationId, @PathVariable int messageIndex) {
+    public ResponseEntity<?> deleteHistoryAfter(
+            @Parameter(description = "Identificador único da conversa")
+            @PathVariable String conversationId,
+            @Parameter(description = "Índice da primeira mensagem a ser removida")
+            @PathVariable int messageIndex) {
         List<ChatMessageHistory> history = chatMessageHistoryRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
         int currentFilteredIndex = 0;
         int startIndexToDelete = -1;

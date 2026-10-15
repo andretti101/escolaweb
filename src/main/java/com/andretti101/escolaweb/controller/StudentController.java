@@ -7,6 +7,11 @@ import com.andretti101.escolaweb.dto.response.StudentResponseDTO;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.StudentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag(name = "Estudantes", description = "Endpoints para gerenciamento do cadastro de alunos, dados de contato e responsáveis")
 @RestController
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
@@ -35,6 +41,12 @@ public class StudentController {
     private final com.andretti101.escolaweb.service.AcademicYearService academicYearService;
     private final AuthenticatedUserService authenticatedUserService;
 
+    @Operation(summary = "Cadastrar estudante", description = "Cria a ficha cadastral do estudante com dados pessoais, matrícula, data de nascimento e contatos. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Estudante cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos, e-mail ou matrícula já existentes"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @PostMapping
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<StudentResponseDTO> create(@Valid @RequestBody StudentRequestDTO dto) {
@@ -42,12 +54,17 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
+    @Operation(summary = "Listar estudantes", description = "Retorna uma lista paginada de estudantes com suporte a filtros por status ativo e alunos não matriculados.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Página de estudantes retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<org.springframework.data.domain.Page<StudentResponseDTO>> findAll(
-            @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
-            @RequestParam(required = false, defaultValue = "false") boolean unenrolledOnly,
-            org.springframework.data.domain.Pageable pageable) {
+            @Parameter(description = "Filtrar apenas estudantes ativos") @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
+            @Parameter(description = "Filtrar apenas estudantes sem matrícula ativa") @RequestParam(required = false, defaultValue = "false") boolean unenrolledOnly,
+            @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
         
         org.springframework.data.domain.Page<Student> page;
         if (unenrolledOnly) {
@@ -89,47 +106,85 @@ public class StudentController {
         return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
+    @Operation(summary = "Buscar estudante por ID", description = "Retorna os dados cadastrais do estudante. O aluno só pode consultar seu próprio perfil.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estudante encontrado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado ao perfil de outro estudante"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'STUDENT')")
-    public ResponseEntity<StudentResponseDTO> findById(@PathVariable Integer id) {
+    public ResponseEntity<StudentResponseDTO> findById(
+            @Parameter(description = "ID do estudante") @PathVariable Integer id) {
         authenticatedUserService.enforceStudentOwnership(id);
         return ResponseEntity.ok(toResponse(studentService.findById(id)));
     }
 
+    @Operation(summary = "Atualizar estudante (completo)", description = "Atualiza todos os dados cadastrais do estudante (nome, e-mail, senha opcional, telefones, matrícula, data de nascimento). Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estudante atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<StudentResponseDTO> update(
-            @PathVariable Integer id,
+            @Parameter(description = "ID do estudante") @PathVariable Integer id,
             @Valid @RequestBody StudentUpdateRequestDTO dto) {
         Student updated = studentService.update(id, toEntity(dto));
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    @Operation(summary = "Atualizar dados parciais do estudante (PATCH)", description = "Permite atualizar seletivamente campos como telefone próprio ou telefone dos responsáveis. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estudante atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<StudentResponseDTO> patch(
-            @PathVariable Integer id,
+            @Parameter(description = "ID do estudante") @PathVariable Integer id,
             @Valid @RequestBody StudentPatchRequestDTO dto) {
         Student updated = studentService.patch(id, dto);
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    @Operation(summary = "Excluir estudante", description = "Exclui o estudante caso não possua matrículas ou histórico acadêmico vinculado. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Estudante excluído com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Não é possível excluir estudante com matrículas ou histórico"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "ID do estudante a ser excluído") @PathVariable Integer id) {
         studentService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Ativar estudante", description = "Reativa a conta do estudante. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estudante ativado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<StudentResponseDTO> activate(@PathVariable Integer id) {
+    public ResponseEntity<StudentResponseDTO> activate(
+            @Parameter(description = "ID do estudante") @PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(studentService.activate(id)));
     }
 
+    @Operation(summary = "Desativar estudante", description = "Desativa o estudante no sistema. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estudante desativado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<StudentResponseDTO> deactivate(@PathVariable Integer id) {
+    public ResponseEntity<StudentResponseDTO> deactivate(
+            @Parameter(description = "ID do estudante") @PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(studentService.deactivate(id)));
     }
 
@@ -159,7 +214,7 @@ public class StudentController {
         return student;
     }
 
-        private StudentResponseDTO toResponse(Student s) {
+    private StudentResponseDTO toResponse(Student s) {
         return toResponse(s, new java.util.HashMap<>());
     }
 

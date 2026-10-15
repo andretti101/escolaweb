@@ -23,8 +23,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
+@Tag(name = "Matrículas", description = "Endpoints para gerenciamento de matrículas de estudantes em turmas, enturmações e transferências")
 @RestController
 @RequestMapping("/api/enrollments")
 @RequiredArgsConstructor
@@ -34,6 +40,12 @@ public class EnrollmentController {
     private final AuthenticatedUserService authenticatedUserService;
     private final TeacherClassSubjectService teacherClassSubjectService;
 
+    @Operation(summary = "Realizar matrícula", description = "Matricula um estudante em uma turma específica. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Matrícula realizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Estudante já matriculado em turma ativa ou dados inválidos"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @PostMapping
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<EnrollmentResponseDTO> create(@Valid @RequestBody EnrollmentRequestDTO dto) {
@@ -41,11 +53,16 @@ public class EnrollmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
+    @Operation(summary = "Listar matrículas", description = "Retorna uma lista paginada de matrículas cadastradas com opção de filtrar apenas ativas.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Página de matrículas retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<org.springframework.data.domain.Page<EnrollmentResponseDTO>> findAll(
-            @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
-            org.springframework.data.domain.Pageable pageable) {
+            @Parameter(description = "Filtrar apenas matrículas ativas") @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
+            @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
         org.springframework.data.domain.Page<Enrollment> page = activeOnly
                 ? enrollmentService.findAllActive(pageable)
                 : enrollmentService.findAll(pageable);
@@ -53,24 +70,45 @@ public class EnrollmentController {
         return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
+    @Operation(summary = "Buscar matrícula por ID", description = "Retorna os detalhes de uma matrícula específica.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Matrícula encontrada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Matrícula não encontrada"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<EnrollmentResponseDTO> findById(@PathVariable Integer id) {
+    public ResponseEntity<EnrollmentResponseDTO> findById(
+            @Parameter(description = "ID da matrícula") @PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(enrollmentService.findById(id)));
     }
 
+    @Operation(summary = "Listar matrículas por estudante", description = "Retorna o histórico de todas as matrículas do estudante especificado.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de matrículas retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado às matrículas de outro estudante"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'STUDENT')")
-    public ResponseEntity<List<EnrollmentResponseDTO>> findByStudent(@PathVariable Integer studentId) {
+    public ResponseEntity<List<EnrollmentResponseDTO>> findByStudent(
+            @Parameter(description = "ID do estudante") @PathVariable Integer studentId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
         return ResponseEntity.ok(
                 enrollmentService.findByStudent(studentId).stream().map(this::toResponse).toList()
         );
     }
 
+    @Operation(summary = "Listar matrículas por turma", description = "Retorna todos os alunos matriculados em uma turma. Professores só acessam turmas em que lecionam; alunos só acessam a própria turma.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de matrículas da turma retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado para usuário não vinculado à turma"),
+            @ApiResponse(responseCode = "404", description = "Turma não encontrada")
+    })
     @GetMapping("/classroom/{classRoomId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
-    public ResponseEntity<List<EnrollmentResponseDTO>> findByClassRoom(@PathVariable Integer classRoomId) {
+    public ResponseEntity<List<EnrollmentResponseDTO>> findByClassRoom(
+            @Parameter(description = "ID da turma") @PathVariable Integer classRoomId) {
         if (authenticatedUserService.isTeacher()) {
             com.andretti101.escolaweb.model.entity.Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
             boolean teachesInClassroom = teacherClassSubjectService.findByTeacher(teacher.getId())
@@ -94,39 +132,70 @@ public class EnrollmentController {
         );
     }
 
+    @Operation(summary = "Atualizar matrícula", description = "Atualiza os dados de uma matrícula existente. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Matrícula atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+            @ApiResponse(responseCode = "404", description = "Matrícula não encontrada")
+    })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<EnrollmentResponseDTO> update(
-            @PathVariable Integer id,
+            @Parameter(description = "ID da matrícula") @PathVariable Integer id,
             @Valid @RequestBody EnrollmentRequestDTO dto) {
         Enrollment updated = enrollmentService.update(id, toEntity(dto));
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    @Operation(summary = "Excluir matrícula", description = "Remove um registro de matrícula caso não possua notas ou presenças vinculadas. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Matrícula excluída com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Não é possível excluir matrícula com notas ou faltas"),
+            @ApiResponse(responseCode = "404", description = "Matrícula não encontrada")
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "ID da matrícula a ser excluída") @PathVariable Integer id) {
         enrollmentService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Ativar matrícula", description = "Reativa uma matrícula previamente desativada. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Matrícula ativada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Matrícula não encontrada")
+    })
     @PutMapping("/{id}/activate")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<EnrollmentResponseDTO> activate(@PathVariable Integer id) {
+    public ResponseEntity<EnrollmentResponseDTO> activate(
+            @Parameter(description = "ID da matrícula") @PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(enrollmentService.activate(id)));
     }
 
+    @Operation(summary = "Desativar matrícula", description = "Desativa a matrícula de um estudante na turma. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Matrícula desativada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Matrícula não encontrada")
+    })
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<EnrollmentResponseDTO> deactivate(@PathVariable Integer id) {
+    public ResponseEntity<EnrollmentResponseDTO> deactivate(
+            @Parameter(description = "ID da matrícula") @PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(enrollmentService.deactivate(id)));
     }
 
+    @Operation(summary = "Transferir estudante para outra turma", description = "Transfere o estudante matriculado para uma nova turma, mantendo a consistência do histórico. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estudante transferido de turma com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Turma de destino incompatível ou inválida"),
+            @ApiResponse(responseCode = "404", description = "Matrícula ou nova turma não encontrada")
+    })
     @PostMapping("/{id}/transfer")
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<EnrollmentResponseDTO> transfer(
-            @PathVariable Integer id,
-            @RequestParam Integer newClassRoomId) {
+            @Parameter(description = "ID da matrícula atual") @PathVariable Integer id,
+            @Parameter(description = "ID da nova turma de destino") @RequestParam Integer newClassRoomId) {
         return ResponseEntity.ok(toResponse(enrollmentService.transferClassroom(id, newClassRoomId)));
     }
 

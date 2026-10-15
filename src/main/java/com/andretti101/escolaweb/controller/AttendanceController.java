@@ -36,6 +36,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Frequência e Presença", description = "Endpoints para chamada escolar, registro de presenças/faltas e cálculo de frequência")
 @RestController
 @RequestMapping("/api/attendances")
 @RequiredArgsConstructor
@@ -48,6 +55,13 @@ public class AttendanceController {
 
     private final AcademicPeriodService academicPeriodService;
 
+    @Operation(summary = "Registrar presença/falta", description = "Registra a situação de frequência de um estudante em uma aula (PRESENT, ABSENT, JUSTIFIED_ABSENCE).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Frequência registrada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos ou duplicados"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Aula ou estudante não encontrado")
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<AttendanceResponseDTO> register(@Valid @RequestBody AttendanceRequestDTO dto) {
@@ -59,10 +73,15 @@ public class AttendanceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(registered));
     }
 
+    @Operation(summary = "Listar registros de frequência", description = "Retorna uma lista paginada dos registros de frequência com enriquecimento de período acadêmico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Página de presenças retornada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado")
+    })
     @GetMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<PagedResponse<AttendanceResponseDTO>> findAll(
-            @PageableDefault(size = 20) Pageable pageable) {
+            @org.springdoc.core.annotations.ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         final var cachedPeriods = academicPeriodService.findAll();
         Page<Attendance> page;
         if (authenticatedUserService.isTeacher()) {
@@ -78,18 +97,32 @@ public class AttendanceController {
         ));
     }
 
+    @Operation(summary = "Buscar presença por ID", description = "Retorna o detalhamento de um registro de frequência específico. Estudantes só acessam suas próprias presenças.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Registro encontrado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Registro de frequência não encontrado")
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
-    public ResponseEntity<AttendanceResponseDTO> findById(@PathVariable Integer id) {
+    public ResponseEntity<AttendanceResponseDTO> findById(
+            @Parameter(description = "ID do registro de frequência") @PathVariable Integer id) {
         Attendance attendance = attendanceService.findById(id);
         authenticatedUserService.enforceStudentOwnership(attendance.getStudent().getId());
         authenticatedUserService.enforceTeacherOwnership(attendance.getLesson().getTeacherClassSubject());
         return ResponseEntity.ok(toResponse(attendance));
     }
 
+    @Operation(summary = "Listar presenças de uma aula", description = "Retorna a lista completa de chamada de uma determinada aula.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de frequência da aula retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Aula não encontrada")
+    })
     @GetMapping("/lesson/{lessonId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<AttendanceResponseDTO>> findByLesson(@PathVariable Integer lessonId) {
+    public ResponseEntity<List<AttendanceResponseDTO>> findByLesson(
+            @Parameter(description = "ID da aula") @PathVariable Integer lessonId) {
         if (authenticatedUserService.isTeacher()) {
             Lesson lesson = lessonService.findById(lessonId);
             authenticatedUserService.enforceTeacherOwnership(lesson.getTeacherClassSubject());
@@ -100,11 +133,17 @@ public class AttendanceController {
         );
     }
 
+    @Operation(summary = "Listar frequências por estudante", description = "Retorna todas as presenças e faltas de um estudante, com filtro opcional por ano letivo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Histórico de frequência retornado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<List<AttendanceResponseDTO>> findByStudent(
-            @PathVariable Integer studentId,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
+            @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
+            @Parameter(description = "ID do ano letivo opcional") @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
 
         List<Attendance> attendances = attendanceService.findByStudent(studentId);
@@ -130,11 +169,17 @@ public class AttendanceController {
         return ResponseEntity.ok(attendances.stream().map(a -> toResponse(a, cachedPeriods)).toList());
     }
 
+    @Operation(summary = "Calcular porcentagem de frequência do estudante", description = "Calcula a frequência percentual de um estudante na atribuição (disciplina da turma).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Frequência percentual calculada (ex: 85.50)"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Estudante ou atribuição não encontrada")
+    })
     @GetMapping("/frequency/student/{studentId}/tcs/{tcsId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<BigDecimal> calculateFrequency(
-            @PathVariable Integer studentId,
-            @PathVariable Integer tcsId) {
+            @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
+            @Parameter(description = "ID da atribuição professor-turma-disciplina") @PathVariable Integer tcsId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
         if (authenticatedUserService.isTeacher()) {
             TeacherClassSubject tcs = teacherClassSubjectService.findById(tcsId);
@@ -143,19 +188,32 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceService.calculateFrequency(studentId, tcsId));
     }
 
+    @Operation(summary = "Obter relatório consolidado de frequência do estudante", description = "Gera um relatório completo com total de aulas dadas, presenças, faltas justificadas, faltas não justificadas e percentual global.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Relatório consolidado retornado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Estudante não encontrado")
+    })
     @GetMapping("/report/student/{studentId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<com.andretti101.escolaweb.dto.response.StudentAttendanceReportDTO> getStudentAttendanceReport(
-            @PathVariable Integer studentId,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
+            @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
+            @Parameter(description = "ID do ano letivo opcional") @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
         return ResponseEntity.ok(attendanceService.getStudentAttendanceReport(studentId, yearId));
     }
 
+    @Operation(summary = "Atualizar status de frequência", description = "Altera o status de frequência de um registro (ex: de falta para falta justificada). Registra histórico de auditoria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Status de frequência atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Status inválido"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Registro de frequência não encontrado")
+    })
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<AttendanceResponseDTO> update(
-            @PathVariable Integer id,
+            @Parameter(description = "ID do registro de frequência") @PathVariable Integer id,
             @Valid @RequestBody com.andretti101.escolaweb.dto.request.AttendanceUpdateRequestDTO dto) {
         if (authenticatedUserService.isTeacher()) {
             Attendance existing = attendanceService.findById(id);
@@ -174,9 +232,16 @@ public class AttendanceController {
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    @Operation(summary = "Excluir registro de frequência", description = "Remove um registro individual de presença/falta. Professores só removem registros de suas aulas.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Registro excluído com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Registro de frequência não encontrado")
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "ID do registro de frequência a ser excluído") @PathVariable Integer id) {
         if (authenticatedUserService.isTeacher()) {
             Attendance existing = attendanceService.findById(id);
             authenticatedUserService.enforceTeacherOwnership(

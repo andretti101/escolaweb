@@ -12,8 +12,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Configurações da Escola", description = "Endpoints para consulta e atualização dos dados cadastrais da instituição de ensino")
 @RestController
 @RequestMapping("/api/school-settings")
 @RequiredArgsConstructor
@@ -21,12 +26,23 @@ public class SchoolSettingsController {
 
     private final SchoolSettingsService schoolSettingsService;
 
+    @Operation(summary = "Obter configurações da escola", description = "Retorna os dados cadastrais da instituição (nome, endereço, telefone, e-mail) e critérios de aprovação vigentes.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Configurações retornadas com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado")
+    })
     @GetMapping
     @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY', 'TEACHER', 'STUDENT')")
     public ResponseEntity<SchoolSettingsResponseDTO> getSettings() {
         return ResponseEntity.ok(toResponse(schoolSettingsService.findSettings()));
     }
 
+    @Operation(summary = "Atualizar configurações da escola", description = "Atualiza os dados de contato e endereço da instituição escolar. Exclusivo para Direção e Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Configurações atualizadas com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @PutMapping
     @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
     public ResponseEntity<SchoolSettingsResponseDTO> update(@Valid @RequestBody SchoolSettingsRequestDTO dto) {

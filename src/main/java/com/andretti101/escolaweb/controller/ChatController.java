@@ -5,6 +5,11 @@ import com.andretti101.escolaweb.dto.response.ChatMessageResponseDTO;
 import com.andretti101.escolaweb.model.entity.User;
 import com.andretti101.escolaweb.repository.UserRepository;
 import com.andretti101.escolaweb.service.ChatMessageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -19,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "Chat e Mensagens", description = "Endpoints para consulta de histórico, membros, controle de leitura, moderação e bloqueio no chat de turmas e sala dos professores")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/chat")
@@ -106,8 +112,16 @@ public class ChatController {
         messagingTemplate.convertAndSend("/topic/classroom/" + classroomId, responseDTO);
     }
 
+    @Operation(summary = "Obter histórico do chat da turma", description = "Retorna a lista de mensagens recentes da turma especificada, o ID da última mensagem lida pelo usuário e o status de bloqueio.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Histórico retornado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado caso o usuário não pertença à turma"),
+            @ApiResponse(responseCode = "404", description = "Usuário ou turma não encontrado")
+    })
     @GetMapping("/classroom/{classroomId}/history")
-    public ResponseEntity<com.andretti101.escolaweb.dto.response.ChatHistoryResponseDTO> getHistory(@PathVariable Integer classroomId, Principal principal) {
+    public ResponseEntity<com.andretti101.escolaweb.dto.response.ChatHistoryResponseDTO> getHistory(
+            @Parameter(description = "ID da turma", example = "1", required = true) @PathVariable Integer classroomId,
+            Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
         
@@ -130,6 +144,11 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Verificar mensagens não lidas", description = "Verifica se o usuário autenticado possui mensagens não lidas em suas turmas ou na sala dos professores.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Status de leitura retornado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
     @GetMapping("/unread-status")
     public ResponseEntity<com.andretti101.escolaweb.dto.response.UnreadStatusDTO> getUnreadStatus(Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
@@ -140,8 +159,17 @@ public class ChatController {
         return ResponseEntity.ok(new com.andretti101.escolaweb.dto.response.UnreadStatusDTO(hasUnread));
     }
 
+    @Operation(summary = "Marcar mensagens da turma como lidas", description = "Atualiza o ponteiro de leitura da turma até o ID da mensagem indicada para o usuário autenticado.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Mensagens marcadas como lidas com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado caso o usuário não pertença à turma"),
+            @ApiResponse(responseCode = "404", description = "Usuário ou turma não encontrado")
+    })
     @PostMapping("/read/{classroomId}")
-    public ResponseEntity<Void> markAsRead(@PathVariable Integer classroomId, @RequestParam Integer messageId, Principal principal) {
+    public ResponseEntity<Void> markAsRead(
+            @Parameter(description = "ID da turma", example = "1", required = true) @PathVariable Integer classroomId,
+            @Parameter(description = "ID da mensagem até a qual a leitura foi feita", example = "10", required = true) @RequestParam Integer messageId,
+            Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
         
@@ -151,8 +179,16 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Listar membros do chat da turma", description = "Retorna os alunos matriculados na turma. Administradores visualizam matrícula e status de bloqueio.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de membros retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado caso o usuário não pertença à turma"),
+            @ApiResponse(responseCode = "404", description = "Turma não encontrada")
+    })
     @GetMapping("/classrooms/{id}/members")
-    public ResponseEntity<List<com.andretti101.escolaweb.dto.response.ChatMemberDTO>> getMembers(@PathVariable Integer id, Principal principal) {
+    public ResponseEntity<List<com.andretti101.escolaweb.dto.response.ChatMemberDTO>> getMembers(
+            @Parameter(description = "ID da turma", example = "1", required = true) @PathVariable Integer id,
+            Principal principal) {
         User requester = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
         validateUserAccess(requester, id);
@@ -180,6 +216,12 @@ public class ChatController {
         return ResponseEntity.ok(members);
     }
 
+    @Operation(summary = "Listar membros da sala dos professores", description = "Retorna a lista de professores da instituição. Acesso restrito a professores e gestão escolar.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de membros retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado para estudantes"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
     @GetMapping("/teachers/members")
     public ResponseEntity<List<com.andretti101.escolaweb.dto.response.ChatMemberDTO>> getTeacherMembers(Principal principal) {
         User requester = userRepository.findByEmail(principal.getName())
@@ -203,16 +245,31 @@ public class ChatController {
         return ResponseEntity.ok(members);
     }
 
+    @Operation(summary = "Ocultar mensagem", description = "Oculta uma mensagem específica para o usuário autenticado.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Mensagem ocultada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário ou mensagem não encontrado")
+    })
     @PostMapping("/messages/{messageId}/hide")
-    public ResponseEntity<Void> hideMessage(@PathVariable Integer messageId, Principal principal) {
+    public ResponseEntity<Void> hideMessage(
+            @Parameter(description = "ID da mensagem", example = "100", required = true) @PathVariable Integer messageId,
+            Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
         chatMessageService.hideMessage(messageId, user.getId());
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Bloquear ou desbloquear chat do aluno", description = "Alterna o status de bloqueio do chat para um estudante. Apenas SECRETARY e PRINCIPAL têm permissão.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Status de bloqueio atualizado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Aluno não encontrado")
+    })
     @PutMapping("/users/{studentId}/block")
-    public ResponseEntity<Void> blockStudent(@PathVariable Integer studentId, Principal principal) {
+    public ResponseEntity<Void> blockStudent(
+            @Parameter(description = "ID do aluno", example = "11", required = true) @PathVariable Integer studentId,
+            Principal principal) {
         User requester = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
         if (requester.getRole() != com.andretti101.escolaweb.model.enums.UserRole.SECRETARY && 
@@ -227,6 +284,7 @@ public class ChatController {
         studentRepository.save(student);
         return ResponseEntity.ok().build();
     }
+
     @org.springframework.messaging.handler.annotation.MessageExceptionHandler({IllegalArgumentException.class, AccessDeniedException.class})
     @org.springframework.messaging.simp.annotation.SendToUser("/queue/errors")
     public String handleException(Exception exception) {
@@ -284,6 +342,12 @@ public class ChatController {
         messagingTemplate.convertAndSend("/topic/teachers", responseDTO);
     }
 
+    @Operation(summary = "Obter histórico da sala dos professores", description = "Retorna o histórico de mensagens da sala dos professores e o ID da última mensagem lida. Acesso restrito a professores e gestão escolar.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Histórico retornado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado para alunos"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
     @GetMapping("/teachers/history")
     public ResponseEntity<com.andretti101.escolaweb.dto.response.ChatHistoryResponseDTO> getTeacherHistory(Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
@@ -305,8 +369,15 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Marcar mensagens dos professores como lidas", description = "Atualiza o ponteiro de leitura da sala dos professores até a mensagem indicada.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Mensagens marcadas como lidas com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
     @PostMapping("/teachers/read")
-    public ResponseEntity<Void> markTeacherAsRead(@RequestParam Integer messageId, Principal principal) {
+    public ResponseEntity<Void> markTeacherAsRead(
+            @Parameter(description = "ID da última mensagem lida", example = "50", required = true) @RequestParam Integer messageId,
+            Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
                 
@@ -314,18 +385,27 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Obter histórico arquivado do chat da turma", description = "Retorna o histórico arquivado de mensagens de uma turma específica. Exclusivo para SECRETARY e PRINCIPAL.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Histórico arquivado retornado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @GetMapping("/classroom/{classroomId}/archived-history")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<List<ChatMessageResponseDTO>> getArchivedHistory(
-            @PathVariable Integer classroomId) {
+            @Parameter(description = "ID da turma", example = "1", required = true) @PathVariable Integer classroomId) {
         return ResponseEntity.ok(chatMessageService.getArchivedHistoryByClassroomId(classroomId));
     }
 
+    @Operation(summary = "Obter histórico arquivado da sala dos professores", description = "Retorna o histórico arquivado de mensagens da sala dos professores, opcionalmente filtrado por ano. Exclusivo para SECRETARY e PRINCIPAL.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Histórico arquivado retornado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @GetMapping("/teachers/archived-history")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<List<ChatMessageResponseDTO>> getArchivedTeacherHistory(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer year) {
+            @Parameter(description = "Ano de referência para filtro", example = "2026") @RequestParam(required = false) Integer year) {
         return ResponseEntity.ok(chatMessageService.getArchivedGlobalTeacherHistory(year));
     }
 }
-

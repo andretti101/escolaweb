@@ -32,6 +32,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Avaliações", description = "Endpoints para criação e gestão de instrumentos avaliativos (provas, trabalhos, testes)")
 @RestController
 @RequestMapping("/api/assessments")
 @RequiredArgsConstructor
@@ -41,6 +48,12 @@ public class AssessmentController {
     private final AuthenticatedUserService authenticatedUserService;
     private final TeacherClassSubjectService teacherClassSubjectService;
 
+    @Operation(summary = "Criar avaliação", description = "Cadastra uma nova avaliação informando título, tipo (EXAM, ASSIGNMENT, TEST, etc.), data de aplicação, período acadêmico e atribuição docente.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Avaliação criada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Limite de avaliações do período excedido ou dados inválidos"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<AssessmentResponseDTO> create(@Valid @RequestBody AssessmentRequestDTO dto) {
@@ -52,10 +65,15 @@ public class AssessmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
+    @Operation(summary = "Listar avaliações", description = "Retorna uma lista paginada de avaliações. Para professores, filtra automaticamente apenas as avaliações de suas disciplinas no ano letivo ativo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Página de avaliações retornada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado")
+    })
     @GetMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
     public ResponseEntity<PagedResponse<AssessmentResponseDTO>> findAll(
-            @PageableDefault(size = 20) Pageable pageable) {
+            @org.springdoc.core.annotations.ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         if (authenticatedUserService.isTeacher()) {
             Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
             Page<Assessment> page = assessmentService.findByTeacherActiveAcademicYear(teacher.getId(), pageable);
@@ -73,17 +91,31 @@ public class AssessmentController {
         ));
     }
 
+    @Operation(summary = "Buscar avaliação por ID", description = "Retorna os detalhes de uma avaliação específica.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Avaliação encontrada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Avaliação não encontrada")
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
-    public ResponseEntity<AssessmentResponseDTO> findById(@PathVariable Integer id) {
+    public ResponseEntity<AssessmentResponseDTO> findById(
+            @Parameter(description = "ID da avaliação") @PathVariable Integer id) {
         Assessment assessment = assessmentService.findById(id);
         authenticatedUserService.enforceTeacherOwnership(assessment.getTeacherClassSubject());
         return ResponseEntity.ok(toResponse(assessment));
     }
 
+    @Operation(summary = "Listar avaliações por atribuição", description = "Retorna todas as avaliações de uma atribuição professor-turma-disciplina.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de avaliações retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Atribuição não encontrada")
+    })
     @GetMapping("/tcs/{tcsId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<AssessmentResponseDTO>> findByTeacherClassSubject(@PathVariable Integer tcsId) {
+    public ResponseEntity<List<AssessmentResponseDTO>> findByTeacherClassSubject(
+            @Parameter(description = "ID da atribuição professor-turma-disciplina") @PathVariable Integer tcsId) {
         if (authenticatedUserService.isTeacher()) {
             TeacherClassSubject tcs = teacherClassSubjectService.findById(tcsId);
             authenticatedUserService.enforceTeacherOwnership(tcs);
@@ -93,9 +125,15 @@ public class AssessmentController {
         );
     }
 
+    @Operation(summary = "Listar avaliações por período acadêmico", description = "Retorna as avaliações cadastradas em um período acadêmico específico (ex: 1º Bimestre).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de avaliações do período retornada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Período acadêmico não encontrado")
+    })
     @GetMapping("/period/{periodId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<AssessmentResponseDTO>> findByPeriod(@PathVariable Integer periodId) {
+    public ResponseEntity<List<AssessmentResponseDTO>> findByPeriod(
+            @Parameter(description = "ID do período acadêmico") @PathVariable Integer periodId) {
         List<Assessment> assessments = assessmentService.findByPeriod(periodId);
 
         if (authenticatedUserService.isTeacher()) {
@@ -108,10 +146,17 @@ public class AssessmentController {
         return ResponseEntity.ok(assessments.stream().map(this::toResponse).toList());
     }
 
+    @Operation(summary = "Atualizar avaliação", description = "Atualiza o título, tipo, data ou atribuição de uma avaliação existente.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Avaliação atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Avaliação não encontrada")
+    })
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<AssessmentResponseDTO> update(
-            @PathVariable Integer id,
+            @Parameter(description = "ID da avaliação") @PathVariable Integer id,
             @Valid @RequestBody AssessmentRequestDTO dto) {
         if (authenticatedUserService.isTeacher()) {
             Assessment existing = assessmentService.findById(id);
@@ -123,9 +168,17 @@ public class AssessmentController {
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    @Operation(summary = "Excluir avaliação", description = "Remove uma avaliação caso não possua notas lançadas.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Avaliação excluída com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Não é possível excluir avaliação com notas lançadas"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Avaliação não encontrada")
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "ID da avaliação a ser excluída") @PathVariable Integer id) {
         if (authenticatedUserService.isTeacher()) {
             Assessment existing = assessmentService.findById(id);
             authenticatedUserService.enforceTeacherOwnership(existing.getTeacherClassSubject());

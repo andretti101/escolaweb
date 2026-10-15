@@ -24,6 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Atribuições Professor-Turma-Disciplina", description = "Endpoints para vínculo pedagógico entre professor, turma e disciplina, incluindo limites de avaliações")
 @RestController
 @RequestMapping("/api/teacher-class-subjects")
 @RequiredArgsConstructor
@@ -32,6 +39,12 @@ public class TeacherClassSubjectController {
     private final TeacherClassSubjectService teacherClassSubjectService;
     private final AuthenticatedUserService authenticatedUserService;
 
+    @Operation(summary = "Criar atribuição professor-turma-disciplina", description = "Vincula um professor a uma turma e disciplina com parametrização de mínimo e máximo de avaliações por período. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Atribuição criada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos ou duplicados"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
+    })
     @PostMapping
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<TeacherClassSubjectResponseDTO> create(
@@ -40,10 +53,15 @@ public class TeacherClassSubjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
+    @Operation(summary = "Listar atribuições professor-turma-disciplina", description = "Retorna uma lista paginada de atribuições. Para professores, filtra automaticamente apenas suas atribuições do ano letivo ativo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Página de atribuições retornada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Não autenticado")
+    })
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER')")
     public ResponseEntity<org.springframework.data.domain.Page<TeacherClassSubjectResponseDTO>> findAll(
-            org.springframework.data.domain.Pageable pageable) {
+            @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
         org.springframework.data.domain.Page<TeacherClassSubject> page;
         if (authenticatedUserService.isTeacher()) {
             Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
@@ -55,17 +73,30 @@ public class TeacherClassSubjectController {
         return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
+    @Operation(summary = "Buscar atribuição por ID", description = "Retorna os detalhes de uma atribuição específica. Professores só acessam suas próprias atribuições.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Atribuição encontrada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado a atribuição de outro professor"),
+            @ApiResponse(responseCode = "404", description = "Atribuição não encontrada")
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
-    public ResponseEntity<TeacherClassSubjectResponseDTO> findById(@PathVariable Integer id) {
+    public ResponseEntity<TeacherClassSubjectResponseDTO> findById(
+            @Parameter(description = "ID da atribuição") @PathVariable Integer id) {
         TeacherClassSubject tcs = teacherClassSubjectService.findById(id);
         authenticatedUserService.enforceTeacherOwnership(tcs);
         return ResponseEntity.ok(toResponse(tcs));
     }
 
+    @Operation(summary = "Listar atribuições por professor", description = "Retorna todas as atribuições pedagógicas vinculadas a um determinado professor.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de atribuições retornada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Professor não encontrado")
+    })
     @GetMapping("/teacher/{teacherId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER')")
-    public ResponseEntity<List<TeacherClassSubjectResponseDTO>> findByTeacher(@PathVariable Integer teacherId) {
+    public ResponseEntity<List<TeacherClassSubjectResponseDTO>> findByTeacher(
+            @Parameter(description = "ID do professor") @PathVariable Integer teacherId) {
         if (authenticatedUserService.isTeacher()) {
             return ResponseEntity.ok(
                     teacherClassSubjectService.findByTeacher(teacherId).stream()
@@ -78,9 +109,15 @@ public class TeacherClassSubjectController {
         );
     }
 
+    @Operation(summary = "Listar atribuições por turma", description = "Retorna a grade curricular com os professores e disciplinas alocados a uma turma específica.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de atribuições da turma retornada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Turma não encontrada")
+    })
     @GetMapping("/classroom/{classRoomId}")
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
-    public ResponseEntity<List<TeacherClassSubjectResponseDTO>> findByClassRoom(@PathVariable Integer classRoomId) {
+    public ResponseEntity<List<TeacherClassSubjectResponseDTO>> findByClassRoom(
+            @Parameter(description = "ID da turma") @PathVariable Integer classRoomId) {
         if (authenticatedUserService.isTeacher()) {
             return ResponseEntity.ok(
                     teacherClassSubjectService.findByClassRoom(classRoomId).stream()
@@ -93,18 +130,31 @@ public class TeacherClassSubjectController {
         );
     }
 
+    @Operation(summary = "Atualizar atribuição professor-turma-disciplina", description = "Modifica o professor, turma, disciplina ou parâmetros de avaliação da atribuição. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Atribuição atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
+            @ApiResponse(responseCode = "404", description = "Atribuição não encontrada")
+    })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
     public ResponseEntity<TeacherClassSubjectResponseDTO> update(
-            @PathVariable Integer id,
+            @Parameter(description = "ID da atribuição") @PathVariable Integer id,
             @Valid @RequestBody TeacherClassSubjectRequestDTO dto) {
         TeacherClassSubject updated = teacherClassSubjectService.update(id, toEntity(dto));
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    @Operation(summary = "Excluir atribuição professor-turma-disciplina", description = "Remove a atribuição se não houver aulas ou avaliações associadas. Exclusivo para Secretaria.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Atribuição excluída com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Não é possível excluir atribuição com aulas ou avaliações cadastradas"),
+            @ApiResponse(responseCode = "404", description = "Atribuição não encontrada")
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('SECRETARY')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "ID da atribuição a ser excluída") @PathVariable Integer id) {
         teacherClassSubjectService.delete(id);
         return ResponseEntity.noContent().build();
     }
