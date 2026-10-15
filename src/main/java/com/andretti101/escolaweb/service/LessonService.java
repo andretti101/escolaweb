@@ -10,5 +10,7 @@ public interface LessonService {
     void delete(Integer id);
     Lesson findById(Integer id);
     List<Lesson> findAll();
+    org.springframework.data.domain.Page<Lesson> findAll(org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<Lesson> findByTeacherActiveAcademicYear(Integer teacherId, org.springframework.data.domain.Pageable pageable);
     List<Lesson> findByTeacherClassSubject(Integer teacherClassSubjectId);
 }

@@ -332,12 +332,13 @@
 
             try {
                 const [yearsRes, classroomsRes] = await Promise.all([
-                    fetch('/api/academic-years', { headers: { 'Authorization': 'Bearer ' + token } }),
-                    fetch('/api/classrooms?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } })
+                    fetch('/api/academic-years?size=1000', { headers: { 'Authorization': 'Bearer ' + token } }),
+                    fetch('/api/classrooms?activeOnly=false&size=1000', { headers: { 'Authorization': 'Bearer ' + token } })
                 ]);
 
                 if (yearsRes.ok) {
-                    allAcademicYears = await yearsRes.json();
+                    const rawYears = await yearsRes.json();
+                    allAcademicYears = Array.isArray(rawYears) ? rawYears : (rawYears?.content || []);
                     allAcademicYears.sort((a, b) => (b.year || 0) - (a.year || 0));
                     const yearSelect = document.getElementById("yearSelect");
                     if (yearSelect) {
@@ -352,7 +353,8 @@
                 }
 
                 if (classroomsRes.ok) {
-                    allClassrooms = await classroomsRes.json();
+                    const rawClassrooms = await classroomsRes.json();
+                    allClassrooms = Array.isArray(rawClassrooms) ? rawClassrooms : (rawClassrooms?.content || []);
                     allClassrooms.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 }
 

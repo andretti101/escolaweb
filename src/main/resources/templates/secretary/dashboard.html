@@ -502,11 +502,11 @@
         const headers = {'Authorization': `Bearer ${token || ''}`};
 
         if (userEmail) {
-            fetch('/api/secretaries', {headers})
+            fetch('/api/secretaries?size=1000', {headers})
                 .then(res => res.ok ? res.json() : Promise.reject())
                 .then(data => {
-                    if (!Array.isArray(data)) return;
-                    const me = data.find(s => s.email === userEmail);
+                    const secretaries = Array.isArray(data) ? data : (data && Array.isArray(data.content) ? data.content : []);
+                    const me = secretaries.find(s => s.email === userEmail);
                     if (!me?.name) return;
                     const firstName = me.name.split(' ')[0];
                     document.getElementById('userNameDisplay').textContent = firstName;
@@ -531,22 +531,22 @@
         }
 
         const [studentsData, teachersData, classroomsData, enrollmentsData, activeYearData] = await Promise.all([
-            fetchSafe('/api/students?activeOnly=true'),
-            fetchSafe('/api/teachers?activeOnly=true'),
-            fetchSafe('/api/classrooms?activeOnly=true'),
-            fetchSafe('/api/enrollments?activeOnly=true'),
+            fetchSafe('/api/students?activeOnly=true&size=1000'),
+            fetchSafe('/api/teachers?activeOnly=true&size=1000'),
+            fetchSafe('/api/classrooms?activeOnly=true&size=1000'),
+            fetchSafe('/api/enrollments?activeOnly=true&size=1000'),
             fetchSafe('/api/academic-years/active')
         ]);
 
-        const students = Array.isArray(studentsData) ? studentsData : [];
-        const teachers = Array.isArray(teachersData) ? teachersData : [];
-        const classrooms = Array.isArray(classroomsData) ? classroomsData : [];
-        const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
+        const students = Array.isArray(studentsData) ? studentsData : (studentsData?.content || []);
+        const teachers = Array.isArray(teachersData) ? teachersData : (teachersData?.content || []);
+        const classrooms = Array.isArray(classroomsData) ? classroomsData : (classroomsData?.content || []);
+        const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : (enrollmentsData?.content || []);
 
-        document.getElementById('countStudents').textContent = students.length;
-        document.getElementById('countTeachers').textContent = teachers.length;
-        document.getElementById('countClasses').textContent = classrooms.length;
-        document.getElementById('countEnrollments').textContent = enrollments.length;
+        document.getElementById('countStudents').textContent = studentsData?.totalElements ?? students.length;
+        document.getElementById('countTeachers').textContent = teachersData?.totalElements ?? teachers.length;
+        document.getElementById('countClasses').textContent = classroomsData?.totalElements ?? classrooms.length;
+        document.getElementById('countEnrollments').textContent = enrollmentsData?.totalElements ?? enrollments.length;
 
         // ── Gráfico 1: Turnos das Turmas ────────────────────────────────
         const shiftCounts = { 'MORNING': 0, 'AFTERNOON': 0, 'NIGHT': 0, 'FULL_TIME': 0 };

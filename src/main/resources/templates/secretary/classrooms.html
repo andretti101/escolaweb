@@ -195,7 +195,8 @@
                 headers: {'Authorization': `Bearer ${jwtToken || ''}`}
             });
             if (res.ok) {
-                const years = await res.json();
+                const data = await res.json();
+                const years = Array.isArray(data) ? data : (data.content || []);
                 const filter = document.getElementById('yearFilter');
                 years.sort((a, b) => b.year - a.year).forEach(y => {
                     const opt = document.createElement('option');
@@ -215,7 +216,8 @@
                 headers: {'Authorization': `Bearer ${jwtToken || ''}`}
             });
             if (response.ok) {
-                classroomsData = await response.json();
+                const raw = await response.json();
+                classroomsData = Array.isArray(raw) ? raw : (raw.content || []);
                 renderTable();
             } else {
                 document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Erro ao carregar dados.</td></tr>';

@@ -26,6 +26,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.andretti101.escolaweb.dto.response.PagedResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -56,18 +61,21 @@ public class AttendanceController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<AttendanceResponseDTO>> findAll() {
-        List<Attendance> attendances = attendanceService.findAll();
-
-        if (authenticatedUserService.isTeacher()) {
-            Set<Integer> myTcsIds = getAuthenticatedTeacherTcsIds();
-            attendances = attendances.stream()
-                    .filter(a -> myTcsIds.contains(a.getLesson().getTeacherClassSubject().getId()))
-                    .toList();
-        }
-
+    public ResponseEntity<PagedResponse<AttendanceResponseDTO>> findAll(
+            @PageableDefault(size = 20) Pageable pageable) {
         final var cachedPeriods = academicPeriodService.findAll();
-        return ResponseEntity.ok(attendances.stream().map(a -> toResponse(a, cachedPeriods)).toList());
+        Page<Attendance> page;
+        if (authenticatedUserService.isTeacher()) {
+            Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
+            page = attendanceService.findByTeacherActiveAcademicYear(teacher.getId(), pageable);
+        } else {
+            page = attendanceService.findAll(pageable);
+        }
+        return ResponseEntity.ok(PagedResponse.of(
+                page.getContent().stream().map(a -> toResponse(a, cachedPeriods)).toList(),
+                page.getPageable(),
+                page.getTotalElements()
+        ));
     }
 
     @GetMapping("/{id}")

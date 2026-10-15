@@ -180,11 +180,12 @@
 
         // 1. Carregar anos acadêmicos
         try {
-            const resYears = await fetch('/api/academic-years', {
+            const resYears = await fetch('/api/academic-years?size=1000', {
                 headers: {'Authorization': 'Bearer ' + (token || '')}
             });
             if (resYears.ok) {
-                const years = await resYears.json();
+                const rawYears = await resYears.json();
+                const years = Array.isArray(rawYears) ? rawYears : (rawYears?.content || []);
                 yearSelect.innerHTML = '';
                 years.sort((a, b) => b.year - a.year).forEach(y => {
                     const label = y.active ? `${y.year} (Ativo)` : `${y.year}`;

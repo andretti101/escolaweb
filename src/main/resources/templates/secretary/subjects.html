@@ -223,7 +223,8 @@
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
             if (!response.ok) throw new Error('Não foi possível carregar as matérias.');
 
-            allSubjects = await response.json();
+            const data = await response.json();
+            allSubjects = Array.isArray(data) ? data : (data.content || []);
             applyFilters();
         } catch (error) {
             console.error(error);

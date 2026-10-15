@@ -99,6 +99,18 @@ public class AssessmentServiceImpl implements AssessmentService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Assessment> findAll(org.springframework.data.domain.Pageable pageable) {
+        return assessmentRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Assessment> findByTeacherActiveAcademicYear(Integer teacherId, org.springframework.data.domain.Pageable pageable) {
+        return assessmentRepository.findByTeacherActiveAcademicYear(teacherId, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Assessment> findByTeacherClassSubject(Integer teacherClassSubjectId) {
         TeacherClassSubject tcs = teacherClassSubjectService.findById(teacherClassSubjectId);
         return assessmentRepository.findByTeacherClassSubject(tcs);

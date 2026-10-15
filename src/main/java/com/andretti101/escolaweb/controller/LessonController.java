@@ -47,19 +47,23 @@ public class LessonController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<LessonResponseDTO>> findAll() {
+    public ResponseEntity<com.andretti101.escolaweb.dto.response.PagedResponse<LessonResponseDTO>> findAll(
+            @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         if (authenticatedUserService.isTeacher()) {
             Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
-            List<Lesson> myLessons = teacherClassSubjectService.findByTeacher(teacher.getId())
-                    .stream()
-                    .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
-                    .flatMap(tcs -> lessonService.findByTeacherClassSubject(tcs.getId()).stream())
-                    .toList();
-            return ResponseEntity.ok(myLessons.stream().map(this::toResponse).toList());
+            org.springframework.data.domain.Page<Lesson> page = lessonService.findByTeacherActiveAcademicYear(teacher.getId(), pageable);
+            return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(
+                    page.getContent().stream().map(this::toResponse).toList(),
+                    page.getPageable(),
+                    page.getTotalElements()
+            ));
         }
-        return ResponseEntity.ok(
-                lessonService.findAll().stream().map(this::toResponse).toList()
-        );
+        org.springframework.data.domain.Page<Lesson> page = lessonService.findAll(pageable);
+        return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(
+                page.getContent().stream().map(this::toResponse).toList(),
+                page.getPageable(),
+                page.getTotalElements()
+        ));
     }
 
     @GetMapping("/{id}")

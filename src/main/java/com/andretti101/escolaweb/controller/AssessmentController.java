@@ -23,6 +23,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.andretti101.escolaweb.dto.response.PagedResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,19 +54,23 @@ public class AssessmentController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<AssessmentResponseDTO>> findAll() {
+    public ResponseEntity<PagedResponse<AssessmentResponseDTO>> findAll(
+            @PageableDefault(size = 20) Pageable pageable) {
         if (authenticatedUserService.isTeacher()) {
             Teacher teacher = authenticatedUserService.getAuthenticatedTeacher();
-            List<Assessment> myAssessments = teacherClassSubjectService.findByTeacher(teacher.getId())
-                    .stream()
-                    .filter(tcs -> tcs.getClassRoom().getAcademicYear().isActive())
-                    .flatMap(tcs -> assessmentService.findByTeacherClassSubject(tcs.getId()).stream())
-                    .toList();
-            return ResponseEntity.ok(myAssessments.stream().map(this::toResponse).toList());
+            Page<Assessment> page = assessmentService.findByTeacherActiveAcademicYear(teacher.getId(), pageable);
+            return ResponseEntity.ok(PagedResponse.of(
+                    page.getContent().stream().map(this::toResponse).toList(),
+                    page.getPageable(),
+                    page.getTotalElements()
+            ));
         }
-        return ResponseEntity.ok(
-                assessmentService.findAll().stream().map(this::toResponse).toList()
-        );
+        Page<Assessment> page = assessmentService.findAll(pageable);
+        return ResponseEntity.ok(PagedResponse.of(
+                page.getContent().stream().map(this::toResponse).toList(),
+                page.getPageable(),
+                page.getTotalElements()
+        ));
     }
 
     @GetMapping("/{id}")

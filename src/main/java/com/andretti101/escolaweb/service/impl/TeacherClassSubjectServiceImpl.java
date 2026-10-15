@@ -126,9 +126,21 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<TeacherClassSubject> findAll(org.springframework.data.domain.Pageable pageable) {
+        return teacherClassSubjectRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<TeacherClassSubject> findByTeacher(Integer teacherId) {
         Teacher teacher = teacherService.findById(teacherId);
         return teacherClassSubjectRepository.findByTeacher(teacher);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<TeacherClassSubject> findByTeacherActiveAcademicYear(Integer teacherId, org.springframework.data.domain.Pageable pageable) {
+        return teacherClassSubjectRepository.findByTeacherActiveAcademicYear(teacherId, pageable);
     }
 
     @Override

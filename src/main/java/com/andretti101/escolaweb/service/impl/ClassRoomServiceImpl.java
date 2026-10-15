@@ -132,8 +132,20 @@ public class ClassRoomServiceImpl implements ClassRoomService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ClassRoom> findAll(org.springframework.data.domain.Pageable pageable) {
+        return classRoomRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<ClassRoom> findAllActive() {
         return classRoomRepository.findByActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ClassRoom> findAllActive(org.springframework.data.domain.Pageable pageable) {
+        return classRoomRepository.findByActiveTrue(pageable);
     }
 
     @Override
@@ -144,6 +156,26 @@ public class ClassRoomServiceImpl implements ClassRoomService {
                 .orElseGet(() -> academicYearRepository.findByYear(academicYearId)
                         .orElseThrow(() -> new EntityNotFoundException("Ano letivo não encontrado.")));
         return classRoomRepository.findByAcademicYear(year);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ClassRoom> findByAcademicYear(Integer academicYearId, org.springframework.data.domain.Pageable pageable) {
+        if (academicYearId == null) return org.springframework.data.domain.Page.empty(pageable);
+        AcademicYear year = academicYearRepository.findById(academicYearId)
+                .orElseGet(() -> academicYearRepository.findByYear(academicYearId)
+                        .orElseThrow(() -> new EntityNotFoundException("Ano letivo não encontrado.")));
+        return classRoomRepository.findByAcademicYear(year, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ClassRoom> findByAcademicYearAndActiveTrue(Integer academicYearId, org.springframework.data.domain.Pageable pageable) {
+        if (academicYearId == null) return org.springframework.data.domain.Page.empty(pageable);
+        AcademicYear year = academicYearRepository.findById(academicYearId)
+                .orElseGet(() -> academicYearRepository.findByYear(academicYearId)
+                        .orElseThrow(() -> new EntityNotFoundException("Ano letivo não encontrado.")));
+        return classRoomRepository.findByAcademicYearAndActiveTrue(year, pageable);
     }
 
     @Override

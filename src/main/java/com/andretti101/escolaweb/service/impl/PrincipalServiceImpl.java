@@ -74,8 +74,20 @@ public class PrincipalServiceImpl implements PrincipalService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Principal> findAll(org.springframework.data.domain.Pageable pageable) {
+        return principalRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Principal> findAllActive() {
         return principalRepository.findByActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Principal> findAllActive(org.springframework.data.domain.Pageable pageable) {
+        return principalRepository.findByActiveTrue(pageable);
     }
 
     @Override

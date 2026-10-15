@@ -38,21 +38,22 @@ public class ClassRoomController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
-    public ResponseEntity<List<ClassRoomResponseDTO>> findAll(
+    public ResponseEntity<org.springframework.data.domain.Page<ClassRoomResponseDTO>> findAll(
             @RequestParam(required = false, defaultValue = "true") boolean activeOnly,
-            @RequestParam(required = false) Integer academicYearId) {
-        List<ClassRoom> classRooms;
+            @RequestParam(required = false) Integer academicYearId,
+            org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<ClassRoom> page;
         if (academicYearId != null) {
-            classRooms = classRoomService.findByAcademicYear(academicYearId);
-            if (activeOnly) {
-                classRooms = classRooms.stream().filter(ClassRoom::isActive).toList();
-            }
+            page = activeOnly
+                    ? classRoomService.findByAcademicYearAndActiveTrue(academicYearId, pageable)
+                    : classRoomService.findByAcademicYear(academicYearId, pageable);
         } else {
-            classRooms = activeOnly
-                    ? classRoomService.findAllActive()
-                    : classRoomService.findAll();
+            page = activeOnly
+                    ? classRoomService.findAllActive(pageable)
+                    : classRoomService.findAll(pageable);
         }
-        return ResponseEntity.ok(toResponseList(classRooms));
+        List<ClassRoomResponseDTO> dtoList = toResponseList(page.getContent());
+        return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
     @GetMapping("/{id}")

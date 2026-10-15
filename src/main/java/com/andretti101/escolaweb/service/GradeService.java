@@ -13,6 +13,7 @@ public interface GradeService {
     void delete(Integer id);
     Grade findById(Integer id);
     List<Grade> findAll();
+    org.springframework.data.domain.Page<Grade> findAll(org.springframework.data.domain.Pageable pageable);
     List<Grade> findByStudent(Integer studentId);
     List<Grade> findByAssessment(Integer assessmentId);
     BigDecimal calculateAverage(Integer studentId, Integer teacherClassSubjectId);

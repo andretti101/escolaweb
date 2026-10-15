@@ -163,7 +163,8 @@
             });
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
             if (response.ok) {
-                const years = await response.json();
+                const data = await response.json();
+                const years = Array.isArray(data) ? data : (data.content || []);
                 years.sort((a, b) => b.year - a.year);
                 const yearSelect = document.getElementById('yearFilter');
                 yearSelect.innerHTML = '';
@@ -206,14 +207,21 @@
             const tcsRes = await fetch('/api/teacher-class-subjects', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
-            if (tcsRes.status === 401 || tcsRes.status === 403) return handleUnauthorized();
-            const tcsList = tcsRes.ok ? await tcsRes.json() : [];
+            let tcsList = [];
+            if (tcsRes.ok) {
+                const raw = await tcsRes.json();
+                tcsList = Array.isArray(raw) ? raw : (raw.content || []);
+            }
 
             // 2. Fetch classrooms to know periodType of each classroom
             const classRes = await fetch('/api/classrooms?activeOnly=false', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
-            const classrooms = classRes.ok ? await classRes.json() : [];
+            let classrooms = [];
+            if (classRes.ok) {
+                const raw = await classRes.json();
+                classrooms = Array.isArray(raw) ? raw : (raw.content || []);
+            }
 
             const myClassroomIds = new Set(tcsList.map(t => t.classRoomId));
             const myPeriodTypes = new Set();

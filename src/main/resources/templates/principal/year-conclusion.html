@@ -335,9 +335,9 @@
             // Buscar matrículas ativas
             const enrollRes = await fetch('/api/enrollments?activeOnly=true', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
-            });
             const enrollments = await enrollRes.json();
-            document.getElementById('enrolledCount').textContent = enrollments.length;
+            const enrolledTotal = enrollments.totalElements !== undefined ? enrollments.totalElements : (Array.isArray(enrollments) ? enrollments.length : (enrollments.content ? enrollments.content.length : 0));
+            document.getElementById('enrolledCount').textContent = enrolledTotal;
 
             // Verificar se pode concluir
             const canConcludeRes = await fetch('/api/academic-years/conclusion-status', {

@@ -12,7 +12,9 @@ public interface TeacherService {
     void delete(Integer id);
     Teacher findById(Integer id);
     List<Teacher> findAll();
+    org.springframework.data.domain.Page<Teacher> findAll(org.springframework.data.domain.Pageable pageable);
     List<Teacher> findAllActive();
+    org.springframework.data.domain.Page<Teacher> findAllActive(org.springframework.data.domain.Pageable pageable);
     Teacher activate(Integer id);
     Teacher deactivate(Integer id);
 }

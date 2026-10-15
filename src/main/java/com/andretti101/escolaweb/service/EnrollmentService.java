@@ -10,7 +10,9 @@ public interface EnrollmentService {
     void delete(Integer id);
     Enrollment findById(Integer id);
     List<Enrollment> findAll();
+    org.springframework.data.domain.Page<Enrollment> findAll(org.springframework.data.domain.Pageable pageable);
     List<Enrollment> findAllActive();
+    org.springframework.data.domain.Page<Enrollment> findAllActive(org.springframework.data.domain.Pageable pageable);
     List<Enrollment> findByStudent(Integer studentId);
     List<Enrollment> findByClassRoom(Integer classRoomId);
     Enrollment activate(Integer id);

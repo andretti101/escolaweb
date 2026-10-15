@@ -78,6 +78,12 @@ public class AcademicYearServiceImpl implements AcademicYearService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<AcademicYear> findAll(org.springframework.data.domain.Pageable pageable) {
+        return academicYearRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public AcademicYear findActive() {
         return academicYearRepository.findByActiveTrue()
                 .orElseThrow(() -> new EntityNotFoundException("Nenhum ano letivo ativo foi encontrado."));

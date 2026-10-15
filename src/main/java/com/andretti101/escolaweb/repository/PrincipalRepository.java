@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface PrincipalRepository extends JpaRepository<Principal, Integer> {
     List<Principal> findByActiveTrue();
+    org.springframework.data.domain.Page<Principal> findByActiveTrue(org.springframework.data.domain.Pageable pageable);
 }

@@ -12,6 +12,9 @@ import java.util.List;
 @Repository
 public interface TeacherClassSubjectRepository extends JpaRepository<TeacherClassSubject, Integer> {
     List<TeacherClassSubject> findByTeacher(Teacher teacher);
+    org.springframework.data.domain.Page<TeacherClassSubject> findByTeacher(Teacher teacher, org.springframework.data.domain.Pageable pageable);
+    @org.springframework.data.jpa.repository.Query("SELECT t FROM TeacherClassSubject t WHERE t.teacher.id = :teacherId AND t.classRoom.academicYear.active = true")
+    org.springframework.data.domain.Page<TeacherClassSubject> findByTeacherActiveAcademicYear(@org.springframework.data.repository.query.Param("teacherId") Integer teacherId, org.springframework.data.domain.Pageable pageable);
     List<TeacherClassSubject> findByTeacherIdAndActiveTrue(Integer teacherId);
     List<TeacherClassSubject> findByClassRoom(ClassRoom classRoom);
     List<TeacherClassSubject> findBySubject(Subject subject);

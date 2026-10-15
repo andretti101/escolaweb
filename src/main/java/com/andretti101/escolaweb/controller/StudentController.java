@@ -42,21 +42,23 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
 
-        @GetMapping
+    @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<StudentResponseDTO>> findAll(
+    public ResponseEntity<org.springframework.data.domain.Page<StudentResponseDTO>> findAll(
             @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
-            @RequestParam(required = false, defaultValue = "false") boolean unenrolledOnly) {
+            @RequestParam(required = false, defaultValue = "false") boolean unenrolledOnly,
+            org.springframework.data.domain.Pageable pageable) {
         
-        List<Student> students;
+        org.springframework.data.domain.Page<Student> page;
         if (unenrolledOnly) {
-            students = studentService.findAllActiveUnenrolled();
+            page = studentService.findAllActiveUnenrolled(pageable);
         } else if (activeOnly) {
-            students = studentService.findAllActive();
+            page = studentService.findAllActive(pageable);
         } else {
-            students = studentService.findAll();
+            page = studentService.findAll(pageable);
         }
         
+        List<Student> students = page.getContent();
         java.util.Map<Integer, String> situationMap = new java.util.HashMap<>();
         try {
             com.andretti101.escolaweb.model.entity.AcademicYear activeYear = academicYearService.findActive();
@@ -83,7 +85,8 @@ public class StudentController {
             // ignore
         }
         
-        return ResponseEntity.ok(students.stream().map(s -> toResponse(s, situationMap)).toList());
+        List<StudentResponseDTO> dtoList = students.stream().map(s -> toResponse(s, situationMap)).toList();
+        return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
     @GetMapping("/{id}")

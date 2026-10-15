@@ -105,6 +105,18 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Attendance> findAll(org.springframework.data.domain.Pageable pageable) {
+        return attendanceRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Attendance> findByTeacherActiveAcademicYear(Integer teacherId, org.springframework.data.domain.Pageable pageable) {
+        return attendanceRepository.findByTeacherActiveAcademicYear(teacherId, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Attendance> findByLesson(Integer lessonId) {
         Lesson lesson = lessonService.findById(lessonId);
         return attendanceRepository.findByLesson(lesson);

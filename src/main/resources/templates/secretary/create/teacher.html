@@ -210,11 +210,12 @@
         async function loadSubjects() {
             if (!subjectsContainer) return;
             try {
-                const res = await fetch('/api/subjects?activeOnly=true', {
+                const res = await fetch('/api/subjects?activeOnly=true&size=1000', {
                     headers: {'Authorization': 'Bearer ' + (token || '')}
                 });
                 if (res.ok) {
-                    const subjects = await res.json();
+                    const data = await res.json();
+                    const subjects = Array.isArray(data) ? data : (data && Array.isArray(data.content) ? data.content : []);
                     if (!Array.isArray(subjects) || subjects.length === 0) {
                         subjectsContainer.innerHTML = '<span class="text-muted small">Nenhuma disciplina ativa cadastrada.</span>';
                         return;

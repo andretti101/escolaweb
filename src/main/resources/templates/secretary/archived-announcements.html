@@ -146,15 +146,16 @@
         const token = localStorage.getItem("jwt_token");
         try {
             const [yearsRes, teachersRes, principalsRes, secretariesRes, classRoomsRes] = await Promise.all([
-                fetch('/api/academic-years', { headers: { 'Authorization': 'Bearer ' + token } }),
-                fetch('/api/teachers?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
-                fetch('/api/principals?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
-                fetch('/api/secretaries?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } }),
-                fetch('/api/classrooms?activeOnly=false', { headers: { 'Authorization': 'Bearer ' + token } })
+                fetch('/api/academic-years?size=1000', { headers: { 'Authorization': 'Bearer ' + token } }),
+                fetch('/api/teachers?activeOnly=false&size=1000', { headers: { 'Authorization': 'Bearer ' + token } }),
+                fetch('/api/principals?activeOnly=false&size=1000', { headers: { 'Authorization': 'Bearer ' + token } }),
+                fetch('/api/secretaries?activeOnly=false&size=1000', { headers: { 'Authorization': 'Bearer ' + token } }),
+                fetch('/api/classrooms?activeOnly=false&size=1000', { headers: { 'Authorization': 'Bearer ' + token } })
             ]);
 
             if (yearsRes.ok) {
-                const years = await yearsRes.json();
+                const rawYears = await yearsRes.json();
+                const years = Array.isArray(rawYears) ? rawYears : (rawYears?.content || []);
                 if (years) years.sort((a, b) => (b.year || 0) - (a.year || 0));
                 const yearSelect = document.getElementById('filterAcademicYear');
                 if (yearSelect) {
@@ -167,14 +168,24 @@
             }
             
             if (classRoomsRes.ok) {
-                allClassRooms = await classRoomsRes.json();
+                const rawCR = await classRoomsRes.json();
+                allClassRooms = Array.isArray(rawCR) ? rawCR : (rawCR?.content || []);
                 if (allClassRooms) allClassRooms.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 renderClassroomOptions('');
             }
             let allAuthors = [];
-            if (teachersRes.ok) allAuthors = allAuthors.concat(await teachersRes.json());
-            if (principalsRes.ok) allAuthors = allAuthors.concat(await principalsRes.json());
-            if (secretariesRes.ok) allAuthors = allAuthors.concat(await secretariesRes.json());
+            if (teachersRes.ok) {
+                const t = await teachersRes.json();
+                allAuthors = allAuthors.concat(Array.isArray(t) ? t : (t?.content || []));
+            }
+            if (principalsRes.ok) {
+                const p = await principalsRes.json();
+                allAuthors = allAuthors.concat(Array.isArray(p) ? p : (p?.content || []));
+            }
+            if (secretariesRes.ok) {
+                const s = await secretariesRes.json();
+                allAuthors = allAuthors.concat(Array.isArray(s) ? s : (s?.content || []));
+            }
             
             const uniqueAuthors = [];
             const seenIds = new Set();

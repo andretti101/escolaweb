@@ -10,7 +10,9 @@ public interface SecretaryService {
     void delete(Integer id);
     Secretary findById(Integer id);
     List<Secretary> findAll();
+    org.springframework.data.domain.Page<Secretary> findAll(org.springframework.data.domain.Pageable pageable);
     List<Secretary> findAllActive();
+    org.springframework.data.domain.Page<Secretary> findAllActive(org.springframework.data.domain.Pageable pageable);
     Secretary activate(Integer id);
     Secretary deactivate(Integer id);
 }

@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface SubjectRepository extends JpaRepository<Subject, Integer> {
     List<Subject> findByActiveTrue();
+    org.springframework.data.domain.Page<Subject> findByActiveTrue(org.springframework.data.domain.Pageable pageable);
     Optional<Subject> findByNameIgnoreCase(String name);
 }

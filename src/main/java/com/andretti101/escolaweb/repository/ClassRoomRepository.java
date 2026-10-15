@@ -14,8 +14,11 @@ import java.util.List;
 @Repository
 public interface ClassRoomRepository extends JpaRepository<ClassRoom, Integer> {
     List<ClassRoom> findByAcademicYear(AcademicYear academicYear);
+    org.springframework.data.domain.Page<ClassRoom> findByAcademicYear(AcademicYear academicYear, org.springframework.data.domain.Pageable pageable);
     List<ClassRoom> findByAcademicYearAndActiveTrue(AcademicYear academicYear);
+    org.springframework.data.domain.Page<ClassRoom> findByAcademicYearAndActiveTrue(AcademicYear academicYear, org.springframework.data.domain.Pageable pageable);
     List<ClassRoom> findByActiveTrue();
+    org.springframework.data.domain.Page<ClassRoom> findByActiveTrue(org.springframework.data.domain.Pageable pageable);
     boolean existsByAcademicYear(AcademicYear academicYear);
     boolean existsByAcademicYearAndName(AcademicYear academicYear, String name);
     boolean existsByAcademicYearAndPeriodTypeAndActiveTrue(AcademicYear year, AcademicPeriodType type);

@@ -15,6 +15,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     List<Enrollment> findByClassRoomOrderByStudentNameAsc(ClassRoom classRoom);
     List<Enrollment> findByStudentAndActiveTrue(Student student);
     List<Enrollment> findByActiveTrue();
+    org.springframework.data.domain.Page<Enrollment> findByActiveTrue(org.springframework.data.domain.Pageable pageable);
     boolean existsByStudentAndClassRoom(Student student, ClassRoom classRoom);
     boolean existsByStudentAndClassRoomAndActiveTrue(Student student, ClassRoom classRoom);
     boolean existsByStudentAndClassRoom_AcademicYear(Student student, AcademicYear academicYear);

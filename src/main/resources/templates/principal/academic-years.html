@@ -164,7 +164,8 @@
             });
             if (response.status === 401 || response.status === 403) return handleUnauthorized();
             if (!response.ok) throw new Error('Não foi possível carregar os anos letivos.');
-            allYears = await response.json();
+            const data = await response.json();
+            allYears = Array.isArray(data) ? data : (data.content || []);
             // Sort by year descending
             allYears.sort((a, b) => b.year - a.year);
             applyFilters();

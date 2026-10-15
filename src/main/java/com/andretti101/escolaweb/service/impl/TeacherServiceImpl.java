@@ -189,8 +189,20 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Teacher> findAll(org.springframework.data.domain.Pageable pageable) {
+        return teacherRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Teacher> findAllActive() {
         return teacherRepository.findByActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Teacher> findAllActive(org.springframework.data.domain.Pageable pageable) {
+        return teacherRepository.findByActiveTrue(pageable);
     }
 
     @Override

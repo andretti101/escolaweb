@@ -10,8 +10,12 @@ public interface ClassRoomService {
     void delete(Integer id);
     ClassRoom findById(Integer id);
     List<ClassRoom> findAll();
+    org.springframework.data.domain.Page<ClassRoom> findAll(org.springframework.data.domain.Pageable pageable);
     List<ClassRoom> findAllActive();
+    org.springframework.data.domain.Page<ClassRoom> findAllActive(org.springframework.data.domain.Pageable pageable);
     List<ClassRoom> findByAcademicYear(Integer academicYearId);
+    org.springframework.data.domain.Page<ClassRoom> findByAcademicYear(Integer academicYearId, org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<ClassRoom> findByAcademicYearAndActiveTrue(Integer academicYearId, org.springframework.data.domain.Pageable pageable);
     ClassRoom activate(Integer id);
     ClassRoom deactivate(Integer id);
 }

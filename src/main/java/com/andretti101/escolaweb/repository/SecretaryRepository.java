@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SecretaryRepository extends JpaRepository<Secretary, Integer> {
     List<Secretary> findByActiveTrue();
+    org.springframework.data.domain.Page<Secretary> findByActiveTrue(org.springframework.data.domain.Pageable pageable);
 }

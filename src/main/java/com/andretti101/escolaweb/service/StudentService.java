@@ -12,8 +12,11 @@ public interface StudentService {
     void delete(Integer id);
     Student findById(Integer id);
     List<Student> findAll();
+    org.springframework.data.domain.Page<Student> findAll(org.springframework.data.domain.Pageable pageable);
     List<Student> findAllActive();
+    org.springframework.data.domain.Page<Student> findAllActive(org.springframework.data.domain.Pageable pageable);
     List<Student> findAllActiveUnenrolled();
+    org.springframework.data.domain.Page<Student> findAllActiveUnenrolled(org.springframework.data.domain.Pageable pageable);
     Student activate(Integer id);
     Student deactivate(Integer id);
 }

@@ -29,12 +29,14 @@ public class SecretaryController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY')")
-    public ResponseEntity<List<SecretaryResponseDTO>> findAll(
-            @RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
-        List<Secretary> secretaries = activeOnly
-                ? secretaryService.findAllActive()
-                : secretaryService.findAll();
-        return ResponseEntity.ok(secretaries.stream().map(this::toResponse).toList());
+    public ResponseEntity<org.springframework.data.domain.Page<SecretaryResponseDTO>> findAll(
+            @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
+            org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<Secretary> page = activeOnly
+                ? secretaryService.findAllActive(pageable)
+                : secretaryService.findAll(pageable);
+        List<SecretaryResponseDTO> dtoList = page.getContent().stream().map(this::toResponse).toList();
+        return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
     @GetMapping("/{id}")

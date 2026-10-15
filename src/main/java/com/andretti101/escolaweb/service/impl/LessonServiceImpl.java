@@ -87,6 +87,18 @@ public class LessonServiceImpl implements LessonService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Lesson> findAll(org.springframework.data.domain.Pageable pageable) {
+        return lessonRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Lesson> findByTeacherActiveAcademicYear(Integer teacherId, org.springframework.data.domain.Pageable pageable) {
+        return lessonRepository.findByTeacherActiveAcademicYear(teacherId, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Lesson> findByTeacherClassSubject(Integer teacherClassSubjectId) {
         TeacherClassSubject tcs = teacherClassSubjectService.findById(teacherClassSubjectId);
         return lessonRepository.findByTeacherClassSubject(tcs);

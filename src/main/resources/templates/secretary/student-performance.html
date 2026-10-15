@@ -254,9 +254,10 @@
                 
                 let activeYear = null;
                 try {
-                    const yr = await fetch('/api/academic-years', { headers: {'Authorization': 'Bearer ' + jwtToken} });
+                    const yr = await fetch('/api/academic-years?size=1000', { headers: {'Authorization': 'Bearer ' + jwtToken} });
                     if (yr.ok) {
-                        const allY = await yr.json();
+                        const rawY = await yr.json();
+                        const allY = Array.isArray(rawY) ? rawY : (rawY?.content || []);
                         activeYear = allY.find(y => y.active);
                     }
                 } catch (e) { showAlert('Erro ao carregar dados do servidor', 'danger'); }

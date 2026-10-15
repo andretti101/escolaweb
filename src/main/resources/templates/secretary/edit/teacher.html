@@ -247,11 +247,12 @@
         async function renderSubjects(selectedIdsSet) {
             if (!subjectsContainer) return;
             try {
-                const res = await fetch('/api/subjects?activeOnly=false', {
+                const res = await fetch('/api/subjects?activeOnly=false&size=1000', {
                     headers: {'Authorization': 'Bearer ' + (token || '')}
                 });
                 if (res.ok) {
-                    const subjects = await res.json();
+                    const data = await res.json();
+                    const subjects = Array.isArray(data) ? data : (data && Array.isArray(data.content) ? data.content : []);
                     const visibleSubjects = (Array.isArray(subjects) ? subjects : [])
                         .filter(s => s.active || selectedIdsSet.has(s.id));
                     if (visibleSubjects.length === 0) {

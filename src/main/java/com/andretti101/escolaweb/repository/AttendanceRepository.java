@@ -5,6 +5,8 @@ import com.andretti101.escolaweb.model.entity.Lesson;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.model.entity.AcademicYear;
 import com.andretti101.escolaweb.model.enums.AttendanceStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,6 +24,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
     boolean existsByLessonAndStudent(Lesson lesson, Student student);
     boolean existsByLesson(Lesson lesson);
     List<Attendance> findByLessonInAndStudentAndStatus(List<Lesson> lessons, Student student, AttendanceStatus status);
+
+    @Query("SELECT a FROM Attendance a WHERE a.lesson.teacherClassSubject.teacher.id = :teacherId AND a.lesson.teacherClassSubject.classRoom.academicYear.active = true")
+    Page<Attendance> findByTeacherActiveAcademicYear(@Param("teacherId") Integer teacherId, Pageable pageable);
     
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"student", "lesson", "lesson.teacherClassSubject", "lesson.teacherClassSubject.subject"})
     @Query("SELECT a FROM Attendance a WHERE a.student IN :students AND a.lesson.teacherClassSubject.classRoom.academicYear = :year")

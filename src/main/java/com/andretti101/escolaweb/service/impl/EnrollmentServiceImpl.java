@@ -108,8 +108,20 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Enrollment> findAll(org.springframework.data.domain.Pageable pageable) {
+        return enrollmentRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Enrollment> findAllActive() {
         return enrollmentRepository.findByActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Enrollment> findAllActive(org.springframework.data.domain.Pageable pageable) {
+        return enrollmentRepository.findByActiveTrue(pageable);
     }
 
     @Override

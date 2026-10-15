@@ -14,6 +14,7 @@ public interface AcademicPeriodService {
     void deleteDivision(Integer academicYearId, AcademicPeriodType type);
     AcademicPeriod findById(Integer id);
     List<AcademicPeriod> findAll();
+    org.springframework.data.domain.Page<AcademicPeriod> findAll(org.springframework.data.domain.Pageable pageable);
     List<AcademicPeriod> findByAcademicYear(Integer academicYearId);
     List<AcademicPeriod> findByAcademicYearAndType(Integer academicYearId, AcademicPeriodType type);
     Map<AcademicPeriodType, List<AcademicPeriod>> findDivisions(Integer academicYearId);

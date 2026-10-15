@@ -10,6 +10,8 @@ public interface AssessmentService {
     void delete(Integer id);
     Assessment findById(Integer id);
     List<Assessment> findAll();
+    org.springframework.data.domain.Page<Assessment> findAll(org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<Assessment> findByTeacherActiveAcademicYear(Integer teacherId, org.springframework.data.domain.Pageable pageable);
     List<Assessment> findByTeacherClassSubject(Integer teacherClassSubjectId);
     List<Assessment> findByPeriod(Integer periodId);
 }

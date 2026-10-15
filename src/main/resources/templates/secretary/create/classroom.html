@@ -202,11 +202,12 @@
 
         // Carregar anos acadêmicos
         try {
-            const response = await fetch('/api/academic-years', {
+            const response = await fetch('/api/academic-years?size=1000', {
                 headers: {'Authorization': 'Bearer ' + (token || '')}
             });
             if (response.ok) {
-                const years = await response.json();
+                const rawYears = await response.json();
+                const years = Array.isArray(rawYears) ? rawYears : (rawYears?.content || []);
                 yearSelect.innerHTML = '<option value="" disabled selected>Selecione o ano acadêmico</option>';
                 years.sort((a, b) => b.year - a.year);
                 let selectedId = null;

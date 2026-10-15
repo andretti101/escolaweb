@@ -202,9 +202,10 @@
 
     async function loadActiveYear() {
         try {
-            const res = await fetch('/api/academic-years', { headers: {'Authorization': 'Bearer ' + getToken()} });
+            const res = await fetch('/api/academic-years?size=1000', { headers: {'Authorization': 'Bearer ' + getToken()} });
             if (res.ok) {
-                const years = await res.json();
+                const rawYears = await res.json();
+                const years = Array.isArray(rawYears) ? rawYears : (rawYears?.content || []);
                 const active = years.find(y => y.active);
                 if (active) activeYearId = active.id;
             }
@@ -420,8 +421,9 @@
                 throw new Error(err?.message || 'Erro ao buscar alunos.');
             }
 
-            allStudents = await response.json();
-            // ColocAçãos inativos por último nAçãordenAção geral (caso statusFilter == 'all')
+            const data = await response.json();
+            allStudents = Array.isArray(data) ? data : (data.content || []);
+            // Coloca os inativos por último na ordenação geral (caso statusFilter == 'all')
             allStudents.sort((a, b) => {
                 if (a.active && !b.active) return -1;
                 if (!a.active && b.active) return 1;

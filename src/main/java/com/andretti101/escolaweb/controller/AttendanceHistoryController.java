@@ -34,10 +34,9 @@ public class AttendanceHistoryController {
             @RequestParam(required = false) Integer periodId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         HistoryFilter filter = new HistoryFilter(teacherId, classRoomId, studentId, yearId, periodId, from, to);
-        return ResponseEntity.ok(auditHistoryService.searchAttendanceHistory(filter, page, size));
+        return ResponseEntity.ok(auditHistoryService.searchAttendanceHistory(filter, pageable.getPageNumber(), pageable.getPageSize()));
     }
 
     @GetMapping("/attendance/{attendanceId}")

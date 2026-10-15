@@ -16,6 +16,10 @@ public interface AcademicPeriodRepository extends JpaRepository<AcademicPeriod, 
     @Query("SELECT p FROM AcademicPeriod p JOIN p.academicYear y ORDER BY y.year DESC, p.id DESC")
     List<AcademicPeriod> findAll();
 
+    @Query(value = "SELECT p FROM AcademicPeriod p JOIN p.academicYear y ORDER BY y.year DESC, p.id DESC",
+           countQuery = "SELECT count(p) FROM AcademicPeriod p")
+    org.springframework.data.domain.Page<AcademicPeriod> findAll(org.springframework.data.domain.Pageable pageable);
+
     List<AcademicPeriod> findAllByOrderByAcademicYearYearDescIdDesc();
 
     @Query("SELECT p FROM AcademicPeriod p WHERE p.academicYear = :academicYear ORDER BY p.id DESC")

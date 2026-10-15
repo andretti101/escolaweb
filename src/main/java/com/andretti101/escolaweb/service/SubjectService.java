@@ -10,7 +10,9 @@ public interface SubjectService {
     void delete(Integer id);
     Subject findById(Integer id);
     List<Subject> findAll();
+    org.springframework.data.domain.Page<Subject> findAll(org.springframework.data.domain.Pageable pageable);
     List<Subject> findAllActive();
+    org.springframework.data.domain.Page<Subject> findAllActive(org.springframework.data.domain.Pageable pageable);
     Subject activate(Integer id);
     Subject deactivate(Integer id);
 }

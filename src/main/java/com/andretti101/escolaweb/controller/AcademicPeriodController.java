@@ -39,9 +39,11 @@ public class AcademicPeriodController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY', 'TEACHER', 'STUDENT')")
-    public ResponseEntity<List<AcademicPeriodResponseDTO>> findAll() {
-        return ResponseEntity.ok(
-                academicPeriodService.findAll().stream().map(this::toResponse).toList());
+    public ResponseEntity<org.springframework.data.domain.Page<AcademicPeriodResponseDTO>> findAll(
+            org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<AcademicPeriod> page = academicPeriodService.findAll(pageable);
+        List<AcademicPeriodResponseDTO> dtoList = page.getContent().stream().map(this::toResponse).toList();
+        return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
     @GetMapping("/{id}")

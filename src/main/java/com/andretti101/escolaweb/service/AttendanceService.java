@@ -11,6 +11,8 @@ public interface AttendanceService {
     void delete(Integer id);
     Attendance findById(Integer id);
     List<Attendance> findAll();
+    org.springframework.data.domain.Page<Attendance> findAll(org.springframework.data.domain.Pageable pageable);
+    org.springframework.data.domain.Page<Attendance> findByTeacherActiveAcademicYear(Integer teacherId, org.springframework.data.domain.Pageable pageable);
     List<Attendance> findByLesson(Integer lessonId);
     List<Attendance> findByStudent(Integer studentId);
     BigDecimal calculateFrequency(Integer studentId, Integer teacherClassSubjectId);

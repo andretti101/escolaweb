@@ -508,9 +508,9 @@
                 fetchSafe('/api/announcements/for-teachers')
             ]);
 
-            const myTcs = Array.isArray(myTcsData) ? myTcsData : [];
-            const myLessons = Array.isArray(myLessonsData) ? myLessonsData : [];
-            const myAssessments = Array.isArray(myAssessmentsData) ? myAssessmentsData : [];
+            const myTcs = Array.isArray(myTcsData) ? myTcsData : (myTcsData?.content || []);
+            const myLessons = Array.isArray(myLessonsData) ? myLessonsData : (myLessonsData?.content || []);
+            const myAssessments = Array.isArray(myAssessmentsData) ? myAssessmentsData : (myAssessmentsData?.content || []);
 
             // Contadores
             const uniqueClasses = new Set(myTcs.map(t => t.classRoomId));
@@ -518,8 +518,8 @@
 
             document.getElementById('countClasses').textContent = uniqueClasses.size;
             document.getElementById('countSubjects').textContent = uniqueSubjects.size;
-            document.getElementById('countLessons').textContent = myLessons.length;
-            document.getElementById('countAssessments').textContent = myAssessments.length;
+            document.getElementById('countLessons').textContent = myLessonsData?.totalElements ?? myLessons.length;
+            document.getElementById('countAssessments').textContent = myAssessmentsData?.totalElements ?? myAssessments.length;
 
             // 2. Renderiza Cards de Turmas e Disciplinas
             const myClassesContainer = document.getElementById('myClassesContainer');

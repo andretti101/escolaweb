@@ -501,8 +501,8 @@
                 fetchSafe(`/api/enrollments/student/${studentId}`)
             ]);
 
-            const years = Array.isArray(yearsData) ? yearsData : [];
-            const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : [];
+            const years = Array.isArray(yearsData) ? yearsData : (yearsData?.content || []);
+            const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : (enrollmentsData?.content || []);
             const activeEnrollment = enrollments.find(e => e.active) || enrollments[enrollments.length - 1];
 
             let reportCard = null;

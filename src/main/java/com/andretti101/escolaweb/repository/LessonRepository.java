@@ -13,6 +13,8 @@ import java.util.List;
 @Repository
 public interface LessonRepository extends JpaRepository<Lesson, Integer> {
     List<Lesson> findByTeacherClassSubject(TeacherClassSubject teacherClassSubject);
+    @org.springframework.data.jpa.repository.Query("SELECT l FROM Lesson l WHERE l.teacherClassSubject.teacher.id = :teacherId AND l.teacherClassSubject.classRoom.academicYear.active = true")
+    org.springframework.data.domain.Page<Lesson> findByTeacherActiveAcademicYear(@org.springframework.data.repository.query.Param("teacherId") Integer teacherId, org.springframework.data.domain.Pageable pageable);
     boolean existsByTeacherClassSubject(TeacherClassSubject teacherClassSubject);
     
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"teacherClassSubject", "teacherClassSubject.subject"})

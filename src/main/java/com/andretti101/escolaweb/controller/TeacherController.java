@@ -38,12 +38,14 @@ public class TeacherController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<TeacherResponseDTO>> findAll(
-            @RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
-        List<Teacher> teachers = activeOnly
-                ? teacherService.findAllActive()
-                : teacherService.findAll();
-        return ResponseEntity.ok(teachers.stream().map(this::toResponse).toList());
+    public ResponseEntity<org.springframework.data.domain.Page<TeacherResponseDTO>> findAll(
+            @RequestParam(required = false, defaultValue = "false") boolean activeOnly,
+            org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<Teacher> page = activeOnly
+                ? teacherService.findAllActive(pageable)
+                : teacherService.findAll(pageable);
+        List<TeacherResponseDTO> dtoList = page.getContent().stream().map(this::toResponse).toList();
+        return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements()));
     }
 
     @GetMapping("/{id}")

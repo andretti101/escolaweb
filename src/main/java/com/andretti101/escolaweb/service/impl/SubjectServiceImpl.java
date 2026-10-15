@@ -74,8 +74,20 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Subject> findAll(org.springframework.data.domain.Pageable pageable) {
+        return subjectRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Subject> findAllActive() {
         return subjectRepository.findByActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Subject> findAllActive(org.springframework.data.domain.Pageable pageable) {
+        return subjectRepository.findByActiveTrue(pageable);
     }
 
     @Override

@@ -276,11 +276,12 @@
 
     async function loadYears() {
         try {
-            const res = await fetch('/api/academic-years', {
+            const res = await fetch('/api/academic-years?size=1000', {
                 headers: { 'Authorization': `Bearer ${getToken()}` }
             });
             if (!res.ok) throw new Error('Erro ao carregar anos letivos.');
-            allYears = await res.json();
+            const data = await res.json();
+            allYears = Array.isArray(data) ? data : (data.content || []);
 
             const select = document.getElementById('yearSelect');
             select.innerHTML = '';
@@ -312,11 +313,12 @@
 
     async function loadEnrollments(yearValue) {
         try {
-            const res = await fetch('/api/enrollments', {
+            const res = await fetch('/api/enrollments?size=1000', {
                 headers: { 'Authorization': `Bearer ${getToken()}` }
             });
             if (!res.ok) throw new Error('Erro ao carregar matrículas.');
-            const enrollments = await res.json();
+            const rawEnrollments = await res.json();
+            const enrollments = Array.isArray(rawEnrollments) ? rawEnrollments : (rawEnrollments.content || []);
 
             // Filtrar pelo ano selecionado
             allEnrollments = enrollments.filter(e => e.academicYear === yearValue);

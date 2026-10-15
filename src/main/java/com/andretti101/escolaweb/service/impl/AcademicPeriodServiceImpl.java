@@ -192,6 +192,12 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<AcademicPeriod> findAll(org.springframework.data.domain.Pageable pageable) {
+        return academicPeriodRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AcademicPeriod> findByAcademicYear(Integer academicYearId) {
         AcademicYear year = academicYearService.findById(academicYearId);
         List<AcademicPeriod> list = new ArrayList<>(academicPeriodRepository.findByAcademicYearOrderByIdDesc(year));

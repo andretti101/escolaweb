@@ -26,6 +26,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.andretti101.escolaweb.dto.response.PagedResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -54,10 +59,14 @@ public class GradeController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SECRETARY', 'PRINCIPAL')")
-    public ResponseEntity<List<GradeResponseDTO>> findAll() {
-        return ResponseEntity.ok(
-                gradeService.findAll().stream().map(this::toResponse).toList()
-        );
+    public ResponseEntity<PagedResponse<GradeResponseDTO>> findAll(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<Grade> page = gradeService.findAll(pageable);
+        return ResponseEntity.ok(PagedResponse.of(
+                page.getContent().stream().map(this::toResponse).toList(),
+                page.getPageable(),
+                page.getTotalElements()
+        ));
     }
 
     @GetMapping("/{id}")

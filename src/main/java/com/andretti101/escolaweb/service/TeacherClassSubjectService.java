@@ -10,6 +10,8 @@ public interface TeacherClassSubjectService {
     void delete(Integer id);
     TeacherClassSubject findById(Integer id);
     List<TeacherClassSubject> findAll();
+    org.springframework.data.domain.Page<TeacherClassSubject> findAll(org.springframework.data.domain.Pageable pageable);
     List<TeacherClassSubject> findByTeacher(Integer teacherId);
+    org.springframework.data.domain.Page<TeacherClassSubject> findByTeacherActiveAcademicYear(Integer teacherId, org.springframework.data.domain.Pageable pageable);
     List<TeacherClassSubject> findByClassRoom(Integer classRoomId);
 }

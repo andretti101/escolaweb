@@ -171,12 +171,16 @@
                 let classrooms = [];
                 try {
                     const cRes = await fetch('/api/classrooms?activeOnly=false', { headers: { 'Authorization': `Bearer ${getToken()}` } });
-                    if (cRes.ok) classrooms = await cRes.json();
+                    if (cRes.ok) {
+                        const raw = await cRes.json();
+                        classrooms = Array.isArray(raw) ? raw : (raw.content || []);
+                    }
                 } catch(_) {}
 
                 const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (periodRes.ok) {
-                    allPeriods = await periodRes.json();
+                    const raw = await periodRes.json();
+                    allPeriods = Array.isArray(raw) ? raw : (raw.content || []);
                     let dropdownPeriods = allPeriods;
                     if (activeYearId) {
                         dropdownPeriods = allPeriods.filter(p => p.academicYearId === activeYearId);
@@ -187,7 +191,8 @@
                 
                 const tcsRes = await fetch('/api/teacher-class-subjects', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (tcsRes.ok) {
-                    myTcsList = await tcsRes.json();
+                    const raw = await tcsRes.json();
+                    myTcsList = Array.isArray(raw) ? raw : (raw.content || []);
                     const cSelect = document.getElementById('tcsFilter');
                     myTcsList.forEach(tcs => {
                         const opt = document.createElement('option');
@@ -239,7 +244,8 @@
                 });
                 
                 if (res.ok) {
-                    allAssessments = await res.json();
+                    const data = await res.json();
+                    allAssessments = Array.isArray(data) ? data : (data.content || []);
                     allAssessments.sort((a, b) => new Date(b.date) - new Date(a.date));
                     filterAssessments();
                 } else {

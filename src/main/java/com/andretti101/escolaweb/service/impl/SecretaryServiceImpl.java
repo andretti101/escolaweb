@@ -74,8 +74,20 @@ public class SecretaryServiceImpl implements SecretaryService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Secretary> findAll(org.springframework.data.domain.Pageable pageable) {
+        return secretaryRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Secretary> findAllActive() {
         return secretaryRepository.findByActiveTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Secretary> findAllActive(org.springframework.data.domain.Pageable pageable) {
+        return secretaryRepository.findByActiveTrue(pageable);
     }
 
     @Override

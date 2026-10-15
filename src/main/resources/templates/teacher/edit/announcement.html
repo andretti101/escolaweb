@@ -218,13 +218,15 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const authUserId = localStorage.getItem("user_id");
             const [response, tcsResponse] = await Promise.all([
-                fetch('/api/classrooms', { headers: { 'Authorization': 'Bearer ' + token } }),
+                fetch('/api/classrooms?size=1000', { headers: { 'Authorization': 'Bearer ' + token } }),
                 fetch('/api/teacher-class-subjects/teacher/' + authUserId, { headers: { 'Authorization': 'Bearer ' + token } })
             ]);
             
             if (response.ok && tcsResponse.ok) {
-                const classList = await response.json();
-                const tcsData = await tcsResponse.json();
+                const rawClassList = await response.json();
+                const rawTcs = await tcsResponse.json();
+                const classList = Array.isArray(rawClassList) ? rawClassList : (rawClassList && Array.isArray(rawClassList.content) ? rawClassList.content : []);
+                const tcsData = Array.isArray(rawTcs) ? rawTcs : (rawTcs && Array.isArray(rawTcs.content) ? rawTcs.content : []);
                 
                 const allowedIds = new Set(tcsData.map(item => item.classRoomId));
                 allClassrooms = classList.filter(c => allowedIds.has(c.id));

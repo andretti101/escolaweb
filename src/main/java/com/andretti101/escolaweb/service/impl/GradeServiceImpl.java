@@ -124,6 +124,12 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Grade> findAll(org.springframework.data.domain.Pageable pageable) {
+        return gradeRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Grade> findByStudent(Integer studentId) {
         Student student = studentService.findById(studentId);
         return gradeRepository.findByStudent(student);

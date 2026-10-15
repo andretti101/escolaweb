@@ -10,7 +10,9 @@ public interface PrincipalService {
     void delete(Integer id);
     Principal findById(Integer id);
     List<Principal> findAll();
+    org.springframework.data.domain.Page<Principal> findAll(org.springframework.data.domain.Pageable pageable);
     List<Principal> findAllActive();
+    org.springframework.data.domain.Page<Principal> findAllActive(org.springframework.data.domain.Pageable pageable);
     Principal activate(Integer id);
     Principal deactivate(Integer id);
 }

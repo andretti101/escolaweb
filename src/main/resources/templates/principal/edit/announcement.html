@@ -229,12 +229,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Load classrooms
     async function loadClassrooms() {
         try {
-            const response = await fetch('/api/classrooms?activeOnly=true', {
+            const response = await fetch('/api/classrooms?activeOnly=true&size=1000', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             if (response.ok) {
-                allClassrooms = await response.json();
-                  if (allClassrooms) allClassrooms.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                const raw = await response.json();
+                allClassrooms = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.content) ? raw.content : []);
+                if (allClassrooms) allClassrooms.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             }
         } catch(e) {
             console.error("Error loading classrooms:", e);

@@ -210,14 +210,16 @@
                 // Fetch periods
                 const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (periodRes.ok) {
-                    allPeriods = await periodRes.json();
+                    const data = await periodRes.json();
+                    allPeriods = Array.isArray(data) ? data : (data.content || []);
                 }
 
                 // Fetch classrooms to map division types
                 const crUrl = activeYearId ? `/api/classrooms?academicYearId=${activeYearId}` : '/api/classrooms';
                 const crRes = await fetch(crUrl, { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (crRes.ok) {
-                    const classrooms = await crRes.json();
+                    const rawCr = await crRes.json();
+                    const classrooms = Array.isArray(rawCr) ? rawCr : (rawCr.content || []);
                     classrooms.forEach(cr => classroomsMap.set(cr.name, cr));
                 }
 
@@ -226,7 +228,8 @@
                 // Fetch teacher's classrooms and subjects
                 const tcsRes = await fetch('/api/teacher-class-subjects', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (tcsRes.ok) {
-                    const myTcs = await tcsRes.json();
+                    const rawTcs = await tcsRes.json();
+                    const myTcs = Array.isArray(rawTcs) ? rawTcs : (rawTcs.content || []);
                     const cSelect = document.getElementById('classRoomFilter');
                     const sSelect = document.getElementById('subjectFilter');
                     
@@ -268,8 +271,8 @@
                     headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
                 if (response.status === 401 || response.status === 403) return handleUnauthorized();
-                if (!response.ok) throw new Error('Não foi possível carregar as aulas.');
-                allLessons = await response.json();
+                const data = await response.json();
+                allLessons = Array.isArray(data) ? data : (data.content || []);
                 
                 // Sort by date descending (most recent first)
                 allLessons.sort((a, b) => new Date(b.lessonDate) - new Date(a.lessonDate));

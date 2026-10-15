@@ -134,14 +134,32 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Student> findAll(org.springframework.data.domain.Pageable pageable) {
+        return studentRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Student> findAllActive() {
         return studentRepository.findByActiveTrue();
     }
 
     @Override
     @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Student> findAllActive(org.springframework.data.domain.Pageable pageable) {
+        return studentRepository.findByActiveTrue(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Student> findAllActiveUnenrolled() {
         return studentRepository.findActiveUnenrolled();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Student> findAllActiveUnenrolled(org.springframework.data.domain.Pageable pageable) {
+        return studentRepository.findActiveUnenrolled(pageable);
     }
 
     @Override

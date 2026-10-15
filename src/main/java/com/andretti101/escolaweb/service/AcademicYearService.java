@@ -10,6 +10,7 @@ public interface AcademicYearService {
     void delete(Integer id);
     AcademicYear findById(Integer id);
     List<AcademicYear> findAll();
+    org.springframework.data.domain.Page<AcademicYear> findAll(org.springframework.data.domain.Pageable pageable);
     AcademicYear findActive();
     AcademicYear setActive(Integer id);
 }
