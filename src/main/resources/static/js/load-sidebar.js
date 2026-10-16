@@ -47,8 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 3. Fallback para toggler da navbar caso main.js não tenha vinculado
-        document.querySelectorAll(".layout-navbar .layout-menu-toggle").forEach(item => {
+        // 3. Fallback para togglers (navbar ou standalone) caso main.js não tenha vinculado
+        document.querySelectorAll(".layout-menu-toggle:not(.layout-overlay):not(#layout-menu .layout-menu-toggle)").forEach(item => {
             if (!item.dataset.menuToggleBound) {
                 item.dataset.menuToggleBound = "true";
                 if (!window.Helpers || typeof window.Helpers.toggleCollapsed !== "function") {
@@ -56,6 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        // 3.1. Fechar menu com a tecla Escape
+        if (!document.documentElement.dataset.menuEscapeBound) {
+            document.documentElement.dataset.menuEscapeBound = "true";
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && document.documentElement.classList.contains("layout-menu-expanded")) {
+                    closeMenu();
+                }
+            });
+        }
 
         // 4. No mobile (< 1200px), fechar menu ao clicar num link de navegação direta
         document.querySelectorAll("#layout-menu .menu-link:not(.menu-toggle)").forEach(link => {
