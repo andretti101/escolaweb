@@ -1,4 +1,77 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const initMenuToggles = () => {
+        let overlay = document.querySelector(".layout-overlay");
+        if (!overlay) {
+            overlay = document.createElement("div");
+            overlay.className = "layout-overlay layout-menu-toggle";
+            const wrapper = document.querySelector(".layout-wrapper");
+            if (wrapper) wrapper.appendChild(overlay);
+        }
+
+        const closeMenu = () => {
+            if (window.Helpers && typeof window.Helpers.setCollapsed === "function") {
+                window.Helpers.setCollapsed(true, false);
+            } else {
+                document.documentElement.classList.remove("layout-menu-expanded");
+            }
+        };
+
+        const toggleMenu = (event) => {
+            if (event) event.preventDefault();
+            if (window.Helpers && typeof window.Helpers.toggleCollapsed === "function") {
+                window.Helpers.toggleCollapsed();
+            } else {
+                document.documentElement.classList.toggle("layout-menu-expanded");
+            }
+        };
+
+        // 1. Overlay click SEMPRE fecha o menu de forma determinística
+        if (overlay && !overlay.dataset.overlayBound) {
+            overlay.dataset.overlayBound = "true";
+            overlay.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                closeMenu();
+            }, true);
+        }
+
+        // 2. Botão de fechar dentro da sidebar dinâmica (#layout-menu)
+        document.querySelectorAll("#layout-menu .layout-menu-toggle").forEach(item => {
+            if (!item.dataset.menuToggleBound) {
+                item.dataset.menuToggleBound = "true";
+                item.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    closeMenu();
+                });
+            }
+        });
+
+        // 3. Fallback para toggler da navbar caso main.js não tenha vinculado
+        document.querySelectorAll(".layout-navbar .layout-menu-toggle").forEach(item => {
+            if (!item.dataset.menuToggleBound) {
+                item.dataset.menuToggleBound = "true";
+                if (!window.Helpers || typeof window.Helpers.toggleCollapsed !== "function") {
+                    item.addEventListener("click", toggleMenu);
+                }
+            }
+        });
+
+        // 4. No mobile (< 1200px), fechar menu ao clicar num link de navegação direta
+        document.querySelectorAll("#layout-menu .menu-link:not(.menu-toggle)").forEach(link => {
+            if (!link.dataset.menuLinkBound) {
+                link.dataset.menuLinkBound = "true";
+                link.addEventListener("click", () => {
+                    if (window.innerWidth < 1200) {
+                        closeMenu();
+                    }
+                });
+            }
+        });
+    };
+
+    initMenuToggles();
+
     const sidebarContainer = document.getElementById('sidebar-container');
     if (!sidebarContainer) return;
 
@@ -51,18 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 3. Re-vincular o botão de fechar sidebar no mobile
-            const menuTogglers = document.querySelectorAll('#layout-menu .layout-menu-toggle');
-            menuTogglers.forEach(item => {
-                item.addEventListener('click', event => {
-                    event.preventDefault();
-                    if (window.Helpers) {
-                        window.Helpers.toggleCollapsed();
-                    }
-                });
-            });
+            // 3. Re-vincular overlay e botoes apos injecao da sidebar
+            initMenuToggles();
 
-            
             // Funcao auxiliar para adicionar o selo (badge) de notificacao sem quebrar o layout/html
             const addNotificationBadge = (elem) => {
                 if (!elem) return;

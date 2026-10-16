@@ -3,7 +3,6 @@ package com.andretti101.escolaweb.config;
 import com.andretti101.escolaweb.service.impl.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -30,7 +29,7 @@ public class SecurityConfig {
 
     public SecurityConfig(
             CustomUserDetailsService userDetailsService,
-            @Lazy JwtAuthenticationFilter jwtAuthenticationFilter,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -81,8 +80,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
+    private DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());

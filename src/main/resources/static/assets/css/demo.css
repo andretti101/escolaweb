@@ -105,11 +105,435 @@
   text-align: center;
   margin-top: 1rem;
 }
-/* Correção Global: Evitar que as tabelas responsivas cortem os menus dropdown */
-.table-responsive {
-    overflow: visible !important;
-}
+/* Correï¿½ï¿½o Global: Evitar que as tabelas responsivas cortem os menus dropdown */
+
 .table-responsive .dropdown-menu {
     position: absolute !important;
     z-index: 1050 !important;
+}
+
+/* ==========================================================================
+   ESCOLAWEB - COMPREHENSIVE RESPONSIVENESS SYSTEM
+   ========================================================================== */
+
+/* 1. Global Viewport & Container bounds (Prevent horizontal scroll) */
+html {
+  max-width: 100%;
+}
+
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.layout-wrapper,
+.layout-container,
+.layout-page,
+.content-wrapper {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* 2. Responsive Tables */
+.table-responsive {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.table-responsive > .table {
+  margin-bottom: 0;
+}
+
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background-color: rgba(105, 108, 255, 0.25);
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
+
+.table td code {
+  word-break: break-all;
+}
+
+/* 3. Responsive Navbar & Search Input */
+.layout-navbar #globalSearch,
+.layout-navbar .nav-item input[type="text"] {
+  min-width: 0 !important;
+  max-width: 450px;
+  width: 100% !important;
+}
+
+.layout-navbar .nav-item:has(#globalSearch) {
+  max-width: 100% !important;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 575.98px) {
+  .layout-navbar {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  .layout-navbar .navbar-nav-right {
+    padding-left: 0.25rem !important;
+  }
+  
+  .layout-navbar #globalSearch {
+    font-size: 0.85rem !important;
+  }
+  
+  .layout-navbar .navbar-nav.flex-row {
+    gap: 0.25rem;
+  }
+}
+
+/* 4. Responsive Page & Card Headers */
+.card-header.d-flex,
+.card-header.d-flex.justify-content-between,
+.content-wrapper .d-flex.justify-content-between.align-items-center.mb-4,
+.container-xxl > .d-flex.justify-content-between.align-items-center.mb-4,
+.container-fluid > .d-flex.justify-content-between.align-items-center.mb-4 {
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+}
+
+.card-header.d-flex > div,
+.card-header.d-flex > h4,
+.card-header.d-flex > h5,
+.card-header.d-flex > h6 {
+  min-width: 0;
+}
+
+@media (max-width: 575.98px) {
+  .content-wrapper .d-flex.justify-content-between.align-items-center.mb-4,
+  .container-xxl > .d-flex.justify-content-between.align-items-center.mb-4,
+  .container-fluid > .d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .content-wrapper .d-flex.justify-content-between.align-items-center.mb-4 > .btn,
+  .container-xxl > .d-flex.justify-content-between.align-items-center.mb-4 > .btn,
+  .container-fluid > .d-flex.justify-content-between.align-items-center.mb-4 > .btn {
+    width: 100% !important;
+  }
+}
+
+/* 5. Responsive Filter Bars & Form Elements */
+@media (max-width: 767.98px) {
+  .card-body > .d-flex.flex-wrap.justify-content-between {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+  
+  select.form-select.w-auto,
+  .card-body select.form-select.w-auto,
+  .card-header select.form-select.w-auto,
+  .d-flex select.form-select.w-auto {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .d-flex.align-items-center:has(> select.form-select) {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+  }
+}
+
+/* 6. Mobile Container, Grid Gutters & Card Padding */
+@media (max-width: 575.98px) {
+  :root, body, .content-wrapper {
+    --bs-gutter-x: 1rem;
+  }
+
+  .row {
+    --bs-gutter-x: 1rem !important;
+    margin-left: calc(-0.5 * var(--bs-gutter-x)) !important;
+    margin-right: calc(-0.5 * var(--bs-gutter-x)) !important;
+  }
+
+  .container-xxl.container-p-y,
+  .container-fluid.container-p-y {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  .card-body.p-5,
+  .card-body.p-4 {
+    padding: 1.25rem 1rem !important;
+  }
+  
+  .card-header {
+    padding: 1rem !important;
+  }
+  
+  /* Stack submit/reset buttons on mobile form footers only when buttons are present */
+  form .d-flex.justify-content-end:has(> .btn):not(.form-text):not(.no-mobile-stack) {
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+  
+  form .d-flex.justify-content-end:has(> .btn):not(.form-text):not(.no-mobile-stack) > .btn {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* 7. Swipeable Tabs on Mobile */
+@media (max-width: 767.98px) {
+  .nav-tabs,
+  .nav-pills {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px !important;
+    gap: 0.35rem;
+  }
+  
+  .nav-tabs .nav-item,
+  .nav-pills .nav-item {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .nav-tabs .nav-link,
+  .nav-pills .nav-link {
+    padding: 0.5rem 0.85rem !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .nav-tabs::-webkit-scrollbar,
+  .nav-pills::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .nav-tabs::-webkit-scrollbar-thumb,
+  .nav-pills::-webkit-scrollbar-thumb {
+    background-color: rgba(105, 108, 255, 0.2);
+    border-radius: 3px;
+  }
+}
+
+/* 8. Offcanvas Drawers on Mobile */
+.offcanvas,
+.offcanvas-end,
+.offcanvas-start {
+  max-width: 100% !important;
+}
+
+@media (max-width: 575.98px) {
+  .offcanvas-end,
+  .offcanvas-start {
+    width: 100% !important;
+  }
+}
+
+/* 9. Responsive Modals on Mobile */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    margin: 0.5rem !important;
+    max-width: calc(100% - 1rem) !important;
+  }
+  
+  .modal-footer {
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+  }
+  
+  .modal-footer > * {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+/* 10. Chat & AI Chat Responsive Layout */
+@media (max-width: 767.98px) {
+  .chat-wrapper {
+    height: calc(100vh - 150px) !important;
+    border-radius: 6px !important;
+  }
+  
+  .chat-header {
+    padding: 10px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  
+  .chat-header > div {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  
+  .chat-header select,
+  .chat-header .header-select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .chat-message {
+    max-width: 88% !important;
+    font-size: 13.5px !important;
+    padding: 8px 10px !important;
+  }
+  
+  .chat-input-area {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+  }
+  
+  .chat-input-area input {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+  }
+  
+  .chat-input-area button,
+  .chat-btn {
+    width: 40px !important;
+    height: 38px !important;
+    min-width: 40px !important;
+  }
+  
+  emoji-picker,
+  #emojiPickerContainer {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 280px !important;
+  }
+}
+
+/* 11. Auth Pages on Mobile */
+@media (max-width: 575.98px) {
+  .authentication-wrapper.authentication-basic {
+    padding: 1rem 0.5rem !important;
+  }
+  
+  .authentication-wrapper.authentication-basic .authentication-inner {
+    max-width: 100% !important;
+    padding: 0 0.5rem !important;
+  }
+  
+  .authentication-wrapper.authentication-basic .authentication-inner:before,
+  .authentication-wrapper.authentication-basic .authentication-inner:after {
+    display: none !important;
+  }
+  
+  .authentication-wrapper.authentication-basic .card {
+    border-radius: 12px !important;
+  }
+  
+  .app-brand-logo.demo img,
+  .app-brand-logo img {
+    max-width: 200px !important;
+    height: auto !important;
+  }
+}
+
+/* 12. KPI Cards & Action Cards on Mobile */
+@media (max-width: 575.98px) {
+  .kpi-card .card-body {
+    padding: 1rem !important;
+  }
+  
+  .kpi-card .card-title,
+  .kpi-card h3,
+  .kpi-card h4 {
+    font-size: 1.4rem !important;
+  }
+  
+  .action-card {
+    padding: 0.75rem 0.5rem !important;
+  }
+}
+
+/* 13. Text Break and Touch Optimization */
+.text-break-all {
+  word-break: break-all !important;
+}
+
+@media (max-width: 767.98px) {
+  .btn-icon {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+/* 14. Responsive Card Header Inner Filters & Navbar Detached Bounds */
+.card-header .d-flex.align-items-center {
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+}
+
+@media (max-width: 767.98px) {
+  .card-header .d-flex.align-items-center {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .layout-navbar.navbar-detached {
+    width: calc(100% - 1rem) !important;
+    margin: 0.5rem auto 0 !important;
+    padding: 0 0.75rem !important;
+  }
+  
+  .card-header .d-flex.align-items-center > select.form-select,
+  .card-header .d-flex.align-items-center > .input-group,
+  .card-header .d-flex.align-items-center > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .card-body .d-flex.align-items-center.gap-2 {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+  }
+
+  .card-body .d-flex.align-items-center.gap-2 > select.form-select {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .btn-group {
+    display: flex !important;
+    width: 100% !important;
+  }
+
+  .btn-group .btn {
+    flex: 1 1 auto !important;
+  }
+}
+
+/* 15. Responsive ApexCharts & Data Visualizations */
+.apexcharts-canvas,
+.apexcharts-canvas svg,
+.apexcharts-canvas foreignObject {
+  max-width: 100% !important;
+}
+
+.apexcharts-canvas {
+  width: 100% !important;
 }
