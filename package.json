@@ -1,0 +1,52 @@
+{
+  "name": "escolaweb",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão Escolar - EscolaWEB SGE",
+  "main": "main.js",
+  "author": "EscolaWEB",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build-frontend.js",
+    "start": "npm run build && electron .",
+    "start:electron": "npm run build && electron .",
+    "build:electron": "npm run build && electron-builder"
+  },
+  "build": {
+    "appId": "com.andretti101.escolaweb",
+    "productName": "EscolaWEB SGE",
+    "directories": {
+      "output": "dist/electron"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "scripts/**/*",
+      "dist/**/*",
+      "!dist/electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "src/main/resources/static/favicon.ico",
+      "signExecutable": false
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "src/main/resources/static/assets/img/Logo.png"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "src/main/resources/static/assets/img/Logo.png"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.8.0",
+    "electron-builder": "^26.15.3"
+  }
+}
