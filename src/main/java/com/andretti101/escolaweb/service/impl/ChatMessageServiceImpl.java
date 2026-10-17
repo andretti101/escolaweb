@@ -198,9 +198,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             java.util.List<Integer> studentClassRoomIds = student.getEnrollments().stream()
                     .map(e -> e.getClassRoom().getId())
                     .collect(Collectors.toList());
-            classroomsToCheck = classRoomRepository.findAll().stream()
-                    .filter(c -> studentClassRoomIds.contains(c.getId()))
-                    .collect(Collectors.toList());
+            classroomsToCheck = classRoomRepository.findAllById(studentClassRoomIds);
         } else {
             return false;
         }

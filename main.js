@@ -3,11 +3,14 @@ const path = require('path');
 const fs = require('fs');
 const { fileURLToPath } = require('url');
 const { buildFrontend, DIST_DIR } = require('./scripts/build-frontend');
+const { ROUTE_MAP } = require('./scripts/routes-map');
 
 const BACKEND_URL = (
   process.env.BACKEND_URL ||
   process.env.APP_URL ||
-  `http://localhost:${process.env.SERVER_PORT || 8080}`
+  (process.env.SERVER_PORT && process.env.SERVER_PORT !== '80'
+    ? `http://localhost:${process.env.SERVER_PORT}`
+    : 'http://localhost')
 ).replace(/\/+$/, '');
 
 const MIME_TYPES = {
@@ -56,6 +59,15 @@ function resolveDistFilePath(rawFilePath) {
   const relFromRoot = path.relative(parsedRoot, rawFilePath);
 
   if (relFromRoot && !relFromRoot.startsWith('..')) {
+    const normalized = '/' + relFromRoot.replace(/\\/g, '/').replace(/\/+$/, '');
+    if (ROUTE_MAP[normalized]) {
+      const mappedRel = ROUTE_MAP[normalized].replace(/^\//, '');
+      const candidateMapped = path.join(DIST_DIR, mappedRel);
+      if (fs.existsSync(candidateMapped) && fs.statSync(candidateMapped).isFile()) {
+        return candidateMapped;
+      }
+    }
+
     const candidateInDist = path.join(DIST_DIR, relFromRoot);
     if (fs.existsSync(candidateInDist) && fs.statSync(candidateInDist).isFile()) {
       return candidateInDist;

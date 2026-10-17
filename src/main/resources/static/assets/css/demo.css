@@ -171,9 +171,18 @@ body {
   word-break: break-all;
 }
 
-/* Evitar que tabelas responsivas cortem menus dropdown */
+/* Evitar que tabelas responsivas cortem menus dropdown ou gerem scrollbars indesejadas */
+.table-responsive {
+  min-height: 240px;
+}
+
+@media (min-width: 768px) {
+  .card:not(.table-scrollable) > .table-responsive {
+    overflow: visible !important;
+  }
+}
+
 .table-responsive .dropdown-menu {
-  position: absolute !important;
   z-index: 1050 !important;
 }
 

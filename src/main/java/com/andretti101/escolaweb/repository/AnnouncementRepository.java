@@ -8,9 +8,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AnnouncementRepository extends JpaRepository<Announcement, Integer> {
+
+    @Override
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"author", "classRooms", "classRooms.academicYear"})
+    Optional<Announcement> findById(Integer id);
 
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"author", "classRooms"})
     @Query("SELECT DISTINCT a FROM Announcement a LEFT JOIN a.classRooms c WHERE a.archived = false AND ((c.id IN :classRoomIds) OR (a.targetTeachers = true)) ORDER BY a.createdAt DESC")
@@ -80,7 +85,7 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Inte
             @Param("targetTeachers") Boolean targetTeachers,
             org.springframework.data.domain.Pageable pageable);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Announcement a SET a.archived = true WHERE a.archived = false")
     int archiveAll();
 }

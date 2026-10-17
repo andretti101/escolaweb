@@ -175,7 +175,9 @@
                         const raw = await cRes.json();
                         classrooms = Array.isArray(raw) ? raw : (raw.content || []);
                     }
-                } catch(_) {}
+                } catch (err) {
+                    console.warn('Erro ao carregar turmas:', err);
+                }
 
                 const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (periodRes.ok) {
@@ -336,10 +338,10 @@
                     <td>${periodName}</td>
                     <td class="text-center">
                         <div class="dropdown">
-                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
-                            <div class="dropdown-menu">
+                            <div class="dropdown-menu dropdown-menu-end">
                                 <a class="dropdown-item" href="/teacher/edit/assessment.html?id=${ass.id}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar Notas
                                 </a>

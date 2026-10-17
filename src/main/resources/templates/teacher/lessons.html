@@ -348,10 +348,10 @@
                         <td><span class="badge bg-label-info">${l.lessonCount} aula(s)</span></td>
                         <td class="text-center">
                             <div class="dropdown">
-                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
-                                <div class="dropdown-menu">
+                                <div class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="/teacher/edit/lesson.html?id=${l.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteLesson(${l.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>

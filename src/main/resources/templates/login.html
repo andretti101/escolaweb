@@ -45,7 +45,7 @@
                 <div class="card-body p-4 pt-3">
 
                     <div class="app-brand justify-content-center mb-2" style="min-height: auto;">
-                        <a href="login.html" class="app-brand-link gap-2">
+                        <a href="/entrar" class="app-brand-link gap-2">
                 <span class="app-brand-logo demo" style="height: auto; width: auto;">
                   <img
                           src="/assets/img/Logo.png"
@@ -58,7 +58,7 @@
                     <h4 class="mb-1 text-center">Bem-vindo ao EscolaWEB!</h4>
                     <p class="mb-3 text-center">Por favor, faça login para acessar o sistema escolar</p>
 
-                    <form id="formAuthentication" class="mb-3" action="index.html" method="POST">
+                    <form id="formAuthentication" class="mb-3" action="javascript:void(0);" method="POST">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input
@@ -74,20 +74,20 @@
                         <div class="mb-3 form-password-toggle">
                             <div class="d-flex justify-content-between">
                                 <label class="form-label" for="password">Senha</label>
-                                <a href="forgot-password.html">
+                                <a href="/recuperar-senha">
                                     <small>Esqueceu a senha?</small>
                                 </a>
                             </div>
                             <div class="input-group input-group-merge">
                                 <input
-                                        type="password"
-                                        id="password"
-                                        class="form-control"
-                                        style="border-top-left-radius: 10px; border-bottom-left-radius: 10px;"
-                                        name="password"
-                                        placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                        aria-describedby="password"
-                                />
+                                    type="password"
+                                    id="password"
+                                    class="form-control"
+                                    style="border-top-left-radius: 10px; border-bottom-left-radius: 10px;"
+                                    name="password"
+                                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                    aria-describedby="password"
+                            />
                                 <span class="input-group-text cursor-pointer"
                                       style="border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
                     <i class="bx bx-hide"></i>
@@ -150,20 +150,21 @@
                     localStorage.setItem("refresh_token", data.refreshToken);
                     localStorage.setItem("user_id", data.userId);
                     localStorage.setItem("user_name", data.name);
+                    document.cookie = `jwt_token=${encodeURIComponent(data.accessToken)}; path=/; SameSite=Strict`;
 
                     // 2. Lê a role
                     const userRole = String(data.role ?? "").toUpperCase();
                     console.log("Role para redirecionamento:", userRole);
 
-                    // 3. Redireciona pelo perfil
+                    // 3. Redireciona pelo perfil para as rotas amigáveis em português
                     if (userRole.includes("PRINCIPAL")) {
-                        window.location.href = "principal/dashboard.html";
+                        window.location.href = "/direcao/painel";
                     } else if (userRole.includes("SECRETARY")) {
-                        window.location.href = "secretary/dashboard.html";
+                        window.location.href = "/secretaria/painel";
                     } else if (userRole.includes("TEACHER")) {
-                        window.location.href = "/teacher/dashboard.html";
+                        window.location.href = "/professor/painel";
                     } else if (userRole.includes("STUDENT")) {
-                        window.location.href = "/student/dashboard.html";
+                        window.location.href = "/aluno/painel";
                     } else {
                         await window.showAlertModal('Aviso', "Seu perfil de usuário não foi reconhecido. Entre em contato com o suporte.");
                         console.error("Resposta completa:", data);
@@ -184,7 +185,4 @@
         });
     });
 </script>
-
-
-
-
+</html>

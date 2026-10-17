@@ -179,7 +179,9 @@
                             badge.classList.remove('d-none');
                         }
                     }
-                } catch (_) {}
+                } catch (err) {
+                    console.warn('Erro ao carregar matrícula ativa:', err);
+                }
             } catch (e) {
                 console.error(e);
             }

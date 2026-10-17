@@ -307,9 +307,9 @@
                                             </a>
                                         </div>
                                         <div class="col-md-4 col-6">
-                                            <a href="/secretary/create/enrollment.html" class="quick-action-card card bg-label-warning border-0 text-center p-3 h-100">
+                                            <a href="/secretary/classrooms.html" class="quick-action-card card bg-label-warning border-0 text-center p-3 h-100">
                                                 <i class="bx bx-id-card fs-2 mb-2 text-warning"></i>
-                                                <h6 class="mb-1 text-warning fw-semibold">Nova Matrícula</h6>
+                                                <h6 class="mb-1 text-warning fw-semibold">Matrículas e Turmas</h6>
                                                 <small class="text-muted" style="font-size:0.75rem;">Enturmar aluno</small>
                                             </a>
                                         </div>
@@ -496,7 +496,9 @@
                     const innerElem = document.getElementById('dropdownAvatarInitialInner');
                     if (innerElem) innerElem.textContent = initial;
                 }
-            } catch (_) {}
+            } catch (err) {
+                console.warn('Erro ao decodificar token do usuário:', err);
+            }
         }
 
         const headers = {'Authorization': `Bearer ${token || ''}`};
@@ -648,7 +650,7 @@
                             <small class="text-muted">Alunos ativos no sistema sem turma vinculada no ano.</small>
                         </div>
                     </div>
-                    <a href="/secretary/create/enrollment.html" class="btn btn-sm btn-danger ms-2">Matricular</a>
+                    <a href="/secretary/classrooms.html" class="btn btn-sm btn-danger ms-2">Matricular</a>
                 </li>
             `);
         }

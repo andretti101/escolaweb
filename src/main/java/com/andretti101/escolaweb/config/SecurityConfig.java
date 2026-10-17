@@ -52,27 +52,54 @@ public class SecurityConfig {
                                 "/login.html",
                                 "/forgot-password.html",
                                 "/reset-password.html",
-                                "/dashboard.html",
-                                "/principal/**",
-                                "/secretary/**",
-                                "/teacher/**",
-                                "/student/**",
+                                "/entrar",
+                                "/recuperar-senha",
+                                "/redefinir-senha",
                                 "/assets/**",
                                 "/fonts/**",
-                                "/components/**",
                                 "/js/**",
                                 "/libs/**",
                                 "/favicon.ico",
                                 "/ws-chat/**",
-                                "/ai-chat.html"
+                                "/"
                         ).permitAll()
+                        .requestMatchers("/direcao", "/direcao/**", "/principal", "/principal/**").hasRole("PRINCIPAL")
+                        .requestMatchers("/secretaria", "/secretaria/**", "/secretary", "/secretary/**").hasAnyRole("SECRETARY", "PRINCIPAL")
+                        .requestMatchers("/professor", "/professor/**", "/teacher", "/teacher/**").hasAnyRole("TEACHER", "SECRETARY", "PRINCIPAL")
+                        .requestMatchers("/aluno", "/aluno/**", "/student", "/student/**").hasAnyRole("STUDENT", "SECRETARY", "PRINCIPAL")
+                        .requestMatchers("/components/**", "/ai-chat.html", "/assistente-ia", "/dashboard.html").authenticated()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, e) ->
-                                exceptionResolver.resolveException(request, response, null, e))
+                        .authenticationEntryPoint((request, response, e) -> {
+                            boolean isHtmlOrWebRoute = request.getRequestURI().endsWith(".html")
+                                    || (request.getHeader("Accept") != null && request.getHeader("Accept").contains("text/html"))
+                                    || request.getRequestURI().startsWith("/direcao")
+                                    || request.getRequestURI().startsWith("/secretaria")
+                                    || request.getRequestURI().startsWith("/professor")
+                                    || request.getRequestURI().startsWith("/aluno")
+                                    || request.getRequestURI().startsWith("/principal")
+                                    || request.getRequestURI().startsWith("/secretary")
+                                    || request.getRequestURI().startsWith("/teacher")
+                                    || request.getRequestURI().startsWith("/student")
+                                    || "/assistente-ia".equals(request.getRequestURI());
+
+                            if ("GET".equalsIgnoreCase(request.getMethod()) && isHtmlOrWebRoute) {
+                                if (request.getRequestURI().endsWith(".html")
+                                        || request.getRequestURI().startsWith("/principal")
+                                        || request.getRequestURI().startsWith("/secretary")
+                                        || request.getRequestURI().startsWith("/teacher")
+                                        || request.getRequestURI().startsWith("/student")) {
+                                    response.sendRedirect("/login.html");
+                                } else {
+                                    response.sendRedirect("/entrar");
+                                }
+                            } else {
+                                exceptionResolver.resolveException(request, response, null, e);
+                            }
+                        })
                         .accessDeniedHandler((request, response, e) ->
                                 exceptionResolver.resolveException(request, response, null, e))
                 );

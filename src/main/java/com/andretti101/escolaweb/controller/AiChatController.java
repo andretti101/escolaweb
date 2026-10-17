@@ -39,30 +39,65 @@ public class AiChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMemory chatMemory;
     private final ChatMessageHistoryRepository chatMessageHistoryRepository;
+    private final com.andretti101.escolaweb.repository.UserRepository userRepository;
 
     public record ChatRequest(String message, String conversationId) {}
     public record ChatResponse(String reply, String conversationId) {}
     public record HistoryMessage(String role, String content) {}
 
+    private boolean isAuthorizedConversation(String conversationId, Principal principal) {
+        if (principal == null || conversationId == null || conversationId.isBlank()) {
+            return false;
+        }
+        String username = principal.getName();
+        if (username == null || username.isBlank()) {
+            return false;
+        }
+        if (username.equalsIgnoreCase(conversationId)) {
+            return true;
+        }
+        com.andretti101.escolaweb.model.entity.User user = userRepository.findByEmail(username).orElse(null);
+        if (user != null) {
+            String userIdStr = String.valueOf(user.getId());
+            if (conversationId.equals(userIdStr)) {
+                return true;
+            }
+            if (conversationId.startsWith("conv-" + userIdStr + "-") || conversationId.equals("conv-" + userIdStr)) {
+                return true;
+            }
+            if (conversationId.startsWith(user.getEmail() + "-")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Operation(summary = "Obter histórico de conversa com a IA", description = "Retorna a lista de mensagens trocadas entre o usuário e o assistente de IA para a conversa informada.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Histórico retornado com sucesso")
+            @ApiResponse(responseCode = "200", description = "Histórico retornado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
     })
     @GetMapping("/api/chat/history")
     @ResponseBody
-    public List<HistoryMessage> getHistory(
+    public ResponseEntity<List<HistoryMessage>> getHistory(
             @Parameter(description = "Identificador único da conversa / sessão de chat")
-            @RequestParam String conversationId) {
-        return chatMemory.get(conversationId).stream()
+            @RequestParam String conversationId,
+            Principal principal) {
+        if (!isAuthorizedConversation(conversationId, principal)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
+        List<HistoryMessage> messages = chatMemory.get(conversationId).stream()
                 .filter(m -> m.getMessageType().name().equals("USER") || m.getMessageType().name().equals("ASSISTANT"))
                 .map(m -> new HistoryMessage(m.getMessageType().name(), m.getText()))
                 .toList();
+        return ResponseEntity.ok(messages);
     }
 
     @Operation(summary = "Apagar histórico a partir de um índice", description = "Remove as mensagens do histórico da IA a partir do índice informado, permitindo reiniciar ou ramificar a conversa.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Histórico podado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Parâmetros inválidos")
+            @ApiResponse(responseCode = "400", description = "Parâmetros inválidos"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
     })
     @DeleteMapping("/api/chat/history/{conversationId}/after/{messageIndex}")
     @ResponseBody
@@ -71,7 +106,11 @@ public class AiChatController {
             @Parameter(description = "Identificador único da conversa")
             @PathVariable String conversationId,
             @Parameter(description = "Índice da primeira mensagem a ser removida")
-            @PathVariable int messageIndex) {
+            @PathVariable int messageIndex,
+            Principal principal) {
+        if (!isAuthorizedConversation(conversationId, principal)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
         List<ChatMessageHistory> history = chatMessageHistoryRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
         int currentFilteredIndex = 0;
         int startIndexToDelete = -1;
@@ -93,15 +132,24 @@ public class AiChatController {
 
     @MessageMapping("/ai/chat")
     public void handleAiChat(@Payload ChatRequest request, Principal principal) {
+        if (principal == null) {
+            return;
+        }
         if (principal instanceof Authentication auth) {
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
         
         try {
-            String username = principal != null ? principal.getName() : "anonymous";
-            String conversationId = (request.conversationId() != null && !request.conversationId().isBlank()) 
-                    ? request.conversationId() 
-                    : username;
+            String username = principal.getName();
+            String conversationId = request.conversationId();
+            if (!isAuthorizedConversation(conversationId, principal)) {
+                com.andretti101.escolaweb.model.entity.User user = userRepository.findByEmail(username).orElse(null);
+                if (user != null) {
+                    conversationId = "conv-" + user.getId() + "-" + System.currentTimeMillis();
+                } else {
+                    conversationId = "conv-" + username;
+                }
+            }
             
             String reply = aiAgentService.chat(request.message(), conversationId);
             

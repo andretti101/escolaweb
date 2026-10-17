@@ -56,7 +56,21 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 User user = userRepository.findByEmail(principal.getName())
                         .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-                if (destination.startsWith("/topic/teachers")) {
+                if (destination.startsWith("/topic/user/")) {
+                    String[] parts = destination.split("/");
+                    if (parts.length >= 4) {
+                        try {
+                            Integer targetUserId = Integer.parseInt(parts[3]);
+                            if (!user.getId().equals(targetUserId) && user.getRole() != UserRole.PRINCIPAL && user.getRole() != UserRole.SECRETARY) {
+                                throw new IllegalArgumentException("Acesso negado ao canal de notificações de outro usuário.");
+                            }
+                        } catch (NumberFormatException e) {
+                            throw new IllegalArgumentException("Destino inválido para notificações.");
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Destino inválido para notificações.");
+                    }
+                } else if (destination.startsWith("/topic/teachers")) {
                     if (user.getRole() == UserRole.STUDENT) {
                         throw new IllegalArgumentException("Acesso negado: Alunos não podem acessar o chat dos professores.");
                     }

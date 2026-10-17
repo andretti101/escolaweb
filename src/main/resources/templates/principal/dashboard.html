@@ -554,7 +554,9 @@
                     const innerElem = document.getElementById('dropdownAvatarInitialInner');
                     if (innerElem) innerElem.textContent = initial;
                 }
-            } catch (_) {}
+            } catch (err) {
+                console.warn('Erro ao decodificar token do usuário:', err);
+            }
         }
 
         const headers = {'Authorization': `Bearer ${token || ''}`};
@@ -576,7 +578,7 @@
                     const innerElem = document.getElementById('dropdownAvatarInitialInner');
                     if (innerElem) innerElem.textContent = initial;
                 })
-                .catch(() => {});
+                .catch(err => console.warn('Não foi possível carregar dados detalhados do diretor:', err));
         }
 
         async function fetchSafe(endpoint) {

@@ -91,7 +91,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("jwt_token");
     if (!token) {
-        window.location.href = "/index.html";
+        window.location.href = "/login.html";
         return;
     }
     
@@ -113,10 +113,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else if (errObj.message) {
                     errMsg = errObj.message;
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn('Não foi possível ler o corpo do erro:', e);
+            }
             throw new Error(errMsg);
         }
-                  const announcements = await response.json();
+                  const rawData = await response.json();
+        const announcements = Array.isArray(rawData) ? rawData : (rawData?.content || []);
           fetch('/api/announcements/mark-read', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }).catch(console.error);
           
           announcements.sort((a, b) => {
@@ -192,7 +195,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         const payload = JSON.parse(atob(token.split('.')[1]));
                         userIdStr = payload.userId;
                     }
-                } catch(e) {}
+                } catch (e) {
+                    console.warn('Erro ao decodificar token para obter userId:', e);
+                }
                 
                 const canEdit = item.authorId == userIdStr;
                 const editButtonHtml = canEdit ? '<a href="/teacher/edit/announcement.html?id=' + item.id + '" class="btn btn-sm btn-icon btn-outline-primary" title="Editar"><i class="bx bx-pencil"></i></a> <a href="javascript:void(0);" onclick="deleteAnnouncement(' + item.id + ')" class="btn btn-sm btn-icon btn-outline-danger ms-1" title="Excluir"><i class="bx bx-trash"></i></a>' : '';

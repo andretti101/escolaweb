@@ -289,6 +289,25 @@ public class GlobalExceptionHandler {
                         request.getRequestURI()));
     }
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<ApiErrorResponse> handleResponseStatus(
+            org.springframework.web.server.ResponseStatusException ex, HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        String message = ex.getReason() != null ? ex.getReason() : ex.getMessage();
+
+        return ResponseEntity
+                .status(status)
+                .body(ApiErrorResponse.of(
+                        status,
+                        message,
+                        request.getRequestURI()));
+    }
+
     // ═════════════════════════════
     // 405 METHOD NOT ALLOWED
     // ═════════════════════════════

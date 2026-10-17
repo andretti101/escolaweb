@@ -394,10 +394,10 @@
                                         <td>${statusBadge}</td>
                                         <td class="text-center">
                                             <div class="dropdown">
-                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                                     <i class="bx bx-dots-vertical-rounded"></i>
                                                 </button>
-                                                <div class="dropdown-menu">
+                                                <div class="dropdown-menu dropdown-menu-end">
                                                     ${!p.closed ? `
                                                         <li><a class="dropdown-item" href="/principal/edit/academic-period.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar Datas</a></li>
                                                         ${isCurrentOpen ? `<li><a class="dropdown-item text-warning" href="javascript:void(0);" onclick="closePeriod(${p.id})"><i class="bx bx-lock-alt me-1"></i> Fechar Período</a></li>` : ''}

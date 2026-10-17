@@ -37,7 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const userName = localStorage.getItem("user_name");
 
     if (!token) {
-        window.location.href = "/login.html";
+        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+        window.location.href = "/entrar";
         return;
     }
 
@@ -55,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     let currentReplyId = null;
     let currentEditId = null;
+    let messageToDeleteId = null;
 
     if (replyPreviewClose) {
         replyPreviewClose.addEventListener("click", () => {
@@ -93,9 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chatTitle) chatTitle.textContent = "Sala dos Professores";
         connectAndSubscribe();
     } else if (isSecretary) {
-        fetch('/api/classrooms', { headers: { 'Authorization': 'Bearer ' + token } })
+        fetch('/api/classrooms?size=1000', { headers: { 'Authorization': 'Bearer ' + token } })
         .then(res => res.json())
-        .then(classes => {
+        .then(data => {
+            const classes = Array.isArray(data) ? data : (data?.content || []);
             if (classroomSelect) {
                 classes.sort((a, b) => {
                     const nameA = a.name || "Turma " + a.id;

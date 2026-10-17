@@ -4,7 +4,8 @@ const token       = localStorage.getItem("jwt_token");
 const refreshToken = localStorage.getItem("refresh_token");
 
 if (!token) {
-    window.location.href = "/login.html";
+    document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+    window.location.href = "/entrar";
 } else {
     try {
         const payloadBase64  = token.split('.')[1];
@@ -16,19 +17,25 @@ if (!token) {
         if (isExpired) {
             localStorage.removeItem("jwt_token");
             localStorage.removeItem("refresh_token");
-            window.location.href = "/login.html";
+            document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+            window.location.href = "/entrar";
         } else {
-            // Serializa o payload em texto maiúsculo para checar a role
-            const payloadString = JSON.stringify(decodedPayload).toUpperCase();
+            const rawRole = (decodedPayload.role || '').toUpperCase();
+            const role = rawRole.startsWith("ROLE_") ? rawRole : "ROLE_" + rawRole;
             const currentPath   = window.location.pathname;
 
-            if (currentPath.includes("/secretary/") && !payloadString.includes("SECRETARY") && !payloadString.includes("PRINCIPAL")) {
+            const isSecretaryPath = currentPath.includes("/secretaria/") || currentPath.includes("/secretary/");
+            const isPrincipalPath = currentPath.includes("/direcao/") || currentPath.includes("/principal/") || currentPath.includes("/admin/");
+            const isTeacherPath   = currentPath.includes("/professor/") || currentPath.includes("/teacher/");
+            const isStudentPath   = currentPath.includes("/aluno/") || currentPath.includes("/student/");
+
+            if (isSecretaryPath && role !== "ROLE_SECRETARY" && role !== "ROLE_PRINCIPAL") {
                 handleUnauthorized("Acesso Negado! Área restrita.");
-            } else if ((currentPath.includes("/admin/") || currentPath.includes("/principal/")) && !payloadString.includes("PRINCIPAL")) {
+            } else if (isPrincipalPath && role !== "ROLE_PRINCIPAL") {
                 handleUnauthorized("Acesso Negado! Área exclusiva da Direção.");
-            } else if (currentPath.includes("/student/") && !payloadString.includes("STUDENT")) {
+            } else if (isStudentPath && role !== "ROLE_STUDENT") {
                 handleUnauthorized("Acesso Negado! Área exclusiva do Aluno.");
-            } else if (currentPath.includes("/teacher/") && !payloadString.includes("TEACHER")) {
+            } else if (isTeacherPath && role !== "ROLE_TEACHER") {
                 handleUnauthorized("Acesso Negado! Área exclusiva do Professor.");
             }
             // Se nenhuma condição disparou, o usuário está autorizado e a página carrega normalmente.
@@ -42,7 +49,7 @@ if (!token) {
                 if (window.showAlertModal) {
                     await window.showAlertModal("Acesso Negado", msg);
                 }
-                window.location.href = "/login.html";
+                window.location.href = "/entrar";
             });
         }
     } catch (error) {
@@ -50,6 +57,7 @@ if (!token) {
         console.error("Token inválido ou corrompido:", error);
         localStorage.removeItem("jwt_token");
         localStorage.removeItem("refresh_token");
-        window.location.href = "/login.html";
+        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+        window.location.href = "/entrar";
     }
 }

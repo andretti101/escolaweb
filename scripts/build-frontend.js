@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { ROUTE_MAP } = require('./routes-map');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
@@ -99,13 +100,26 @@ function createElectronBridgeScript(distDir) {
     );
   }
 
+  var ROUTE_MAP = ${JSON.stringify(ROUTE_MAP)};
+
+  function mapRoute(urlStr) {
+    if (!urlStr) return urlStr;
+    var clean = urlStr.split('?')[0].split('#')[0].replace(/\/$/, '');
+    var suffix = (urlStr.indexOf('?') !== -1 ? urlStr.substring(urlStr.indexOf('?')) : '') ||
+                 (urlStr.indexOf('#') !== -1 ? urlStr.substring(urlStr.indexOf('#')) : '');
+    if (ROUTE_MAP[clean]) {
+      return ROUTE_MAP[clean] + suffix;
+    }
+    return urlStr;
+  }
+
   function resolveRequestUrl(urlStr) {
     if (typeof urlStr !== 'string') return urlStr;
     if (isBackendPath(urlStr)) {
       return backendUrl + urlStr;
     }
     if (window.location.protocol === 'file:' && urlStr.charAt(0) === '/' && urlStr.charAt(1) !== '/') {
-      return getDistRootUrl() + urlStr;
+      return getDistRootUrl() + mapRoute(urlStr);
     }
     return urlStr;
   }
@@ -221,7 +235,7 @@ function createElectronBridgeScript(distDir) {
         if (!rawHref || rawHref.charAt(0) !== '/' || rawHref.charAt(1) === '/') return;
         if (anchor.target && anchor.target !== '_self') return;
         event.preventDefault();
-        window.location.href = getDistRootUrl() + rawHref;
+        window.location.href = getDistRootUrl() + mapRoute(rawHref);
       },
       true
     );

@@ -118,9 +118,10 @@
 
         try {
             // 1. Carrega anos acadêmicos
-            const yearsRes = await apiFetch('/api/academic-years');
+            const yearsRes = await apiFetch('/api/academic-years?size=1000');
             if (yearsRes.ok) {
-                const years = await yearsRes.json();
+                const data = await yearsRes.json();
+                const years = Array.isArray(data) ? data : (data.content || []);
                 filterYear.innerHTML = '<option value="">Todos os anos</option>';
                 years.forEach(y => {
                     const opt = document.createElement('option');
@@ -138,9 +139,10 @@
 
         try {
             // 2. Carrega períodos letivos
-            const periodsRes = await apiFetch('/api/academic-periods');
+            const periodsRes = await apiFetch('/api/academic-periods?size=1000');
             if (periodsRes.ok) {
-                allPeriods = await periodsRes.json();
+                const data = await periodsRes.json();
+                allPeriods = Array.isArray(data) ? data : (data.content || []);
                 populatePeriods();
             }
         } catch (err) {
@@ -200,7 +202,8 @@
         try {
             const res = await apiFetch('/api/teacher-class-subjects');
             if (res.ok) {
-                teacherClassSubjects = await res.json();
+                const data = await res.json();
+                teacherClassSubjects = Array.isArray(data) ? data : (data.content || []);
                 populateTeacherClassRooms();
             }
         } catch (err) {
@@ -226,9 +229,10 @@
     async function initAdminFilters() {
         // Carrega professores
         try {
-            const teachRes = await apiFetch('/api/teachers');
+            const teachRes = await apiFetch('/api/teachers?size=1000');
             if (teachRes.ok && filterTeacher) {
-                const teachers = await teachRes.json();
+                const data = await teachRes.json();
+                const teachers = Array.isArray(data) ? data : (data.content || []);
                 teachers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 filterTeacher.innerHTML = '<option value="">Todos os professores</option>';
                 teachers.forEach(t => {
@@ -248,11 +252,12 @@
 
     async function loadAdminClassRooms() {
         const yearId = filterYear.value;
-        const url = yearId ? `/api/classrooms/academic-year/${yearId}` : '/api/classrooms';
+        const url = yearId ? `/api/classrooms/academic-year/${yearId}?size=1000` : '/api/classrooms?size=1000';
         try {
             const res = await apiFetch(url);
             if (res.ok) {
-                allClassRooms = await res.json();
+                const data = await res.json();
+                allClassRooms = Array.isArray(data) ? data : (data.content || []);
                 allClassRooms.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 filterClassRoom.innerHTML = '<option value="">Todas as turmas</option>';
                 allClassRooms.forEach(c => {
@@ -285,7 +290,8 @@
             try {
                 const res = await apiFetch(`/api/enrollments/classroom/${classRoomId}`);
                 if (res.ok) {
-                    const enrollments = await res.json();
+                    const data = await res.json();
+                    const enrollments = Array.isArray(data) ? data : (data.content || []);
                     enrollments.sort((a, b) => (a.studentName || '').localeCompare(b.studentName || ''));
                     enrollments.forEach(e => {
                         const opt = document.createElement('option');

@@ -310,14 +310,19 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
     }
 
     private void validateMinimumAssessments(AcademicPeriod period) {
-        List<TeacherClassSubject> relevantTcs = teacherClassSubjectRepository.findAll().stream()
-                .filter(tcs -> tcs.isActive()
-                        && tcs.getClassRoom() != null
-                        && tcs.getClassRoom().isActive()
-                        && tcs.getClassRoom().getAcademicYear() != null
-                        && tcs.getClassRoom().getAcademicYear().getId().equals(period.getAcademicYear().getId())
-                        && tcs.getClassRoom().getPeriodType() == period.getPeriodType())
-                .toList();
+        List<TeacherClassSubject> relevantTcs = teacherClassSubjectRepository
+                .findActiveByYearAndPeriodType(period.getAcademicYear().getId(), period.getPeriodType());
+
+        if (relevantTcs == null || relevantTcs.isEmpty()) {
+            relevantTcs = teacherClassSubjectRepository.findAll().stream()
+                    .filter(tcs -> tcs.isActive()
+                            && tcs.getClassRoom() != null
+                            && tcs.getClassRoom().isActive()
+                            && tcs.getClassRoom().getAcademicYear() != null
+                            && tcs.getClassRoom().getAcademicYear().getId().equals(period.getAcademicYear().getId())
+                            && tcs.getClassRoom().getPeriodType() == period.getPeriodType())
+                    .toList();
+        }
 
         for (TeacherClassSubject tcs : relevantTcs) {
             if (tcs.getMinAssessmentsPerPeriod() != null) {

@@ -476,7 +476,9 @@
                     if (payload.sub) {
                         userEmail = payload.sub;
                     }
-                } catch (_) {}
+                } catch (err) {
+                    console.warn('Erro ao decodificar token do professor:', err);
+                }
             }
 
             const firstName = userName.split(' ')[0];
@@ -603,7 +605,8 @@
             if (myLessons.length > 0) {
                 const sortedLessons = [...myLessons].sort((a, b) => b.id - a.id).slice(0, 5);
                 recentLessonsTable.innerHTML = sortedLessons.map(l => {
-                    const date = l.date ? new Date(l.date + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+                    const lDate = l.lessonDate || l.date;
+                    const date = lDate ? new Date(lDate + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
                     const title = l.title || l.content || 'Aula ministrada';
                     const count = l.lessonCount || 1;
                     return `

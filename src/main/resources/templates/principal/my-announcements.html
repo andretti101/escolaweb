@@ -90,7 +90,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("jwt_token");
     if (!token) {
-        window.location.href = "/index.html";
+        window.location.href = "/login.html";
         return;
     }
     
@@ -112,10 +112,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else if (errObj.message) {
                     errMsg = errObj.message;
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn('Não foi possível ler o corpo do erro:', e);
+            }
             throw new Error(errMsg);
         }
-        const announcements = await response.json();
+        const rawData = await response.json();
+        const announcements = Array.isArray(rawData) ? rawData : (rawData?.content || []);
         fetch('/api/announcements/mark-read', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }).catch(console.error);
         
         announcements.sort((a, b) => {

@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const token = localStorage.getItem("jwt_token");
     if (!token) {
-        window.location.href = "/login.html";
+        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+        window.location.href = "/entrar";
         return;
     }
 

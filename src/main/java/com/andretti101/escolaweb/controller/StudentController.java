@@ -222,17 +222,19 @@ public class StudentController {
         String className = "-";
         String situation = "Pendente";
         if (s.getEnrollments() != null) {
-            var activeEnrollment = s.getEnrollments().stream()
-                    .filter(com.andretti101.escolaweb.model.entity.Enrollment::isActive)
-                    .findFirst();
-            if (activeEnrollment.isPresent()) {
-                className = activeEnrollment.get().getClassRoom().getName();
-                if (situationMap.containsKey(s.getId())) {
-                    situation = situationMap.get(s.getId());
-                } else if (activeEnrollment.get().getGeneralSituation() != null) {
-                    situation = activeEnrollment.get().getGeneralSituation().getLabel();
+            try {
+                var activeEnrollment = s.getEnrollments().stream()
+                        .filter(com.andretti101.escolaweb.model.entity.Enrollment::isActive)
+                        .findFirst();
+                if (activeEnrollment.isPresent()) {
+                    className = activeEnrollment.get().getClassRoom().getName();
+                    if (situationMap.containsKey(s.getId())) {
+                        situation = situationMap.get(s.getId());
+                    } else if (activeEnrollment.get().getGeneralSituation() != null) {
+                        situation = activeEnrollment.get().getGeneralSituation().getLabel();
+                    }
                 }
-            }
+            } catch (Exception ignored) {}
         }
 
         return new StudentResponseDTO(

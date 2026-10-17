@@ -417,7 +417,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     } else if (errData && errData.message) {
                         errorMsg = errData.message;
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.warn('Erro ao processar corpo do erro:', e);
+                }
                 showAlert(errorMsg, "danger");
             }
         } catch(error) {

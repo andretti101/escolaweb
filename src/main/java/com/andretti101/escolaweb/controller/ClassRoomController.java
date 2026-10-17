@@ -35,6 +35,7 @@ public class ClassRoomController {
 
     private final ClassRoomService classRoomService;
     private final AcademicPeriodRepository academicPeriodRepository;
+    private final com.andretti101.escolaweb.repository.AcademicYearRepository academicYearRepository;
 
     @Operation(summary = "Criar turma", description = "Cadastra uma nova turma informando nome, turno, série escolar, tipo de divisão de períodos e ano letivo. Exclusivo para Secretaria.")
     @ApiResponses({
@@ -169,22 +170,29 @@ public class ClassRoomController {
         if (classRooms == null || classRooms.isEmpty()) {
             return List.of();
         }
-        Set<AcademicYear> years = classRooms.stream()
+        Set<Integer> yearIds = classRooms.stream()
                 .map(ClassRoom::getAcademicYear)
+                .filter(Objects::nonNull)
+                .map(AcademicYear::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        Map<String, List<AcademicPeriodResponseDTO>> periodsByYearAndType = years.isEmpty()
+        Map<Integer, AcademicYear> yearsById = yearIds.isEmpty()
                 ? Map.of()
-                : academicPeriodRepository.findByAcademicYearInOrderByIdAsc(years).stream()
-                        .map(this::toPeriodResponse)
+                : academicYearRepository.findAllById(yearIds).stream()
+                        .collect(Collectors.toMap(AcademicYear::getId, y -> y, (a, b) -> a));
+
+        Map<String, List<AcademicPeriodResponseDTO>> periodsByYearAndType = yearIds.isEmpty()
+                ? Map.of()
+                : academicPeriodRepository.findByAcademicYearIdsInOrderByIdAsc(yearIds).stream()
+                        .map(p -> toPeriodResponse(p, yearsById))
                         .collect(Collectors.groupingBy(p -> p.academicYearId() + "_" + (p.periodType() != null ? p.periodType().name() : "")));
 
         return classRooms.stream().map(c -> {
-            String key = (c.getAcademicYear() != null ? c.getAcademicYear().getId() : null)
-                    + "_" + (c.getPeriodType() != null ? c.getPeriodType().name() : "");
+            Integer yearId = c.getAcademicYear() != null ? c.getAcademicYear().getId() : null;
+            String key = yearId + "_" + (c.getPeriodType() != null ? c.getPeriodType().name() : "");
             List<AcademicPeriodResponseDTO> periods = periodsByYearAndType.getOrDefault(key, List.of());
-            return toResponseWithPeriods(c, periods);
+            return toResponseWithPeriods(c, periods, yearsById);
         }).toList();
     }
 
@@ -195,7 +203,20 @@ public class ClassRoomController {
         return toResponseList(List.of(c)).get(0);
     }
 
-    private ClassRoomResponseDTO toResponseWithPeriods(ClassRoom c, List<AcademicPeriodResponseDTO> periods) {
+    private ClassRoomResponseDTO toResponseWithPeriods(ClassRoom c, List<AcademicPeriodResponseDTO> periods, Map<Integer, AcademicYear> yearsById) {
+        Integer yearId = c.getAcademicYear() != null ? c.getAcademicYear().getId() : null;
+        Integer yearNum = null;
+        if (yearId != null && yearsById != null && yearsById.containsKey(yearId)) {
+            yearNum = yearsById.get(yearId).getYear();
+        } else if (c.getAcademicYear() != null) {
+            try {
+                yearNum = c.getAcademicYear().getYear();
+            } catch (Exception ignored) {}
+        }
+        if (yearNum == null && periods != null && !periods.isEmpty()) {
+            yearNum = periods.get(0).academicYear();
+        }
+
         return new ClassRoomResponseDTO(
                 c.getId(),
                 c.getName(),
@@ -204,14 +225,24 @@ public class ClassRoomController {
                 c.getSchoolGrade() != null ? c.getSchoolGrade().getLabel() : null,
                 c.getPeriodType(),
                 c.getPeriodType() != null ? c.getPeriodType().getLabel() : null,
-                c.getAcademicYear() != null ? c.getAcademicYear().getId() : null,
-                c.getAcademicYear() != null ? c.getAcademicYear().getYear() : null,
+                yearId,
+                yearNum,
                 c.isActive(),
                 c.getCreatedAt(),
-                periods);
+                periods != null ? periods : List.of());
     }
 
-    private AcademicPeriodResponseDTO toPeriodResponse(AcademicPeriod p) {
+    private AcademicPeriodResponseDTO toPeriodResponse(AcademicPeriod p, Map<Integer, AcademicYear> yearsById) {
+        Integer yearId = p.getAcademicYear() != null ? p.getAcademicYear().getId() : null;
+        Integer yearNum = null;
+        if (yearId != null && yearsById != null && yearsById.containsKey(yearId)) {
+            yearNum = yearsById.get(yearId).getYear();
+        } else if (p.getAcademicYear() != null) {
+            try {
+                yearNum = p.getAcademicYear().getYear();
+            } catch (Exception ignored) {}
+        }
+
         return new AcademicPeriodResponseDTO(
                 p.getId(),
                 p.getName(),
@@ -220,8 +251,8 @@ public class ClassRoomController {
                 p.getStartDate(),
                 p.getEndDate(),
                 p.isClosed(),
-                p.getAcademicYear() != null ? p.getAcademicYear().getId() : null,
-                p.getAcademicYear() != null ? p.getAcademicYear().getYear() : null,
+                yearId,
+                yearNum,
                 p.getCreatedAt());
     }
 }

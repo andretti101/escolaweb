@@ -323,10 +323,10 @@
                         <td>${statusBadge}</td>
                         <td class="text-center">
                             <div class="dropdown">
-                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
-                                <div class="dropdown-menu">
+                                <div class="dropdown-menu dropdown-menu-end">
                                     ${p.active ? `<li><a class="dropdown-item" href="/secretary/edit/principal.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar Diretor</a></li>` : ''}
                                     ${toggleAction}
                                 </div>

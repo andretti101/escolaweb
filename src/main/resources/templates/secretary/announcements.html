@@ -298,7 +298,9 @@
                         const payload = JSON.parse(atob(token.split('.')[1]));
                         userIdStr = payload.userId;
                     }
-                } catch(e) {}
+                } catch (e) {
+                    console.warn('Erro ao decodificar token para obter userId:', e);
+                }
                 
                 const canEdit = item.authorId == userIdStr;
                 const editUrlPrefix = window.location.pathname.startsWith('/secretary') ? '/secretary' : '/principal';

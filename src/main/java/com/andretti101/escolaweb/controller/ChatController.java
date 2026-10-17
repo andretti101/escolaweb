@@ -297,6 +297,10 @@ public class ChatController {
         User sender = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
+        if (sender.getRole() == com.andretti101.escolaweb.model.enums.UserRole.STUDENT) {
+            throw new AccessDeniedException("Acesso negado: Estudantes não têm permissão para enviar mensagens na sala dos professores.");
+        }
+
         ChatMessageResponseDTO responseDTO = chatMessageService.saveGlobalTeacherMessage(
                 sender.getId(), messageRequest.getContent(), messageRequest.getRepliedToId());
 
@@ -322,6 +326,10 @@ public class ChatController {
         User sender = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
+        if (sender.getRole() == com.andretti101.escolaweb.model.enums.UserRole.STUDENT) {
+            throw new AccessDeniedException("Acesso negado: Estudantes não têm permissão na sala dos professores.");
+        }
+
         ChatMessageResponseDTO responseDTO = chatMessageService.editMessage(
                 messageId, sender.getId(), editRequest.getContent());
                 
@@ -333,6 +341,10 @@ public class ChatController {
                                      Principal principal) {
         User sender = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        if (sender.getRole() == com.andretti101.escolaweb.model.enums.UserRole.STUDENT) {
+            throw new AccessDeniedException("Acesso negado: Estudantes não têm permissão na sala dos professores.");
+        }
 
         boolean isAdmin = sender.getRole() != null && 
                 (sender.getRole().name().equals("SECRETARY") || sender.getRole().name().equals("PRINCIPAL"));
@@ -380,6 +392,10 @@ public class ChatController {
             Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        
+        if (user.getRole() == com.andretti101.escolaweb.model.enums.UserRole.STUDENT) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
                 
         chatMessageService.markGlobalTeacherAsRead(user.getId(), messageId);
         return ResponseEntity.ok().build();

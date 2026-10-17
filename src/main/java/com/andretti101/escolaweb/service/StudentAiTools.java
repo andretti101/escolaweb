@@ -27,10 +27,21 @@ public class StudentAiTools {
     private final AcademicPeriodService academicPeriodService;
     private final SchoolSettingsService schoolSettingsService;
 
+    private Student getAuthenticatedStudentSafely() {
+        try {
+            return authService.getAuthenticatedStudent();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Tool(description = "Obtém as notas do aluno logado nas avaliações")
     public String getStudentGrades() {
         return transactionTemplate.execute(status -> {
-            Student student = authService.getAuthenticatedStudent();
+            Student student = getAuthenticatedStudentSafely();
+            if (student == null) {
+                return "Esta funcionalidade de consulta rápida de notas de aluno está disponível quando acessada pelo perfil de um estudante.";
+            }
             var grades = gradeService.findByStudent(student.getId());
             String info = grades.stream()
                     .map(g -> "Matéria: " + g.getAssessment().getTeacherClassSubject().getSubject().getName() + " - Avaliação: " + g.getAssessment().getTitle() + ", Nota: " + g.getValue())
@@ -42,7 +53,10 @@ public class StudentAiTools {
     @Tool(description = "Obtém o registro de presença e faltas do aluno logado")
     public String getStudentAttendance() {
         return transactionTemplate.execute(status -> {
-            Student student = authService.getAuthenticatedStudent();
+            Student student = getAuthenticatedStudentSafely();
+            if (student == null) {
+                return "Esta funcionalidade de consulta de frequência do aluno está disponível quando acessada pelo perfil de um estudante.";
+            }
             var attendances = attendanceService.findByStudent(student.getId());
             String info = attendances.stream()
                     .map(a -> "Matéria: " + a.getLesson().getTeacherClassSubject().getSubject().getName() + " - Data: " + a.getLesson().getLessonDate() + ", Status: " + a.getStatus())
@@ -54,7 +68,10 @@ public class StudentAiTools {
     @Tool(description = "Gera o boletim escolar do aluno logado com notas e situação geral")
     public String getStudentReportCard() {
         return transactionTemplate.execute(status -> {
-            Student student = authService.getAuthenticatedStudent();
+            Student student = getAuthenticatedStudentSafely();
+            if (student == null) {
+                return "Esta funcionalidade de boletim escolar do aluno está disponível quando acessada pelo perfil de um estudante.";
+            }
             AcademicYear year = academicYearService.findActive();
             if (year == null) return "Nenhum ano letivo ativo encontrado.";
             
@@ -78,7 +95,10 @@ public class StudentAiTools {
     @Tool(description = "Calcula quantos pontos o aluno logado ainda precisa para cada matéria")
     public String getStudentPointsNeeded() {
         return transactionTemplate.execute(status -> {
-            Student student = authService.getAuthenticatedStudent();
+            Student student = getAuthenticatedStudentSafely();
+            if (student == null) {
+                return "Esta funcionalidade de cálculo de pontos necessários está disponível quando acessada pelo perfil de um estudante.";
+            }
             AcademicYear year = academicYearService.findActive();
             if (year == null) return "Nenhum ano letivo ativo encontrado.";
             
@@ -98,7 +118,10 @@ public class StudentAiTools {
     @Tool(description = "Informa quantos e quais colegas o aluno logado tem na sua turma atual")
     public String getStudentClassmates() {
         return transactionTemplate.execute(status -> {
-            Student student = authService.getAuthenticatedStudent();
+            Student student = getAuthenticatedStudentSafely();
+            if (student == null) {
+                return "Esta funcionalidade de consulta de colegas de turma está disponível quando acessada pelo perfil de um estudante.";
+            }
             var enrollments = enrollmentService.findByStudent(student.getId());
             var active = enrollments.stream().filter(Enrollment::isActive).findFirst();
             if (active.isEmpty()) return "Aluno não possui matrícula ativa.";
@@ -122,7 +145,10 @@ public class StudentAiTools {
     @Tool(description = "Obtém os detalhes da matrícula atual do aluno logado (turma, série/ano e turno)")
     public String getStudentEnrollmentDetails() {
         return transactionTemplate.execute(status -> {
-            Student student = authService.getAuthenticatedStudent();
+            Student student = getAuthenticatedStudentSafely();
+            if (student == null) {
+                return "Esta funcionalidade de detalhes da matrícula está disponível quando acessada pelo perfil de um estudante.";
+            }
             var enrollments = enrollmentService.findByStudent(student.getId());
             var active = enrollments.stream().filter(Enrollment::isActive).findFirst();
             if (active.isEmpty()) return "Aluno não possui matrícula ativa.";
@@ -136,7 +162,10 @@ public class StudentAiTools {
     @Tool(description = "Lista os professores e as matérias que eles lecionam para a turma atual do aluno logado")
     public String getStudentTeachers() {
         return transactionTemplate.execute(status -> {
-            Student student = authService.getAuthenticatedStudent();
+            Student student = getAuthenticatedStudentSafely();
+            if (student == null) {
+                return "Esta funcionalidade de lista de professores está disponível quando acessada pelo perfil de um estudante.";
+            }
             var enrollments = enrollmentService.findByStudent(student.getId());
             var active = enrollments.stream().filter(Enrollment::isActive).findFirst();
             if (active.isEmpty()) return "Aluno não possui matrícula ativa.";
@@ -169,7 +198,10 @@ public class StudentAiTools {
     @Tool(description = "Analisa qual a melhor e a pior matéria do aluno logado")
     public String getStudentSubjectAnalysis() {
         return transactionTemplate.execute(status -> {
-            Student student = authService.getAuthenticatedStudent();
+            Student student = getAuthenticatedStudentSafely();
+            if (student == null) {
+                return "Esta funcionalidade de análise de matérias do aluno está disponível quando acessada pelo perfil de um estudante.";
+            }
             AcademicYear year = academicYearService.findActive();
             if (year == null) return "Nenhum ano letivo ativo encontrado.";
             

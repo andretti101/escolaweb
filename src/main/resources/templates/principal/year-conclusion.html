@@ -300,20 +300,22 @@
             document.getElementById('nextYear').value = activeYear.year + 1;
 
             // Buscar períodos
-            const periodsRes = await fetch('/api/academic-periods', {
+            const periodsRes = await fetch('/api/academic-periods?size=1000', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
-            const allPeriods = await periodsRes.json();
+            const periodsData = await periodsRes.json();
+            const allPeriods = Array.isArray(periodsData) ? periodsData : (periodsData.content || []);
             const yearPeriods = allPeriods.filter(p => p.academicYearId === activeYear.id);
 
             // Buscar turmas ativas do ano para identificar as divisões em uso
             let closedPeriodsText = '—';
             try {
-                const classRoomsRes = await fetch(`/api/classrooms?academicYearId=${activeYear.id}&activeOnly=true`, {
+                const classRoomsRes = await fetch(`/api/classrooms?academicYearId=${activeYear.id}&activeOnly=true&size=1000`, {
                     headers: {'Authorization': `Bearer ${getToken()}`}
                 });
                 if (classRoomsRes.ok) {
-                    const classRooms = await classRoomsRes.json();
+                    const classRoomsData = await classRoomsRes.json();
+                    const classRooms = Array.isArray(classRoomsData) ? classRoomsData : (classRoomsData.content || []);
                     const usedTypes = [...new Set(classRooms.map(c => c.periodType).filter(Boolean))];
                     if (usedTypes.length === 0) {
                         closedPeriodsText = 'Sem turmas ativas';
@@ -334,8 +336,9 @@
             document.getElementById('closedPeriodsCount').textContent = closedPeriodsText;
 
             // Buscar matrículas ativas
-            const enrollRes = await fetch('/api/enrollments?activeOnly=true', {
+            const enrollRes = await fetch('/api/enrollments?activeOnly=true&size=1000', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
+            });
             const enrollments = await enrollRes.json();
             const enrolledTotal = enrollments.totalElements !== undefined ? enrollments.totalElements : (Array.isArray(enrollments) ? enrollments.length : (enrollments.content ? enrollments.content.length : 0));
             document.getElementById('enrolledCount').textContent = enrolledTotal;

@@ -269,10 +269,10 @@
 
                 actionsHtml = `
                     <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                             <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu dropdown-menu-end">
                             ${editBtn}
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item ${actionColor}" href="javascript:void(0);" onclick="toggleStatus(${c.id}, ${!c.active})">

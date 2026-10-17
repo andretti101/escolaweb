@@ -209,7 +209,9 @@
                 const active = years.find(y => y.active);
                 if (active) activeYearId = active.id;
             }
-        } catch (e) {}
+        } catch (e) {
+            console.warn('Erro ao carregar ano letivo ativo:', e);
+        }
     }
 
     // â”€â”€ Utilitários â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -308,7 +310,7 @@
             </td>
             <td class="text-center">
               <div class="dropdown">
-                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                   <i class="bx bx-dots-vertical-rounded"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
@@ -404,7 +406,7 @@
         document.getElementById('emptyState').classList.add('d-none');
 
         try {
-            const response = await fetch('/api/students', {
+            const response = await fetch('/api/students?size=1000', {
                 headers: {
                     'Authorization': 'Bearer ' + getToken(),
                     'Content-Type': 'application/json'
@@ -427,7 +429,7 @@
             allStudents.sort((a, b) => {
                 if (a.active && !b.active) return -1;
                 if (!a.active && b.active) return 1;
-                return 0;
+                return (b.id || 0) - (a.id || 0);
             });
             populateClassDropdown();
             applyFilters();

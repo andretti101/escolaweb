@@ -99,16 +99,161 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 1. Destacar a página atual no menu
             const currentPath = window.location.pathname;
+
+            const ROUTE_ALIASES = {
+                "/direcao/painel": "/principal/dashboard.html",
+                "/direcao/periodos-academicos": "/principal/academic-periods.html",
+                "/direcao/anos-letivos": "/principal/academic-years.html",
+                "/direcao/conclusao-ano": "/principal/year-conclusion.html",
+                "/direcao/resultado-conclusao-ano": "/principal/year-conclusion-results.html",
+                "/direcao/turmas": "/principal/classrooms.html",
+                "/direcao/professores": "/principal/teachers.html",
+                "/direcao/alunos": "/principal/students.html",
+                "/direcao/desempenho-aluno": "/principal/student-performance.html",
+                "/direcao/disciplinas": "/principal/subjects.html",
+                "/direcao/diretores": "/principal/principals.html",
+                "/direcao/secretarios": "/principal/secretaries.html",
+                "/direcao/avisos": "/principal/announcements.html",
+                "/direcao/meus-avisos": "/principal/my-announcements.html",
+                "/direcao/avisos-arquivados": "/principal/archived-announcements.html",
+                "/direcao/chat": "/principal/chat.html",
+                "/direcao/chat-arquivado": "/principal/archived-chat.html",
+                "/direcao/historico-alteracoes": "/principal/change-history.html",
+                "/direcao/configuracoes-escola": "/principal/school-settings.html",
+                "/direcao/cadastrar/periodo": "/principal/create/academic-period.html",
+                "/direcao/cadastrar/ano-letivo": "/principal/create/academic-year.html",
+                "/direcao/cadastrar/aviso": "/principal/create/announcement.html",
+                "/direcao/editar/periodo": "/principal/edit/academic-period.html",
+                "/direcao/editar/ano-letivo": "/principal/edit/academic-year.html",
+                "/direcao/editar/aviso": "/principal/edit/announcement.html",
+
+                "/secretaria/painel": "/secretary/dashboard.html",
+                "/secretaria/alunos": "/secretary/students.html",
+                "/secretaria/desempenho-aluno": "/secretary/student-performance.html",
+                "/secretaria/turmas": "/secretary/classrooms.html",
+                "/secretaria/gerenciar-turma": "/secretary/manage-classroom.html",
+                "/secretaria/professores": "/secretary/teachers.html",
+                "/secretaria/disciplinas": "/secretary/subjects.html",
+                "/secretaria/periodos-academicos": "/secretary/academic-periods.html",
+                "/secretaria/anos-letivos": "/secretary/academic-years.html",
+                "/secretaria/resultado-conclusao-ano": "/secretary/year-conclusion-results.html",
+                "/secretaria/diretores": "/secretary/principals.html",
+                "/secretaria/secretarios": "/secretary/secretaries.html",
+                "/secretaria/avisos": "/secretary/announcements.html",
+                "/secretaria/meus-avisos": "/secretary/my-announcements.html",
+                "/secretaria/avisos-arquivados": "/secretary/archived-announcements.html",
+                "/secretaria/chat": "/secretary/chat.html",
+                "/secretaria/chat-arquivado": "/secretary/archived-chat.html",
+                "/secretaria/historico-alteracoes": "/secretary/change-history.html",
+                "/secretaria/configuracoes-escola": "/secretary/school-settings.html",
+                "/secretaria/cadastrar/aluno": "/secretary/create/student.html",
+                "/secretaria/cadastrar/turma": "/secretary/create/classroom.html",
+                "/secretaria/cadastrar/professor": "/secretary/create/teacher.html",
+                "/secretaria/cadastrar/disciplina": "/secretary/create/subject.html",
+                "/secretaria/cadastrar/diretor": "/secretary/create/principal.html",
+                "/secretaria/cadastrar/secretario": "/secretary/create/secretary.html",
+                "/secretaria/cadastrar/aviso": "/secretary/create/announcement.html",
+                "/secretaria/editar/aluno": "/secretary/edit/student.html",
+                "/secretaria/editar/turma": "/secretary/edit/classroom.html",
+                "/secretaria/editar/professor": "/secretary/edit/teacher.html",
+                "/secretaria/editar/disciplina": "/secretary/edit/subject.html",
+                "/secretaria/editar/diretor": "/secretary/edit/principal.html",
+                "/secretaria/editar/secretario": "/secretary/edit/secretary.html",
+                "/secretaria/editar/aviso": "/secretary/edit/announcement.html",
+
+                "/professor/painel": "/teacher/dashboard.html",
+                "/professor/aulas": "/teacher/lessons.html",
+                "/professor/avaliacoes": "/teacher/assessments.html",
+                "/professor/meus-alunos": "/teacher/my-students.html",
+                "/professor/colegas": "/teacher/colleagues.html",
+                "/professor/avisos": "/teacher/announcements.html",
+                "/professor/meus-avisos": "/teacher/my-announcements.html",
+                "/professor/avisos-direcionados": "/teacher/targeted-announcements.html",
+                "/professor/chat": "/teacher/chat.html",
+                "/professor/periodos-academicos": "/teacher/academic-periods.html",
+                "/professor/anos-letivos": "/teacher/academic-years.html",
+                "/professor/historico-alteracoes": "/teacher/change-history.html",
+                "/professor/configuracoes-escola": "/teacher/school-settings.html",
+                "/professor/cadastrar/aula": "/teacher/create/lesson.html",
+                "/professor/cadastrar/avaliacao": "/teacher/create/assessment.html",
+                "/professor/cadastrar/aviso": "/teacher/create/announcement.html",
+                "/professor/editar/aula": "/teacher/edit/lesson.html",
+                "/professor/editar/avaliacao": "/teacher/edit/assessment.html",
+                "/professor/editar/aviso": "/teacher/edit/announcement.html",
+
+                "/aluno/painel": "/student/dashboard.html",
+                "/aluno/boletim": "/student/report-card.html",
+                "/aluno/notas": "/student/grades.html",
+                "/aluno/frequencias": "/student/attendances.html",
+                "/aluno/colegas": "/student/classmates.html",
+                "/aluno/disciplinas": "/student/subjects.html",
+                "/aluno/avisos": "/student/announcements.html",
+                "/aluno/chat": "/student/chat.html",
+                "/aluno/periodos-academicos": "/student/academic-periods.html",
+                "/aluno/anos-letivos": "/student/academic-years.html",
+                "/aluno/configuracoes-escola": "/student/school-settings.html",
+
+                "/entrar": "/login.html",
+                "/recuperar-senha": "/forgot-password.html",
+                "/redefinir-senha": "/reset-password.html",
+                "/assistente-ia": "/ai-chat.html"
+            };
+
+            const toCanonical = (p) => {
+                if (!p) return "";
+                const clean = p.replace(/\/$/, "");
+                if (ROUTE_ALIASES[clean]) return ROUTE_ALIASES[clean];
+                for (const [pt, en] of Object.entries(ROUTE_ALIASES)) {
+                    if (en === clean || clean.endsWith(en)) return en;
+                }
+                return clean;
+            };
+
+            const normCurrent = toCanonical(currentPath);
             const menuLinks = document.querySelectorAll('#layout-menu .menu-link');
 
             menuLinks.forEach(link => {
                 const href = link.getAttribute('href');
-                let isActive = currentPath.endsWith(href);
-                if (currentPath.includes('student-performance.html') && href.includes('students.html')) {
+                if (!href || href === 'javascript:void(0);') return;
+
+                const normHref = toCanonical(href);
+                let isActive = (currentPath === href) || currentPath.endsWith(href) || (normCurrent === normHref) || normCurrent.endsWith(normHref);
+
+                if ((normCurrent.includes('/create/student.html') || normCurrent.includes('/edit/student.html') || normCurrent.includes('student-performance.html')) && normHref.includes('students.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/teacher.html') || normCurrent.includes('/edit/teacher.html')) && normHref.includes('teachers.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/classroom.html') || normCurrent.includes('/edit/classroom.html') || normCurrent.includes('manage-classroom.html')) && normHref.includes('classrooms.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/announcement.html') || normCurrent.includes('/edit/announcement.html') || normCurrent.includes('/my-announcements.html')) && normHref.includes('announcements.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/academic-period.html') || normCurrent.includes('/edit/academic-period.html')) && normHref.includes('academic-periods.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/academic-year.html') || normCurrent.includes('/edit/academic-year.html')) && normHref.includes('academic-years.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/subject.html') || normCurrent.includes('/edit/subject.html')) && normHref.includes('subjects.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/principal.html') || normCurrent.includes('/edit/principal.html')) && normHref.includes('principals.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/secretary.html') || normCurrent.includes('/edit/secretary.html')) && normHref.includes('secretaries.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/assessment.html') || normCurrent.includes('/edit/assessment.html')) && normHref.includes('assessments.html')) {
+                    isActive = true;
+                }
+                if ((normCurrent.includes('/create/lesson.html') || normCurrent.includes('/edit/lesson.html')) && normHref.includes('lessons.html')) {
                     isActive = true;
                 }
                 
-                if (href && href !== 'javascript:void(0);' && isActive) {
+                if (isActive) {
                     const menuItem = link.closest('.menu-item');
                     if (menuItem) menuItem.classList.add('active');
 
@@ -162,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .then(r => r.json())
                 .then(hasUnread => {
-                    if (hasUnread && !window.location.pathname.includes('announcements.html')) {
+                    if (hasUnread && !normCurrent.includes('announcements.html') && !currentPath.includes('/avisos')) {
                         addNotificationBadge(document.querySelector('[data-i18n="Mural de Recados"]'));
                     }
                 })
@@ -174,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .then(r => r.json())
                 .then(status => {
-                    if (status.hasUnreadMessages && !window.location.pathname.includes('chat.html')) {
+                    if (status.hasUnreadMessages && !normCurrent.includes('chat.html') && !currentPath.includes('/chat')) {
                         addNotificationBadge(document.querySelector('[data-i18n="Chat da Turma"]'));
                     }
                 })
@@ -235,12 +380,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         const themeKey = (window.EscolaTheme && window.EscolaTheme.STORAGE_KEY) || 'escolaweb-theme';
                         const savedTheme = localStorage.getItem(themeKey);
                         localStorage.clear();
+                        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
                         if (savedTheme) localStorage.setItem(themeKey, savedTheme);
-                        window.location.href = '/login.html';
+                        window.location.href = '/entrar';
                     }
                 });
             });
         })
         .catch(err => console.error('Erro ao carregar sidebar:', err));
 });
-

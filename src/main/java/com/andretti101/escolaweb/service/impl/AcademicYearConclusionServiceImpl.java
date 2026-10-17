@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -83,10 +84,11 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
         int failedCount = 0;
 
         List<ReportCardDTO> batchReportCards = reportCardService.generateReportCardsBatch(activeEnrollments, activeYear);
+        Map<Integer, ReportCardDTO> reportCardMap = batchReportCards.stream()
+                .collect(Collectors.toMap(ReportCardDTO::studentId, rc -> rc, (a, b) -> a));
+
         for (Enrollment enrollment : activeEnrollments) {
-            ReportCardDTO reportCard = batchReportCards.stream()
-                    .filter(rc -> rc.studentId().equals(enrollment.getStudent().getId()))
-                    .findFirst().orElse(null);
+            ReportCardDTO reportCard = reportCardMap.get(enrollment.getStudent().getId());
 
             StudentSituation finalSituation = (reportCard != null && reportCard.generalSituation() == StudentSituation.APPROVED)
                     ? StudentSituation.APPROVED

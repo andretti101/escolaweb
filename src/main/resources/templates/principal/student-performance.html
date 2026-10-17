@@ -260,7 +260,9 @@
                         const allY = Array.isArray(rawY) ? rawY : (rawY?.content || []);
                         activeYear = allY.find(y => y.active);
                     }
-                } catch(e) {}
+                } catch (e) {
+                    console.warn('Erro ao carregar ano letivo ativo:', e);
+                }
                 const queryYear = activeYear ? '?yearId=' + activeYear.id : '';
                 
                 const gradesResP = fetch(`/api/grades/student/${studentId}` + queryYear, { headers: {'Authorization': `Bearer ${jwtToken}`} });

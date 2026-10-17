@@ -213,6 +213,22 @@ public class AcademicPeriodController {
     }
 
     private AcademicPeriodResponseDTO toResponse(AcademicPeriod p) {
+        Integer yearId = p.getAcademicYear() != null ? p.getAcademicYear().getId() : null;
+        Integer yearNum = null;
+        if (p.getAcademicYear() != null) {
+            try {
+                yearNum = p.getAcademicYear().getYear();
+            } catch (Exception ignored) {
+                if (yearId != null) {
+                    try {
+                        AcademicYear ay = academicYearService.findById(yearId);
+                        if (ay != null) {
+                            yearNum = ay.getYear();
+                        }
+                    } catch (Exception ignored2) {}
+                }
+            }
+        }
         return new AcademicPeriodResponseDTO(
                 p.getId(),
                 p.getName(),
@@ -221,8 +237,8 @@ public class AcademicPeriodController {
                 p.getStartDate(),
                 p.getEndDate(),
                 p.isClosed(),
-                p.getAcademicYear() != null ? p.getAcademicYear().getId() : null,
-                p.getAcademicYear() != null ? p.getAcademicYear().getYear() : null,
+                yearId,
+                yearNum,
                 p.getCreatedAt());
     }
 }

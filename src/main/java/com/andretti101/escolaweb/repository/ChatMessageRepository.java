@@ -13,6 +13,10 @@ import java.util.Optional;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Integer> {
     
+    @Override
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
+    Optional<ChatMessage> findById(Integer id);
+
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
     List<ChatMessage> findByClassroom_IdAndArchivedFalseOrderByTimestampAsc(Integer classroomId);
     
@@ -46,7 +50,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
            "(:year IS NULL OR YEAR(m.timestamp) = :year) ORDER BY m.timestamp ASC")
     List<ChatMessage> findArchivedGlobalTeacherHistory(@Param("year") Integer year);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ChatMessage m SET m.archived = true WHERE m.archived = false AND m.isGlobalTeacherChat = false")
     int archiveAll();
 }
