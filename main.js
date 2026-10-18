@@ -5,13 +5,62 @@ const { fileURLToPath } = require('url');
 const { buildFrontend, DIST_DIR } = require('./scripts/build-frontend');
 const { ROUTE_MAP } = require('./scripts/routes-map');
 
-const BACKEND_URL = (
+const configuredBackendUrl = (
   process.env.BACKEND_URL ||
   process.env.APP_URL ||
-  (process.env.SERVER_PORT && process.env.SERVER_PORT !== '80'
-    ? `http://localhost:${process.env.SERVER_PORT}`
-    : 'http://localhost')
-).replace(/\/+$/, '');
+  (process.env.SERVER_PORT
+    ? (process.env.SERVER_PORT === '80' ? 'http://localhost' : `http://localhost:${process.env.SERVER_PORT}`)
+    : null)
+);
+
+let activeBackendUrl = configuredBackendUrl
+  ? configuredBackendUrl.replace(/\/+$/, '')
+  : null;
+
+function getCandidateBackendUrls() {
+  if (configuredBackendUrl) {
+    return [configuredBackendUrl.replace(/\/+$/, '')];
+  }
+  const defaultCandidates = ['http://escolaweb', 'http://localhost', 'http://localhost:8080', 'http://127.0.0.1'];
+  if (activeBackendUrl && defaultCandidates.includes(activeBackendUrl)) {
+    return [activeBackendUrl, ...defaultCandidates.filter((u) => u !== activeBackendUrl)];
+  }
+  return defaultCandidates;
+}
+
+async function detectActiveBackendPort() {
+  if (configuredBackendUrl) {
+    activeBackendUrl = configuredBackendUrl.replace(/\/+$/, '');
+    return;
+  }
+  const candidates = ['http://escolaweb', 'http://localhost', 'http://localhost:8080', 'http://127.0.0.1'];
+  for (const candidate of candidates) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 800);
+      const res = await fetch(`${candidate}/login.html`, {
+        method: 'HEAD',
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (res.status === 200 || res.status === 302 || res.status === 401) {
+        activeBackendUrl = candidate;
+        return;
+      }
+    } catch (_e) {
+      // Continue to next candidate
+    }
+  }
+  activeBackendUrl = 'http://localhost';
+}
+
+function getRawPathFromUrl(parsedUrl) {
+  try {
+    return fileURLToPath(parsedUrl);
+  } catch (_err) {
+    return path.normalize(decodeURIComponent(parsedUrl.pathname));
+  }
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -91,7 +140,7 @@ function setupFileProtocolHandler() {
   protocol.handle('file', async (request) => {
     try {
       const parsedUrl = new URL(request.url);
-      const rawPath = fileURLToPath(parsedUrl);
+      const rawPath = getRawPathFromUrl(parsedUrl);
       const resolvedPath = resolveDistFilePath(rawPath);
 
       if (!resolvedPath) {
@@ -119,22 +168,59 @@ function setupFileProtocolHandler() {
 }
 
 function setupBackendInterceptors() {
+  ipcMain.on('escolaweb:get-backend-url-sync', (event) => {
+    event.returnValue = activeBackendUrl || getCandidateBackendUrls()[0];
+  });
+
   ipcMain.handle('escolaweb:fetch', async (_event, urlPath, options = {}) => {
-    const targetUrl = urlPath.startsWith('http')
-      ? urlPath
-      : `${BACKEND_URL}${urlPath.startsWith('/') ? '' : '/'}${urlPath}`;
+    const candidates = getCandidateBackendUrls();
+    let response = null;
+    let lastError = null;
 
-    const headers = {
-      ...(options.headers || {}),
-      Origin: BACKEND_URL,
-      Referer: `${BACKEND_URL}/`
-    };
+    const method = (options.method || 'GET').toUpperCase();
+    const hasBody = method !== 'GET' && method !== 'HEAD' && options.body !== undefined && options.body !== null;
 
-    const response = await fetch(targetUrl, {
-      method: options.method || 'GET',
-      headers,
-      body: options.body !== undefined ? options.body : undefined
-    });
+    for (let i = 0; i < candidates.length; i++) {
+      const baseUrl = candidates[i];
+      let targetUrl = urlPath;
+      if (urlPath.startsWith('http')) {
+        try {
+          const parsed = new URL(urlPath);
+          if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+            targetUrl = `${baseUrl}${parsed.pathname}${parsed.search}${parsed.hash}`;
+          }
+        } catch (_e) {}
+      } else {
+        targetUrl = `${baseUrl}${urlPath.startsWith('/') ? '' : '/'}${urlPath}`;
+      }
+
+      const headers = {
+        ...(options.headers || {}),
+        Origin: baseUrl,
+        Referer: `${baseUrl}/`
+      };
+
+      try {
+        response = await fetch(targetUrl, {
+          method,
+          headers,
+          body: hasBody ? options.body : undefined
+        });
+        activeBackendUrl = baseUrl;
+        lastError = null;
+        break;
+      } catch (err) {
+        lastError = err;
+        if (i < candidates.length - 1 && (!urlPath.startsWith('http') || urlPath.includes('localhost') || urlPath.includes('127.0.0.1'))) {
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!response && lastError) {
+      throw lastError;
+    }
 
     const arrayBuffer = await response.arrayBuffer();
     const bodyBuffer = new Uint8Array(arrayBuffer);
@@ -153,15 +239,34 @@ function setupBackendInterceptors() {
     };
   });
 
-  const wsUrl = BACKEND_URL.replace(/^http/, 'ws');
   const filter = {
-    urls: [`${BACKEND_URL}/*`, `${wsUrl}/*`, 'http://localhost:*/*', 'ws://localhost:*/*']
+    urls: [
+      'http://escolaweb/*',
+      'ws://escolaweb/*',
+      'http://escolaweb:*/*',
+      'ws://escolaweb:*/*',
+      'http://localhost:*/*',
+      'ws://localhost:*/*',
+      'http://localhost/*',
+      'ws://localhost/*',
+      'http://127.0.0.1:*/*',
+      'ws://127.0.0.1:*/*',
+      'http://127.0.0.1/*',
+      'ws://127.0.0.1/*'
+    ]
   };
 
   session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
     const requestHeaders = { ...details.requestHeaders };
-    requestHeaders['Origin'] = BACKEND_URL;
-    requestHeaders['Referer'] = `${BACKEND_URL}/`;
+    let origin = activeBackendUrl || 'http://localhost';
+    try {
+      const parsed = new URL(details.url);
+      origin = `${parsed.protocol.replace('ws', 'http')}//${parsed.host}`;
+    } catch (_e) {
+      // fallback
+    }
+    requestHeaders['Origin'] = origin;
+    requestHeaders['Referer'] = `${origin}/`;
     callback({ requestHeaders });
   });
 
@@ -202,7 +307,7 @@ function createWindow() {
     try {
       const parsed = new URL(navigationUrl);
       if (parsed.protocol === 'file:') {
-        const rawTarget = fileURLToPath(parsed);
+        const rawTarget = getRawPathFromUrl(parsed);
         const normalizedDist = path.resolve(DIST_DIR).toLowerCase();
         const normalizedTarget = path.resolve(rawTarget).toLowerCase();
 
@@ -228,7 +333,8 @@ function createWindow() {
   return mainWindow;
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await detectActiveBackendPort();
   setupFileProtocolHandler();
   setupBackendInterceptors();
   createWindow();

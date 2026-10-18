@@ -49,14 +49,23 @@ function createElectronBridgeScript(distDir) {
   if (window.__ESCOLAWEB_ELECTRON_BRIDGE__) return;
   window.__ESCOLAWEB_ELECTRON_BRIDGE__ = true;
 
-  var DEFAULT_BACKEND = 'http://localhost:8080';
-  var backendUrl = (
-    window.__ESCOLAWEB_BACKEND_URL__ ||
-    (window.escolawebDesktop && window.escolawebDesktop.backendUrl) ||
-    localStorage.getItem('escolaweb_backend_url') ||
-    DEFAULT_BACKEND
-  ).replace(/\\/+$/, '');
+  var DEFAULT_BACKEND = 'http://localhost';
+  function getBackendUrl() {
+    if (window.escolawebDesktop && typeof window.escolawebDesktop.getBackendUrl === 'function') {
+      try {
+        var detected = window.escolawebDesktop.getBackendUrl();
+        if (detected) return detected.replace(/\\/+$/, '');
+      } catch (_e) {}
+    }
+    return (
+      window.__ESCOLAWEB_BACKEND_URL__ ||
+      (window.escolawebDesktop && window.escolawebDesktop.backendUrl) ||
+      localStorage.getItem('escolaweb_backend_url') ||
+      DEFAULT_BACKEND
+    ).replace(/\\/+$/, '');
+  }
 
+  var backendUrl = getBackendUrl();
   window.__ESCOLAWEB_BACKEND_URL__ = backendUrl;
 
   var bridgeScriptSrc = (
@@ -89,14 +98,21 @@ function createElectronBridgeScript(distDir) {
 
   function isBackendPath(urlStr) {
     if (typeof urlStr !== 'string') return false;
+    var testPath = urlStr;
+    try {
+      if (urlStr.indexOf('://') !== -1) {
+        var parsed = new URL(urlStr);
+        testPath = parsed.pathname;
+      }
+    } catch (_e) {}
     return (
-      urlStr.indexOf('/auth/') === 0 ||
-      urlStr === '/auth' ||
-      urlStr.indexOf('/api/') === 0 ||
-      urlStr === '/api' ||
-      urlStr.indexOf('/ws-chat') === 0 ||
-      urlStr.indexOf('/v3/api-docs') === 0 ||
-      urlStr.indexOf('/swagger-ui') === 0
+      testPath.indexOf('/auth/') === 0 ||
+      testPath === '/auth' ||
+      testPath.indexOf('/api/') === 0 ||
+      testPath === '/api' ||
+      testPath.indexOf('/ws-chat') === 0 ||
+      testPath.indexOf('/v3/api-docs') === 0 ||
+      testPath.indexOf('/swagger-ui') === 0
     );
   }
 
@@ -104,7 +120,7 @@ function createElectronBridgeScript(distDir) {
 
   function mapRoute(urlStr) {
     if (!urlStr) return urlStr;
-    var clean = urlStr.split('?')[0].split('#')[0].replace(/\/$/, '');
+    var clean = urlStr.split('?')[0].split('#')[0].replace(/\\/+$/, '');
     var suffix = (urlStr.indexOf('?') !== -1 ? urlStr.substring(urlStr.indexOf('?')) : '') ||
                  (urlStr.indexOf('#') !== -1 ? urlStr.substring(urlStr.indexOf('#')) : '');
     if (ROUTE_MAP[clean]) {
@@ -116,7 +132,7 @@ function createElectronBridgeScript(distDir) {
   function resolveRequestUrl(urlStr) {
     if (typeof urlStr !== 'string') return urlStr;
     if (isBackendPath(urlStr)) {
-      return backendUrl + urlStr;
+      return getBackendUrl() + urlStr;
     }
     if (window.location.protocol === 'file:' && urlStr.charAt(0) === '/' && urlStr.charAt(1) !== '/') {
       return getDistRootUrl() + mapRoute(urlStr);
@@ -146,6 +162,16 @@ function createElectronBridgeScript(distDir) {
             reqInit.headers.forEach(function (pair) { headersObj[pair[0]] = pair[1]; });
           } else {
             Object.keys(reqInit.headers).forEach(function (k) { headersObj[k] = reqInit.headers[k]; });
+          }
+        }
+        var hasAuthHeader = false;
+        Object.keys(headersObj).forEach(function (k) {
+          if (k.toLowerCase() === 'authorization') hasAuthHeader = true;
+        });
+        if (!hasAuthHeader) {
+          var token = localStorage.getItem('jwt_token');
+          if (token) {
+            headersObj['Authorization'] = 'Bearer ' + token;
           }
         }
         return window.escolawebDesktop.fetchBackend(rawUrl, {
@@ -194,7 +220,7 @@ function createElectronBridgeScript(distDir) {
   function wrapSockJS(SockJSConstructor) {
     if (!SockJSConstructor || SockJSConstructor.__escolawebWrapped) return SockJSConstructor;
     var WrappedSockJS = function (url, _reserved, options) {
-      var resolvedUrl = isBackendPath(url) ? backendUrl + url : resolveRequestUrl(url);
+      var resolvedUrl = isBackendPath(url) ? getBackendUrl() + url : resolveRequestUrl(url);
       return new SockJSConstructor(resolvedUrl, _reserved, options);
     };
     WrappedSockJS.prototype = SockJSConstructor.prototype;
