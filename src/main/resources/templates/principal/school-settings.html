@@ -82,9 +82,42 @@
                                                        maxlength="20" placeholder="(11) 99999-9999"/>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label for="address" class="form-label">Endereço</label>
+                                                <label for="cep" class="form-label">CEP</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="cep" name="cep"
+                                                           maxlength="9" placeholder="00000-000"/>
+                                                    <button class="btn btn-outline-primary" type="button" id="btnBuscarCep" title="Buscar endereço pelo CEP">
+                                                        <i class="bx bx-search me-1"></i> Buscar
+                                                    </button>
+                                                </div>
+                                                <div id="cepFeedback" class="form-text mt-1" style="min-height: 18px;"></div>
+                                            </div>
+
+                                            <div class="col-md-12 mb-3">
+                                                <label for="address" class="form-label">Endereço Completo</label>
                                                 <input type="text" class="form-control" id="address" name="address"
-                                                       maxlength="255" placeholder="Rua das Flores, 123 - Centro"/>
+                                                       maxlength="255" placeholder="Rua das Flores, 123 - Centro, Cidade - UF"/>
+                                            </div>
+
+                                            <!-- Localização no Mapa -->
+                                            <div class="col-12 mt-2 mb-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="form-label mb-0 fw-semibold">
+                                                        <i class="bx bx-map-pin me-1 text-primary"></i> Localização da Escola no Mapa
+                                                    </label>
+                                                    <a id="btnOpenMaps" href="javascript:void(0)" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary d-none">
+                                                        <i class="bx bx-link-external me-1"></i> Abrir no Google Maps
+                                                    </a>
+                                                </div>
+                                                <div id="mapPlaceholder" class="p-4 text-center border rounded bg-lighter text-muted">
+                                                    <i class="bx bx-map fs-2 d-block mb-1 text-secondary"></i>
+                                                    <span class="small">Informe o CEP ou endereço para visualizar a localização da escola no mapa.</span>
+                                                </div>
+                                                <div id="mapContainer" class="d-none">
+                                                    <div class="rounded overflow-hidden shadow-sm border" style="height: 320px;">
+                                                        <iframe id="schoolMapIframe" width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="about:blank"></iframe>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div class="col-12 mt-4 mb-3 border-top pt-4">
@@ -161,6 +194,213 @@
         window.scrollTo(0, 0);
     }
 
+    function formatCep(value) {
+        const digits = (value || '').replace(/\D/g, '').slice(0, 8);
+        if (digits.length > 5) {
+            return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+        }
+        return digits;
+    }
+
+    function showCepFeedback(message, className) {
+        const feedback = document.getElementById('cepFeedback');
+        if (feedback) {
+            feedback.className = `form-text mt-1 ${className || ''}`;
+            feedback.textContent = message;
+        }
+    }
+
+    let mapDebounceTimer = null;
+    function scheduleMapUpdate(address, cep, delay = 400) {
+        if (mapDebounceTimer) clearTimeout(mapDebounceTimer);
+        mapDebounceTimer = setTimeout(() => {
+            updateMap(address, cep);
+        }, delay);
+    }
+
+    function updateMap(address, cep) {
+        const mapContainer = document.getElementById('mapContainer');
+        const mapPlaceholder = document.getElementById('mapPlaceholder');
+        const mapIframe = document.getElementById('schoolMapIframe');
+        const btnOpenMaps = document.getElementById('btnOpenMaps');
+
+        const addrClean = (address || '').trim();
+        const cepClean = (cep || '').replace(/\D/g, '').trim();
+
+        if (!addrClean && !cepClean) {
+            if (mapContainer) mapContainer.classList.add('d-none');
+            if (mapPlaceholder) mapPlaceholder.classList.remove('d-none');
+            if (btnOpenMaps) btnOpenMaps.classList.add('d-none');
+            if (mapIframe) {
+                mapIframe.removeAttribute('data-last-query');
+                mapIframe.src = 'about:blank';
+            }
+            return;
+        }
+
+        let query = '';
+        if (addrClean && cepClean) {
+            const formatted = formatCep(cepClean);
+            if (addrClean.includes(formatted) || addrClean.includes(cepClean)) {
+                query = addrClean;
+            } else {
+                query = `${addrClean}, ${formatted}`;
+            }
+        } else if (addrClean) {
+            query = addrClean;
+        } else {
+            query = `CEP ${formatCep(cepClean)}`;
+        }
+
+        if (!query.toLowerCase().includes('brasil') && !query.toLowerCase().includes('brazil')) {
+            query += ', Brasil';
+        }
+
+        const encoded = encodeURIComponent(query);
+        const embedUrl = `https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s${encoded}`;
+        const directUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+
+        if (mapIframe) {
+            if (mapIframe.getAttribute('data-last-query') !== query) {
+                mapIframe.setAttribute('data-last-query', query);
+                mapIframe.src = embedUrl;
+            }
+        }
+        if (btnOpenMaps) {
+            btnOpenMaps.href = directUrl;
+            btnOpenMaps.classList.remove('d-none');
+        }
+        if (mapPlaceholder) mapPlaceholder.classList.add('d-none');
+        if (mapContainer) mapContainer.classList.remove('d-none');
+    }
+
+    let lastSearchedCep = '';
+    async function buscarCep(auto = false) {
+        const cepInput = document.getElementById('cep');
+        const rawCep = (cepInput.value || '').replace(/\D/g, '');
+
+        if (!rawCep) {
+            if (!auto) showCepFeedback('Informe o CEP para pesquisar.', 'text-warning');
+            return;
+        }
+
+        if (rawCep.length !== 8) {
+            if (!auto) showCepFeedback('O CEP deve conter 8 dígitos.', 'text-danger');
+            return;
+        }
+
+        if (auto && rawCep === lastSearchedCep) {
+            return;
+        }
+
+        const btn = document.getElementById('btnBuscarCep');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
+        }
+        showCepFeedback('Buscando endereço pelo CEP...', 'text-muted');
+
+        let data = null;
+
+        function createTimeoutSignal(ms) {
+            if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
+                return AbortSignal.timeout(ms);
+            }
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), ms);
+            return controller.signal;
+        }
+
+        // 1. Try ViaCEP
+        try {
+            const resp = await fetch(`https://viacep.com.br/ws/${rawCep}/json/`, {
+                signal: createTimeoutSignal(5000)
+            });
+            if (resp.ok) {
+                const resJson = await resp.json();
+                if (resJson && resJson.erro !== true && resJson.erro !== 'true') {
+                    data = {
+                        street: resJson.logradouro || '',
+                        neighborhood: resJson.bairro || '',
+                        city: resJson.localidade || '',
+                        state: resJson.uf || ''
+                    };
+                }
+            }
+        } catch (e) {
+            console.warn('ViaCEP falhou, tentando fallback BrasilAPI:', e);
+        }
+
+        // 2. Fallback to BrasilAPI
+        if (!data) {
+            try {
+                const resp = await fetch(`https://brasilapi.com.br/api/cep/v1/${rawCep}`, {
+                    signal: createTimeoutSignal(5000)
+                });
+                if (resp.ok) {
+                    const resJson = await resp.json();
+                    if (resJson && !resJson.errors) {
+                        data = {
+                            street: resJson.street || '',
+                            neighborhood: resJson.neighborhood || '',
+                            city: resJson.city || '',
+                            state: resJson.state || ''
+                        };
+                    }
+                }
+            } catch (e) {
+                console.warn('BrasilAPI falhou:', e);
+            }
+        }
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-search me-1"></i> Buscar';
+        }
+
+        lastSearchedCep = rawCep;
+
+        if (!data) {
+            showCepFeedback('CEP não encontrado.', 'text-danger');
+            return;
+        }
+
+        const addressInput = document.getElementById('address');
+        let numberPart = '';
+        const currentAddr = (addressInput.value || '').trim();
+        if (currentAddr) {
+            const numMatch = currentAddr.match(/,\s*(\d+[^\-,]*)/);
+            if (numMatch) {
+                numberPart = numMatch[1].trim();
+            }
+        }
+
+        const parts = [];
+        if (data.street) {
+            parts.push(numberPart ? `${data.street}, ${numberPart}` : data.street);
+        }
+        if (data.neighborhood) parts.push(data.neighborhood);
+        if (data.city && data.state) parts.push(`${data.city} - ${data.state}`);
+        else if (data.city) parts.push(data.city);
+
+        const composed = parts.join(', ');
+        if (composed) {
+            addressInput.value = composed;
+            if (numberPart) {
+                showCepFeedback('Endereço atualizado com sucesso!', 'text-success');
+            } else {
+                showCepFeedback('Endereço preenchido! Complete com o número da escola se necessário.', 'text-success');
+            }
+            if (mapDebounceTimer) clearTimeout(mapDebounceTimer);
+            updateMap(composed, rawCep);
+            addressInput.focus();
+        } else {
+            showCepFeedback('CEP localizado.', 'text-info');
+            if (mapDebounceTimer) clearTimeout(mapDebounceTimer);
+            updateMap(addressInput.value, rawCep);
+        }
+    }
+
     async function loadSettings() {
         try {
             const response = await fetch('/api/school-settings', {
@@ -172,9 +412,13 @@
                 document.getElementById('schoolName').value = data.schoolName || '';
                 document.getElementById('email').value = data.email || '';
                 document.getElementById('phone').value = data.phone || '';
+                document.getElementById('cep').value = formatCep(data.cep || '');
+                lastSearchedCep = (data.cep || '').replace(/\D/g, '');
                 document.getElementById('address').value = data.address || '';
                 document.getElementById('minimumGrade').value = data.minimumGrade || '6.0';
                 document.getElementById('minimumAttendance').value = data.minimumAttendance || '70.00';
+                if (mapDebounceTimer) clearTimeout(mapDebounceTimer);
+                updateMap(data.address, data.cep);
             } else if (response.status === 404) {
                 // Settings not initialized yet, that's fine, show empty defaults
             } else {
@@ -195,6 +439,7 @@
             schoolName: document.getElementById('schoolName').value.trim(),
             email: document.getElementById('email').value.trim(),
             phone: document.getElementById('phone').value.trim(),
+            cep: document.getElementById('cep').value.trim(),
             address: document.getElementById('address').value.trim(),
             minimumGrade: parseFloat(document.getElementById('minimumGrade').value),
             minimumAttendance: parseFloat(document.getElementById('minimumAttendance').value)
@@ -212,6 +457,8 @@
 
             if (response.ok) {
                 showAlert('Configurações atualizadas com sucesso!', 'success');
+                if (mapDebounceTimer) clearTimeout(mapDebounceTimer);
+                updateMap(payload.address, payload.cep);
             } else {
                 const err = await response.json().catch(() => null);
                 let errMsg = 'Erro ao salvar as configurações.';
@@ -233,7 +480,42 @@
         }
     });
 
-    document.addEventListener('DOMContentLoaded', loadSettings);
+    document.addEventListener('DOMContentLoaded', () => {
+        const cepInput = document.getElementById('cep');
+        const addressInput = document.getElementById('address');
+
+        cepInput.addEventListener('input', (e) => {
+            e.target.value = formatCep(e.target.value);
+            const raw = e.target.value.replace(/\D/g, '');
+            if (raw.length === 8) {
+                buscarCep(true);
+            }
+        });
+        cepInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarCep(false);
+            }
+        });
+        cepInput.addEventListener('blur', () => {
+            const raw = cepInput.value.replace(/\D/g, '');
+            if (raw.length === 8 && !addressInput.value.trim()) {
+                buscarCep(true);
+            }
+        });
+        document.getElementById('btnBuscarCep').addEventListener('click', () => {
+            buscarCep(false);
+        });
+        addressInput.addEventListener('input', () => {
+            scheduleMapUpdate(addressInput.value, cepInput.value, 400);
+        });
+        addressInput.addEventListener('blur', () => {
+            if (mapDebounceTimer) clearTimeout(mapDebounceTimer);
+            updateMap(addressInput.value, cepInput.value);
+        });
+
+        loadSettings();
+    });
 </script>
 </body>
 </html>

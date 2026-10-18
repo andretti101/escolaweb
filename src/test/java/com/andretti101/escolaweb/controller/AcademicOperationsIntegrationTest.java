@@ -337,6 +337,7 @@ class AcademicOperationsIntegrationTest {
 
         SchoolSettingsRequestDTO updateDto = new SchoolSettingsRequestDTO(
                 "Colégio Estadual EscolaWeb Atualizado",
+                "88801-010",
                 "Rua das Palmeiras, 500",
                 "(48) 3333-9999",
                 "contato@escolaweb.edu.br",
@@ -349,6 +350,7 @@ class AcademicOperationsIntegrationTest {
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.schoolName").value("Colégio Estadual EscolaWeb Atualizado"))
+                .andExpect(jsonPath("$.cep").value("88801-010"))
                 .andExpect(jsonPath("$.address").value("Rua das Palmeiras, 500"))
                 .andExpect(jsonPath("$.minimumGrade").value(initialMinGrade.doubleValue()));
     }

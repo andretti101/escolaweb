@@ -79,9 +79,9 @@ RESTART IDENTITY CASCADE;
 -- Registro único com os parâmetros globais: frequência mínima exigida (%)
 -- e média mínima para aprovação (sem period_type global, pois a divisão
 -- agora pertence a academic_periods e class_rooms).
-INSERT INTO school_settings (id, address, created_at, email, minimum_attendance, minimum_average, phone, school_name)
-VALUES (1, 'Rua das Acácias, 120 - Centro - Criciúma/SC', '2024-01-15 09:00:00', 'contato@escolamodelo.example.com',
-        75.00, 6.0, '(48) 3433-0000', 'Escola Modelo EscolaWeb');
+INSERT INTO school_settings (id, address, cep, created_at, email, minimum_attendance, minimum_average, phone, school_name)
+VALUES (1, 'Avenida Universitária, 345, Universitário, Criciúma - SC', '88806-000', '2024-01-15 09:00:00', 'contato@example.com',
+        75.00, 6.0, '(48) 3433-0000', 'CEDUP Abílio Paulo');
 
 -- =====================================================================
 -- 2. CALENDÁRIO LETIVO (anos e períodos)

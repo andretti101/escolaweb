@@ -55,6 +55,7 @@ public class SchoolSettingsController {
     private SchoolSettings toEntity(SchoolSettingsRequestDTO dto) {
         SchoolSettings settings = new SchoolSettings();
         settings.setSchoolName(dto.schoolName());
+        settings.setCep(dto.cep());
         settings.setAddress(dto.address());
         settings.setPhone(dto.phone());
         settings.setEmail(dto.email());
@@ -67,6 +68,7 @@ public class SchoolSettingsController {
         return new SchoolSettingsResponseDTO(
                 s.getId(),
                 s.getSchoolName(),
+                s.getCep(),
                 s.getAddress(),
                 s.getPhone(),
                 s.getEmail(),

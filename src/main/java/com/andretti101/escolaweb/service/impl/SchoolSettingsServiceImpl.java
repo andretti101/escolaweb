@@ -30,6 +30,9 @@ public class SchoolSettingsServiceImpl implements SchoolSettingsService {
         if (incoming.getSchoolName() != null) {
             existing.setSchoolName(incoming.getSchoolName());
         }
+        if (incoming.getCep() != null) {
+            existing.setCep(incoming.getCep());
+        }
         if (incoming.getAddress() != null) {
             existing.setAddress(incoming.getAddress());
         }

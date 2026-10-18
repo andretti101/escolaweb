@@ -32,6 +32,10 @@ public class SchoolSettings implements Serializable {
     @Column(name = "school_name", length = 150)
     private String schoolName;
 
+    @Size(max = 20, message = "O CEP deve ter no máximo 20 caracteres.")
+    @Column(length = 20)
+    private String cep;
+
     @Size(max = 255, message = "O endereço deve ter no máximo 255 caracteres.")
     @Column(length = 255)
     private String address;

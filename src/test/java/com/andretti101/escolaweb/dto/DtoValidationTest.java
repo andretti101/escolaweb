@@ -4,6 +4,7 @@ import com.andretti101.escolaweb.dto.request.AcademicPeriodRequestDTO;
 import com.andretti101.escolaweb.dto.request.ClassRoomRequestDTO;
 import com.andretti101.escolaweb.dto.request.GradeLaunchRequestDTO;
 import com.andretti101.escolaweb.dto.request.GradeUpdateRequestDTO;
+import com.andretti101.escolaweb.dto.request.SchoolSettingsRequestDTO;
 import com.andretti101.escolaweb.dto.request.StudentPatchRequestDTO;
 import com.andretti101.escolaweb.dto.request.StudentUpdateRequestDTO;
 import com.andretti101.escolaweb.dto.request.TeacherPatchRequestDTO;
@@ -508,6 +509,38 @@ class DtoValidationTest {
     void studentPatchRequest_invalidWhenRegistrationNumberBlank() {
         StudentPatchRequestDTO dto = new StudentPatchRequestDTO(null, null, null, null, null, "   ", null);
         assertFalse(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("SchoolSettingsRequestDTO: valid with cep and standard fields")
+    void schoolSettingsRequest_validWithCep() {
+        SchoolSettingsRequestDTO dto = new SchoolSettingsRequestDTO(
+                "Escola Modelo",
+                "88801-010",
+                "Rua das Acácias, 120",
+                "(48) 3433-0000",
+                "contato@escola.com",
+                new BigDecimal("6.0"),
+                new BigDecimal("75.0")
+        );
+        assertTrue(validator.validate(dto).isEmpty());
+    }
+
+    @Test
+    @DisplayName("SchoolSettingsRequestDTO: invalid when cep exceeds 20 characters")
+    void schoolSettingsRequest_invalidWhenCepTooLong() {
+        SchoolSettingsRequestDTO dto = new SchoolSettingsRequestDTO(
+                "Escola Modelo",
+                "123456789012345678901", // 21 chars
+                "Rua das Acácias, 120",
+                "(48) 3433-0000",
+                "contato@escola.com",
+                new BigDecimal("6.0"),
+                new BigDecimal("75.0")
+        );
+        Set<ConstraintViolation<SchoolSettingsRequestDTO>> violations = validator.validate(dto);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("cep")));
     }
 }
 

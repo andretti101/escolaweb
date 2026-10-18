@@ -79,9 +79,35 @@
                                                        disabled/>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label for="address" class="form-label">Endereço</label>
+                                                <label for="cep" class="form-label">CEP</label>
+                                                <input type="text" class="form-control" id="cep" name="cep"
+                                                       disabled/>
+                                            </div>
+                                            <div class="col-md-12 mb-3">
+                                                <label for="address" class="form-label">Endereço Completo</label>
                                                 <input type="text" class="form-control" id="address"
                                                        name="address" disabled/>
+                                            </div>
+
+                                            <!-- Localização no Mapa -->
+                                            <div class="col-12 mt-2 mb-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <label class="form-label mb-0 fw-semibold">
+                                                        <i class="bx bx-map-pin me-1 text-primary"></i> Localização da Escola no Mapa
+                                                    </label>
+                                                    <a id="btnOpenMaps" href="javascript:void(0)" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary d-none">
+                                                        <i class="bx bx-link-external me-1"></i> Abrir no Google Maps
+                                                    </a>
+                                                </div>
+                                                <div id="mapPlaceholder" class="p-4 text-center border rounded bg-lighter text-muted">
+                                                    <i class="bx bx-map fs-2 d-block mb-1 text-secondary"></i>
+                                                    <span class="small">Localização da escola no mapa indisponível.</span>
+                                                </div>
+                                                <div id="mapContainer" class="d-none">
+                                                    <div class="rounded overflow-hidden shadow-sm border" style="height: 320px;">
+                                                        <iframe id="schoolMapIframe" width="100%" height="100%" style="border:0;" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="about:blank"></iframe>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div class="col-12 mt-4 mb-3 border-top pt-4">
@@ -153,6 +179,70 @@
         window.scrollTo(0, 0);
     }
 
+    function formatCep(value) {
+        const digits = (value || '').replace(/\D/g, '').slice(0, 8);
+        if (digits.length > 5) {
+            return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+        }
+        return digits;
+    }
+
+    function updateMap(address, cep) {
+        const mapContainer = document.getElementById('mapContainer');
+        const mapPlaceholder = document.getElementById('mapPlaceholder');
+        const mapIframe = document.getElementById('schoolMapIframe');
+        const btnOpenMaps = document.getElementById('btnOpenMaps');
+
+        const addrClean = (address || '').trim();
+        const cepClean = (cep || '').replace(/\D/g, '').trim();
+
+        if (!addrClean && !cepClean) {
+            if (mapContainer) mapContainer.classList.add('d-none');
+            if (mapPlaceholder) mapPlaceholder.classList.remove('d-none');
+            if (btnOpenMaps) btnOpenMaps.classList.add('d-none');
+            if (mapIframe) {
+                mapIframe.removeAttribute('data-last-query');
+                mapIframe.src = 'about:blank';
+            }
+            return;
+        }
+
+        let query = '';
+        if (addrClean && cepClean) {
+            const formatted = formatCep(cepClean);
+            if (addrClean.includes(formatted) || addrClean.includes(cepClean)) {
+                query = addrClean;
+            } else {
+                query = `${addrClean}, ${formatted}`;
+            }
+        } else if (addrClean) {
+            query = addrClean;
+        } else {
+            query = `CEP ${formatCep(cepClean)}`;
+        }
+
+        if (!query.toLowerCase().includes('brasil') && !query.toLowerCase().includes('brazil')) {
+            query += ', Brasil';
+        }
+
+        const encoded = encodeURIComponent(query);
+        const embedUrl = `https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s${encoded}`;
+        const directUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+
+        if (mapIframe) {
+            if (mapIframe.getAttribute('data-last-query') !== query) {
+                mapIframe.setAttribute('data-last-query', query);
+                mapIframe.src = embedUrl;
+            }
+        }
+        if (btnOpenMaps) {
+            btnOpenMaps.href = directUrl;
+            btnOpenMaps.classList.remove('d-none');
+        }
+        if (mapPlaceholder) mapPlaceholder.classList.add('d-none');
+        if (mapContainer) mapContainer.classList.remove('d-none');
+    }
+
     async function loadSettings() {
         try {
             const response = await fetch('/api/school-settings', {
@@ -164,9 +254,11 @@
                 document.getElementById('schoolName').value = data.schoolName || '';
                 document.getElementById('email').value = data.email || '';
                 document.getElementById('phone').value = data.phone || '';
+                document.getElementById('cep').value = formatCep(data.cep || '');
                 document.getElementById('address').value = data.address || '';
                 document.getElementById('minimumGrade').value = data.minimumGrade || '6.0';
                 document.getElementById('minimumAttendance').value = data.minimumAttendance || '70.00';
+                updateMap(data.address, data.cep);
             } else if (response.status === 404) {
                 showAlert('As configurações ainda não foram definidas pela Direção.', 'info');
             } else {

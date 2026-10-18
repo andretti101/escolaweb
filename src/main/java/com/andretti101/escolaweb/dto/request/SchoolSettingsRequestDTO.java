@@ -12,6 +12,9 @@ public record SchoolSettingsRequestDTO(
         @Size(max = 150, message = "O nome da escola deve ter no máximo 150 caracteres.")
         String schoolName,
 
+        @Size(max = 20, message = "O CEP deve ter no máximo 20 caracteres.")
+        String cep,
+
         @Size(max = 255, message = "O endereço deve ter no máximo 255 caracteres.")
         String address,
 
@@ -30,4 +33,15 @@ public record SchoolSettingsRequestDTO(
         @DecimalMax(value = "100.0", message = "A frequência mínima exigida deve ser no máximo 100%.")
         BigDecimal minimumAttendance
 
-) {}
+) {
+    public SchoolSettingsRequestDTO(
+            String schoolName,
+            String address,
+            String phone,
+            String email,
+            BigDecimal minimumGrade,
+            BigDecimal minimumAttendance
+    ) {
+        this(schoolName, null, address, phone, email, minimumGrade, minimumAttendance);
+    }
+}
