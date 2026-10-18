@@ -1,0 +1,92 @@
+name: CI - Testes e Validação
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-test:
+    name: Backend Tests & Build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: escola_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Executar Testes Automatizados com Maven
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/escola_db
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres_test_password
+          SPRING_JPA_DDL_AUTO: create-drop
+          SPRING_JPA_SHOW_SQL: "false"
+          JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+          JWT_EXPIRATION: 86400000
+          JWT_REFRESH_EXPIRATION: 604800000
+          PASSWORD_RESET_EXPIRATION: 900000
+          APP_URL: http://localhost:8080
+          MAIL_HOST: localhost
+          MAIL_PORT: "2525"
+          MAIL_USERNAME: dummy
+          MAIL_PASSWORD: dummy
+          GEMINI_API_KEY: dummy-key-for-ci
+        run: |
+          chmod +x mvnw
+          ./mvnw clean test -B
+
+  frontend-check:
+    name: Frontend & Electron Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependências Node
+        run: npm ci
+
+      - name: Compilar Frontend dos Assets
+        run: npm run build
+
+  docker-verification:
+    name: Docker Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Validar Build da Imagem Docker
+        run: docker build -t escolaweb-app:test .
