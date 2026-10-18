@@ -7,10 +7,13 @@ import com.andretti101.escolaweb.model.entity.Enrollment;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.EnrollmentService;
+import com.andretti101.escolaweb.service.PdfDocumentService;
 import com.andretti101.escolaweb.service.TeacherClassSubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,6 +42,7 @@ public class EnrollmentController {
     private final EnrollmentService enrollmentService;
     private final AuthenticatedUserService authenticatedUserService;
     private final TeacherClassSubjectService teacherClassSubjectService;
+    private final PdfDocumentService pdfDocumentService;
 
     @Operation(summary = "Realizar matrícula", description = "Matricula um estudante em uma turma específica. Exclusivo para Secretaria.")
     @ApiResponses({
@@ -197,6 +201,30 @@ public class EnrollmentController {
             @Parameter(description = "ID da matrícula atual") @PathVariable Integer id,
             @Parameter(description = "ID da nova turma de destino") @RequestParam Integer newClassRoomId) {
         return ResponseEntity.ok(toResponse(enrollmentService.transferClassroom(id, newClassRoomId)));
+    }
+
+    @Operation(summary = "Exportar declaração de matrícula em PDF", description = "Gera a declaração oficial de matrícula escolar do estudante em formato PDF com código de verificação digital.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Declaração de matrícula em PDF gerada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (estudante só pode exportar sua própria declaração)"),
+            @ApiResponse(responseCode = "404", description = "Matrícula não encontrada")
+    })
+    @GetMapping(value = "/{id}/certificate-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY', 'STUDENT')")
+    public ResponseEntity<byte[]> downloadCertificatePdf(
+            @Parameter(description = "ID da matrícula") @PathVariable Integer id) {
+        Enrollment enrollment = enrollmentService.findById(id);
+        if (enrollment.getStudent() != null) {
+            authenticatedUserService.enforceStudentOwnership(enrollment.getStudent().getId());
+        }
+        byte[] pdfBytes = pdfDocumentService.generateEnrollmentCertificatePdf(id);
+        String regNum = enrollment.getStudent() != null && enrollment.getStudent().getRegistrationNumber() != null
+                ? enrollment.getStudent().getRegistrationNumber()
+                : String.valueOf(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"declaracao-matricula-" + regNum + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 
     // ── Mapping

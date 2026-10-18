@@ -2,8 +2,11 @@ package com.andretti101.escolaweb.controller;
 
 import com.andretti101.escolaweb.dto.response.ReportCardDTO;
 import com.andretti101.escolaweb.service.AuthenticatedUserService;
+import com.andretti101.escolaweb.service.PdfDocumentService;
 import com.andretti101.escolaweb.service.ReportCardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +28,7 @@ public class ReportCardController {
 
     private final ReportCardService reportCardService;
     private final AuthenticatedUserService authenticatedUserService;
+    private final PdfDocumentService pdfDocumentService;
 
     @Operation(summary = "Gerar boletim escolar do estudante", description = "Gera o boletim completo com notas de cada período, faltas, frequência percentual, média final e situação acadêmica (Aprovado, Reprovado, Em Recuperação).")
     @ApiResponses({
@@ -40,5 +44,24 @@ public class ReportCardController {
         authenticatedUserService.enforceStudentOwnership(studentId);
         ReportCardDTO reportCard = reportCardService.generateReportCard(studentId, yearId);
         return ResponseEntity.ok(reportCard);
+    }
+
+    @Operation(summary = "Exportar boletim em PDF", description = "Gera e exporta o boletim escolar consolidado do estudante formatado para impressão em documento PDF oficial.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "PDF do boletim gerado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (estudante só pode exportar seu próprio boletim)"),
+            @ApiResponse(responseCode = "404", description = "Estudante ou ano letivo não encontrado")
+    })
+    @GetMapping(value = "/student/{studentId}/year/{yearId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<byte[]> downloadReportCardPdf(
+            @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
+            @Parameter(description = "ID do ano letivo") @PathVariable Integer yearId) {
+        authenticatedUserService.enforceStudentOwnership(studentId);
+        byte[] pdfBytes = pdfDocumentService.generateReportCardPdf(studentId, yearId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"boletim-" + studentId + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 }

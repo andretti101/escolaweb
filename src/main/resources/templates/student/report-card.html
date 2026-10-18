@@ -81,11 +81,16 @@
                         <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Meu Desempenho /</span> Boletim Final</h4>
 
                         <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <h5 class="mb-0">Resultado Consolidado <span id="divisionBadge" class="badge bg-label-info ms-2 d-none"></span></h5>
-                                <div id="generalStatusContainer" class="d-flex align-items-center gap-2 mt-1 mt-sm-0">
-                                    <span class="text-muted fw-semibold">Situação Geral:</span>
-                                    <span id="generalStatusBadge" class="badge bg-label-secondary">Carregando...</span>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <button id="btnDownloadPdf" class="btn btn-primary btn-sm d-none" onclick="downloadPdf()">
+                                        <i class="bx bx-download me-1"></i> Baixar Boletim em PDF
+                                    </button>
+                                    <div id="generalStatusContainer" class="d-flex align-items-center gap-2">
+                                        <span class="text-muted fw-semibold">Situação Geral:</span>
+                                        <span id="generalStatusBadge" class="badge bg-label-secondary">Carregando...</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="table-responsive">
@@ -118,6 +123,41 @@
     <script>
         const jwtToken = localStorage.getItem('jwt_token');
         const studentId = localStorage.getItem('user_id');
+        let currentYearId = null;
+
+        async function downloadPdf() {
+            if (!studentId || !currentYearId) return;
+            const btn = document.getElementById('btnDownloadPdf');
+            const originalHtml = btn.innerHTML;
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Gerando...';
+
+                const response = await fetch(`/api/report-cards/student/${studentId}/year/${currentYearId}/pdf`, {
+                    headers: { 'Authorization': 'Bearer ' + jwtToken }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Falha ao exportar PDF: ' + response.statusText);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `boletim-${studentId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao gerar o boletim em PDF. Tente novamente mais tarde.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
 
         async function loadReportCard() {
             if (!studentId) return;
@@ -133,6 +173,10 @@
                 if (attRes.ok) attendanceReport = await attRes.json();
 
                 if (activeYear) {
+                    currentYearId = activeYear.id;
+                    const pdfBtn = document.getElementById('btnDownloadPdf');
+                    if (pdfBtn) pdfBtn.classList.remove('d-none');
+
                     const rcRes = await fetch(`/api/report-cards/student/${studentId}/year/${activeYear.id}`, { headers: {'Authorization': 'Bearer ' + jwtToken} });
                     if (rcRes.ok) {
                         const rc = await rcRes.json();

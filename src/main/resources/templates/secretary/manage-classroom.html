@@ -673,6 +673,9 @@
                 <td>${e.enrollmentDate ? e.enrollmentDate : '-'}</td>
                 <td><span class="badge ${e.active ? 'bg-label-success' : 'bg-label-secondary'}">${e.active ? 'Ativa' : 'Inativa'}</span></td>
                 <td>
+                    <button class="btn btn-sm btn-icon text-info" onclick="downloadEnrollmentCertificatePdf(${e.id}, '${escapeHtml(e.studentName || '')}')" title="Baixar Declaração de Matrícula">
+                        <i class="bx bx-file"></i>
+                    </button>
                     <button class="btn btn-sm btn-icon text-primary" onclick="openTransferModal(${e.id}, '${escapeHtml(e.studentName || '')}')" title="Transferir de Turma">
                         <i class="bx bx-transfer"></i>
                     </button>
@@ -1387,6 +1390,29 @@
         } finally {
             btn.disabled = false;
             btn.innerHTML = 'Confirmar Transferência';
+        }
+    };
+
+    window.downloadEnrollmentCertificatePdf = async (enrollmentId, studentName) => {
+        try {
+            const res = await fetch(`/api/enrollments/${enrollmentId}/certificate-pdf`, {
+                headers: { 'Authorization': `Bearer ${jwtToken || ''}` }
+            });
+            if (!res.ok) {
+                throw new Error('Falha ao exportar declaração de matrícula: ' + res.statusText);
+            }
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `declaracao-matricula-${enrollmentId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            showAlert("Erro ao gerar a declaração de matrícula em PDF.", "danger");
         }
     };
 

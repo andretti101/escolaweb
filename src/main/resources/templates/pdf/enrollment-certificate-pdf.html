@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Declaração de Matrícula Escolar</title>
+    <style type="text/css">
+        @page {
+            size: A4 portrait;
+            margin: 18mm 18mm 20mm 18mm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }
+            @bottom-left {
+                content: "Escola Web - Declaração Oficial de Matrícula";
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            font-size: 10pt;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── CABEÇALHO INSTITUCIONAL ── */
+        .school-header {
+            text-align: center;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+        }
+        .school-name {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .school-info {
+            font-size: 8.5pt;
+            color: #64748b;
+            line-height: 1.3;
+        }
+
+        /* ── TÍTULO DO DOCUMENTO ── */
+        .doc-title-container {
+            text-align: center;
+            margin: 30px 0 25px 0;
+        }
+        .doc-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 6px;
+            display: inline-block;
+        }
+
+        /* ── TEXTO DECLARATÓRIO ── */
+        .declaration-text {
+            font-size: 10.5pt;
+            text-align: justify;
+            text-indent: 35px;
+            margin-bottom: 25px;
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        /* ── QUADRO DE INFORMAÇÕES DO ESTUDANTE ── */
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+        }
+        .student-table td {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            font-size: 9pt;
+            vertical-align: middle;
+        }
+        .field-label {
+            font-weight: bold;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 8pt;
+            width: 32%;
+        }
+        .field-value {
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        /* ── VALIDADE E AVISO LEGAL ── */
+        .legal-notice {
+            font-size: 8.5pt;
+            color: #475569;
+            text-align: justify;
+            margin-bottom: 25px;
+            padding: 10px 14px;
+            background-color: #f1f5f9;
+            border-left: 4px solid #3b82f6;
+            border-radius: 2px;
+        }
+
+        /* ── QUADRO DE VERIFICAÇÃO DIGITAL ── */
+        .verification-box {
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            padding: 10px 14px;
+            margin-bottom: 35px;
+            border-radius: 4px;
+            page-break-inside: avoid;
+        }
+        .verification-title {
+            font-size: 8pt;
+            font-weight: bold;
+            color: #475569;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .verification-code {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 13pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            letter-spacing: 2px;
+        }
+        .verification-desc {
+            font-size: 7.5pt;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* ── DATA EXTENSA ── */
+        .date-container {
+            text-align: right;
+            margin-bottom: 45px;
+            font-size: 9.5pt;
+            color: #334155;
+        }
+
+        /* ── ÁREA DE ASSINATURAS ── */
+        .signatures-area {
+            width: 100%;
+            margin-top: 20px;
+            page-break-inside: avoid;
+        }
+        .sig-col {
+            width: 46%;
+            text-align: center;
+            vertical-align: top;
+        }
+        .sig-line {
+            border-top: 1px solid #334155;
+            width: 85%;
+            margin: 0 auto 6px auto;
+        }
+        .sig-name {
+            font-size: 9pt;
+            font-weight: bold;
+            color: #0f172a;
+        }
+        .sig-cargo {
+            font-size: 8pt;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CABEÇALHO INSTITUCIONAL -->
+    <div class="school-header">
+        <div class="school-name" th:text="${schoolSettings != null and schoolSettings.schoolName != null and !schoolSettings.schoolName.isBlank() ? schoolSettings.schoolName : 'ESCOLA WEB'}">ESCOLA WEB</div>
+        <div class="school-info">
+            <span th:if="${schoolSettings != null and schoolSettings.address != null and !schoolSettings.address.isBlank()}" th:text="${schoolSettings.address}">Endereço da Instituição</span>
+            <span th:if="${schoolSettings != null and schoolSettings.cep != null and !schoolSettings.cep.isBlank()}" th:text="' - CEP: ' + ${schoolSettings.cep}"> - CEP: 00000-000</span>
+            <br th:if="${schoolSettings != null and ((schoolSettings.address != null and !schoolSettings.address.isBlank()) or (schoolSettings.cep != null and !schoolSettings.cep.isBlank())) and ((schoolSettings.phone != null and !schoolSettings.phone.isBlank()) or (schoolSettings.email != null and !schoolSettings.email.isBlank()))}" />
+            <span th:if="${schoolSettings != null and schoolSettings.phone != null and !schoolSettings.phone.isBlank()}" th:text="'Telefone: ' + ${schoolSettings.phone}">Telefone: (00) 0000-0000</span>
+            <span th:if="${schoolSettings != null and schoolSettings.email != null and !schoolSettings.email.isBlank()}" th:text="' | E-mail: ' + ${schoolSettings.email}"> | E-mail: contato@escola.com</span>
+        </div>
+    </div>
+
+    <!-- TÍTULO DO DOCUMENTO -->
+    <div class="doc-title-container">
+        <div class="doc-title">Declaração de Matrícula Escolar</div>
+    </div>
+
+    <!-- CORPO DA DECLARAÇÃO -->
+    <div class="declaration-text" th:if="${enrollment.active}">
+        Declaramos, para os devidos fins legais a que fizerem jus ou a quem interessar possa, que o(a) estudante abaixo identificado(a) encontra-se regularmente matriculado(a) e com vínculo educacional ativo nesta Unidade Escolar durante o respectivo ano letivo:
+    </div>
+    <div class="declaration-text" th:unless="${enrollment.active}">
+        Declaramos, para os devidos fins legais a que fizerem jus ou a quem interessar possa, que o(a) estudante abaixo identificado(a) esteve matriculado(a) nesta Unidade Escolar durante o respectivo ano letivo, constando sua matrícula atualmente na condição inativa:
+    </div>
+
+    <!-- QUADRO DE IDENTIFICAÇÃO DO ESTUDANTE -->
+    <table class="student-table">
+        <tr>
+            <td class="field-label">Nome do Estudante:</td>
+            <td class="field-value" th:text="${student != null ? student.name : '—'}">Lucas Almeida</td>
+        </tr>
+        <tr>
+            <td class="field-label">Matrícula Escolar:</td>
+            <td class="field-value" th:text="${student != null and student.registrationNumber != null ? student.registrationNumber : '—'}">2026001</td>
+        </tr>
+        <tr>
+            <td class="field-label">Data de Nascimento:</td>
+            <td class="field-value" th:text="${birthDateStr}">01/01/2010</td>
+        </tr>
+        <tr>
+            <td class="field-label">Turma:</td>
+            <td class="field-value" th:text="${classRoom != null ? classRoom.name : '—'}">1º Ano A</td>
+        </tr>
+        <tr>
+            <td class="field-label">Série / Etapa:</td>
+            <td class="field-value" th:text="${schoolGrade}">1º Ano - Ensino Fundamental</td>
+        </tr>
+        <tr>
+            <td class="field-label">Turno de Estudo:</td>
+            <td class="field-value" th:text="${shift}">Matutino</td>
+        </tr>
+        <tr>
+            <td class="field-label">Ano Letivo:</td>
+            <td class="field-value" th:text="${academicYearStr}">2026</td>
+        </tr>
+        <tr>
+            <td class="field-label">Data da Matrícula:</td>
+            <td class="field-value" th:text="${enrollmentDateStr}">01/02/2026</td>
+        </tr>
+        <tr>
+            <td class="field-label">Situação Cadastral:</td>
+            <td class="field-value" th:style="${enrollment.active ? 'color: #166534;' : 'color: #991b1b;'}" th:text="${enrollment.active ? 'Regularmente Matriculado(a) - Ativo' : 'Matrícula Inativa'}">Regularmente Matriculado(a) - Ativo</td>
+        </tr>
+    </table>
+
+    <!-- AVISO LEGAL E PRAZO DE VALIDADE -->
+    <div class="legal-notice">
+        <strong>Observação:</strong> Documento expedido em conformidade com as diretrizes e registros acadêmicos arquivados na Secretaria desta Instituição de Ensino. Esta declaração possui validade de 30 (trinta) dias corridos a contar da data de sua expedição.
+    </div>
+
+    <!-- CÓDIGO DE AUTENTICAÇÃO DIGITAL -->
+    <div class="verification-box">
+        <div class="verification-title">Código de Autenticação e Controle Digital:</div>
+        <div class="verification-code" th:text="${verificationCode}">EW-4F2A-891B-C3E7</div>
+        <div class="verification-desc">
+            A autenticidade deste documento escolar poderá ser confirmada junto à Secretaria Escolar através do código verificador acima ou no portal oficial da instituição.
+        </div>
+    </div>
+
+    <!-- DATA EXTENSA -->
+    <div class="date-container">
+        Emitido em <span th:text="${currentDateExtensive}">18 de outubro de 2026</span>.
+    </div>
+
+    <!-- ASSINATURAS OFICIAIS -->
+    <table class="signatures-area">
+        <tr>
+            <td class="sig-col">
+                <div class="sig-line"></div>
+                <div class="sig-name">Secretaria Escolar</div>
+                <div class="sig-cargo">Registro e Documentação Acadêmica</div>
+            </td>
+            <td style="width: 8%;"></td>
+            <td class="sig-col">
+                <div class="sig-line"></div>
+                <div class="sig-name">Direção Escolar</div>
+                <div class="sig-cargo">Gestão Pedagógica e Institucional</div>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

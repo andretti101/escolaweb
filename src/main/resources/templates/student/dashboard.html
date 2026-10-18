@@ -208,7 +208,10 @@
                                             <span class="badge bg-label-secondary" id="studentRegistrationNumber">—</span>
                                         </div>
                                     </div>
-                                    <div class="col-md-3 text-md-end">
+                                    <div class="col-md-3 text-md-end d-flex flex-wrap gap-2 justify-content-md-end">
+                                        <button id="btnDownloadEnrollmentPdf" class="btn btn-sm btn-outline-secondary d-none" onclick="downloadMyEnrollmentCertificate()">
+                                            <i class="bx bx-file me-1"></i> Declaração
+                                        </button>
                                         <a href="/student/report-card.html" class="btn btn-sm btn-outline-primary">
                                             <i class="bx bx-id-card me-1"></i> Boletim Completo
                                         </a>
@@ -507,6 +510,10 @@
 
             let reportCard = null;
             if (activeEnrollment) {
+                window._activeEnrollmentId = activeEnrollment.id;
+                const declBtn = document.getElementById('btnDownloadEnrollmentPdf');
+                if (declBtn) declBtn.classList.remove('d-none');
+
                 document.getElementById('studentClassRoomName').textContent = `Turma ${activeEnrollment.classRoomName || '—'}`;
                 document.getElementById('studentAcademicYear').textContent = activeEnrollment.academicYear || '2026';
                 document.getElementById('studentRegistrationNumber').textContent = activeEnrollment.studentRegistrationNumber || 'N/A';
@@ -674,6 +681,42 @@
                 `;
             }
         });
+
+        async function downloadMyEnrollmentCertificate() {
+            if (!window._activeEnrollmentId) return;
+            const btn = document.getElementById('btnDownloadEnrollmentPdf');
+            const originalHtml = btn ? btn.innerHTML : '';
+            try {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Gerando...';
+                }
+                const token = localStorage.getItem('jwt_token');
+                const response = await fetch(`/api/enrollments/${window._activeEnrollmentId}/certificate-pdf`, {
+                    headers: { 'Authorization': 'Bearer ' + (token || '') }
+                });
+                if (!response.ok) {
+                    throw new Error('Falha ao exportar declaração: ' + response.statusText);
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `declaracao-matricula-${window._activeEnrollmentId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao gerar declaração de matrícula em PDF.');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            }
+        }
     </script>
 </body>
 </html>
