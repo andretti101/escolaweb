@@ -39,34 +39,6 @@ public class SequenceSyncRunner implements CommandLineRunner {
             }
         }
 
-        try {
-            jdbcTemplate.execute("UPDATE class_rooms SET school_grade = 'FUNDAMENTAL_9' WHERE school_grade IS NULL");
-            jdbcTemplate.execute("ALTER TABLE class_rooms ALTER COLUMN school_grade SET NOT NULL");
-        } catch (Exception e) {
-            // ignorar caso a coluna ou tabela não suporte a alteração no dialeto atual
-        }
-
-        try {
-            jdbcTemplate.execute("ALTER TABLE academic_periods ADD COLUMN IF NOT EXISTS period_type VARCHAR(20)");
-            jdbcTemplate.execute("ALTER TABLE class_rooms ADD COLUMN IF NOT EXISTS period_type VARCHAR(20)");
-
-            jdbcTemplate.execute(
-                "UPDATE academic_periods p SET period_type = COALESCE(" +
-                "  (SELECT y.period_type FROM academic_years y WHERE y.id = p.academic_year_id), 'TRIMESTER') " +
-                "WHERE p.period_type IS NULL"
-            );
-
-            jdbcTemplate.execute(
-                "UPDATE class_rooms c SET period_type = COALESCE(" +
-                "  (SELECT y.period_type FROM academic_years y WHERE y.id = c.academic_year_id), 'TRIMESTER') " +
-                "WHERE c.period_type IS NULL"
-            );
-
-            jdbcTemplate.execute("ALTER TABLE academic_periods ALTER COLUMN period_type SET NOT NULL");
-            jdbcTemplate.execute("ALTER TABLE class_rooms ALTER COLUMN period_type SET NOT NULL");
-        } catch (Exception e) {
-            // ignorar caso dialeto em teste/h2 ou restrição já aplicada
-        }
 
         try {
             Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM teacher_subjects", Integer.class);
