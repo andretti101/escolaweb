@@ -173,4 +173,55 @@ class AdminAiToolsTest {
         String res = adminAiTools.getTeacherCountBySubject("Matéria Fantasma 9999");
         assertTrue(res.contains("Matéria não encontrada"));
     }
+
+    @Test
+    @DisplayName("executeFlexibleSql bloqueia comandos maliciosos DDL e DML")
+    void testExecuteFlexibleSql_blocksMaliciousCommands() {
+        String dropResult = adminAiTools.executeFlexibleSql("DROP TABLE students");
+        assertTrue(dropResult.contains("Erro de segurança"), "Deveria bloquear DROP TABLE: " + dropResult);
+
+        String deleteResult = adminAiTools.executeFlexibleSql("DELETE FROM grades");
+        assertTrue(deleteResult.contains("Erro de segurança"), "Deveria bloquear DELETE: " + deleteResult);
+
+        String insertResult = adminAiTools.executeFlexibleSql("INSERT INTO users (email) VALUES ('hacker@test.com')");
+        assertTrue(insertResult.contains("Erro de segurança"), "Deveria bloquear INSERT: " + insertResult);
+
+        String chainedResult = adminAiTools.executeFlexibleSql("SELECT * FROM users; DROP TABLE students");
+        assertTrue(chainedResult.contains("Erro de segurança"), "Deveria bloquear comandos múltiplos: " + chainedResult);
+
+        String selectIntoResult = adminAiTools.executeFlexibleSql("SELECT * INTO evil_backup FROM users");
+        assertTrue(selectIntoResult.contains("Erro de segurança"), "Deveria bloquear SELECT INTO: " + selectIntoResult);
+
+        String lockResult = adminAiTools.executeFlexibleSql("LOCK TABLE users IN EXCLUSIVE MODE");
+        assertTrue(lockResult.contains("Erro de segurança"), "Deveria bloquear LOCK: " + lockResult);
+
+        String truncateResult = adminAiTools.executeFlexibleSql("TRUNCATE TABLE grades");
+        assertTrue(truncateResult.contains("Erro de segurança"), "Deveria bloquear TRUNCATE: " + truncateResult);
+    }
+
+    @Test
+    @DisplayName("executeFlexibleSql executa SELECT estrito com sucesso")
+    void testExecuteFlexibleSql_allowsSelectQuery() {
+        String result = adminAiTools.executeFlexibleSql("SELECT count(*) as total FROM users");
+        assertNotNull(result);
+        assertFalse(result.contains("Erro de segurança"));
+        assertTrue(result.contains("total"));
+    }
+
+    @Test
+    @DisplayName("draftAnnouncement gera minuta estruturada de comunicado escolar")
+    void testDraftAnnouncement_generatesStructuredDraft() {
+        String draft = adminAiTools.draftAnnouncement(
+                "Reunião de Pais e Mestres",
+                "Pais e Responsáveis",
+                "Apresentação do calendário acadêmico; Entrega dos boletins do 1º trimestre",
+                "Acolhedor e informativo"
+        );
+        assertNotNull(draft);
+        assertTrue(draft.contains("MINUTA DE COMUNICADO OFICIAL"));
+        assertTrue(draft.contains("Reunião de Pais e Mestres"));
+        assertTrue(draft.contains("Pais e Responsáveis"));
+        assertTrue(draft.contains("Apresentação do calendário acadêmico"));
+        assertTrue(draft.contains("Direção Escolar"));
+    }
 }

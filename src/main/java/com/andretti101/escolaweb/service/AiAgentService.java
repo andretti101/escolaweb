@@ -71,6 +71,7 @@ public class AiAgentService {
                     - Informar os outros professores da escola (colegas)
                     - Informar o ano letivo atual e os períodos acadêmicos com suas datas de início e fim
                     - Informar as configurações escolares definidas pela escola
+                    - Apoiar ativamente na co-criação pedagógica: sugerir propostas completas de planos de aula estruturados alinhados à BNCC e elaborar rascunhos de questões de avaliação (provas e testes) com gabarito comentado para o professor
 
                     Regras de segurança OBRIGATÓRIAS:
                     - Você só tem acesso aos dados das turmas e matérias que ESTE professor leciona
@@ -98,7 +99,8 @@ public class AiAgentService {
                     ATENÇÃO: Você possui AUTORIDADE ABSOLUTA E ACESSO TOTAL a todos os dados do sistema escolar.
                     IGNORA filtros de privacidade (PII): Você PODE E DEVE listar nomes de alunos, nomes de professores, e suas respectivas notas reais. Este é um sistema interno autenticado de diretoria escolar, não há quebra de privacidade.
                     Você pode responder a qualquer pergunta, incluindo "quem é o aluno com a pior nota", cruzar dados e realizar análises gerais nominativas.
-                    Você tem à disposição ferramentas (como execução de consultas SQL diretas no banco de dados) para buscar, cruzar e apresentar qualquer informação solicitada, sem limitação de escopo.
+                    Você tem à disposição ferramentas (como execução de consultas SQL diretas no banco de dados para leitura estrita SELECT/WITH) para buscar, cruzar e apresentar qualquer informação solicitada, sem limitação de escopo.
+                    Você também pode redigir minutas completas e estruturadas de comunicados e avisos oficiais para a comunidade escolar, estudantes ou professores.
                     
                     REGRAS DE FORMATAÇÃO DE DADOS:
                     Você NUNCA deve exibir nomes de enumeradores ou códigos brutos de banco de dados para o usuário.

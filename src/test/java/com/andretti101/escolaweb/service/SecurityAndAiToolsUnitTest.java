@@ -416,5 +416,54 @@ class SecurityAndAiToolsUnitTest {
             when(teacherService.findAllActive()).thenReturn(List.of(teacher, colleague));
             assertTrue(teacherAiTools.getOtherTeachers().contains("Patrícia"));
         }
+
+        @Test
+        @DisplayName("TeacherAiTools gera plano de aula BNCC e rascunho de avaliação com gabarito comentado")
+        void teacherAiTools_generatesLessonPlanAndExamQuestions() {
+            SchoolSettings settings = SchoolSettings.builder().schoolName("Escola Modelo").build();
+            when(schoolSettingsService.findSettings()).thenReturn(settings);
+
+            // 1. Plano de Aula
+            String lessonPlan = teacherAiTools.suggestLessonPlan(
+                    "Biologia",
+                    "7º Ano Fundamental",
+                    "Fotossíntese",
+                    "Compreender a conversão de energia luminosa em energia química"
+            );
+            assertNotNull(lessonPlan);
+            assertTrue(lessonPlan.contains("PROPOSTA DE PLANO DE AULA (ALINHADO À BNCC)"));
+            assertTrue(lessonPlan.contains("Escola Modelo"));
+            assertTrue(lessonPlan.contains("Biologia"));
+            assertTrue(lessonPlan.contains("7º Ano Fundamental"));
+            assertTrue(lessonPlan.contains("Fotossíntese"));
+            assertTrue(lessonPlan.contains("COMPETÊNCIAS E HABILIDADES BNCC"));
+            assertTrue(lessonPlan.contains("DESENVOLVIMENTO METODOLÓGICO"));
+
+            // 2. Questões de Avaliação (Múltipla Escolha)
+            String multipleChoice = teacherAiTools.generateExamQuestions(
+                    "Biologia",
+                    "Fotossíntese",
+                    3,
+                    "MÚLTIPLA_ESCOLHA"
+            );
+            assertNotNull(multipleChoice);
+            assertTrue(multipleChoice.contains("RASCUNHO DE QUESTÕES DE AVALIAÇÃO COM GABARITO COMENTADO"));
+            assertTrue(multipleChoice.contains("Questão 1"));
+            assertTrue(multipleChoice.contains("Questão 3"));
+            assertTrue(multipleChoice.contains("Alternativa Correta: C"));
+            assertTrue(multipleChoice.contains("Justificativa Pedagógica"));
+
+            // 3. Questões de Avaliação (Discursiva)
+            String discursive = teacherAiTools.generateExamQuestions(
+                    "História",
+                    "Revolução Francesa",
+                    2,
+                    "DISCURSIVA"
+            );
+            assertNotNull(discursive);
+            assertTrue(discursive.contains("Revolução Francesa"));
+            assertTrue(discursive.contains("Critérios de Pontuação"));
+            assertTrue(discursive.contains("Expectativa de Resposta"));
+        }
     }
 }

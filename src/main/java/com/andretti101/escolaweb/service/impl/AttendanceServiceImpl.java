@@ -37,6 +37,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final LessonService lessonService;
     private final StudentService studentService;
     private final TeacherClassSubjectService teacherClassSubjectService;
+    private final com.andretti101.escolaweb.service.NotificationPublisherService notificationPublisherService;
 
     @Override
     @Transactional
@@ -61,6 +62,8 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         recordHistory(saved, null, saved.getStatus());
 
+        dispatchAttendanceNotification(saved, "Frequência Registrada");
+
         return saved;
     }
 
@@ -79,6 +82,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         if (previous != incoming.getStatus()) {
             recordHistory(existing, previous, existing.getStatus());
+            dispatchAttendanceNotification(existing, "Frequência Atualizada");
         }
 
         return existing;
@@ -287,5 +291,35 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new IllegalArgumentException("A seleção do aluno é obrigatória.");
         }
         return studentService.findById(ref.getId());
+    }
+
+    private void dispatchAttendanceNotification(Attendance attendance, String title) {
+        if (notificationPublisherService == null || attendance.getStudent() == null) return;
+        try {
+            Lesson lesson = attendance.getLesson();
+            String subjectName = (lesson != null && lesson.getTeacherClassSubject() != null && lesson.getTeacherClassSubject().getSubject() != null)
+                    ? lesson.getTeacherClassSubject().getSubject().getName()
+                    : "Disciplina";
+            String statusDesc = attendance.getStatus() == AttendanceStatus.PRESENT ? "Presença" :
+                    (attendance.getStatus() == AttendanceStatus.ABSENT ? "Falta" : "Falta Justificada");
+            String dateStr = (lesson != null && lesson.getLessonDate() != null)
+                    ? lesson.getLessonDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                    : "";
+
+            com.andretti101.escolaweb.dto.response.NotificationMessageDTO notif =
+                    com.andretti101.escolaweb.dto.response.NotificationMessageDTO.builder()
+                            .id(java.util.UUID.randomUUID().toString())
+                            .type("ATTENDANCE_RECORDED")
+                            .title(title != null ? title : "Frequência Registrada")
+                            .message(String.format("Registro de %s em %s%s", statusDesc, subjectName, dateStr.isEmpty() ? "" : " (Aula de " + dateStr + ")"))
+                            .linkUrl("/aluno/frequencias")
+                            .timestamp(java.time.LocalDateTime.now())
+                            .build();
+
+            notificationPublisherService.notifyStudent(attendance.getStudent().getId(), notif);
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(AttendanceServiceImpl.class)
+                    .warn("Erro ao publicar notificação de frequência: {}", e.getMessage());
+        }
     }
 }

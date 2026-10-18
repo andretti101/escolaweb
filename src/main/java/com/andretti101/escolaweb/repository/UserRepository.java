@@ -15,10 +15,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findByActiveTrue();
     List<User> findByActiveFalse();
 
-    @org.springframework.data.jpa.repository.Query("SELECT s.id FROM Student s JOIN s.enrollments e WHERE e.classRoom.id = :classroomId AND e.active = true")
+    @org.springframework.data.jpa.repository.Query("SELECT s.id FROM Student s JOIN s.enrollments e WHERE e.classRoom.id = :classroomId AND e.active = true AND s.active = true")
     List<Integer> findStudentIdsByClassroomId(@org.springframework.data.repository.query.Param("classroomId") Integer classroomId);
 
-    @org.springframework.data.jpa.repository.Query("SELECT u.id FROM User u WHERE u.role IN :roles")
+    @org.springframework.data.jpa.repository.Query("SELECT u.id FROM User u WHERE u.role IN :roles AND u.active = true")
     List<Integer> findIdsByRoles(@org.springframework.data.repository.query.Param("roles") List<com.andretti101.escolaweb.model.enums.UserRole> roles);
 
     List<User> findByRole(com.andretti101.escolaweb.model.enums.UserRole role);

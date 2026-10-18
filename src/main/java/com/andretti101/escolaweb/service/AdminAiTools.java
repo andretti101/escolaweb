@@ -28,6 +28,12 @@ public class AdminAiTools {
     private final SubjectRepository subjectRepository;
     private final ClassRoomService classRoomService;
     private final JdbcTemplate jdbcTemplate;
+    private final SchoolSettingsService schoolSettingsService;
+
+    private static final java.util.regex.Pattern FORBIDDEN_SQL_PATTERN = java.util.regex.Pattern.compile(
+            "\\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|EXECUTE|GRANT|REVOKE|CREATE|REPLACE|MERGE|INTO|LOCK|CALL)\\b",
+            java.util.regex.Pattern.CASE_INSENSITIVE
+    );
 
     @Tool(description = "Compara matrículas entre anos letivos")
     public String getEnrollmentStatsByYear() {
@@ -187,15 +193,88 @@ public class AdminAiTools {
 
     @Tool(description = "Executa consultas SQL (PostgreSQL) no banco de dados para análises customizadas. Útil para descobrir 'quem é o aluno com a pior nota', cruzar dados não previstos e responder análises gerais. Retorna até 50 resultados.")
     public String executeFlexibleSql(String sql) {
+        if (sql == null || sql.trim().isEmpty()) {
+            return "Erro de validação: Instrução SQL não informada.";
+        }
+
+        String trimmedSql = sql.trim();
+        while (trimmedSql.endsWith(";")) {
+            trimmedSql = trimmedSql.substring(0, trimmedSql.length() - 1).trim();
+        }
+
+        if (trimmedSql.contains(";")) {
+            return "Erro de segurança: Múltiplas instruções SQL em um único comando não são permitidas.";
+        }
+
+        String upperSql = trimmedSql.toUpperCase(Locale.ROOT);
+        if (!upperSql.startsWith("SELECT") && !upperSql.startsWith("WITH")) {
+            return "Erro de segurança: Apenas consultas de leitura iniciadas com SELECT ou WITH são permitidas.";
+        }
+
+        if (FORBIDDEN_SQL_PATTERN.matcher(trimmedSql).find()) {
+            return "Erro de segurança: Comando SQL rejeitado por conter palavra-chave restrita de modificação de dados.";
+        }
+
+        final String finalSql = trimmedSql;
         return transactionTemplate.execute(status -> {
+            status.setRollbackOnly();
             try {
-                List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+                try {
+                    jdbcTemplate.execute("SET TRANSACTION READ ONLY");
+                } catch (Exception ignored) {
+                    // Ignora caso o dialeto ou driver já esteja em transação ativa sem suporte a re-set
+                }
+                List<Map<String, Object>> results = jdbcTemplate.queryForList(finalSql);
                 if (results.isEmpty()) return "Nenhum resultado encontrado.";
                 if (results.size() > 50) return "Foram encontrados " + results.size() + " resultados. Mostrando os 50 primeiros:\n" + results.subList(0, 50).toString();
                 return results.toString();
             } catch (Exception e) {
                 return "Erro ao executar consulta SQL: " + e.getMessage();
             }
+        });
+    }
+
+    @Tool(description = "Elabora uma minuta de comunicado/aviso oficial para a escola")
+    public String draftAnnouncement(String subject, String targetAudience, String keyPoints, String tone) {
+        return transactionTemplate.execute(status -> {
+            SchoolSettings settings = schoolSettingsService.findSettings();
+            String schoolName = (settings != null && settings.getSchoolName() != null)
+                    ? settings.getSchoolName()
+                    : "Escola Web";
+
+            String resolvedTone = (tone != null && !tone.isBlank()) ? tone : "formal e acolhedor";
+            String resolvedAudience = (targetAudience != null && !targetAudience.isBlank()) ? targetAudience : "Toda a comunidade escolar";
+            String resolvedSubject = (subject != null && !subject.isBlank()) ? subject : "Comunicado Oficial";
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("=== MINUTA DE COMUNICADO OFICIAL ===\n\n");
+            sb.append("Instituição: ").append(schoolName).append("\n");
+            sb.append("Data de Emissão: ").append(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n");
+            sb.append("Assunto: ").append(resolvedSubject).append("\n");
+            sb.append("Público-alvo: ").append(resolvedAudience).append("\n");
+            sb.append("Tom do Comunicado: ").append(resolvedTone).append("\n\n");
+            sb.append("--- TÍTULO SUGERIDO ---\n");
+            sb.append(resolvedSubject.toUpperCase(Locale.ROOT)).append(" - ").append(schoolName).append("\n\n");
+            sb.append("--- CORPO DO COMUNICADO ---\n");
+            sb.append("Prezados(as) ").append(resolvedAudience).append(",\n\n");
+            sb.append("Vimos por meio deste comunicar que:\n");
+            if (keyPoints != null && !keyPoints.isBlank()) {
+                String[] points = keyPoints.split("[;\\n]+");
+                for (String p : points) {
+                    if (!p.trim().isEmpty()) {
+                        sb.append("• ").append(p.trim()).append("\n");
+                    }
+                }
+            } else {
+                sb.append("• ").append(resolvedSubject).append("\n");
+            }
+            sb.append("\nReforçamos nosso compromisso com a excelência educacional e estamos à disposição para eventuais esclarecimentos.\n\n");
+            sb.append("Atenciosamente,\n");
+            sb.append("Equipe Gestora e Direção Escolar\n");
+            sb.append(schoolName).append("\n");
+            sb.append("====================================");
+
+            return sb.toString();
         });
     }
 

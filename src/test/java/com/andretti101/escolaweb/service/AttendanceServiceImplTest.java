@@ -46,6 +46,8 @@ class AttendanceServiceImplTest {
     private StudentService studentService;
     @Mock
     private TeacherClassSubjectService teacherClassSubjectService;
+    @Mock
+    private NotificationPublisherService notificationPublisherService;
 
     @InjectMocks
     private AttendanceServiceImpl attendanceService;
@@ -98,6 +100,10 @@ class AttendanceServiceImplTest {
         verify(attendanceHistoryRepository).save(captor.capture());
         assertNull(captor.getValue().getPreviousStatus());
         assertEquals("PRESENT", captor.getValue().getNewStatus());
+        verify(notificationPublisherService).notifyStudent(eq(11), argThat(n ->
+                "ATTENDANCE_RECORDED".equals(n.getType()) &&
+                n.getMessage().contains("Presença")
+        ));
     }
 
     @Test
@@ -136,12 +142,17 @@ class AttendanceServiceImplTest {
         attendanceService.update(700, Attendance.builder().status(AttendanceStatus.ABSENT).build());
         verify(attendanceHistoryRepository, never()).save(any());
 
-        // Status alterado -> grava histórico
+        // Status alterado -> grava histórico e envia notificação atualizada
         attendanceService.update(700, Attendance.builder().status(AttendanceStatus.JUSTIFIED_ABSENCE).build());
         ArgumentCaptor<AttendanceHistory> captor = ArgumentCaptor.forClass(AttendanceHistory.class);
         verify(attendanceHistoryRepository).save(captor.capture());
         assertEquals("ABSENT", captor.getValue().getPreviousStatus());
         assertEquals("JUSTIFIED_ABSENCE", captor.getValue().getNewStatus());
+        verify(notificationPublisherService).notifyStudent(eq(11), argThat(n ->
+                "ATTENDANCE_RECORDED".equals(n.getType()) &&
+                "Frequência Atualizada".equals(n.getTitle()) &&
+                n.getMessage().contains("Falta Justificada")
+        ));
     }
 
     @Test

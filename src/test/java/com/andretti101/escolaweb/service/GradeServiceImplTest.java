@@ -46,6 +46,8 @@ class GradeServiceImplTest {
     private TeacherClassSubjectService teacherClassSubjectService;
     @Mock
     private AttendanceService attendanceService;
+    @Mock
+    private NotificationPublisherService notificationPublisherService;
 
     @InjectMocks
     private GradeServiceImpl gradeService;
@@ -123,6 +125,10 @@ class GradeServiceImplTest {
         assertEquals(500, saved.getId());
         assertEquals(StudentSituation.PENDING, saved.getStudentSituation());
         verifyNoInteractions(gradeHistoryRepository);
+        verify(notificationPublisherService).notifyStudent(eq(11), argThat(notif ->
+                "GRADE_LAUNCHED".equals(notif.getType()) &&
+                notif.getMessage().contains("8.5")
+        ));
     }
 
     @Test
@@ -254,6 +260,11 @@ class GradeServiceImplTest {
         assertEquals(0, new BigDecimal("6.00").compareTo(history.getPreviousGrade()));
         assertEquals(0, new BigDecimal("9.25").compareTo(history.getNewGrade()));
         assertEquals("Revisão de prova", history.getNotes());
+        verify(notificationPublisherService).notifyStudent(eq(11), argThat(notif ->
+                "GRADE_LAUNCHED".equals(notif.getType()) &&
+                "Nota Atualizada".equals(notif.getTitle()) &&
+                notif.getMessage().contains("9.25")
+        ));
     }
 
     @Test

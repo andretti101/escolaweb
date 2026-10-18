@@ -40,6 +40,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
     private final com.andretti101.escolaweb.repository.UserRepository userRepository;
     private final com.andretti101.escolaweb.repository.AcademicYearRepository academicYearRepository;
+    private final com.andretti101.escolaweb.service.NotificationPublisherService notificationPublisherService;
 
     @Override
     @Transactional
@@ -76,7 +77,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
         announcement.setClassRooms(classRooms);
 
-        return announcementRepository.save(announcement);
+        Announcement saved = announcementRepository.save(announcement);
+
+        dispatchAnnouncementNotification(saved);
+
+        return saved;
     }
 
     @Override
@@ -271,5 +276,33 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .orElseGet(() -> academicYearRepository.findByYear(academicYearId)
                         .map(com.andretti101.escolaweb.model.entity.AcademicYear::getYear)
                         .orElse(academicYearId));
+    }
+
+    private void dispatchAnnouncementNotification(Announcement saved) {
+        if (notificationPublisherService == null) return;
+        try {
+            com.andretti101.escolaweb.dto.response.NotificationMessageDTO notif =
+                    com.andretti101.escolaweb.dto.response.NotificationMessageDTO.builder()
+                            .id(java.util.UUID.randomUUID().toString())
+                            .type("NEW_ANNOUNCEMENT")
+                            .title("Novo Comunicado: " + saved.getTitle())
+                            .message(saved.getMessage())
+                            .linkUrl("/avisos")
+                            .timestamp(java.time.LocalDateTime.now())
+                            .build();
+
+            if (Boolean.TRUE.equals(saved.getTargetTeachers())) {
+                notificationPublisherService.notifyTeachers(notif);
+            }
+
+            if (saved.getClassRooms() != null && !saved.getClassRooms().isEmpty()) {
+                for (ClassRoom cr : saved.getClassRooms()) {
+                    notificationPublisherService.notifyClassroom(cr.getId(), notif);
+                }
+            }
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(AnnouncementServiceImpl.class)
+                    .warn("Erro ao publicar notificação de comunicado: {}", e.getMessage());
+        }
     }
 }

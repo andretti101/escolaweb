@@ -245,6 +245,8 @@ class AcademicCalendarAndCommunicationServiceTest {
         private UserRepository userRepository;
         @Mock
         private AcademicYearRepository academicYearRepository;
+        @Mock
+        private NotificationPublisherService notificationPublisherService;
 
         @InjectMocks
         private AnnouncementServiceImpl announcementService;
@@ -293,6 +295,37 @@ class AcademicCalendarAndCommunicationServiceTest {
 
             // Turma 2 não pertence ao professor -> AccessDeniedException
             assertThrows(AccessDeniedException.class, () -> announcementService.create(toClassRoom, List.of(2)));
+        }
+
+        @Test
+        @DisplayName("AnnouncementServiceImpl.create dispara notificações em tempo real para turmas e professores")
+        void announcementCreate_dispatchesNotificationsToClassroomsAndTeachers() {
+            com.andretti101.escolaweb.model.entity.Principal principalUser =
+                    com.andretti101.escolaweb.model.entity.Principal.builder().id(1).name("Helena").role(UserRole.PRINCIPAL).build();
+            when(authenticatedUserService.getAuthenticatedUser()).thenReturn(principalUser);
+
+            ClassRoom cr1 = ClassRoom.builder().id(1).name("1º A").build();
+            when(classRoomRepository.findAllById(List.of(1))).thenReturn(List.of(cr1));
+            when(announcementRepository.save(any(Announcement.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Announcement announcement = Announcement.builder()
+                    .title("Reunião Geral")
+                    .message("Comunicado para todos")
+                    .targetTeachers(true)
+                    .build();
+
+            announcementService.create(announcement, List.of(1));
+
+            verify(notificationPublisherService).notifyTeachers(argThat(dto ->
+                    "NEW_ANNOUNCEMENT".equals(dto.getType()) &&
+                    dto.getTitle().contains("Reunião Geral") &&
+                    "Comunicado para todos".equals(dto.getMessage())
+            ));
+
+            verify(notificationPublisherService).notifyClassroom(eq(1), argThat(dto ->
+                    "NEW_ANNOUNCEMENT".equals(dto.getType()) &&
+                    dto.getTitle().contains("Reunião Geral")
+            ));
         }
 
         @Test

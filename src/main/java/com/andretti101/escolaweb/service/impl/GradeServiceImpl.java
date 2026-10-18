@@ -38,6 +38,7 @@ public class GradeServiceImpl implements GradeService {
     private final SchoolSettingsService schoolSettingsService;
     private final TeacherClassSubjectService teacherClassSubjectService;
     private final AttendanceService attendanceService;
+    private final com.andretti101.escolaweb.service.NotificationPublisherService notificationPublisherService;
 
     @Override
     @Transactional
@@ -68,6 +69,8 @@ public class GradeServiceImpl implements GradeService {
 
         updateStudentSituation(saved);
 
+        dispatchGradeNotification(saved, "Nova nota lançada em %s: %s na avaliação \"%s\"", "Nova Nota Lançada");
+
         return saved;
     }
 
@@ -96,6 +99,7 @@ public class GradeServiceImpl implements GradeService {
 
         if (valueChanged) {
             recordHistory(existing, previousValue, existing.getValue(), cleanNotes);
+            dispatchGradeNotification(existing, "Sua nota em %s foi atualizada para %s na avaliação \"%s\"", "Nota Atualizada");
         }
 
         updateStudentSituation(existing);
@@ -264,5 +268,35 @@ public class GradeServiceImpl implements GradeService {
             throw new IllegalArgumentException("A seleção da avaliação é obrigatória.");
         }
         return assessmentService.findById(ref.getId());
+    }
+
+    private void dispatchGradeNotification(Grade grade, String messageTemplate, String title) {
+        if (notificationPublisherService == null || grade.getStudent() == null) return;
+        try {
+            String subjectName = (grade.getAssessment() != null
+                    && grade.getAssessment().getTeacherClassSubject() != null
+                    && grade.getAssessment().getTeacherClassSubject().getSubject() != null)
+                    ? grade.getAssessment().getTeacherClassSubject().getSubject().getName()
+                    : "Disciplina";
+            String assessmentTitle = (grade.getAssessment() != null && grade.getAssessment().getTitle() != null)
+                    ? grade.getAssessment().getTitle()
+                    : "Avaliação";
+            BigDecimal val = grade.getValue();
+
+            com.andretti101.escolaweb.dto.response.NotificationMessageDTO notif =
+                    com.andretti101.escolaweb.dto.response.NotificationMessageDTO.builder()
+                            .id(java.util.UUID.randomUUID().toString())
+                            .type("GRADE_LAUNCHED")
+                            .title(title)
+                            .message(String.format(messageTemplate, subjectName, val != null ? val.toString() : "-", assessmentTitle))
+                            .linkUrl("/aluno/notas")
+                            .timestamp(java.time.LocalDateTime.now())
+                            .build();
+
+            notificationPublisherService.notifyStudent(grade.getStudent().getId(), notif);
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(GradeServiceImpl.class)
+                    .warn("Erro ao publicar notificação de nota: {}", e.getMessage());
+        }
     }
 }

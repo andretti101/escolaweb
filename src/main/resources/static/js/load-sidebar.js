@@ -338,10 +338,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const globalNotifScript = document.createElement('script');
                     globalNotifScript.src = "/js/global-notifications.js";
                     
-                    // Espera os scripts principais carregarem
-                    stompScript.onload = () => {
-                        document.body.appendChild(globalNotifScript);
+                    // Espera ambos os scripts principais carregarem
+                    let loadedCount = 0;
+                    const onBothLoaded = () => {
+                        if (++loadedCount === 2) {
+                            document.body.appendChild(globalNotifScript);
+                        }
                     };
+                    sockjsScript.onload = onBothLoaded;
+                    stompScript.onload = onBothLoaded;
                 } else {
                     const globalNotifScript = document.createElement('script');
                     globalNotifScript.src = "/js/global-notifications.js";
