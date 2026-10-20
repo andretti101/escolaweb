@@ -299,7 +299,7 @@
                         userIdStr = payload.userId;
                     }
                 } catch (e) {
-                    console.warn('Erro ao decodificar token para obter userId:', e);
+                    console.debug('Erro ao decodificar token para obter userId:', e);
                 }
                 
                 const canEdit = item.authorId == userIdStr;

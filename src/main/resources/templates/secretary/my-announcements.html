@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     errMsg = errObj.message;
                 }
             } catch (e) {
-                console.warn('Não foi possível ler o corpo do erro:', e);
+                console.debug('Não foi possível ler o corpo do erro:', e);
             }
             throw new Error(errMsg);
         }

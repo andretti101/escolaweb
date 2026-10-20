@@ -303,7 +303,7 @@
                         activeYear = allY.find(y => y.active);
                     }
                 } catch (e) {
-                    console.warn('Erro ao carregar ano letivo ativo:', e);
+                    console.debug('Erro ao carregar ano letivo ativo:', e);
                 }
                 const queryYear = activeYear ? '?yearId=' + activeYear.id : '';
                 

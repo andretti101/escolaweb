@@ -104,7 +104,7 @@
         };
         const response = await fetch(url, { ...options, headers });
         if (response.status === 401 || response.status === 403) {
-            console.warn('Acesso negado ou sessão expirada:', url);
+            console.debug('Acesso negado ou sessão expirada:', url);
         }
         return response;
     }

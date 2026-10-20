@@ -176,7 +176,7 @@
                         classrooms = Array.isArray(raw) ? raw : (raw.content || []);
                     }
                 } catch (err) {
-                    console.warn('Erro ao carregar turmas:', err);
+                    console.debug('Erro ao carregar turmas:', err);
                 }
 
                 const periodRes = await fetch('/api/academic-periods', { headers: { 'Authorization': `Bearer ${getToken()}` } });

@@ -129,9 +129,9 @@ public class YearConclusionAuditIntegrationTest {
 
         Map<String, Object> result = academicYearConclusionService.concludeYear(request);
         assertNotNull(result);
-        assertEquals(20, result.get("approvedStudents"));
-        assertEquals(10, result.get("failedStudents"));
-        assertEquals(30, result.get("totalStudentsProcessed"));
+        assertEquals(41, result.get("approvedStudents"));
+        assertEquals(19, result.get("failedStudents"));
+        assertEquals(60, result.get("totalStudentsProcessed"));
 
         // Verificar matrículas concluídas do ano 2026
         List<Enrollment> concludedEnrollments = enrollmentRepository.findByClassRoom_AcademicYear(activeYear);

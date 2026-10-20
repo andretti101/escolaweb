@@ -29,6 +29,7 @@ const ROUTE_MAP = {
   '/direcao/editar/periodo': '/principal/edit/academic-period.html',
   '/direcao/editar/ano-letivo': '/principal/edit/academic-year.html',
   '/direcao/editar/aviso': '/principal/edit/announcement.html',
+  '/direcao/grade-horaria': '/principal/timetable.html',
   '/secretaria': '/secretary/dashboard.html',
   '/secretaria/painel': '/secretary/dashboard.html',
   '/secretaria/alunos': '/secretary/students.html',
@@ -63,6 +64,7 @@ const ROUTE_MAP = {
   '/secretaria/editar/diretor': '/secretary/edit/principal.html',
   '/secretaria/editar/secretario': '/secretary/edit/secretary.html',
   '/secretaria/editar/aviso': '/secretary/edit/announcement.html',
+  '/secretaria/grade-horaria': '/secretary/timetable.html',
   '/professor': '/teacher/dashboard.html',
   '/professor/painel': '/teacher/dashboard.html',
   '/professor/aulas': '/teacher/lessons.html',
@@ -83,6 +85,7 @@ const ROUTE_MAP = {
   '/professor/editar/aula': '/teacher/edit/lesson.html',
   '/professor/editar/avaliacao': '/teacher/edit/assessment.html',
   '/professor/editar/aviso': '/teacher/edit/announcement.html',
+  '/professor/grade-horaria': '/teacher/timetable.html',
   '/aluno': '/student/dashboard.html',
   '/aluno/painel': '/student/dashboard.html',
   '/aluno/boletim': '/student/report-card.html',
@@ -94,7 +97,8 @@ const ROUTE_MAP = {
   '/aluno/chat': '/student/chat.html',
   '/aluno/periodos-academicos': '/student/academic-periods.html',
   '/aluno/anos-letivos': '/student/academic-years.html',
-  '/aluno/configuracoes-escola': '/student/school-settings.html'
+  '/aluno/configuracoes-escola': '/student/school-settings.html',
+  '/aluno/grade-horaria': '/student/timetable.html'
 };
 
 module.exports = { ROUTE_MAP };

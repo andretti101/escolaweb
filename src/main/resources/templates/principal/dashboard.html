@@ -555,7 +555,7 @@
                     if (innerElem) innerElem.textContent = initial;
                 }
             } catch (err) {
-                console.warn('Erro ao decodificar token do usuário:', err);
+                console.debug('Erro ao decodificar token do usuário:', err);
             }
         }
 
@@ -578,7 +578,7 @@
                     const innerElem = document.getElementById('dropdownAvatarInitialInner');
                     if (innerElem) innerElem.textContent = initial;
                 })
-                .catch(err => console.warn('Não foi possível carregar dados detalhados do diretor:', err));
+                .catch(err => console.debug('Não foi possível carregar dados detalhados do diretor:', err));
         }
 
         async function fetchSafe(endpoint) {

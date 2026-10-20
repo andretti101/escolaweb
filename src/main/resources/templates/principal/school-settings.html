@@ -328,7 +328,7 @@
                 }
             }
         } catch (e) {
-            console.warn('ViaCEP falhou, tentando fallback BrasilAPI:', e);
+            console.debug('ViaCEP falhou, tentando fallback BrasilAPI:', e);
         }
 
         // 2. Fallback to BrasilAPI
@@ -349,7 +349,7 @@
                     }
                 }
             } catch (e) {
-                console.warn('BrasilAPI falhou:', e);
+                console.debug('BrasilAPI falhou:', e);
             }
         }
 

@@ -10,6 +10,7 @@ public record TeacherClassSubjectResponseDTO(
         String classRoomName,
         Integer subjectId,
         String subjectName,
+        Integer weeklyLessons,
         Integer minAssessmentsPerPeriod,
         Integer maxAssessmentsPerPeriod,
         LocalDateTime createdAt

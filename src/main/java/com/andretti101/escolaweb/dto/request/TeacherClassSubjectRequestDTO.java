@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.dto.request;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -13,6 +14,10 @@ public record TeacherClassSubjectRequestDTO(
 
         @NotNull(message = "Selecione a disciplina correspondente.")
         Integer subjectId,
+
+        @Min(value = 1, message = "O número de aulas semanais deve ser no mínimo 1.")
+        @Max(value = 4, message = "O número de aulas semanais deve ser no máximo 4.")
+        Integer weeklyLessons,
 
         @Min(value = 1, message = "O número mínimo de avaliações por período deve ser no mínimo 1.")
         Integer minAssessmentsPerPeriod,

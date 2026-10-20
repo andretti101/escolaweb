@@ -352,6 +352,20 @@ public class GlobalExceptionHandler {
     // 409 CONFLICT
     // ═════════════════════════════
 
+    @ExceptionHandler(com.andretti101.escolaweb.service.exception.ConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleConflict(
+            com.andretti101.escolaweb.service.exception.ConflictException ex, HttpServletRequest request) {
+
+        log.warn("Conflict on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiErrorResponse.of(
+                        HttpStatus.CONFLICT,
+                        ex.getMessage(),
+                        request.getRequestURI()));
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleDataIntegrity(
             DataIntegrityViolationException ex, HttpServletRequest request) {

@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     errMsg = errObj.message;
                 }
             } catch (e) {
-                console.warn('Não foi possível ler o corpo do erro:', e);
+                console.debug('Não foi possível ler o corpo do erro:', e);
             }
             throw new Error(errMsg);
         }
@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         userIdStr = payload.userId;
                     }
                 } catch (e) {
-                    console.warn('Erro ao decodificar token para obter userId:', e);
+                    console.debug('Erro ao decodificar token para obter userId:', e);
                 }
                 
                 const canEdit = item.authorId == userIdStr;

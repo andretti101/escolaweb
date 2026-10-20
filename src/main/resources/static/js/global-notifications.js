@@ -12,8 +12,6 @@
         if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') {
             if (++initAttempts < 25) {
                 setTimeout(initWebSocketNotifications, 150);
-            } else {
-                console.warn("Global Notifications: SockJS ou Stomp não foram carregados a tempo.");
             }
             return;
         }
@@ -292,7 +290,7 @@
                 processIncomingMessage(message);
             });
         }, function(error) {
-            console.warn("Global Notification WebSocket Error:", error);
+            // Silencioso em produção / navegação local
         });
     }
 

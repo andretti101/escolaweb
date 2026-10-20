@@ -50,7 +50,7 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
             throw new IllegalStateException("Esta matéria já está vinculada a esta turma (apenas um professor por matéria).");
         }
 
-        validateAssessmentLimits(tcs.getMinAssessmentsPerPeriod(), tcs.getMaxAssessmentsPerPeriod());
+        applyWeeklyLessonsAndAssessmentRule(tcs);
 
         tcs.setTeacher(teacher);
         tcs.setClassRoom(classRoom);
@@ -77,11 +77,12 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
             throw new IllegalStateException("Esta matéria já está vinculada a esta turma.");
         }
 
-        validateAssessmentLimits(incoming.getMinAssessmentsPerPeriod(), incoming.getMaxAssessmentsPerPeriod());
+        applyWeeklyLessonsAndAssessmentRule(incoming);
 
         existing.setTeacher(teacher);
         existing.setClassRoom(classRoom);
         existing.setSubject(subject);
+        existing.setWeeklyLessons(incoming.getWeeklyLessons());
         existing.setMinAssessmentsPerPeriod(incoming.getMinAssessmentsPerPeriod());
         existing.setMaxAssessmentsPerPeriod(incoming.getMaxAssessmentsPerPeriod());
 
@@ -151,6 +152,51 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
     }
 
     // ── Private helpers
+    private void applyWeeklyLessonsAndAssessmentRule(TeacherClassSubject tcs) {
+        validateAssessmentLimits(tcs.getMinAssessmentsPerPeriod(), tcs.getMaxAssessmentsPerPeriod());
+        Integer weekly = tcs.getWeeklyLessons();
+        if (weekly != null) {
+            if (weekly < 1 || weekly > 4) {
+                throw new IllegalArgumentException("O número de aulas semanais deve ser no mínimo 1 e no máximo 4.");
+            }
+            switch (weekly) {
+                case 1 -> {
+                    tcs.setMinAssessmentsPerPeriod(1);
+                    tcs.setMaxAssessmentsPerPeriod(2);
+                }
+                case 2 -> {
+                    tcs.setMinAssessmentsPerPeriod(2);
+                    tcs.setMaxAssessmentsPerPeriod(3);
+                }
+                case 3 -> {
+                    tcs.setMinAssessmentsPerPeriod(3);
+                    tcs.setMaxAssessmentsPerPeriod(4);
+                }
+                case 4 -> {
+                    tcs.setMinAssessmentsPerPeriod(4);
+                    tcs.setMaxAssessmentsPerPeriod(4);
+                }
+            }
+        } else {
+            if (tcs.getMaxAssessmentsPerPeriod() != null) {
+                if (tcs.getMaxAssessmentsPerPeriod() <= 2) {
+                    tcs.setWeeklyLessons(1);
+                } else if (tcs.getMaxAssessmentsPerPeriod() == 3) {
+                    tcs.setWeeklyLessons(2);
+                } else if (tcs.getMinAssessmentsPerPeriod() != null && tcs.getMinAssessmentsPerPeriod() >= 4) {
+                    tcs.setWeeklyLessons(4);
+                } else {
+                    tcs.setWeeklyLessons(3);
+                }
+            } else {
+                tcs.setWeeklyLessons(2);
+                tcs.setMinAssessmentsPerPeriod(2);
+                tcs.setMaxAssessmentsPerPeriod(3);
+            }
+        }
+        validateAssessmentLimits(tcs.getMinAssessmentsPerPeriod(), tcs.getMaxAssessmentsPerPeriod());
+    }
+
     private void validateAssessmentLimits(Integer min, Integer max) {
         if (min != null && max != null && min > max) {
             throw new IllegalArgumentException(

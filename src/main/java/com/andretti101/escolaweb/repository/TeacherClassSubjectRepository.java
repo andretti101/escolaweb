@@ -47,6 +47,12 @@ public interface TeacherClassSubjectRepository extends JpaRepository<TeacherClas
     List<TeacherClassSubject> findByClassRoom(ClassRoom classRoom);
 
     @EntityGraph(attributePaths = {"teacher", "classRoom", "classRoom.academicYear", "subject"})
+    List<TeacherClassSubject> findByClassRoomAndActiveTrue(ClassRoom classRoom);
+
+    @EntityGraph(attributePaths = {"teacher", "classRoom", "classRoom.academicYear", "subject"})
+    List<TeacherClassSubject> findByClassRoom_IdInAndActiveTrue(java.util.Collection<Integer> classRoomIds);
+
+    @EntityGraph(attributePaths = {"teacher", "classRoom", "classRoom.academicYear", "subject"})
     List<TeacherClassSubject> findBySubject(Subject subject);
 
     boolean existsByClassRoomAndSubject(ClassRoom classRoom, Subject subject);

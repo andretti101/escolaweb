@@ -418,7 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         errorMsg = errData.message;
                     }
                 } catch(e) {
-                    console.warn('Erro ao processar corpo do erro:', e);
+                    console.debug('Erro ao processar corpo do erro:', e);
                 }
                 showAlert(errorMsg, "danger");
             }

@@ -7,6 +7,7 @@ import com.andretti101.escolaweb.model.enums.SchoolGrade;
 import com.andretti101.escolaweb.model.enums.Shift;
 import com.andretti101.escolaweb.repository.AcademicPeriodRepository;
 import com.andretti101.escolaweb.repository.AcademicYearRepository;
+import com.andretti101.escolaweb.repository.ClassRoomRepository;
 import com.andretti101.escolaweb.service.AcademicPeriodService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +43,9 @@ class ClassRoomControllerIntegrationTest {
 
     @Autowired
     private AcademicPeriodService academicPeriodService;
+
+    @Autowired
+    private ClassRoomRepository classRoomRepository;
 
     @Test
     @DisplayName("GET /api/classrooms without test transaction (reproducing open-in-view=false)")
@@ -81,25 +85,29 @@ class ClassRoomControllerIntegrationTest {
 
         Integer createdId = objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asInt();
 
-        // Verify GET /api/classrooms/{id}
-        mockMvc.perform(get("/api/classrooms/" + createdId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(createdId)))
-                .andExpect(jsonPath("$.academicYear", is(activeYear.getYear())));
+        try {
+            // Verify GET /api/classrooms/{id}
+            mockMvc.perform(get("/api/classrooms/" + createdId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id", is(createdId)))
+                    .andExpect(jsonPath("$.academicYear", is(activeYear.getYear())));
 
-        // Verify GET /api/classrooms/academic-year/{yearId}
-        mockMvc.perform(get("/api/classrooms/academic-year/" + activeYear.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", notNullValue()));
+            // Verify GET /api/classrooms/academic-year/{yearId}
+            mockMvc.perform(get("/api/classrooms/academic-year/" + activeYear.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", notNullValue()));
 
-        // Verify PUT /api/classrooms/{id}/deactivate & /activate
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/classrooms/" + createdId + "/deactivate"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active", is(false)));
+            // Verify PUT /api/classrooms/{id}/deactivate & /activate
+            mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/classrooms/" + createdId + "/deactivate"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.active", is(false)));
 
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/classrooms/" + createdId + "/activate"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active", is(true)));
+            mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/classrooms/" + createdId + "/activate"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.active", is(true)));
+        } finally {
+            classRoomRepository.deleteById(createdId);
+        }
     }
 
     @Test

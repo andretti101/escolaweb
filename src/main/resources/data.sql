@@ -24,7 +24,7 @@
 --     - Trimestres: 1º e 2º fechados, 3º em andamento.
 --     - Bimestres: 1º, 2º e 3º fechados, 4º em andamento.
 --     A data de referência do seed é 06/10/2026: não existem aulas nem notas posteriores a essa data.
---   * 30 alunos matriculados divididos em 3 coortes de 10. Cada coorte avança
+--   * 50 alunos matriculados divididos em 5 coortes de 10 (3 regulares e 2 de tempo integral). Cada coorte avança
 --     uma série por ano (ex.: coorte A cursa 8º ano em 2024, 9º ano em 2025 e 1º ano do Ensino Médio em 2026).
 --   * 8 professores com disciplinas habilitadas (teacher_subjects — 1 ou mais matérias),
 --     1 diretora e 1 secretário.
@@ -59,7 +59,7 @@ BEGIN; -- tudo é executado em uma única transação: ou entra tudo, ou nada.
 TRUNCATE TABLE
     -- Histórico e dados acadêmicos (tabelas "folha", que dependem de outras)
     grade_history, grades, attendance_history, attendances,
-    lessons, assessments, teacher_class_subject, teacher_subjects, enrollments,
+    lessons, assessments, timetable_slots, teacher_class_subject, teacher_subjects, enrollments,
     -- Avisos e chat
     announcement_classrooms, chat_hidden_messages, chat_read_receipts,
     chat_messages, chat_message_history, announcements,
@@ -138,7 +138,7 @@ INSERT INTO academic_periods (id, closed, created_at, end_date, name, period_typ
 -- O sistema usa herança JOINED: a tabela "users" guarda os dados comuns
 -- (e-mail, nome, senha, perfil) e cada tipo de usuário tem sua própria
 -- tabela com o mesmo ID (principals, secretaries, teachers, students).
--- IDs: 1 = diretora | 2 = secretário | 3 a 10 = professores | 11 a 40 = alunos.
+-- IDs: 1 = diretora | 2 = secretário | 3 a 10 = professores | 11 a 60 = alunos.
 -- A senha de todos é 'senha123' (hash BCrypt).
 -- Tabela base (last_read_announcements = última vez que o usuário abriu os avisos; NULL = nunca leu).
 INSERT INTO users (id, role, active, created_at, email, last_read_announcements, name, password, updated_at) VALUES
@@ -181,7 +181,39 @@ INSERT INTO users (id, role, active, created_at, email, last_read_announcements,
  (37, 'STUDENT', true, '2024-01-20 10:00:00', 'henrique.moura@example.com', NULL, 'Henrique Tavares Moura', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
  (38, 'STUDENT', true, '2024-01-20 10:00:00', 'manuela.quintana@example.com', NULL, 'Manuela Bastos Quintana', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
  (39, 'STUDENT', true, '2024-01-20 10:00:00', 'daniel.cunha@example.com', NULL, 'Daniel Figueiredo Cunha', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
- (40, 'STUDENT', true, '2024-01-20 10:00:00', 'livia.torres@example.com', NULL, 'Lívia Magalhães Torres', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00');
+ (40, 'STUDENT', true, '2024-01-20 10:00:00', 'livia.torres@example.com', NULL, 'Lívia Magalhães Torres', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ -- Alunos do Ensino Integral (Coortes D e E):
+ (41, 'STUDENT', true, '2024-01-20 10:00:00', 'arthur.silva@example.com', '2026-10-02 08:00:00', 'Arthur Henrique Silva', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (42, 'STUDENT', true, '2024-01-20 10:00:00', 'helena.souza@example.com', NULL, 'Helena Beatriz Souza', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (43, 'STUDENT', true, '2024-01-20 10:00:00', 'bernardo.costa@example.com', NULL, 'Bernardo Lima Costa', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (44, 'STUDENT', true, '2024-01-20 10:00:00', 'valentina.alves@example.com', NULL, 'Valentina Rocha Alves', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (45, 'STUDENT', true, '2024-01-20 10:00:00', 'samuel.ribeiro@example.com', NULL, 'Samuel Santos Ribeiro', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (46, 'STUDENT', true, '2024-01-20 10:00:00', 'alice.moraes@example.com', NULL, 'Alice Ferreira Moraes', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (47, 'STUDENT', true, '2024-01-20 10:00:00', 'theo.martins@example.com', NULL, 'Théo Carvalho Martins', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (48, 'STUDENT', true, '2024-01-20 10:00:00', 'laura.barbosa@example.com', NULL, 'Laura Cristina Barbosa', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (49, 'STUDENT', true, '2024-01-20 10:00:00', 'davi.nogueira@example.com', NULL, 'Davi Pereira Nogueira', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (50, 'STUDENT', true, '2024-01-20 10:00:00', 'manuela.cardoso@example.com', NULL, 'Manuela Duarte Cardoso', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (51, 'STUDENT', true, '2024-01-20 10:00:00', 'miguel.teixeira@example.com', '2026-10-02 08:30:00', 'Miguel Antunes Teixeira', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (52, 'STUDENT', true, '2024-01-20 10:00:00', 'sophia.castro@example.com', NULL, 'Sophia Mendes Castro', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (53, 'STUDENT', true, '2024-01-20 10:00:00', 'gabriel.freitas@example.com', NULL, 'Gabriel Moreira Freitas', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (54, 'STUDENT', true, '2024-01-20 10:00:00', 'isabella.ramos@example.com', NULL, 'Isabella Vieira Ramos', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (55, 'STUDENT', true, '2024-01-20 10:00:00', 'lucas.monteiro@example.com', NULL, 'Lucas Guimarães Monteiro', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (56, 'STUDENT', true, '2024-01-20 10:00:00', 'clara.vasconcelos@example.com', NULL, 'Clara Farias Vasconcelos', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (57, 'STUDENT', true, '2024-01-20 10:00:00', 'enzo.carvalho@example.com', NULL, 'Enzo Gabriel Carvalho', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (58, 'STUDENT', true, '2024-01-20 10:00:00', 'cecilia.machado@example.com', NULL, 'Cecília Tavares Machado', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (59, 'STUDENT', true, '2024-01-20 10:00:00', 'joaquim.pires@example.com', NULL, 'Joaquim Lacerda Pires', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (60, 'STUDENT', true, '2024-01-20 10:00:00', 'lorena.azevedo@example.com', NULL, 'Lorena Campos Azevedo', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ -- Alunos do Ensino Noturno (Coorte F):
+ (61, 'STUDENT', true, '2024-01-20 10:00:00', 'igor.miranda@example.com', NULL, 'Igor Santos Miranda', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (62, 'STUDENT', true, '2024-01-20 10:00:00', 'priscila.barbosa@example.com', NULL, 'Priscila Costa Barbosa', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (63, 'STUDENT', true, '2024-01-20 10:00:00', 'renan.castro@example.com', NULL, 'Renan Oliveira Castro', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (64, 'STUDENT', true, '2024-01-20 10:00:00', 'tatiana.dias@example.com', NULL, 'Tatiana Ribeiro Dias', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (65, 'STUDENT', true, '2024-01-20 10:00:00', 'rodrigo.martins@example.com', NULL, 'Rodrigo Alves Martins', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (66, 'STUDENT', true, '2024-01-20 10:00:00', 'vanessa.lima@example.com', NULL, 'Vanessa Silveira Lima', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (67, 'STUDENT', true, '2024-01-20 10:00:00', 'marcelo.farias@example.com', NULL, 'Marcelo Souza Farias', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (68, 'STUDENT', true, '2024-01-20 10:00:00', 'kelly.ramos@example.com', NULL, 'Kelly Cristina Ramos', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (69, 'STUDENT', true, '2024-01-20 10:00:00', 'danilo.carvalho@example.com', NULL, 'Danilo Gomes Carvalho', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00'),
+ (70, 'STUDENT', true, '2024-01-20 10:00:00', 'monique.rocha@example.com', NULL, 'Monique Ferreira Rocha', '$2a$10$F9WLGJ8qCxZh0chJ4agUt.HIGokXts.Q6i3orhM124txzuSZb8/ES', '2024-01-20 10:00:00');
 
 -- Perfis específicos (mesmo ID da tabela users).
 INSERT INTO principals (id) VALUES (1);
@@ -229,40 +261,78 @@ INSERT INTO students (id, birth_date, guardian_phone, is_chat_blocked, own_phone
  (37, '2009-11-21', '(48) 99569-4367', false, '(48) 98261-1629', '2024027'),
  (38, '2009-04-01', '(48) 99606-4458', false, '(48) 98314-1646', '2024028'),
  (39, '2009-09-08', '(48) 99643-4549', false, '(48) 98367-1663', '2024029'),
- (40, '2009-02-15', '(48) 99680-4640', false, '(48) 98420-1680', '2024030');
+ (40, '2009-02-15', '(48) 99680-4640', false, '(48) 98420-1680', '2024030'),
+ -- Alunos do Ensino Integral (Coortes D e E):
+ (41, '2011-03-12', '(48) 99701-5001', false, NULL, '2024031'),
+ (42, '2011-07-19', '(48) 99702-5002', false, NULL, '2024032'),
+ (43, '2011-11-25', '(48) 99703-5003', false, NULL, '2024033'),
+ (44, '2011-02-14', '(48) 99704-5004', false, NULL, '2024034'),
+ (45, '2011-06-30', '(48) 99705-5005', false, NULL, '2024035'),
+ (46, '2011-09-18', '(48) 99706-5006', false, NULL, '2024036'),
+ (47, '2011-12-05', '(48) 99707-5007', false, NULL, '2024037'),
+ (48, '2011-04-22', '(48) 99708-5008', false, NULL, '2024038'),
+ (49, '2011-08-11', '(48) 99709-5009', false, NULL, '2024039'),
+ (50, '2011-10-29', '(48) 99710-5010', false, NULL, '2024040'),
+ (51, '2010-01-15', '(48) 99711-5011', false, '(48) 98501-2001', '2024041'),
+ (52, '2010-05-20', '(48) 99712-5012', false, '(48) 98502-2002', '2024042'),
+ (53, '2010-08-08', '(48) 99713-5013', false, '(48) 98503-2003', '2024043'),
+ (54, '2010-11-12', '(48) 99714-5014', false, '(48) 98504-2004', '2024044'),
+ (55, '2010-03-03', '(48) 99715-5015', false, '(48) 98505-2005', '2024045'),
+ (56, '2010-07-27', '(48) 99716-5016', false, '(48) 98506-2006', '2024046'),
+ (57, '2010-09-14', '(48) 99717-5017', false, '(48) 98507-2007', '2024047'),
+ (58, '2010-12-01', '(48) 99718-5018', false, '(48) 98508-2008', '2024048'),
+ (59, '2010-04-18', '(48) 99719-5019', false, '(48) 98509-2009', '2024049'),
+ (60, '2010-10-06', '(48) 99720-5020', false, '(48) 98510-2010', '2024050'),
+ -- Alunos do Ensino Noturno (Coorte F):
+ (61, '2008-03-10', '(48) 99801-6001', false, '(48) 98601-3001', '2024051'),
+ (62, '2008-05-15', '(48) 99802-6002', false, '(48) 98602-3002', '2024052'),
+ (63, '2008-08-20', '(48) 99803-6003', false, '(48) 98603-3003', '2024053'),
+ (64, '2008-11-25', '(48) 99804-6004', false, '(48) 98604-3004', '2024054'),
+ (65, '2008-01-30', '(48) 99805-6005', false, '(48) 98605-3005', '2024055'),
+ (66, '2008-04-12', '(48) 99806-6006', false, '(48) 98606-3006', '2024056'),
+ (67, '2008-07-18', '(48) 99807-6007', false, '(48) 98607-3007', '2024057'),
+ (68, '2008-09-22', '(48) 99808-6008', false, '(48) 98608-3008', '2024058'),
+ (69, '2008-12-05', '(48) 99809-6009', false, '(48) 98609-3009', '2024059'),
+ (70, '2008-02-28', '(48) 99810-6010', false, '(48) 98610-3010', '2024060');
 
 -- =====================================================================
 -- 4. DISCIPLINAS E HABILITAÇÃO DOS PROFESSORES (teacher_subjects)
 -- =====================================================================
--- 8 disciplinas cadastradas.
+-- 14 disciplinas cadastradas (8 da base comum para todas as turmas + 6 integradoras/aprofundamento para o Ensino Integral).
 INSERT INTO subjects (id, active, created_at, description, name, updated_at) VALUES
- (1, true, '2024-01-12 09:00:00', 'Leitura, interpretação, gramática e produção textual', 'Língua Portuguesa', '2024-01-12 09:00:00'),
- (2, true, '2024-01-12 09:00:00', 'Aritmética, álgebra, geometria e raciocínio lógico', 'Matemática', '2024-01-12 09:00:00'),
- (3, true, '2024-01-12 09:00:00', 'História do Brasil e geral', 'História', '2024-01-12 09:00:00'),
- (4, true, '2024-01-12 09:00:00', 'Geografia física, humana e econômica', 'Geografia', '2024-01-12 09:00:00'),
- (5, true, '2024-01-12 09:00:00', 'Ciências naturais, biologia, física e química', 'Ciências', '2024-01-12 09:00:00'),
- (6, true, '2024-01-12 09:00:00', 'Língua inglesa: leitura, escrita e conversação', 'Inglês', '2024-01-12 09:00:00'),
- (7, true, '2024-01-12 09:00:00', 'Práticas corporais, esportes e saúde', 'Educação Física', '2024-01-12 09:00:00'),
- (8, true, '2024-01-12 09:00:00', 'Artes visuais, música e expressão cultural', 'Artes', '2024-01-12 09:00:00');
+ (1,  true, '2024-01-12 09:00:00', 'Leitura, interpretação, gramática e produção textual', 'Língua Portuguesa', '2024-01-12 09:00:00'),
+ (2,  true, '2024-01-12 09:00:00', 'Aritmética, álgebra, geometria e raciocínio lógico', 'Matemática', '2024-01-12 09:00:00'),
+ (3,  true, '2024-01-12 09:00:00', 'História do Brasil e geral', 'História', '2024-01-12 09:00:00'),
+ (4,  true, '2024-01-12 09:00:00', 'Geografia física, humana e econômica', 'Geografia', '2024-01-12 09:00:00'),
+ (5,  true, '2024-01-12 09:00:00', 'Ciências naturais, biologia, física e química', 'Ciências', '2024-01-12 09:00:00'),
+ (6,  true, '2024-01-12 09:00:00', 'Língua inglesa: leitura, escrita e conversação', 'Inglês', '2024-01-12 09:00:00'),
+ (7,  true, '2024-01-12 09:00:00', 'Práticas corporais, esportes e saúde', 'Educação Física', '2024-01-12 09:00:00'),
+ (8,  true, '2024-01-12 09:00:00', 'Artes visuais, música e expressão cultural', 'Artes', '2024-01-12 09:00:00'),
+ (9,  true, '2024-01-12 09:00:00', 'Cinemática, dinâmica, termologia, óptica e eletromagnetismo', 'Física', '2024-01-12 09:00:00'),
+ (10, true, '2024-01-12 09:00:00', 'Química geral, físico-química, química orgânica e experimental', 'Química', '2024-01-12 09:00:00'),
+ (11, true, '2024-01-12 09:00:00', 'Citologia, ecologia, genética, evolução e fisiologia humana', 'Biologia', '2024-01-12 09:00:00'),
+ (12, true, '2024-01-12 09:00:00', 'Ética, teoria do conhecimento, lógica e história da filosofia', 'Filosofia', '2024-01-12 09:00:00'),
+ (13, true, '2024-01-12 09:00:00', 'Cidadania, cultura, movimentos sociais e mundo do trabalho', 'Sociologia', '2024-01-12 09:00:00'),
+ (14, true, '2024-01-12 09:00:00', 'Planejamento pessoal, protagonismo juvenil e orientação acadêmica', 'Projeto de Vida', '2024-01-12 09:00:00');
 
 -- Vínculo entre professores e disciplinas habilitadas (teacher_subjects).
 -- Um professor pode ter uma ou mais disciplinas habilitadas no seu perfil:
---   - Mariana (3)  : Língua Portuguesa (1) e Inglês (6)
---   - Carlos (4)   : Matemática (2) e Ciências (5)
---   - Patrícia (5) : História (3) e Geografia (4)
---   - Roberto (6)  : Geografia (4) e História (3)
---   - Fernanda (7) : Ciências (5)
---   - Juliana (8)  : Inglês (6) e Artes (8)
---   - Marcos (9)   : Educação Física (7)
+--   - Mariana (3)  : Língua Portuguesa (1), Inglês (6) e Projeto de Vida (14)
+--   - Carlos (4)   : Matemática (2), Ciências (5) e Física (9)
+--   - Patrícia (5) : História (3), Geografia (4) e Filosofia (12)
+--   - Roberto (6)  : Geografia (4), História (3) e Sociologia (13)
+--   - Fernanda (7) : Ciências (5) e Biologia (11)
+--   - Juliana (8)  : Inglês (6), Artes (8) e Projeto de Vida (14)
+--   - Marcos (9)   : Educação Física (7) e Química (10)
 --   - Luciana (10) : Artes (8) e Língua Portuguesa (1)
 INSERT INTO teacher_subjects (teacher_id, subject_id) VALUES
- (3, 1), (3, 6),
- (4, 2), (4, 5),
- (5, 3), (5, 4),
- (6, 4), (6, 3),
- (7, 5),
- (8, 6), (8, 8),
- (9, 7),
+ (3, 1), (3, 6), (3, 14),
+ (4, 2), (4, 5), (4, 9),
+ (5, 3), (5, 4), (5, 12),
+ (6, 4), (6, 3), (6, 13),
+ (7, 5), (7, 11),
+ (8, 6), (8, 8), (8, 14),
+ (9, 7), (9, 10),
  (10, 8), (10, 1);
 
 -- =====================================================================
@@ -287,14 +357,25 @@ INSERT INTO class_rooms (id, active, created_at, number, period_type, school_gra
  (6, false, '2025-01-20 09:00:00', 'M2-A', 'TRIMESTER', 'MEDIO_2',        'AFTERNOON', '2025-01-20 09:00:00', 2),
  (7, true,  '2026-01-20 09:00:00', 'M1-A', 'TRIMESTER', 'MEDIO_1',        'MORNING',   '2026-01-20 09:00:00', 3),
  (8, true,  '2026-01-20 09:00:00', 'M2-A', 'BIMESTER',  'MEDIO_2',        'MORNING',   '2026-01-20 09:00:00', 3),
- (9, true,  '2026-01-20 09:00:00', 'M3-A', 'TRIMESTER', 'MEDIO_3',        'AFTERNOON', '2026-01-20 09:00:00', 3);
+ (9, true,  '2026-01-20 09:00:00', 'M3-A', 'TRIMESTER', 'MEDIO_3',        'AFTERNOON', '2026-01-20 09:00:00', 3),
+ -- Turmas de Tempo Integral:
+ (10, false, '2024-01-20 09:00:00', 'F8-INT', 'TRIMESTER', 'FUNDAMENTAL_8', 'FULL_TIME', '2024-01-20 09:00:00', 1),
+ (11, false, '2024-01-20 09:00:00', 'F9-INT', 'BIMESTER',  'FUNDAMENTAL_9', 'FULL_TIME', '2024-01-20 09:00:00', 1),
+ (12, false, '2025-01-20 09:00:00', 'F9-INT', 'TRIMESTER', 'FUNDAMENTAL_9', 'FULL_TIME', '2025-01-20 09:00:00', 2),
+ (13, false, '2025-01-20 09:00:00', 'M1-INT', 'BIMESTER',  'MEDIO_1',        'FULL_TIME', '2025-01-20 09:00:00', 2),
+ (14, true,  '2026-01-20 09:00:00', 'M1-INT', 'TRIMESTER', 'MEDIO_1',        'FULL_TIME', '2026-01-20 09:00:00', 3),
+ (15, true,  '2026-01-20 09:00:00', 'M2-INT', 'BIMESTER',  'MEDIO_2',        'FULL_TIME', '2026-01-20 09:00:00', 3),
+ -- Turmas de Turno Noturno (Ensino Médio Noturno / EJA):
+ (16, false, '2024-01-20 09:00:00', 'M1-NOT', 'TRIMESTER', 'MEDIO_1',        'EVENING',   '2024-01-20 09:00:00', 1),
+ (17, false, '2025-01-20 09:00:00', 'M2-NOT', 'TRIMESTER', 'MEDIO_2',        'EVENING',   '2025-01-20 09:00:00', 2),
+ (18, true,  '2026-01-20 09:00:00', 'M3-NOT', 'TRIMESTER', 'MEDIO_3',        'EVENING',   '2026-01-20 09:00:00', 3);
 
 -- =====================================================================
 -- 6. MATRÍCULAS
 -- =====================================================================
--- Cada aluno (IDs 11 a 40) é matriculado, em cada ano, na turma da sua coorte:
---   coorte = (id_do_aluno - 11) / 10   (divisão inteira: 0, 1 ou 2)
---   id_da_turma = (índice do ano) * 3 + coorte + 1
+-- Cada aluno (IDs 11 a 60) é matriculado, em cada ano, na turma da sua coorte:
+--   - Coortes Regulares A, B, C (IDs 11 a 40): turmas 1 a 9
+--   - Coortes Integrais D e E (IDs 41 a 60): turmas 10 a 15
 -- Situação geral: APPROVED nos anos encerrados e PENDING em 2026 (o ano
 -- ainda não terminou). Matrículas de anos encerrados ficam inativas.
 INSERT INTO enrollments (active, created_at, enrollment_date, general_situation, class_room_id, student_id)
@@ -309,21 +390,84 @@ CROSS JOIN generate_series(0, 2) AS y(i)                 -- y.i = índice do ano
 JOIN class_rooms c ON c.id = y.i * 3 + ((s.id - 11) / 10) + 1
 JOIN academic_years ay ON ay.id = c.academic_year_id
 WHERE s.id <= 40
-ORDER BY ay.year, s.id;
+UNION ALL
+SELECT ay.active,
+       ay.start_date::timestamp - interval '15 days',
+       ay.start_date,
+       CASE WHEN ay.active THEN 'PENDING' ELSE 'APPROVED' END,
+       c.id,
+       s.id
+FROM students s
+CROSS JOIN generate_series(0, 2) AS y(i)
+JOIN class_rooms c ON c.id = 10 + y.i * 2 + ((s.id - 41) / 10)
+JOIN academic_years ay ON ay.id = c.academic_year_id
+WHERE s.id >= 41 AND s.id <= 60
+UNION ALL
+SELECT ay.active,
+       ay.start_date::timestamp - interval '15 days',
+       ay.start_date,
+       CASE WHEN ay.active THEN 'PENDING' ELSE 'APPROVED' END,
+       c.id,
+       s.id
+FROM students s
+CROSS JOIN generate_series(0, 2) AS y(i)
+JOIN class_rooms c ON c.id = 16 + y.i
+JOIN academic_years ay ON ay.id = c.academic_year_id
+WHERE s.id >= 61 AND s.id <= 70
+ORDER BY 1, 6;
 
 -- =====================================================================
 -- 7. ATRIBUIÇÃO PROFESSOR x TURMA x DISCIPLINA
 -- =====================================================================
--- Liga cada turma às 8 disciplinas e ao professor responsável
--- (72 registros = 9 turmas x 8 disciplinas). Define também os limites de
--- avaliações por período: mínimo 2 e máximo 3.
-INSERT INTO teacher_class_subject (created_at, max_assessments_per_period, min_assessments_per_period, class_room_id, subject_id, teacher_id, active)
-SELECT ay.start_date::timestamp - interval '10 days', 3, 2, c.id, sb.id,
-       sb.id + 2,                                        -- professor da disciplina (IDs 3 a 10)
-       ay.active
+-- Turmas regulares (MORNING / AFTERNOON): 8 disciplinas com carga variada (4, 4, 4, 3, 3, 3, 2, 2)
+-- totalizando exatamente 25 aulas semanais (5 aulas por dia).
+-- Turmas integrais (FULL_TIME): 14 disciplinas com carga variada (oito de 4 aulas e seis de 3 aulas)
+-- totalizando exatamente 50 aulas semanais (10 aulas por dia: 5 pela manhã e 5 à tarde).
+-- Os limites de avaliações por período seguem a regra:
+--   1 aula -> mín 1, máx 2 | 2 aulas -> mín 2, máx 3 | 3 aulas -> mín 3, máx 4 | 4 aulas -> mín 4, máx 4.
+INSERT INTO teacher_class_subject (created_at, max_assessments_per_period, min_assessments_per_period, class_room_id, subject_id, teacher_id, active, weekly_lessons)
+SELECT ay.start_date::timestamp - interval '10 days',
+       CASE cfg.wl
+           WHEN 1 THEN 2
+           WHEN 2 THEN 3
+           ELSE 4
+       END AS max_assessments,
+       cfg.wl AS min_assessments,
+       c.id,
+       sb.id,
+       CASE sb.id
+           WHEN 1  THEN 3
+           WHEN 2  THEN 4
+           WHEN 3  THEN 5
+           WHEN 4  THEN 6
+           WHEN 5  THEN 7
+           WHEN 6  THEN 8
+           WHEN 7  THEN 9
+           WHEN 8  THEN 10
+           WHEN 9  THEN 4
+           WHEN 10 THEN 9
+           WHEN 11 THEN 7
+           WHEN 12 THEN 5
+           WHEN 13 THEN 6
+           WHEN 14 THEN 8
+       END AS teacher_id,
+       ay.active,
+       cfg.wl
 FROM class_rooms c
 JOIN academic_years ay ON ay.id = c.academic_year_id
-CROSS JOIN subjects sb
+JOIN subjects sb ON (c.shift = 'FULL_TIME' AND sb.id <= 14) OR (c.shift <> 'FULL_TIME' AND sb.id <= 8)
+CROSS JOIN LATERAL (
+    SELECT CASE
+        WHEN c.shift = 'FULL_TIME' THEN
+            CASE WHEN sb.id IN (1, 2, 3, 4, 5, 6, 9, 10) THEN 4 ELSE 3 END
+        ELSE
+            CASE
+                WHEN sb.id IN (1, 2, 5) THEN 4
+                WHEN sb.id IN (3, 4, 6) THEN 3
+                ELSE 2
+            END
+    END AS wl
+) cfg
 ORDER BY c.id, sb.id;
 
 -- =====================================================================
@@ -410,6 +554,60 @@ SELECT
             'Oficina prática de criação: releitura visual e composição artística',
             'Apresentação do portfólio artístico e reflexão crítica do período'
         ])[n.i + 1]
+        -- Física
+        WHEN 9 THEN (ARRAY[
+            'Cinemática escalar e vetorial: movimento uniforme e uniformemente variado',
+            'Leis de Newton e aplicações dinâmicas em sistemas mecânicos',
+            'Trabalho, potência e conservação da energia mecânica',
+            'Termometria, calorimetria e estudo dos gases ideais',
+            'Óptica geométrica: reflexão, refração e formação de imagens',
+            'Eletrodinâmica: circuitos elétricos, resistores e leis de Ohm'
+        ])[n.i + 1]
+        -- Química
+        WHEN 10 THEN (ARRAY[
+            'Estrutura atômica, tabela periódica e propriedades periódicas',
+            'Ligações químicas: iônica, covalente, metálica e forças intermoleculares',
+            'Funções inorgânicas: ácidos, bases, sais e óxidos no cotidiano',
+            'Estequiometria e leis ponderais das reações químicas',
+            'Termoquímica: entalpia de reação e processos endotérmicos e exotérmicos',
+            'Prática laboratorial de titulação, soluções e equilíbrio químico'
+        ])[n.i + 1]
+        -- Biologia
+        WHEN 11 THEN (ARRAY[
+            'Citologia: membrana plasmática, organelas citoplasmáticas e núcleo',
+            'Bioenergética celular: fotossíntese, quimiossíntese e respiração',
+            'Ecologia: cadeias alimentares, ciclos biogeoquímicos e biomas',
+            'Genética molecular: replicação do DNA, transcrição e síntese proteica',
+            'Fisiologia humana: sistemas cardiovascular, respiratório e nervoso',
+            'Seminário integrador de biodiversidade e conservação ambiental'
+        ])[n.i + 1]
+        -- Filosofia
+        WHEN 12 THEN (ARRAY[
+            'Do mito à razão: o nascimento da filosofia na Grécia Antiga',
+            'Teoria do conhecimento: racionalismo, empirismo e criticismo kantiano',
+            'Ética e filosofia moral: virtude em Aristóteles e dever em Kant',
+            'Filosofia política: teorias contratualistas e democracia contemporânea',
+            'Filosofia da ciência: método científico, paradigmas e tecnologia',
+            'Debate filosófico sobre bioética, liberdade e direitos humanos'
+        ])[n.i + 1]
+        -- Sociologia
+        WHEN 13 THEN (ARRAY[
+            'Socialização, instituições sociais e construção da identidade',
+            'Clássicos da sociologia: Durkheim, Weber e Marx em perspectiva',
+            'Cultura, indústria cultural e meios de comunicação de massa',
+            'Estratificação social, desigualdades e mundo do trabalho',
+            'Cidadania, movimentos sociais e participação política no Brasil',
+            'Roda de conversa e análise sociológica de problemas contemporâneos'
+        ])[n.i + 1]
+        -- Projeto de Vida
+        WHEN 14 THEN (ARRAY[
+            'Autoconhecimento, valores pessoais e construção de identidade juvenil',
+            'Competências socioemocionais: empatia, resiliência e colaboração',
+            'Organização de rotina de estudos e metodologias de aprendizagem ativa',
+            'Exploração de carreiras, mundo do trabalho e vocação profissional',
+            'Protagonismo estudantil e elaboração de projetos de impacto comunitário',
+            'Autoavaliação da trajetória escolar e plano de metas para o futuro'
+        ])[n.i + 1]
         ELSE sb.name || ': Aula temática ' || (n.i + 1)
     END,
     x.d::timestamp + interval '8 hours',
@@ -437,12 +635,12 @@ ORDER BY t.id, p.start_date, n.i;
 -- =====================================================================
 -- Para cada aula, uma presença para cada aluno matriculado na turma.
 -- O status é definido de forma determinística:
---   - Alunos com reprovação por falta (19, 29, 40) em 2026: ~42% ABSENT (frequência ~58% < 75%)
+--   - Alunos com reprovação por falta (19, 29, 40, 49, 59) em 2026: ~42% ABSENT (frequência ~58% < 75%)
 --   - Demais alunos: ~91% PRESENT, ~5% ABSENT, ~4% JUSTIFIED_ABSENCE (frequência > 90%)
 INSERT INTO attendances (created_at, status, updated_at, lesson_id, student_id, active)
 SELECT l.created_at,
        CASE 
-         WHEN e.student_id IN (19, 29, 40) AND l.lesson_date >= DATE '2026-01-01' THEN
+         WHEN e.student_id IN (19, 29, 40, 49, 59, 69) AND l.lesson_date >= DATE '2026-01-01' THEN
            CASE WHEN h.v < 42 THEN 'ABSENT' WHEN h.v < 92 THEN 'PRESENT' ELSE 'JUSTIFIED_ABSENCE' END
          WHEN h.v < 91 THEN 'PRESENT'
          WHEN h.v < 96 THEN 'ABSENT'
@@ -475,16 +673,13 @@ UPDATE attendances SET updated_at = created_at + interval '2 days' WHERE status 
 -- =====================================================================
 -- 10. AVALIAÇÕES
 -- =====================================================================
--- 2 avaliações por vínculo professor/turma/disciplina em cada trimestre,
--- respeitando a nomenclatura pedagógica contextualizada de cada disciplina:
---   * 1ª avaliação: PROVA (EXAM) com títulos autênticos por disciplina e trimestre;
---   * 2ª avaliação: TRABALHO (ASSIGNMENT) no 1º e 3º trimestres ou
---     VISTO DE CADERNO / ATIVIDADE PRÁTICA (NOTEBOOK) no 2º trimestre.
--- Em 2026, a 2ª avaliação do 3º trimestre ainda está no futuro (novembro).
+-- Gera avaliações por vínculo professor/turma/disciplina em cada período,
+-- respeitando o mínimo exigido (min_assessments_per_period de 2 a 4 conforme aulas semanais)
+-- e a nomenclatura pedagógica contextualizada de cada disciplina.
 INSERT INTO assessments (assessment_type, created_at, assessment_date, description, title, updated_at, period_id, teacher_class_subject_id, active)
 SELECT k.typ,
        p.start_date::timestamp + interval '7 days',
-       p.start_date + k.off + ((t.subject_id - 1) % 5),
+       p.start_date + k.off + ((t.subject_id - 1) % 4),
        CASE k.n
            WHEN 1 THEN 
                CASE sb.id
@@ -496,7 +691,7 @@ SELECT k.typ,
                    WHEN 6 THEN 'Reading comprehension test, lexical analysis and grammar accuracy'
                    WHEN 7 THEN 'Avaliação teórica de regras desportivas, fisiologia e hábitos saudáveis'
                    WHEN 8 THEN 'Análise estética, história da arte e manifestações culturais brasileiras'
-                   ELSE 'Avaliação somativa formal do trimestre'
+                   ELSE 'Avaliação somativa formal de ' || sb.name
                END
            ELSE 
                CASE 
@@ -510,7 +705,7 @@ SELECT k.typ,
                            WHEN 6 THEN 'Oral presentation and video storytelling in English'
                            WHEN 7 THEN 'Circuito motor e planejamento de torneio interclasses'
                            WHEN 8 THEN 'Portfólio de expressão artística e releitura contemporânea'
-                           ELSE 'Trabalho bimestral de pesquisa aplicada'
+                           ELSE 'Trabalho prático aplicado de ' || sb.name
                        END
                    ELSE 'Visto do caderno pedagógico, anotações de aula e resolução de listas semanais'
                END
@@ -526,23 +721,23 @@ SELECT k.typ,
                     WHEN 6 THEN 'English Written Assessment: Unit Progress (' || p.name || ')'
                     WHEN 7 THEN 'Avaliação Teórica de Educação Física (' || p.name || ')'
                     WHEN 8 THEN 'Avaliação de História da Arte e Expressão (' || p.name || ')'
-                    ELSE 'Prova Escrita (' || p.name || ')'
+                    ELSE 'Prova Escrita de ' || sb.name || ' (' || p.name || ')'
                 END
             ELSE 
                 CASE 
                     WHEN k.typ = 'ASSIGNMENT' THEN 
                         CASE sb.id
-                            WHEN 1 THEN 'Redação e Seminário de Literatura (' || p.name || ')'
-                            WHEN 2 THEN 'Projeto Prático de Estatística e Resolução de Problemas (' || p.name || ')'
-                            WHEN 3 THEN 'Pesquisa Documental e Apresentação em Grupo (' || p.name || ')'
-                            WHEN 4 THEN 'Estudo de Caso Socioambiental (' || p.name || ')'
-                            WHEN 5 THEN 'Relatório Investigativo de Laboratório (' || p.name || ')'
-                            WHEN 6 THEN 'Speaking Project & Cultural Essay (' || p.name || ')'
-                            WHEN 7 THEN 'Avaliação Prática de Habilidades Esportivas (' || p.name || ')'
-                            WHEN 8 THEN 'Painel Artístico e Portfólio de Criação (' || p.name || ')'
-                            ELSE 'Trabalho Prático (' || p.name || ')'
+                            WHEN 1 THEN 'Redação e Seminário de Literatura ' || k.n || ' (' || p.name || ')'
+                            WHEN 2 THEN 'Projeto Prático de Resolução de Problemas ' || k.n || ' (' || p.name || ')'
+                            WHEN 3 THEN 'Pesquisa Documental e Seminário ' || k.n || ' (' || p.name || ')'
+                            WHEN 4 THEN 'Estudo de Caso Socioambiental ' || k.n || ' (' || p.name || ')'
+                            WHEN 5 THEN 'Relatório Investigativo de Laboratório ' || k.n || ' (' || p.name || ')'
+                            WHEN 6 THEN 'Speaking Project & Cultural Essay ' || k.n || ' (' || p.name || ')'
+                            WHEN 7 THEN 'Avaliação Prática de Habilidades Esportivas ' || k.n || ' (' || p.name || ')'
+                            WHEN 8 THEN 'Painel Artístico e Portfólio de Criação ' || k.n || ' (' || p.name || ')'
+                            ELSE 'Trabalho Prático ' || k.n || ' de ' || sb.name || ' (' || p.name || ')'
                         END
-                    ELSE 'Acompanhamento de Caderno e Listas (' || p.name || ')'
+                    ELSE 'Acompanhamento de Caderno e Listas ' || k.n || ' (' || p.name || ')'
                 END
         END,
         p.start_date::timestamp + interval '7 days',
@@ -553,10 +748,21 @@ FROM teacher_class_subject t
 JOIN class_rooms c ON c.id = t.class_room_id
 JOIN subjects sb ON sb.id = t.subject_id
 JOIN academic_periods p ON p.academic_year_id = c.academic_year_id AND p.period_type = c.period_type
+CROSS JOIN generate_series(1, GREATEST(2, COALESCE(t.min_assessments_per_period, 2))) AS gs(n)
 CROSS JOIN LATERAL (
-    VALUES (1, 'EXAM', CASE WHEN p.id = 21 THEN 2 ELSE 28 END),
-           (2, CASE WHEN (p.id % 2 = 1) THEN 'ASSIGNMENT' ELSE 'NOTEBOOK' END, 63)
-) AS k(n, typ, off)
+    SELECT gs.n AS n,
+           CASE
+               WHEN gs.n = 1 THEN 'EXAM'
+               WHEN gs.n = 2 THEN CASE WHEN (p.id % 2 = 1) THEN 'ASSIGNMENT' ELSE 'NOTEBOOK' END
+               WHEN gs.n = 3 THEN 'ASSIGNMENT'
+               ELSE 'NOTEBOOK'
+           END AS typ,
+           CASE
+               WHEN p.id = 21 THEN (gs.n - 1)
+               WHEN p.id = 9  THEN (gs.n * 6)
+               ELSE (gs.n * 12)
+           END AS off
+) AS k
 ORDER BY t.id, p.id, k.n;
 
 -- =====================================================================
@@ -599,15 +805,15 @@ CROSS JOIN LATERAL (
 
         -- 2026: Ano ativo em andamento
         -- 1. Matematicamente Aprovados nos períodos fechados
-        WHEN e.student_id IN (11, 12, 13, 21, 22, 23, 31, 32, 33) THEN
+        WHEN e.student_id IN (11, 12, 13, 21, 22, 23, 31, 32, 33, 41, 42, 43, 51, 52, 53, 61, 62, 63) THEN
           9.0 + ((e.student_id * 13 + a.id * 7) % 11) / 10.0
 
         -- 2. Matematicamente Reprovados nos períodos fechados por NOTA
-        WHEN e.student_id IN (17, 27, 37, 38) THEN
+        WHEN e.student_id IN (17, 27, 37, 38, 47, 57, 67) THEN
           2.5 + ((e.student_id * 11 + a.id * 5) % 11) / 10.0
 
         -- 3. Reprovados no período atual por NOTA (períodos fechados medianos ~5.0, atual baixo ~3.5)
-        WHEN e.student_id IN (18, 28, 39) THEN
+        WHEN e.student_id IN (18, 28, 39, 48, 58, 68) THEN
           CASE 
             WHEN ap.closed THEN
               4.8 + ((e.student_id * 7 + a.id * 3) % 9) / 10.0
@@ -616,7 +822,7 @@ CROSS JOIN LATERAL (
           END
 
         -- 4. Reprovados no período atual por FALTA (Notas boas ~7.5, frequência insuficiente)
-        WHEN e.student_id IN (19, 29, 40) THEN
+        WHEN e.student_id IN (19, 29, 40, 49, 59, 69) THEN
           7.0 + ((e.student_id * 17 + a.id * 11) % 15) / 10.0
 
         -- 5. Aprovados no período atual (períodos fechados regulares ~6.8, atual garantindo aprovação ~8.0)
@@ -682,19 +888,19 @@ INSERT INTO announcements (id, archived, created_at, event_date, message, target
 -- Turmas que recebem cada aviso (turmas 1 a 3 = 2024; 4 a 6 = 2025; 7 a 9 = 2026).
 -- Os avisos para professores (4, 6 e 10) não são ligados a turmas.
 INSERT INTO announcement_classrooms (announcement_id, class_room_id) VALUES
- (1, 4), (1, 5), (1, 6),
- (2, 4), (2, 5), (2, 6),
- (3, 7), (3, 8), (3, 9),
- (5, 7), (5, 8), (5, 9),
- (7, 7), (7, 8), (7, 9),
- (8, 1), (8, 2), (8, 3),
- (9, 1), (9, 2), (9, 3);
+ (1, 4), (1, 5), (1, 6), (1, 12), (1, 13), (1, 17),
+ (2, 4), (2, 5), (2, 6), (2, 12), (2, 13), (2, 17),
+ (3, 7), (3, 8), (3, 9), (3, 14), (3, 15), (3, 18),
+ (5, 7), (5, 8), (5, 9), (5, 14), (5, 15), (5, 18),
+ (7, 7), (7, 8), (7, 9), (7, 14), (7, 15), (7, 18),
+ (8, 1), (8, 2), (8, 3), (8, 10), (8, 11), (8, 16),
+ (9, 1), (9, 2), (9, 3), (9, 10), (9, 11), (9, 16);
 
 -- =====================================================================
 -- 13. CHAT
 -- =====================================================================
--- Mensagens dos chats das turmas 7 (coorte A) e 8 (coorte B) e do chat
--- global dos professores (is_global_teacher_chat = true, sem turma).
+-- Mensagens dos chats das turmas 7 (coorte A), 8 (coorte B), 14 (coorte D Integral),
+-- 15 (coorte E Integral), 18 (coorte F Noturno) e do chat global dos professores (is_global_teacher_chat = true, sem turma).
 --   replied_to_id    -> mensagem respondida (resposta encadeada);
 --   is_edited        -> mensagem editada pelo autor;
 --   is_deleted       -> mensagem apagada pelo autor;
@@ -728,7 +934,19 @@ INSERT INTO chat_messages (id, archived, content, deleted_by_admin, is_deleted, 
  (25, true, 'Boas-vindas ao 1º ano do Ensino Médio de 2024! Nosso cronograma está disponível.', false, false, false, false, '2024-02-19 08:30:00', 3, NULL, 4),
  (26, true, 'Professor, os livros didáticos serão entregues nesta semana?', false, false, false, false, '2024-02-19 08:45:00', 3, 25, 31),
  (27, true, 'Turma do 2º Médio de 2025: projeto interdisciplinar com entrega no final do trimestre.', false, false, false, false, '2025-03-12 10:00:00', 6, NULL, 5),
- (28, true, 'Combinado, professora Patrícia! Já formamos os grupos de pesquisa.', false, false, false, false, '2025-03-12 10:20:00', 6, 27, 31);
+ (28, true, 'Combinado, professora Patrícia! Já formamos os grupos de pesquisa.', false, false, false, false, '2025-03-12 10:20:00', 6, 27, 31),
+ (29, false, 'Bom dia a todos da 1ª série do Ensino Médio Integral! Sejam bem-vindos.', false, false, false, false, '2026-09-28 07:40:00', 14, NULL, 3),
+ (30, false, 'Bom dia, professora Mariana! Ansioso pelos projetos do contraturno.', false, false, false, false, '2026-09-28 07:48:00', 14, 29, 41),
+ (31, false, 'Excelente! Teremos oficinas práticas de redação e clube de leitura.', false, false, false, false, '2026-09-28 07:55:00', 14, 30, 3),
+ (32, false, 'Turma do 2º Médio Integral, lembrete: entrega do relatório de Ciências na sexta.', false, false, false, false, '2026-10-01 13:00:00', 15, NULL, 4),
+ (33, false, 'Professor Carlos, o relatório pode incluir gráficos comparativos?', false, false, false, false, '2026-10-01 13:15:00', 15, 32, 51),
+ (34, false, 'Com certeza, Miguel! Gráficos enriquecerão muito a análise.', false, false, false, false, '2026-10-01 13:20:00', 15, 33, 4),
+ (35, true,  'Boas-vindas à primeira turma de Ensino Integral de 2024!', false, false, false, false, '2024-02-15 08:00:00', 10, NULL, 3),
+ (36, true,  'Iniciando o ano letivo de 2025 para a turma de Ensino Médio Integral.', false, false, false, false, '2025-02-18 08:00:00', 13, NULL, 4),
+ (37, false, 'Boa noite a todos da 3ª série do Ensino Médio Noturno! Sejam bem-vindos.', false, false, false, false, '2026-09-28 18:50:00', 18, NULL, 3),
+ (38, false, 'Boa noite, professora Mariana! Ansiosos para a reta final do ano.', false, false, false, false, '2026-09-28 18:55:00', 18, 37, 61),
+ (39, true,  'Boas-vindas ao 1º ano do Ensino Médio Noturno de 2024!', false, false, false, false, '2024-02-15 19:00:00', 16, NULL, 3),
+ (40, true,  'Início do ano letivo de 2025 para a turma do 2º Médio Noturno.', false, false, false, false, '2025-02-18 19:00:00', 17, NULL, 4);
 
 -- Mensagem ocultada por um usuário apenas para si mesmo (aluno 15 ocultou a mensagem 4).
 INSERT INTO chat_hidden_messages (id, hidden_at, message_id, user_id) VALUES
@@ -740,7 +958,9 @@ INSERT INTO chat_read_receipts (id, is_global_teacher_chat, last_read_at, last_r
  (1, false, '2026-09-28 08:10:00', 3, 7, 11),
  (2, false, '2026-10-01 13:30:00', 6, 8, 4),
  (3, true,  '2026-10-02 16:25:00', 8, NULL, 3),
- (4, true,  '2026-10-02 16:25:00', 8, NULL, 1);
+ (4, true,  '2026-10-02 16:25:00', 8, NULL, 1),
+ (5, false, '2026-09-28 08:00:00', 31, 14, 41),
+ (6, false, '2026-10-01 13:30:00', 34, 15, 51);
 
 -- Histórico de conversa com o assistente (memória de chat): uma pergunta do
 -- aluno 11 e a resposta do assistente.
@@ -749,7 +969,14 @@ INSERT INTO chat_message_history (content, conversation_id, created_at, message_
  ('A média é calculada a partir das notas das avaliações do trimestre. Confira as notas na aba de avaliações.', 'user-11', '2026-10-03 20:00:05', 'ASSISTANT');
 
 -- =====================================================================
--- 14. SINCRONIZAÇÃO DAS SEQUENCES
+-- 14. GRADE HORÁRIA SEMANAL (timetable_slots)
+-- =====================================================================
+-- A tabela timetable_slots e mantida inicialmente limpa no seed para que
+-- a Direcao possa demonstrar a geracao automatica da grade horaria escolar
+-- ao vivo durante a apresentacao do projeto.
+
+-- =====================================================================
+-- 15. SINCRONIZAÇÃO DAS SEQUENCES
 -- =====================================================================
 -- Nas tabelas em que os IDs foram informados manualmente, a sequence
 -- precisa ser ajustada para o maior ID existente. Sem isso, o próximo

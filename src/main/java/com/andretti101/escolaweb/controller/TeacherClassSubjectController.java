@@ -175,6 +175,7 @@ public class TeacherClassSubjectController {
         tcs.setTeacher(teacher);
         tcs.setClassRoom(classRoom);
         tcs.setSubject(subject);
+        tcs.setWeeklyLessons(dto.weeklyLessons());
         tcs.setMinAssessmentsPerPeriod(dto.minAssessmentsPerPeriod());
         tcs.setMaxAssessmentsPerPeriod(dto.maxAssessmentsPerPeriod());
         return tcs;
@@ -189,6 +190,7 @@ public class TeacherClassSubjectController {
                 tcs.getClassRoom().getName(),
                 tcs.getSubject().getId(),
                 tcs.getSubject().getName(),
+                tcs.getWeeklyLessons(),
                 tcs.getMinAssessmentsPerPeriod(),
                 tcs.getMaxAssessmentsPerPeriod(),
                 tcs.getCreatedAt()

@@ -405,4 +405,121 @@ class TeacherClassSubjectIntegrationTest {
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @WithMockUser(roles = "SECRETARY")
+    @DisplayName("Criação de vínculo com weeklyLessons calcula min e max de avaliações conforme a regra: 1->(1,2), 2->(2,3), 3->(3,4), 4->(4,4)")
+    void createWithWeeklyLessons_calculatesAssessmentLimitsCorrectly() throws Exception {
+        // 1 aula semanal: min 1, max 2
+        String payload1 = objectMapper.writeValueAsString(Map.of(
+                "teacherId", teacher.getId(),
+                "classRoomId", classRoom.getId(),
+                "subjectId", mathSubject.getId(),
+                "weeklyLessons", 1
+        ));
+        String res1 = mockMvc.perform(post("/api/teacher-class-subjects")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload1))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.weeklyLessons").value(1))
+                .andExpect(jsonPath("$.minAssessmentsPerPeriod").value(1))
+                .andExpect(jsonPath("$.maxAssessmentsPerPeriod").value(2))
+                .andReturn().getResponse().getContentAsString();
+        int tcsId1 = objectMapper.readTree(res1).get("id").asInt();
+
+        // Atualizar para 2 aulas semanais: min 2, max 3
+        String payload2 = objectMapper.writeValueAsString(Map.of(
+                "teacherId", teacher.getId(),
+                "classRoomId", classRoom.getId(),
+                "subjectId", mathSubject.getId(),
+                "weeklyLessons", 2
+        ));
+        mockMvc.perform(put("/api/teacher-class-subjects/{id}", tcsId1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload2))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weeklyLessons").value(2))
+                .andExpect(jsonPath("$.minAssessmentsPerPeriod").value(2))
+                .andExpect(jsonPath("$.maxAssessmentsPerPeriod").value(3));
+
+        // Atualizar para 3 aulas semanais: min 3, max 4
+        String payload3 = objectMapper.writeValueAsString(Map.of(
+                "teacherId", teacher.getId(),
+                "classRoomId", classRoom.getId(),
+                "subjectId", mathSubject.getId(),
+                "weeklyLessons", 3
+        ));
+        mockMvc.perform(put("/api/teacher-class-subjects/{id}", tcsId1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload3))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weeklyLessons").value(3))
+                .andExpect(jsonPath("$.minAssessmentsPerPeriod").value(3))
+                .andExpect(jsonPath("$.maxAssessmentsPerPeriod").value(4));
+
+        // Atualizar para 4 aulas semanais: min 4, max 4
+        String payload4 = objectMapper.writeValueAsString(Map.of(
+                "teacherId", teacher.getId(),
+                "classRoomId", classRoom.getId(),
+                "subjectId", mathSubject.getId(),
+                "weeklyLessons", 4
+        ));
+        mockMvc.perform(put("/api/teacher-class-subjects/{id}", tcsId1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload4))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weeklyLessons").value(4))
+                .andExpect(jsonPath("$.minAssessmentsPerPeriod").value(4))
+                .andExpect(jsonPath("$.maxAssessmentsPerPeriod").value(4));
+
+        // Excluir para limpar
+        mockMvc.perform(delete("/api/teacher-class-subjects/{id}", tcsId1))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(roles = "SECRETARY")
+    @DisplayName("Criação de vínculo com weeklyLessons fora da faixa (0 ou 5) deve ser rejeitada com 400")
+    void createWithInvalidWeeklyLessons_returnsBadRequest() throws Exception {
+        String payload0 = objectMapper.writeValueAsString(Map.of(
+                "teacherId", teacher.getId(),
+                "classRoomId", classRoom.getId(),
+                "subjectId", mathSubject.getId(),
+                "weeklyLessons", 0
+        ));
+        mockMvc.perform(post("/api/teacher-class-subjects")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload0))
+                .andExpect(status().isBadRequest());
+
+        String payload5 = objectMapper.writeValueAsString(Map.of(
+                "teacherId", teacher.getId(),
+                "classRoomId", classRoom.getId(),
+                "subjectId", mathSubject.getId(),
+                "weeklyLessons", 5
+        ));
+        mockMvc.perform(post("/api/teacher-class-subjects")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload5))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "SECRETARY")
+    @DisplayName("Criação de vínculo com min > max deve ser rejeitada com 400 Bad Request")
+    void createWithInvalidAssessmentLimits_returnsBadRequest() throws Exception {
+        String payload = objectMapper.writeValueAsString(Map.of(
+                "teacherId", teacher.getId(),
+                "classRoomId", classRoom.getId(),
+                "subjectId", mathSubject.getId(),
+                "weeklyLessons", 2,
+                "minAssessmentsPerPeriod", 10,
+                "maxAssessmentsPerPeriod", 1
+        ));
+
+        mockMvc.perform(post("/api/teacher-class-subjects")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isBadRequest());
+    }
 }

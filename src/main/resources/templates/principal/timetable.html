@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Grade Horária | Direção - Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Gestão e Montagem da Grade Horária Semanal"/>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <script src="/js/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+    <script src="/js/global-modals.js"></script>
+    <style>
+        .timetable-day-col {
+            min-width: 185px;
+            background: #fdfdfd;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #e7e7e8;
+        }
+        .timetable-card {
+            background: #ffffff;
+            border-left: 4px solid #696cff;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 4px rgba(67, 89, 102, 0.07);
+            transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            position: relative;
+        }
+        .timetable-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(67, 89, 102, 0.14);
+        }
+        .timetable-card .card-actions {
+            position: absolute;
+            top: 5px;
+            right: 6px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease-in-out;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 1px 5px;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(67, 89, 102, 0.15);
+        }
+        .timetable-card:hover .card-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .slot-order-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        .slot-time {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #697a8d;
+            white-space: nowrap;
+        }
+        .shift-divider {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #8592a3;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 6px 0 6px;
+        }
+        .shift-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e7e7e8;
+        }
+        .day-header {
+            font-weight: 700;
+            text-align: center;
+            padding: 8px;
+            background: #f5f5f9;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            color: #566a7f;
+            text-transform: uppercase;
+            font-size: 0.82rem;
+            letter-spacing: 0.5px;
+        }
+        /* Dark Mode Overrides */
+        html.dark-style .timetable-day-col {
+            background-color: #232333 !important;
+            border-color: #444564 !important;
+        }
+        html.dark-style .day-header {
+            background-color: #2b2c40 !important;
+            color: #cbcbe2 !important;
+            border: 1px solid #444564 !important;
+        }
+        html.dark-style .timetable-card {
+            background-color: #2b2c40 !important;
+            border-top: 1px solid #444564 !important;
+            border-right: 1px solid #444564 !important;
+            border-bottom: 1px solid #444564 !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+        }
+        html.dark-style .timetable-card:hover {
+            background-color: #323249 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+        }
+        html.dark-style .timetable-card .card-actions {
+            background: rgba(43, 44, 64, 0.96) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+        }
+        html.dark-style .slot-time {
+            color: #a3a4cc !important;
+        }
+        html.dark-style .shift-divider {
+            color: #a3a4cc !important;
+        }
+        html.dark-style .shift-divider::after {
+            background: #444564 !important;
+        }
+        html.dark-style .timetable-card .text-dark {
+            color: #cbcbe2 !important;
+        }
+        html.dark-style .timetable-card .text-muted {
+            color: #a3a4cc !important;
+        }
+        html.dark-style .timetable-day-col .text-muted {
+            color: #7e7fa8 !important;
+        }
+        html.dark-style #classroomInfoBadge {
+            background-color: #323249 !important;
+            border-color: #444564 !important;
+        }
+        html.dark-style #classroomInfoBadge span:not(.badge) {
+            color: #a3a4cc !important;
+        }
+        html.dark-style #classroomInfoBadge .badge {
+            color: #ffffff !important;
+        }
+        html.dark-style #classroomInfoBadge strong {
+            color: #cbcbe2 !important;
+        }
+        html.dark-style #sixthLessonClassroomsContainer,
+        html.dark-style #modalClassroomName {
+            background-color: #232333 !important;
+            border-color: #444564 !important;
+            color: #cbcbe2 !important;
+        }
+        html.dark-style .layout-menu-toggle a.bg-white {
+            background-color: #2b2c40 !important;
+            color: #cbcbe2 !important;
+            border: 1px solid #444564 !important;
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <!-- Sidebar Direção -->
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2"
+                           href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                        <div>
+                            <h4 class="fw-bold py-1 mb-1">
+                                <span class="text-muted fw-light">Acadêmico /</span> Grade Horária Escolar
+                            </h4>
+                            <p class="text-muted mb-0 small">Gestão exclusiva da Direção para organização do quadro semanal de aulas e prevenção de conflitos.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button id="btnOpenAutoGenerateModal" class="btn btn-outline-primary">
+                                <i class="bx bx-magic-wand me-1"></i> Geração Automática
+                            </button>
+                            <button id="btnOpenAddSlotModal" class="btn btn-primary" disabled>
+                                <i class="bx bx-plus me-1"></i> Adicionar Horário
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Seletor de Turma e Filtros -->
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-body">
+                            <div class="row align-items-center g-3">
+                                <div class="col-md-5">
+                                    <label for="selectClassroom" class="form-label fw-bold">Selecione a Turma:</label>
+                                    <select id="selectClassroom" class="form-select">
+                                        <option value="">Carregando turmas...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-7">
+                                    <div id="classroomInfoBadge" class="p-2 rounded bg-light border d-none">
+                                        <div class="d-flex flex-wrap gap-3 align-items-center small text-muted">
+                                            <span><strong>Série:</strong> <span id="infoGrade">-</span></span>
+                                            <span><strong>Turno:</strong> <span id="infoShift">-</span></span>
+                                            <span><strong>Ano Letivo:</strong> <span id="infoYear">-</span></span>
+                                            <span><strong>Total de Horários:</strong> <span id="infoSlotCount" class="badge bg-primary">0</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="alertContainer"></div>
+
+                    <!-- Quadro de Grade Horária Semanal -->
+                    <div class="card shadow-sm">
+                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0" id="scheduleCardTitle"><i class="bx bx-calendar me-2 text-primary"></i>Quadro Semanal de Aulas</h5>
+                            <button class="btn btn-sm btn-outline-secondary" id="btnRefreshSchedule" title="Atualizar Grade">
+                                <i class="bx bx-refresh"></i> Atualizar
+                            </button>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="emptyClassroomState" class="text-center py-5">
+                                <i class="bx bx-calendar-event display-4 text-muted mb-3"></i>
+                                <h6 class="text-muted">Selecione uma turma acima para visualizar e gerenciar o quadro de horários.</h6>
+                            </div>
+
+                            <div id="timetableGridContainer" class="d-none">
+                                <div class="row g-2 flex-nowrap overflow-auto pb-2" id="timetableDaysRow">
+                                    <!-- Colunas dos dias da semana geradas via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Geração Automática da Grade Horária -->
+<div class="modal fade" id="autoGenerateModal" tabindex="-1" aria-labelledby="autoGenerateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="autoGenerateModalLabel">
+                    <i class="bx bx-magic-wand text-primary me-2"></i>Geração Automática da Grade Horária
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <form id="formAutoGenerate">
+                <div class="modal-body">
+                    <div id="autoModalAlertContainer"></div>
+
+                    <!-- Escopo da Geração (Todas as Turmas) -->
+                    <div class="card mb-3 border-primary bg-label-primary shadow-none">
+                        <div class="card-body p-3">
+                            <div class="form-check form-switch mb-1">
+                                <input class="form-check-input" type="checkbox" id="chkGenerateAllClassrooms" checked>
+                                <label class="form-check-label fw-bold text-primary" for="chkGenerateAllClassrooms">
+                                    <i class="bx bx-layer me-1"></i> Gerar Grade para TODAS as Turmas Ativas (Recomendado)
+                                </label>
+                            </div>
+                            <div id="allClassroomsSummary" class="small text-muted mb-1">
+                                <!-- Listagem das turmas ativas gerada dinamicamente via JS -->
+                            </div>
+                            <div id="specificClassroomsContainer" class="d-none mt-2 p-3 border rounded bg-white">
+                                <label class="form-label fw-bold mb-1 small text-dark">Selecione as turmas específicas a serem geradas:</label>
+                                <div id="targetClassroomsCheckboxes" style="max-height: 140px; overflow-y: auto;">
+                                    <!-- Checkboxes de turmas específicas gerados via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuração dos Horários dos Turnos -->
+                    <h6 class="fw-bold mb-2 text-dark"><i class="bx bx-time-five me-1 text-primary"></i> Horários por Turno</h6>
+                    <div class="row g-3 mb-3">
+                        <!-- Manhã -->
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded bg-light h-100">
+                                <span class="badge bg-warning text-dark mb-2"><i class="bx bx-sun me-1"></i>Turno Matutino</span>
+                                <div class="mb-2">
+                                    <label for="autoMorningStartTime" class="form-label small fw-semibold mb-1">Entrada (Manhã) <span class="text-danger">*</span></label>
+                                    <input type="time" id="autoMorningStartTime" class="form-control form-control-sm" value="07:50" required />
+                                </div>
+                                <div>
+                                    <label for="autoMorningEndTime" class="form-label small fw-semibold mb-1">Saída (Manhã) <span class="text-danger">*</span></label>
+                                    <input type="time" id="autoMorningEndTime" class="form-control form-control-sm" value="11:45" required />
+                                    <div class="form-text small" style="font-size: 0.72rem;">Padrão: 11:45 (5 aulas) ou 12:30 (6ª aula).</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tarde -->
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded bg-light h-100">
+                                <span class="badge bg-info text-white mb-2"><i class="bx bx-cloud me-1"></i>Turno Vespertino</span>
+                                <div class="mb-2">
+                                    <label for="autoAfternoonStartTime" class="form-label small fw-semibold mb-1">Entrada (Tarde) <span class="text-danger">*</span></label>
+                                    <input type="time" id="autoAfternoonStartTime" class="form-control form-control-sm" value="13:15" required />
+                                </div>
+                                <div>
+                                    <label for="autoAfternoonEndTime" class="form-label small fw-semibold mb-1">Saída (Tarde) <span class="text-danger">*</span></label>
+                                    <input type="time" id="autoAfternoonEndTime" class="form-control form-control-sm" value="17:10" required />
+                                    <div class="form-text small" style="font-size: 0.72rem;">Padrão: 17:10 (5 aulas) ou 18:00.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Noite -->
+                        <div class="col-md-4">
+                            <div class="p-2 border rounded bg-light h-100">
+                                <span class="badge bg-dark text-white mb-2"><i class="bx bx-moon me-1"></i>Turno Noturno</span>
+                                <div class="mb-2">
+                                    <label for="autoNightStartTime" class="form-label small fw-semibold mb-1">Entrada (Noite) <span class="text-danger">*</span></label>
+                                    <input type="time" id="autoNightStartTime" class="form-control form-control-sm" value="19:00" required />
+                                </div>
+                                <div>
+                                    <label for="autoNightEndTime" class="form-label small fw-semibold mb-1">Saída (Noite) <span class="text-danger">*</span></label>
+                                    <input type="time" id="autoNightEndTime" class="form-control form-control-sm" value="22:30" required />
+                                    <div class="form-text small" style="font-size: 0.72rem;">Turmas noturnas não possuem 6ª aula.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuração do Recreio / Intervalo -->
+                    <div class="p-3 border rounded bg-light mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-5">
+                                <label for="autoBreakDuration" class="form-label fw-bold mb-1">
+                                    <i class="bx bx-coffee me-1 text-primary"></i>Duração do Intervalo/Recreio (minutos) <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" id="autoBreakDuration" class="form-control" min="0" max="60" value="10" required />
+                            </div>
+                            <div class="col-md-7">
+                                <div class="small text-muted pt-2">
+                                    <i class="bx bx-info-circle me-1 text-info"></i>
+                                    O intervalo é aplicado após a 3ª aula de cada turno. Se o tempo total não for exato, a diferença de minutos é ajustada automaticamente na <strong>4ª aula</strong>.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Turmas com 6ª Aula -->
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Turmas com 6ª Aula Diária:</label>
+                        <p class="text-muted small mb-2">
+                            Selecione as turmas que possuem 6 aulas diárias (30 aulas/semana). As demais turmas regulares e noturnas terão 5 aulas/dia (25/semana) e as turmas de Período Integral terão 10 aulas/dia (5 manhã + 5 tarde = 50/semana).
+                            <br><span class="badge bg-label-info mt-1"><i class="bx bx-info-circle me-1"></i>Apenas turmas do Matutino e Vespertino podem ter 6ª aula.</span>
+                        </p>
+                        <div id="sixthLessonClassroomsContainer" class="p-3 border rounded bg-light" style="max-height: 140px; overflow-y: auto;">
+                            <!-- Checkboxes gerados dinamicamente via JS apenas para turmas matutino/vespertino -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitAutoGenerate">
+                        <i class="bx bx-magic-wand me-1"></i><span id="btnSubmitAutoGenerateText">Gerar Grade para Todas as Turmas</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Horário de Aula -->
+<div class="modal fade" id="addSlotModal" tabindex="-1" aria-labelledby="addSlotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="addSlotModalLabel">
+                    <i class="bx bx-calendar-plus text-primary me-2"></i><span id="modalTitleText">Adicionar Período de Aula</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <form id="formAddSlot">
+                <div class="modal-body">
+                    <div id="modalAlertContainer"></div>
+
+                    <input type="hidden" id="modalSlotId" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Turma:</label>
+                        <input type="text" id="modalClassroomName" class="form-control bg-light" readonly />
+                        <input type="hidden" id="modalClassroomId" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalTcs" class="form-label fw-bold">Disciplina e Professor <span class="text-danger">*</span></label>
+                        <select id="modalTcs" class="form-select" required>
+                            <option value="">Selecione a disciplina/professor...</option>
+                        </select>
+                        <div class="form-text">Apenas matérias já vinculadas a esta turma na secretaria.</div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-7">
+                            <label for="modalDayOfWeek" class="form-label fw-bold">Dia da Semana <span class="text-danger">*</span></label>
+                            <select id="modalDayOfWeek" class="form-select" required>
+                                <option value="SEGUNDA">Segunda-feira</option>
+                                <option value="TERCA">Terça-feira</option>
+                                <option value="QUARTA">Quarta-feira</option>
+                                <option value="QUINTA">Quinta-feira</option>
+                                <option value="SEXTA">Sexta-feira</option>
+                                <option value="SABADO">Sábado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="modalSlotOrder" class="form-label fw-bold">Ordem da Aula <span class="text-danger">*</span></label>
+                            <input type="number" id="modalSlotOrder" class="form-control" min="1" max="10" value="1" required />
+                            <div class="form-text">1 a 6 (ou 1 a 10 no Integral)</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label for="modalStartTime" class="form-label fw-bold">Horário de Início <span class="text-danger">*</span></label>
+                            <input type="time" id="modalStartTime" class="form-control" required />
+                        </div>
+                        <div class="col-6">
+                            <label for="modalEndTime" class="form-label fw-bold">Horário de Término <span class="text-danger">*</span></label>
+                            <input type="time" id="modalEndTime" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveSlot">
+                        <i class="bx bx-check me-1"></i><span id="btnSaveSlotText">Salvar Horário</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script src="/js/load-sidebar.js"></script>
+
+<script>
+    const jwtToken = localStorage.getItem('jwt_token');
+
+    const DAYS = [
+        { key: 'SEGUNDA', label: 'Segunda-feira' },
+        { key: 'TERCA', label: 'Terça-feira' },
+        { key: 'QUARTA', label: 'Quarta-feira' },
+        { key: 'QUINTA', label: 'Quinta-feira' },
+        { key: 'SEXTA', label: 'Sexta-feira' },
+        { key: 'SABADO', label: 'Sábado' }
+    ];
+
+    const SHIFT_MAP = {
+        'MORNING': 'Matutino',
+        'AFTERNOON': 'Vespertino',
+        'EVENING': 'Noturno',
+        'FULL_TIME': 'Integral',
+        'NIGHT': 'Noturno',
+        'FULL_DAY': 'Integral'
+    };
+
+    const SUBJECT_COLORS = [
+        '#696cff', '#71dd37', '#03c3ec', '#3b82f6', '#ff3e1d', '#ffab00', '#20c997', '#e83e8c', '#a855f7', '#fd7e14'
+    ];
+
+    let classroomsList = [];
+    let currentTcsList = [];
+    let currentSchedule = null;
+    let addModalInstance = null;
+    let autoModalInstance = null;
+
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function getSubjectColor(subjectName) {
+        if (!subjectName) return '#696cff';
+        let hash = 0;
+        for (let i = 0; i < subjectName.length; i++) {
+            hash = subjectName.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % SUBJECT_COLORS.length;
+        return SUBJECT_COLORS[index];
+    }
+
+    function getDefaultSlotTimes(slotOrder) {
+        const classId = document.getElementById('selectClassroom').value;
+        const selectedClass = classroomsList.find(c => c.id == classId);
+        const shift = selectedClass ? selectedClass.shift : 'MORNING';
+
+        const morningTimes = [
+            ['07:50', '08:35'],
+            ['08:35', '09:20'],
+            ['09:20', '10:05'],
+            ['10:15', '11:00'],
+            ['11:00', '11:45'],
+            ['11:45', '12:30']
+        ];
+        const afternoonTimes = [
+            ['13:15', '14:00'],
+            ['14:00', '14:45'],
+            ['14:45', '15:30'],
+            ['15:40', '16:25'],
+            ['16:25', '17:10'],
+            ['17:10', '17:55']
+        ];
+        const nightTimes = [
+            ['19:00', '19:40'],
+            ['19:40', '20:20'],
+            ['20:20', '21:00'],
+            ['21:10', '21:50'],
+            ['21:50', '22:30']
+        ];
+
+        const order = Math.max(1, parseInt(slotOrder, 10) || 1);
+        if (shift === 'EVENING' || shift === 'NIGHT') {
+            return nightTimes[Math.min(order - 1, nightTimes.length - 1)];
+        }
+        if (shift === 'AFTERNOON') {
+            return afternoonTimes[Math.min(order - 1, afternoonTimes.length - 1)];
+        }
+        if (shift === 'FULL_TIME' && order >= 6) {
+            return afternoonTimes[Math.min(order - 6, afternoonTimes.length - 1)];
+        }
+        return morningTimes[Math.min(order - 1, morningTimes.length - 1)];
+    }
+
+    function showAlert(msg, type = 'danger', containerId = 'alertContainer') {
+        const c = document.getElementById(containerId);
+        if (!c) return;
+        c.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show mb-3" role="alert">
+                ${msg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+
+    function clearAlert(containerId = 'alertContainer') {
+        const c = document.getElementById(containerId);
+        if (c) c.innerHTML = '';
+    }
+
+    async function loadClassrooms() {
+        const select = document.getElementById('selectClassroom');
+        try {
+            const res = await fetch('/api/classrooms?size=100&activeOnly=true', {
+                headers: { 'Authorization': `Bearer ${jwtToken}` }
+            });
+            if (!res.ok) throw new Error('Falha ao carregar turmas');
+            const data = await res.json();
+            classroomsList = data.content || [];
+
+            select.innerHTML = '<option value="">-- Selecione uma turma --</option>';
+            classroomsList.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                const gradeStr = c.schoolGradeLabel || c.schoolGrade || '';
+                const shiftStr = SHIFT_MAP[c.shift] || c.shift || '';
+                opt.textContent = `${c.name} (${gradeStr} - ${shiftStr})`;
+                select.appendChild(opt);
+            });
+
+            if (classroomsList.length > 0 && !select.value) {
+                select.value = classroomsList[0].id;
+                loadTimetable(classroomsList[0].id);
+            }
+        } catch (e) {
+            console.error(e);
+            select.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+            showAlert('Não foi possível carregar as turmas.', 'danger');
+        }
+    }
+
+    async function loadTcsForClassroom(classroomId) {
+        try {
+            const res = await fetch(`/api/teacher-class-subjects/classroom/${classroomId}`, {
+                headers: { 'Authorization': `Bearer ${jwtToken}` }
+            });
+            if (!res.ok) throw new Error('Falha ao buscar disciplinas da turma');
+            currentTcsList = await res.json();
+            populateModalTcsSelect();
+        } catch (e) {
+            console.error(e);
+            currentTcsList = [];
+        }
+    }
+
+    function populateModalTcsSelect(selectedId = null) {
+        const select = document.getElementById('modalTcs');
+        select.innerHTML = '<option value="">Selecione a disciplina/professor...</option>';
+        if (currentTcsList.length === 0) {
+            select.innerHTML = '<option value="">Nenhuma disciplina vinculada a esta turma</option>';
+            return;
+        }
+        currentTcsList.forEach(tcs => {
+            const opt = document.createElement('option');
+            opt.value = tcs.id;
+            const sName = tcs.subjectName || (tcs.subject ? tcs.subject.name : 'Disciplina');
+            const tName = tcs.teacherName || (tcs.teacher ? tcs.teacher.name : 'Professor');
+            opt.textContent = `${sName} - Prof(a). ${tName}`;
+            if (selectedId && tcs.id === selectedId) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+        });
+    }
+
+    async function loadTimetable(classroomId) {
+        if (!classroomId) {
+            document.getElementById('emptyClassroomState').classList.remove('d-none');
+            document.getElementById('timetableGridContainer').classList.add('d-none');
+            document.getElementById('classroomInfoBadge').classList.add('d-none');
+            document.getElementById('btnOpenAddSlotModal').disabled = true;
+            return;
+        }
+
+        clearAlert();
+        document.getElementById('btnOpenAddSlotModal').disabled = false;
+
+        const selectedClass = classroomsList.find(c => c.id == classroomId);
+        if (selectedClass) {
+            document.getElementById('classroomInfoBadge').classList.remove('d-none');
+            document.getElementById('infoGrade').textContent = selectedClass.schoolGradeLabel || selectedClass.schoolGrade || '-';
+            document.getElementById('infoShift').textContent = SHIFT_MAP[selectedClass.shift] || selectedClass.shift || '-';
+            document.getElementById('infoYear').textContent = selectedClass.academicYear || '-';
+            document.getElementById('modalClassroomName').value = selectedClass.name;
+            document.getElementById('modalClassroomId').value = selectedClass.id;
+        }
+
+        await loadTcsForClassroom(classroomId);
+
+        try {
+            const res = await fetch(`/api/timetable/classroom/${classroomId}`, {
+                headers: { 'Authorization': `Bearer ${jwtToken}` }
+            });
+            if (!res.ok) throw new Error('Erro ao carregar grade');
+            currentSchedule = await res.json();
+            renderTimetableGrid(currentSchedule);
+        } catch (e) {
+            console.error(e);
+            showAlert('Não foi possível carregar a grade horária desta turma.', 'danger');
+        }
+    }
+
+    function renderTimetableGrid(schedule) {
+        document.getElementById('emptyClassroomState').classList.add('d-none');
+        document.getElementById('timetableGridContainer').classList.remove('d-none');
+
+        const totalSlots = schedule.slots ? schedule.slots.length : 0;
+        document.getElementById('infoSlotCount').textContent = totalSlots;
+
+        const row = document.getElementById('timetableDaysRow');
+        row.innerHTML = '';
+
+        const slotsByDay = schedule.slotsByDay || {};
+        const visibleDays = DAYS.filter(d => d.key !== 'SABADO' || (slotsByDay['SABADO'] && slotsByDay['SABADO'].length > 0));
+
+        visibleDays.forEach(day => {
+            const col = document.createElement('div');
+            col.className = 'col timetable-day-col';
+
+            const daySlots = [...(slotsByDay[day.key] || [])];
+
+            let slotsHtml = '';
+            if (daySlots.length === 0) {
+                slotsHtml = `<div class="text-center text-muted py-4 small">Sem aulas</div>`;
+            } else {
+                daySlots.sort((a, b) => (a.slotOrder - b.slotOrder) || a.startTime.localeCompare(b.startTime));
+                const hasMorning = daySlots.some(s => (s.startTime || '') < '12:45');
+                const hasAfternoon = daySlots.some(s => (s.startTime || '') >= '12:45' && (s.startTime || '') < '18:00');
+                const hasNight = daySlots.some(s => (s.startTime || '') >= '18:00');
+                const distinctShifts = (hasMorning ? 1 : 0) + (hasAfternoon ? 1 : 0) + (hasNight ? 1 : 0);
+                let morningHeaderRendered = false;
+                let afternoonHeaderRendered = false;
+                let nightHeaderRendered = false;
+
+                daySlots.forEach(slot => {
+                    const startStr = (slot.startTime || '').substring(0, 5);
+                    const endStr = (slot.endTime || '').substring(0, 5);
+                    if (distinctShifts > 1) {
+                        if (startStr < '12:45' && !morningHeaderRendered) {
+                            slotsHtml += `<div class="shift-divider"><i class="bx bx-sun"></i> Manhã</div>`;
+                            morningHeaderRendered = true;
+                        } else if (startStr >= '12:45' && startStr < '18:00' && !afternoonHeaderRendered) {
+                            slotsHtml += `<div class="shift-divider mt-2"><i class="bx bx-cloud"></i> Tarde</div>`;
+                            afternoonHeaderRendered = true;
+                        } else if (startStr >= '18:00' && !nightHeaderRendered) {
+                            slotsHtml += `<div class="shift-divider mt-2"><i class="bx bx-moon"></i> Noite</div>`;
+                            nightHeaderRendered = true;
+                        }
+                    }
+
+                    const color = getSubjectColor(slot.subjectName);
+                    slotsHtml += `
+                        <div class="timetable-card" style="border-left-color: ${color};">
+                            <div class="card-actions">
+                                <button type="button" class="btn btn-sm btn-link text-primary p-0" title="Editar Horário" onclick="openEditSlotModal(${slot.id})">
+                                    <i class="bx bx-edit-alt"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-link text-danger p-0" title="Excluir Horário" onclick="deleteSlot(${slot.id})">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
+                                <span class="slot-order-pill" style="color: ${color}; background-color: ${color}18;">${slot.slotOrder}ª aula</span>
+                                <span class="slot-time">${startStr} – ${endStr}</span>
+                            </div>
+                            <div class="fw-semibold text-dark text-truncate" style="font-size: 0.86rem; line-height: 1.3;" title="${escapeHtml(slot.subjectName)}">${escapeHtml(slot.subjectName)}</div>
+                            <div class="text-muted text-truncate" style="font-size: 0.76rem;" title="${escapeHtml(slot.teacherName)}">${escapeHtml(slot.teacherName)}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            col.innerHTML = `
+                <div class="day-header">${day.label}</div>
+                <div class="day-slots">${slotsHtml}</div>
+            `;
+
+            row.appendChild(col);
+        });
+    }
+
+    function openEditSlotModal(slotId) {
+        clearAlert('modalAlertContainer');
+        const slot = currentSchedule && currentSchedule.slots ? currentSchedule.slots.find(s => s.id === slotId) : null;
+        if (!slot) {
+            showAlert('Horário não encontrado.', 'danger');
+            return;
+        }
+
+        document.getElementById('modalSlotId').value = slot.id;
+        document.getElementById('modalTitleText').textContent = 'Editar Período de Aula';
+        document.getElementById('btnSaveSlotText').textContent = 'Atualizar Horário';
+
+        populateModalTcsSelect(slot.teacherClassSubjectId);
+        document.getElementById('modalTcs').value = slot.teacherClassSubjectId;
+        document.getElementById('modalDayOfWeek').value = slot.dayOfWeek;
+        document.getElementById('modalSlotOrder').value = slot.slotOrder;
+        document.getElementById('modalStartTime').value = slot.startTime ? slot.startTime.substring(0, 5) : '';
+        document.getElementById('modalEndTime').value = slot.endTime ? slot.endTime.substring(0, 5) : '';
+
+        addModalInstance.show();
+    }
+
+    async function deleteSlot(slotId) {
+        if (window.showConfirmModal) {
+            const confirmed = await window.showConfirmModal('Excluir Horário', 'Deseja realmente remover este período da grade de horários?');
+            if (!confirmed) return;
+        } else if (!confirm('Deseja realmente remover este período da grade de horários?')) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/timetable/${slotId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${jwtToken}` }
+            });
+
+            if (res.status === 204 || res.ok) {
+                showAlert('Horário removido com sucesso!', 'success');
+                const classId = document.getElementById('selectClassroom').value;
+                if (classId) loadTimetable(classId);
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showAlert(err.message || 'Erro ao remover horário.', 'danger');
+            }
+        } catch (e) {
+            console.error(e);
+            showAlert('Erro de conexão ao tentar excluir horário.', 'danger');
+        }
+    }
+
+    window.openEditSlotModal = openEditSlotModal;
+    window.deleteSlot = deleteSlot;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        addModalInstance = new bootstrap.Modal(document.getElementById('addSlotModal'));
+
+        loadClassrooms();
+
+        document.getElementById('selectClassroom').addEventListener('change', (e) => {
+            loadTimetable(e.target.value);
+        });
+
+        document.getElementById('btnRefreshSchedule').addEventListener('click', () => {
+            const classId = document.getElementById('selectClassroom').value;
+            if (classId) loadTimetable(classId);
+        });
+
+        document.getElementById('modalSlotOrder').addEventListener('change', (e) => {
+            if (!document.getElementById('modalSlotId').value) {
+                const [st, et] = getDefaultSlotTimes(e.target.value);
+                document.getElementById('modalStartTime').value = st;
+                document.getElementById('modalEndTime').value = et;
+            }
+        });
+
+        document.getElementById('btnOpenAddSlotModal').addEventListener('click', () => {
+            clearAlert('modalAlertContainer');
+            document.getElementById('modalSlotId').value = '';
+            document.getElementById('modalTitleText').textContent = 'Adicionar Período de Aula';
+            document.getElementById('btnSaveSlotText').textContent = 'Salvar Horário';
+
+            populateModalTcsSelect();
+            document.getElementById('modalTcs').value = '';
+            document.getElementById('modalSlotOrder').value = '1';
+            const [st, et] = getDefaultSlotTimes(1);
+            document.getElementById('modalStartTime').value = st;
+            document.getElementById('modalEndTime').value = et;
+            addModalInstance.show();
+        });
+
+        document.getElementById('formAddSlot').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlert('modalAlertContainer');
+
+            const slotId = document.getElementById('modalSlotId').value;
+            const isEdit = Boolean(slotId);
+
+            const classRoomId = parseInt(document.getElementById('modalClassroomId').value, 10);
+            const teacherClassSubjectId = parseInt(document.getElementById('modalTcs').value, 10);
+            const dayOfWeek = document.getElementById('modalDayOfWeek').value;
+            const slotOrder = parseInt(document.getElementById('modalSlotOrder').value, 10);
+            const startTime = document.getElementById('modalStartTime').value;
+            const endTime = document.getElementById('modalEndTime').value;
+
+            if (!teacherClassSubjectId) {
+                showAlert('Selecione uma disciplina e professor.', 'warning', 'modalAlertContainer');
+                return;
+            }
+
+            const btn = document.getElementById('btnSaveSlot');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Salvando...';
+
+            try {
+                const payload = {
+                    classRoomId,
+                    teacherClassSubjectId,
+                    dayOfWeek,
+                    slotOrder,
+                    startTime,
+                    endTime
+                };
+
+                const method = isEdit ? 'PUT' : 'POST';
+                const url = isEdit ? `/api/timetable/${slotId}` : '/api/timetable';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.status === 201 || res.status === 200 || res.ok) {
+                    addModalInstance.hide();
+                    showAlert(isEdit ? 'Horário atualizado com sucesso!' : 'Horário cadastrado com sucesso!', 'success');
+                    loadTimetable(classRoomId);
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    const msg = err.message || 'Falha ao salvar horário. Verifique os dados.';
+                    showAlert(msg, res.status === 409 ? 'danger' : 'warning', 'modalAlertContainer');
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert('Erro de comunicação com o servidor.', 'danger', 'modalAlertContainer');
+            } finally {
+                btn.disabled = false;
+                const btnText = isEdit ? 'Atualizar Horário' : 'Salvar Horário';
+                btn.innerHTML = `<i class="bx bx-check me-1"></i> <span id="btnSaveSlotText">${btnText}</span>`;
+            }
+        });
+
+        // ── Geração Automática da Grade Horária
+        autoModalInstance = new bootstrap.Modal(document.getElementById('autoGenerateModal'));
+
+        const chkAllClassrooms = document.getElementById('chkGenerateAllClassrooms');
+        chkAllClassrooms?.addEventListener('change', (e) => {
+            const specificContainer = document.getElementById('specificClassroomsContainer');
+            const btnText = document.getElementById('btnSubmitAutoGenerateText');
+            if (e.target.checked) {
+                specificContainer?.classList.add('d-none');
+                if (btnText) btnText.textContent = 'Gerar Grade para Todas as Turmas';
+            } else {
+                specificContainer?.classList.remove('d-none');
+                if (btnText) btnText.textContent = 'Gerar Grade para Turmas Selecionadas';
+            }
+        });
+
+        document.getElementById('btnOpenAutoGenerateModal')?.addEventListener('click', () => {
+            clearAlert('autoModalAlertContainer');
+
+            // Reset switch para Todas as Turmas
+            if (chkAllClassrooms) {
+                chkAllClassrooms.checked = true;
+            }
+            document.getElementById('specificClassroomsContainer')?.classList.add('d-none');
+            const btnText = document.getElementById('btnSubmitAutoGenerateText');
+            if (btnText) btnText.textContent = 'Gerar Grade para Todas as Turmas';
+
+            // Resumo de todas as turmas ativas
+            const summaryEl = document.getElementById('allClassroomsSummary');
+            if (summaryEl) {
+                if (classroomsList.length === 0) {
+                    summaryEl.innerHTML = '<span class="text-danger small">Nenhuma turma ativa encontrada.</span>';
+                } else {
+                    summaryEl.innerHTML = '<div class="d-flex flex-wrap gap-1 align-items-center mt-1">' +
+                        classroomsList.map(c => `
+                            <span class="badge bg-white text-primary border">
+                                ${escapeHtml(c.name)} <span class="text-muted">(${c.schoolGradeLabel || c.schoolGrade || ''} - ${SHIFT_MAP[c.shift] || c.shift})</span>
+                            </span>
+                        `).join('') + '</div>';
+                }
+            }
+
+            // Checkboxes para turmas específicas
+            const targetContainer = document.getElementById('targetClassroomsCheckboxes');
+            if (targetContainer) {
+                if (classroomsList.length === 0) {
+                    targetContainer.innerHTML = '<div class="text-muted small">Nenhuma turma cadastrada.</div>';
+                } else {
+                    targetContainer.innerHTML = classroomsList.map(c => `
+                        <div class="form-check mb-1">
+                            <input class="form-check-input target-classroom-chk" type="checkbox" value="${c.id}" id="chkTarget_${c.id}" checked />
+                            <label class="form-check-label" for="chkTarget_${c.id}">
+                                <strong>${escapeHtml(c.name)}</strong> (${c.schoolGradeLabel || c.schoolGrade || ''} - ${SHIFT_MAP[c.shift] || c.shift})
+                            </label>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Filtrar turmas que podem ter 6ª aula: APENAS Matutino e Vespertino (Integral e Noturno não têm 6ª aula)
+            const sixthContainer = document.getElementById('sixthLessonClassroomsContainer');
+            const eligible = classroomsList.filter(c => c.shift === 'MORNING' || c.shift === 'AFTERNOON');
+
+            if (eligible.length === 0) {
+                sixthContainer.innerHTML = '<div class="text-muted small">Nenhuma turma do Matutino ou Vespertino cadastrada.</div>';
+            } else {
+                sixthContainer.innerHTML = eligible.map(c => `
+                    <div class="form-check mb-1">
+                        <input class="form-check-input sixth-lesson-chk" type="checkbox" value="${c.id}" id="chkSixth_${c.id}" />
+                        <label class="form-check-label" for="chkSixth_${c.id}">
+                            <strong>${escapeHtml(c.name)}</strong> (${c.schoolGradeLabel || c.schoolGrade || ''} - ${SHIFT_MAP[c.shift] || c.shift})
+                        </label>
+                    </div>
+                `).join('');
+            }
+
+            autoModalInstance.show();
+        });
+
+        document.getElementById('formAutoGenerate')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlert('autoModalAlertContainer');
+
+            const isAll = chkAllClassrooms ? chkAllClassrooms.checked : true;
+            let classRoomIds = null;
+
+            if (!isAll) {
+                classRoomIds = Array.from(document.querySelectorAll('.target-classroom-chk:checked'))
+                    .map(chk => parseInt(chk.value, 10));
+                if (classRoomIds.length === 0) {
+                    showAlert('Selecione ao menos uma turma para gerar a grade horária.', 'warning', 'autoModalAlertContainer');
+                    return;
+                }
+            }
+
+            const morningStartTime = document.getElementById('autoMorningStartTime')?.value || '07:50';
+            const morningEndTime = document.getElementById('autoMorningEndTime')?.value || '11:45';
+            const afternoonStartTime = document.getElementById('autoAfternoonStartTime')?.value || '13:15';
+            const afternoonEndTime = document.getElementById('autoAfternoonEndTime')?.value || '17:10';
+            const nightStartTime = document.getElementById('autoNightStartTime')?.value || '19:00';
+            const nightEndTime = document.getElementById('autoNightEndTime')?.value || '22:30';
+            const breakDurationMinutes = parseInt(document.getElementById('autoBreakDuration')?.value, 10);
+            const classroomsWithSixthLessonIds = Array.from(document.querySelectorAll('.sixth-lesson-chk:checked'))
+                    .map(chk => parseInt(chk.value, 10));
+
+            const btn = document.getElementById('btnSubmitAutoGenerate');
+            const btnTextEl = document.getElementById('btnSubmitAutoGenerateText');
+            const originalText = btnTextEl ? btnTextEl.textContent : (isAll ? 'Gerar Grade para Todas as Turmas' : 'Gerar Grade para Turmas Selecionadas');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Gerando...';
+
+            try {
+                const payload = {
+                    classRoomIds: classRoomIds && classRoomIds.length > 0 ? classRoomIds : null,
+                    morningStartTime,
+                    morningEndTime,
+                    afternoonStartTime,
+                    afternoonEndTime,
+                    nightStartTime,
+                    nightEndTime,
+                    breakDurationMinutes: isNaN(breakDurationMinutes) ? 10 : breakDurationMinutes,
+                    classroomsWithSixthLessonIds,
+                    startTime: morningStartTime,
+                    lessonDurationMinutes: 45
+                };
+
+                const res = await fetch('/api/timetable/auto-generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    autoModalInstance.hide();
+                    showAlert(data.message || 'Grade horária gerada automaticamente com sucesso!', 'success');
+
+                    const selectedClass = document.getElementById('selectClassroom').value;
+                    if (selectedClass) {
+                        loadTimetable(selectedClass);
+                    } else if (classroomsList.length > 0) {
+                        document.getElementById('selectClassroom').value = classroomsList[0].id;
+                        loadTimetable(classroomsList[0].id);
+                    }
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    const msg = err.message || 'Erro ao gerar grade horária automática. Verifique as configurações.';
+                    showAlert(msg, 'danger', 'autoModalAlertContainer');
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert('Erro de comunicação ao gerar grade horária.', 'danger', 'autoModalAlertContainer');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="bx bx-magic-wand me-1"></i> <span id="btnSubmitAutoGenerateText">${originalText}</span>`;
+            }
+        });
+    });
+</script>
+</body>
+</html>

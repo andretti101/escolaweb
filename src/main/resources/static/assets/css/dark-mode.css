@@ -737,6 +737,52 @@ html.dark-style .counter-card.active {
 html.dark-style #processingOverlay,
 html.dark-style .processing-overlay { background: rgba(35, 35, 51, 0.92) !important; }
 
+/* --- Grade Horária (Timetable) --- */
+html.dark-style .timetable-day-col {
+    background-color: #232333 !important;
+    border-color: var(--ew-border) !important;
+}
+html.dark-style .day-header {
+    background-color: var(--ew-surface) !important;
+    color: var(--ew-heading) !important;
+    border: 1px solid var(--ew-border) !important;
+}
+html.dark-style .timetable-card {
+    background-color: var(--ew-surface) !important;
+    border-top: 1px solid var(--ew-border) !important;
+    border-right: 1px solid var(--ew-border) !important;
+    border-bottom: 1px solid var(--ew-border) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+html.dark-style .timetable-card:hover {
+    background-color: var(--ew-surface-2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+}
+html.dark-style .timetable-card .text-dark {
+    color: var(--ew-heading) !important;
+}
+html.dark-style .timetable-card .text-muted {
+    color: var(--ew-muted) !important;
+}
+html.dark-style .timetable-day-col .text-muted {
+    color: var(--ew-muted) !important;
+}
+html.dark-style #classroomInfoBadge {
+    background-color: var(--ew-surface-2) !important;
+    border-color: var(--ew-border) !important;
+}
+html.dark-style #classroomInfoBadge span {
+    color: var(--ew-text) !important;
+}
+html.dark-style #classroomInfoBadge strong {
+    color: var(--ew-heading) !important;
+}
+html.dark-style .layout-menu-toggle a.bg-white {
+    background-color: var(--ew-surface) !important;
+    color: var(--ew-heading) !important;
+    border: 1px solid var(--ew-border) !important;
+}
+
 /* ==========================================================================
    Toggle de tema — Sidebar
    ========================================================================== */

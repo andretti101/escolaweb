@@ -24,7 +24,7 @@ public class SequenceSyncRunner implements CommandLineRunner {
             "chat_messages", "chat_read_receipts", "class_rooms", "enrollments",
             "grade_history", "grades", "lessons", "password_reset_tokens",
             "refresh_tokens", "school_settings", "subjects", "teacher_class_subject",
-            "users"
+            "timetable_slots", "users"
         };
         
         for (String table : tables) {
