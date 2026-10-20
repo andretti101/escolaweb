@@ -8,6 +8,7 @@ import com.andretti101.escolaweb.model.entity.AttendanceHistory;
 import com.andretti101.escolaweb.model.entity.Grade;
 import com.andretti101.escolaweb.model.entity.GradeHistory;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
+import com.andretti101.escolaweb.model.enums.GradeKind;
 import com.andretti101.escolaweb.repository.AttendanceHistoryRepository;
 import com.andretti101.escolaweb.repository.AttendanceRepository;
 import com.andretti101.escolaweb.repository.GradeHistoryRepository;
@@ -129,6 +130,7 @@ public class AuditHistoryServiceImpl implements AuditHistoryService {
                 tcs.getTeacher().getName(),
                 a.getTitle(),
                 a.getPeriod() != null ? a.getPeriod().getName() : null,
+                h.getGradeKind() != null ? h.getGradeKind() : GradeKind.ORIGINAL,
                 h.getPreviousGrade(),
                 h.getNewGrade(),
                 h.getNotes(),

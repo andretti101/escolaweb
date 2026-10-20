@@ -88,7 +88,7 @@ public class ReportCardServiceImpl implements ReportCardService {
                     
                     java.math.BigDecimal periodAverage = null;
                     if (!gradesInPeriod.isEmpty()) {
-                        java.math.BigDecimal sum = gradesInPeriod.stream().filter(g -> g.getValue() != null).map(com.andretti101.escolaweb.model.entity.Grade::getValue)
+                        java.math.BigDecimal sum = gradesInPeriod.stream().filter(g -> g.getEffectiveValue() != null).map(com.andretti101.escolaweb.model.entity.Grade::getEffectiveValue)
                                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
                         periodAverage = sum.divide(java.math.BigDecimal.valueOf(gradesInPeriod.size()), 2, java.math.RoundingMode.HALF_UP);
                     }
@@ -231,7 +231,7 @@ public class ReportCardServiceImpl implements ReportCardService {
         List<Grade> allGrades = gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs);
 
         Map<Integer, List<Grade>> gradesByPeriodId = allGrades.stream()
-                .filter(g -> g.getValue() != null && g.getAssessment() != null && g.getAssessment().getPeriod() != null)
+                .filter(g -> g.getEffectiveValue() != null && g.getAssessment() != null && g.getAssessment().getPeriod() != null)
                 .collect(Collectors.groupingBy(g -> g.getAssessment().getPeriod().getId()));
 
         List<ReportCardDTO.PeriodGradeDTO> periodGrades = new ArrayList<>();
@@ -244,7 +244,7 @@ public class ReportCardServiceImpl implements ReportCardService {
 
             if (!periodGradesList.isEmpty()) {
                 BigDecimal sum = periodGradesList.stream()
-                        .map(Grade::getValue)
+                        .map(Grade::getEffectiveValue)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 periodAverage = sum.divide(BigDecimal.valueOf(periodGradesList.size()), 2, RoundingMode.HALF_UP);
                 

@@ -79,10 +79,10 @@ public class AdminAiTools {
             AcademicYear year = yearService.findActive();
             if (year == null) return "Sem ano letivo ativo.";
             var grades = gradeRepository.findAll().stream()
-                .filter(g -> g.getAssessment().getPeriod().getAcademicYear().getId().equals(year.getId()))
+                .filter(g -> g.getEffectiveValue() != null && g.getAssessment().getPeriod().getAcademicYear().getId().equals(year.getId()))
                 .collect(Collectors.toList());
             if (grades.isEmpty()) return "Nenhuma nota registrada.";
-            BigDecimal sum = grades.stream().map(Grade::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal sum = grades.stream().map(Grade::getEffectiveValue).reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal avg = sum.divide(new BigDecimal(grades.size()), 2, RoundingMode.HALF_UP);
             return "Média global de notas: " + avg + " (Total de notas analisadas: " + grades.size() + ")";
         });
@@ -94,13 +94,13 @@ public class AdminAiTools {
             AcademicYear year = yearService.findActive();
             if (year == null) return "Sem ano letivo ativo.";
             var grades = gradeRepository.findAll().stream()
-                .filter(g -> g.getAssessment().getPeriod().getAcademicYear().getId().equals(year.getId()))
+                .filter(g -> g.getEffectiveValue() != null && g.getAssessment().getPeriod().getAcademicYear().getId().equals(year.getId()))
                 .collect(Collectors.toList());
             Map<Integer, List<Grade>> gradesByTcs = grades.stream()
                 .collect(Collectors.groupingBy(g -> g.getAssessment().getTeacherClassSubject().getId()));
             StringBuilder sb = new StringBuilder();
             gradesByTcs.forEach((tcsId, list) -> {
-                BigDecimal sum = list.stream().map(Grade::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal sum = list.stream().map(Grade::getEffectiveValue).reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal avg = sum.divide(new BigDecimal(list.size()), 2, RoundingMode.HALF_UP);
                 var tcs = list.get(0).getAssessment().getTeacherClassSubject();
                 sb.append("Matéria: ").append(tcs.getSubject().getName())

@@ -191,7 +191,10 @@
                     });
                     
                     let totalGrade = 0;
-                    grades.forEach(g => totalGrade += (g.value || 0));
+                    grades.forEach(g => {
+                        const eff = g.effectiveValue != null ? Number(g.effectiveValue) : Number(g.value || 0);
+                        totalGrade += eff;
+                    });
                     let avg = grades.length > 0 ? (totalGrade / grades.length).toFixed(1) : '-';
                     
                     let gradesListHtml = '';
@@ -207,7 +210,13 @@
                         
                         for (const pName in groupedGrades) {
                             const periodGrades = groupedGrades[pName];
-                            const badgesHtml = periodGrades.map(g => `<span class="badge bg-label-primary me-1 mb-1" title="${escapeHtml(g.assessmentTitle)}">${Number(g.value).toFixed(1)}</span>`).join('');
+                            const badgesHtml = periodGrades.map(g => {
+                                const eff = g.effectiveValue != null ? Number(g.effectiveValue) : Number(g.value || 0);
+                                const detailTitle = g.recoveryValue != null
+                                    ? `${g.assessmentTitle} (1ª Nota: ${Number(g.value).toFixed(1)} | Rec: ${Number(g.recoveryValue).toFixed(1)})`
+                                    : g.assessmentTitle;
+                                return `<span class="badge bg-label-primary me-1 mb-1" title="${escapeHtml(detailTitle)}">${eff.toFixed(1)}</span>`;
+                            }).join('');
                             gradesListHtml += `<div class="d-inline-block me-4 mb-2"><span class="d-block small fw-bold text-muted mb-1" style="font-size: 0.75rem;">${escapeHtml(pName)}</span>${badgesHtml}</div>`;
                         }
                     }
@@ -247,5 +256,3 @@
     </script>
 </body>
 </html>
-
-

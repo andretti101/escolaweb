@@ -6,6 +6,7 @@ import com.andretti101.escolaweb.model.entity.GradeHistory;
 import com.andretti101.escolaweb.model.entity.SchoolSettings;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
+import com.andretti101.escolaweb.model.enums.GradeKind;
 import com.andretti101.escolaweb.model.enums.StudentSituation;
 import com.andretti101.escolaweb.repository.EnrollmentRepository;
 import com.andretti101.escolaweb.repository.GradeHistoryRepository;
@@ -61,6 +62,7 @@ public class GradeServiceImpl implements GradeService {
         validateActiveEnrollment(student, assessment.getTeacherClassSubject());
         validatePeriodOpen(assessment);
         validateGradeValue(grade.getValue());
+        validateGradeValue(grade.getRecoveryValue());
 
         grade.setStudent(student);
         grade.setAssessment(assessment);
@@ -69,7 +71,7 @@ public class GradeServiceImpl implements GradeService {
 
         updateStudentSituation(saved);
 
-        dispatchGradeNotification(saved, "Nova nota lançada em %s: %s na avaliação \"%s\"", "Nova Nota Lançada");
+        dispatchGradeNotification(saved, saved.getValue(), "Nova nota lançada em %s: %s na avaliação \"%s\"", "Nova Nota Lançada");
 
         return saved;
     }
@@ -98,11 +100,60 @@ public class GradeServiceImpl implements GradeService {
                 && previousValue.compareTo(incoming.getValue()) != 0;
 
         if (valueChanged) {
-            recordHistory(existing, previousValue, existing.getValue(), cleanNotes);
-            dispatchGradeNotification(existing, "Sua nota em %s foi atualizada para %s na avaliação \"%s\"", "Nota Atualizada");
+            recordHistory(existing, GradeKind.ORIGINAL, previousValue, existing.getValue(), cleanNotes);
+            dispatchGradeNotification(existing, existing.getValue(), "Sua nota em %s foi atualizada para %s na avaliação \"%s\"", "Nota Atualizada");
         }
 
         updateStudentSituation(existing);
+
+        return existing;
+    }
+
+    @Override
+    @Transactional
+    public Grade launchRecovery(Integer id, BigDecimal recoveryValue, String notes) {
+        Grade existing = findGradeOrThrow(id);
+
+        validatePeriodOpen(existing.getAssessment());
+        if (recoveryValue == null) {
+            throw new IllegalArgumentException("O valor da nota de recuperação é obrigatório.");
+        }
+        validateGradeValue(recoveryValue);
+
+        BigDecimal previousRecovery = existing.getRecoveryValue();
+        existing.setRecoveryValue(recoveryValue);
+
+        String cleanNotes = (notes != null && !notes.isBlank()) ? notes.trim() : null;
+        if (previousRecovery == null) {
+            dispatchGradeNotification(existing, recoveryValue,
+                    "Nota de recuperação lançada em %s: %s na avaliação \"%s\"",
+                    "Nota de Recuperação Lançada");
+        } else if (previousRecovery.compareTo(recoveryValue) != 0) {
+            recordHistory(existing, GradeKind.RECOVERY, previousRecovery, recoveryValue, cleanNotes);
+            dispatchGradeNotification(existing, recoveryValue,
+                    "Sua nota de recuperação em %s foi atualizada para %s na avaliação \"%s\"",
+                    "Nota de Recuperação Atualizada");
+        }
+
+        updateStudentSituation(existing);
+
+        return existing;
+    }
+
+    @Override
+    @Transactional
+    public Grade removeRecovery(Integer id, String notes) {
+        Grade existing = findGradeOrThrow(id);
+
+        validatePeriodOpen(existing.getAssessment());
+
+        BigDecimal previousRecovery = existing.getRecoveryValue();
+        if (previousRecovery != null) {
+            existing.setRecoveryValue(null);
+            String cleanNotes = (notes != null && !notes.isBlank()) ? notes.trim() : null;
+            recordHistory(existing, GradeKind.RECOVERY, previousRecovery, null, cleanNotes);
+            updateStudentSituation(existing);
+        }
 
         return existing;
     }
@@ -159,7 +210,7 @@ public class GradeServiceImpl implements GradeService {
         }
 
         java.util.Map<com.andretti101.escolaweb.model.entity.AcademicPeriod, List<Grade>> gradesByPeriod = allGrades.stream()
-                .filter(g -> g.getValue() != null && g.getAssessment() != null && g.getAssessment().getPeriod() != null)
+                .filter(g -> g.getEffectiveValue() != null && g.getAssessment() != null && g.getAssessment().getPeriod() != null)
                 .collect(java.util.stream.Collectors.groupingBy(g -> g.getAssessment().getPeriod()));
 
         if (gradesByPeriod.isEmpty()) {
@@ -170,7 +221,7 @@ public class GradeServiceImpl implements GradeService {
 
         for (List<Grade> periodGrades : gradesByPeriod.values()) {
             BigDecimal periodSum = periodGrades.stream()
-                    .map(Grade::getValue)
+                    .map(Grade::getEffectiveValue)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal periodAvg = periodSum.divide(BigDecimal.valueOf(periodGrades.size()), 4, RoundingMode.HALF_UP);
             sumOfPeriodAverages = sumOfPeriodAverages.add(periodAvg);
@@ -217,9 +268,10 @@ public class GradeServiceImpl implements GradeService {
         allGrades.forEach(g -> g.setStudentSituation(situation));
     }
 
-    private void recordHistory(Grade grade, BigDecimal previousValue, BigDecimal newValue, String notes) {
+    private void recordHistory(Grade grade, GradeKind kind, BigDecimal previousValue, BigDecimal newValue, String notes) {
         GradeHistory history = GradeHistory.builder()
                 .grade(grade)
+                .gradeKind(kind != null ? kind : GradeKind.ORIGINAL)
                 .previousGrade(previousValue)
                 .newGrade(newValue)
                 .notes(notes)
@@ -270,7 +322,7 @@ public class GradeServiceImpl implements GradeService {
         return assessmentService.findById(ref.getId());
     }
 
-    private void dispatchGradeNotification(Grade grade, String messageTemplate, String title) {
+    private void dispatchGradeNotification(Grade grade, BigDecimal val, String messageTemplate, String title) {
         if (notificationPublisherService == null || grade.getStudent() == null) return;
         try {
             String subjectName = (grade.getAssessment() != null
@@ -281,7 +333,6 @@ public class GradeServiceImpl implements GradeService {
             String assessmentTitle = (grade.getAssessment() != null && grade.getAssessment().getTitle() != null)
                     ? grade.getAssessment().getTitle()
                     : "Avaliação";
-            BigDecimal val = grade.getValue();
 
             com.andretti101.escolaweb.dto.response.NotificationMessageDTO notif =
                     com.andretti101.escolaweb.dto.response.NotificationMessageDTO.builder()

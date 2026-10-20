@@ -10,6 +10,8 @@ public interface GradeService {
     Grade launch(Grade grade, String notes);
     Grade update(Integer id, Grade grade);
     Grade update(Integer id, Grade grade, String notes);
+    Grade launchRecovery(Integer id, BigDecimal recoveryValue, String notes);
+    Grade removeRecovery(Integer id, String notes);
     void delete(Integer id);
     Grade findById(Integer id);
     List<Grade> findAll();
@@ -18,4 +20,3 @@ public interface GradeService {
     List<Grade> findByAssessment(Integer assessmentId);
     BigDecimal calculateAverage(Integer studentId, Integer teacherClassSubjectId);
 }
-

@@ -71,4 +71,7 @@ public interface GradeRepository extends JpaRepository<Grade, Integer> {
 
     @Query("SELECT g FROM Grade g JOIN FETCH g.assessment a JOIN FETCH a.teacherClassSubject tcs JOIN FETCH tcs.teacher t WHERE g.id = :id")
     Optional<Grade> findWithTcsById(@Param("id") Integer id);
+
+    @EntityGraph(attributePaths = {"student", "assessment", "assessment.teacherClassSubject", "assessment.teacherClassSubject.subject", "assessment.teacherClassSubject.classRoom"})
+    List<Grade> findByAssessment_PeriodAndRecoveryValueIsNull(com.andretti101.escolaweb.model.entity.AcademicPeriod period);
 }

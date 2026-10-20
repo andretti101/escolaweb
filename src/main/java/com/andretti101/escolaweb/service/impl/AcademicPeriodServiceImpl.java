@@ -2,11 +2,13 @@ package com.andretti101.escolaweb.service.impl;
 
 import com.andretti101.escolaweb.model.entity.AcademicPeriod;
 import com.andretti101.escolaweb.model.entity.AcademicYear;
+import com.andretti101.escolaweb.model.entity.Grade;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.repository.AcademicPeriodRepository;
 import com.andretti101.escolaweb.repository.AssessmentRepository;
 import com.andretti101.escolaweb.repository.ClassRoomRepository;
+import com.andretti101.escolaweb.repository.GradeRepository;
 import com.andretti101.escolaweb.repository.TeacherClassSubjectRepository;
 import com.andretti101.escolaweb.service.AcademicPeriodService;
 import com.andretti101.escolaweb.service.AcademicYearService;
@@ -28,6 +30,7 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
     private final AcademicYearService academicYearService;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
     private final ClassRoomRepository classRoomRepository;
+    private final GradeRepository gradeRepository;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -307,6 +310,32 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
         }
 
         validateMinimumAssessments(period);
+        validateRecoveryGradesLaunched(period);
+    }
+
+    private void validateRecoveryGradesLaunched(AcademicPeriod period) {
+        if (gradeRepository == null) {
+            return;
+        }
+        List<Grade> missingRecovery = gradeRepository.findByAssessment_PeriodAndRecoveryValueIsNull(period);
+        if (missingRecovery != null && !missingRecovery.isEmpty()) {
+            Grade first = missingRecovery.get(0);
+            String studentName = first.getStudent() != null ? first.getStudent().getName() : "Aluno";
+            String assessmentTitle = first.getAssessment() != null ? first.getAssessment().getTitle() : "Avaliação";
+            String subjectName = (first.getAssessment() != null
+                    && first.getAssessment().getTeacherClassSubject() != null
+                    && first.getAssessment().getTeacherClassSubject().getSubject() != null)
+                    ? first.getAssessment().getTeacherClassSubject().getSubject().getName()
+                    : "Disciplina";
+            throw new IllegalStateException(
+                    String.format("Não é possível fechar o período '%s': existem %d nota(s) sem recuperação lançada (ex.: aluno '%s' na avaliação '%s' de '%s'). Lance todas as notas de recuperação antes de fechar o período.",
+                            period.getName(),
+                            missingRecovery.size(),
+                            studentName,
+                            assessmentTitle,
+                            subjectName)
+            );
+        }
     }
 
     private void validateMinimumAssessments(AcademicPeriod period) {

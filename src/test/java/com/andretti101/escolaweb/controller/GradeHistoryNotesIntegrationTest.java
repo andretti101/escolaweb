@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -398,5 +399,136 @@ class GradeHistoryNotesIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "prof.auditoria.notas@escola.com", roles = "TEACHER")
+    @DisplayName("PUT and DELETE /api/grades/{id}/recovery manage recovery score, effectiveValue and record GradeKind.RECOVERY in history")
+    void launchUpdateAndDeleteRecovery_updatesEffectiveValueAndHistory() throws Exception {
+        GradeLaunchRequestDTO launchDto = new GradeLaunchRequestDTO(
+                student.getId(),
+                assessment.getId(),
+                new BigDecimal("4.5")
+        );
+
+        MvcResult launchRes = mockMvc.perform(post("/api/grades")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(launchDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.value").value(4.5))
+                .andExpect(jsonPath("$.effectiveValue").value(4.5))
+                .andReturn();
+
+        int gradeId = objectMapper.readTree(launchRes.getResponse().getContentAsString()).get("id").asInt();
+
+        // 1. Lançar recuperação maior (8.0) -> effectiveValue passa a ser 8.0
+        String recPayload1 = """
+                {
+                    "recoveryValue": 8.0,
+                    "notes": "Prova de recuperação paralela"
+                }
+                """;
+        mockMvc.perform(put("/api/grades/{id}/recovery", gradeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(recPayload1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.value").value(4.5))
+                .andExpect(jsonPath("$.recoveryValue").value(8.0))
+                .andExpect(jsonPath("$.effectiveValue").value(8.0));
+
+        // 2. Atualizar recuperação para valor menor que a 1ª nota (3.0) -> effectiveValue prevalece 4.5 (1ª nota)
+        String recPayload2 = """
+                {
+                    "recoveryValue": 3.0,
+                    "notes": "Retificação da nota de recuperação"
+                }
+                """;
+        mockMvc.perform(put("/api/grades/{id}/recovery", gradeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(recPayload2))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.value").value(4.5))
+                .andExpect(jsonPath("$.recoveryValue").value(3.0))
+                .andExpect(jsonPath("$.effectiveValue").value(4.5));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        mockMvc.perform(get("/api/grade-history/grade/{gradeId}", gradeId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].gradeKind").value("RECOVERY"))
+                .andExpect(jsonPath("$[0].previousGrade").value(8.0))
+                .andExpect(jsonPath("$[0].newGrade").value(3.0))
+                .andExpect(jsonPath("$[0].notes").value("Retificação da nota de recuperação"));
+    }
+
+    @Test
+    @WithMockUser(username = "prof.auditoria.notas@escola.com", roles = "TEACHER")
+    @DisplayName("TEACHER can DELETE own assessment grade via DELETE /api/grades/{id}")
+    void teacherCanDeleteOwnAssessmentGrade() throws Exception {
+        GradeLaunchRequestDTO launchDto = new GradeLaunchRequestDTO(
+                student.getId(),
+                assessment.getId(),
+                new BigDecimal("7.0")
+        );
+
+        MvcResult launchRes = mockMvc.perform(post("/api/grades")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(launchDto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        int gradeId = objectMapper.readTree(launchRes.getResponse().getContentAsString()).get("id").asInt();
+
+        mockMvc.perform(delete("/api/grades/{id}", gradeId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/grades/{id}", gradeId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "outro.professor@escola.com", roles = "TEACHER")
+    @DisplayName("TEACHER cannot DELETE another teacher assessment grade (403 Forbidden)")
+    void teacherCannotDeleteOtherTeacherGrade() throws Exception {
+        Teacher otherTeacher = Teacher.builder()
+                .name("Outro Professor")
+                .email("outro.professor@escola.com")
+                .password(passwordEncoder.encode("senha123"))
+                .role(UserRole.TEACHER)
+                .active(true)
+                .build();
+        teacherRepository.save(otherTeacher);
+
+        Grade grade = Grade.builder()
+                .student(student)
+                .assessment(assessment)
+                .value(new BigDecimal("7.0"))
+                .build();
+        entityManager.persist(grade);
+        entityManager.flush();
+
+        mockMvc.perform(delete("/api/grades/{id}", grade.getId()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "secretaria@escola.com", roles = "SECRETARY")
+    @DisplayName("SECRETARY can DELETE grade via DELETE /api/grades/{id}")
+    void secretaryCanDeleteGrade() throws Exception {
+        Grade grade = Grade.builder()
+                .student(student)
+                .assessment(assessment)
+                .value(new BigDecimal("7.0"))
+                .build();
+        entityManager.persist(grade);
+        entityManager.flush();
+
+        mockMvc.perform(delete("/api/grades/{id}", grade.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/grades/{id}", grade.getId()))
+                .andExpect(status().isNotFound());
     }
 }

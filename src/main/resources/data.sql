@@ -782,11 +782,12 @@ ORDER BY t.id, p.id, k.n;
 --       Representam 30% do total de reprovados (3 de 10).
 --   - Demais alunos 14, 15, 16, 20, 24, 25, 26, 30, 34, 35, 36 (11 alunos):
 --       APROVADOS no 3º Trimestre (médias ~6.5 a 7.5 no Tri1/Tri2 e ~8.0 no Tri3).
-INSERT INTO grades (created_at, student_situation, updated_at, score, assessment_id, student_id, active)
+INSERT INTO grades (created_at, student_situation, updated_at, score, recovery_score, assessment_id, student_id, active)
 SELECT (a.assessment_date + 1)::timestamp + interval '10 hours',
        CASE WHEN s.sc >= ay.minimum_grade THEN 'APPROVED' ELSE 'FAILED' END,
        (a.assessment_date + 1)::timestamp + interval '10 hours',
-       s.sc,
+       CASE WHEN (e.student_id + a.id) % 4 = 0 THEN greatest(0.0, s.sc - 1.5)::numeric(5,2) ELSE s.sc END,
+       CASE WHEN (e.student_id + a.id) % 4 = 0 THEN s.sc ELSE greatest(0.0, s.sc - 0.5)::numeric(5,2) END,
        a.id,
        e.student_id,
        true

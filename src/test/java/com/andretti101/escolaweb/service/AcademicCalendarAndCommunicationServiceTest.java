@@ -44,6 +44,8 @@ class AcademicCalendarAndCommunicationServiceTest {
         @Mock
         private TeacherClassSubjectRepository teacherClassSubjectRepository;
         @Mock
+        private GradeRepository gradeRepository;
+        @Mock
         private AcademicYearService academicYearService;
         @Mock
         private SchoolSettingsRepository schoolSettingsRepository;
@@ -206,6 +208,36 @@ class AcademicCalendarAndCommunicationServiceTest {
             // 5. Quando o período aberto já é o último da divisão -> openNextPeriod lança IllegalStateException
             assertThrows(IllegalStateException.class, () ->
                     academicPeriodServiceImpl.openNextPeriod(1, AcademicPeriodType.SEMESTER));
+
+            // 6. Fechar período bloqueia quando existem notas sem recuperação lançada
+            AcademicPeriod pOpen = AcademicPeriod.builder()
+                    .id(103)
+                    .name("Período Com Recuperação Pendente")
+                    .academicYear(year)
+                    .periodType(AcademicPeriodType.SEMESTER)
+                    .startDate(LocalDate.now().minusMonths(3))
+                    .endDate(LocalDate.now().minusDays(1))
+                    .closed(false)
+                    .build();
+            when(academicPeriodRepository.findById(103)).thenReturn(Optional.of(pOpen));
+            Grade pendingRec = Grade.builder()
+                    .id(77)
+                    .student(Student.builder().id(11).name("Lucas Almeida").build())
+                    .assessment(Assessment.builder().id(10).title("Prova 1").period(pOpen).build())
+                    .value(new BigDecimal("5.0"))
+                    .recoveryValue(null)
+                    .build();
+            when(gradeRepository.findByAssessment_PeriodAndRecoveryValueIsNull(pOpen)).thenReturn(List.of(pendingRec));
+
+            IllegalStateException closeEx = assertThrows(IllegalStateException.class, () -> academicPeriodServiceImpl.close(103));
+            assertTrue(closeEx.getMessage().contains("recuperação"));
+            assertFalse(pOpen.isClosed());
+
+            // Quando todas as recuperações estão lançadas -> fecha com sucesso
+            when(gradeRepository.findByAssessment_PeriodAndRecoveryValueIsNull(pOpen)).thenReturn(List.of());
+            when(academicPeriodRepository.save(pOpen)).thenReturn(pOpen);
+            AcademicPeriod closedPeriod = academicPeriodServiceImpl.close(103);
+            assertTrue(closedPeriod.isClosed());
         }
     }
 

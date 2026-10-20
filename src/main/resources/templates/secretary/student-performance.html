@@ -138,6 +138,7 @@
             <div id="gradesTableContainer" class="card d-none">
                 <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                     <h5 class="mb-0">Notas de <span id="currentSubjectNameNotes" class="text-primary"></span></h5>
+                    <small class="text-muted"><i class="bx bx-info-circle"></i> Prevalece na média a maior nota entre a 1ª Nota e a Recuperação.</small>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover">
@@ -146,9 +147,11 @@
                                 <th>Avaliação</th>
                                 <th>Tipo</th>
                                 <th>Data Lançamento</th>
-                                <th>Nota</th>
-<th>Ações</th>
-</tr>
+                                <th class="text-center">1ª Nota</th>
+                                <th class="text-center">Recuperação</th>
+                                <th class="text-center">Nota Final (Maior)</th>
+                                <th>Ações</th>
+                            </tr>
                         </thead>
                         <tbody id="editNotesBody">
                         </tbody>
@@ -513,22 +516,43 @@
             const typeMap = {
                 'EXAM': 'Prova',
                 'ASSIGNMENT': 'Trabalho',
+                'NOTEBOOK': 'Caderno',
                 'PROJECT': 'Projeto',
                 'PRESENTATION': 'Apresentação'
             };
 
             if (gradesForSubj.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
             } else {
-                tbody.innerHTML = gradesForSubj.map(g => `
-                    <tr>
-                        <td><strong>${escapeHtml(g.assessmentTitle)}</strong></td>
-                        <td><span class="badge bg-label-info">${escapeHtml(typeMap[g.assessmentType] || g.assessmentType)}</span></td>
-                        <td>${new Date(g.createdAt).toLocaleDateString('pt-BR')}</td>
-                        <td><strong>${g.value != null ? Number(g.value).toFixed(1) : '-'}</strong></td>
-                        <td><button class="btn btn-sm btn-icon btn-outline-primary" data-grade-id="${g.id}" data-assessment-title="${escapeHtml(g.assessmentTitle)}" data-grade-value="${g.value != null ? g.value : ''}" onclick="openEditGradeModal(this.dataset.gradeId, this.dataset.assessmentTitle, this.dataset.gradeValue)"><i class="bx bx-edit-alt"></i></button></td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = gradesForSubj.map(g => {
+                    const orig = g.value != null ? Number(g.value) : null;
+                    const rec = g.recoveryValue != null ? Number(g.recoveryValue) : null;
+                    const eff = g.effectiveValue != null ? Number(g.effectiveValue) : (orig !== null && rec !== null ? Math.max(orig, rec) : (orig ?? rec));
+                    const recWins = orig !== null && rec !== null && rec > orig;
+                    const origWins = orig !== null && (rec === null || orig >= rec);
+                    const effBadgeClass = eff != null && eff >= 6.0 ? 'bg-label-success' : 'bg-label-danger';
+                    return `
+                        <tr>
+                            <td><strong>${escapeHtml(g.assessmentTitle)}</strong></td>
+                            <td><span class="badge bg-label-info">${escapeHtml(typeMap[g.assessmentType] || g.assessmentType)}</span></td>
+                            <td>${new Date(g.createdAt).toLocaleDateString('pt-BR')}</td>
+                            <td class="text-center">${orig !== null ? (origWins ? `<strong>${orig.toFixed(1)}</strong>` : `<span class="text-muted">${orig.toFixed(1)}</span>`) : '-'}</td>
+                            <td class="text-center">${rec !== null ? (recWins ? `<strong class="text-success">${rec.toFixed(1)}</strong>` : `<span class="text-muted">${rec.toFixed(1)}</span>`) : '<span class="text-muted">Pendente</span>'}</td>
+                            <td class="text-center">${eff !== null ? `<span class="badge ${effBadgeClass} fs-6">${eff.toFixed(1)}</span>` : '-'}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-primary"
+                                    data-grade-id="${g.id}"
+                                    data-assessment-title="${escapeHtml(g.assessmentTitle)}"
+                                    data-grade-value="${g.value != null ? g.value : ''}"
+                                    data-recovery-value="${g.recoveryValue != null ? g.recoveryValue : ''}"
+                                    onclick="openEditGradeModal(this.dataset.gradeId, this.dataset.assessmentTitle, this.dataset.gradeValue, this.dataset.recoveryValue)"
+                                    title="Editar nota">
+                                    <i class="bx bx-edit-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             }
 
             document.getElementById('gradesTableContainer').classList.remove('d-none');
@@ -643,12 +667,57 @@
             document.getElementById('attendanceTableContainer').classList.remove('d-none');
         }
 
-        function openEditGradeModal(gradeId, assessmentTitle, currentValue) {
+        let originalGradeValue = null;
+        let originalRecoveryValue = null;
+
+        function updateFinalGradePreview() {
+            const raw1 = document.getElementById('gradeValue')?.value;
+            const rawRec = document.getElementById('recoveryValue')?.value;
+            const norm1 = (raw1 !== undefined && raw1 !== null) ? String(raw1).trim().replace(',', '.') : '';
+            const normRec = (rawRec !== undefined && rawRec !== null) ? String(rawRec).trim().replace(',', '.') : '';
+            const v1 = norm1 !== '' && !isNaN(parseFloat(norm1)) ? parseFloat(norm1) : null;
+            const vRec = normRec !== '' && !isNaN(parseFloat(normRec)) ? parseFloat(normRec) : null;
+
+            let finalVal = null;
+            let noteText = '';
+            if (v1 !== null && vRec !== null) {
+                if (vRec > v1) {
+                    finalVal = vRec;
+                    noteText = ' (Recuperação prevaleceu)';
+                } else {
+                    finalVal = v1;
+                    noteText = ' (1ª Nota prevaleceu)';
+                }
+            } else if (v1 !== null) {
+                finalVal = v1;
+            } else if (vRec !== null) {
+                finalVal = vRec;
+            }
+
+            const previewEl = document.getElementById('finalGradePreview');
+            if (previewEl) {
+                previewEl.value = finalVal !== null ? `${finalVal.toFixed(1)}${noteText}` : '-';
+            }
+        }
+
+        function openEditGradeModal(gradeId, assessmentTitle, currentValue, currentRecoveryValue) {
             document.getElementById('existingGradeId').value = gradeId || '';
             document.getElementById('assessmentName').value = assessmentTitle || '';
-            document.getElementById('gradeValue').value = currentValue !== undefined && currentValue !== null ? currentValue : '';
+
+            const origNorm = (currentValue !== undefined && currentValue !== null && currentValue !== '') ? String(currentValue).trim() : '';
+            const recNorm = (currentRecoveryValue !== undefined && currentRecoveryValue !== null && currentRecoveryValue !== '') ? String(currentRecoveryValue).trim() : '';
+
+            originalGradeValue = origNorm !== '' ? parseFloat(origNorm) : null;
+            originalRecoveryValue = recNorm !== '' ? parseFloat(recNorm) : null;
+
+            document.getElementById('gradeValue').value = origNorm !== '' ? origNorm : '';
+            document.getElementById('recoveryValue').value = recNorm !== '' ? recNorm : '';
+
             const notesInput = document.getElementById('gradeNotes');
             if (notesInput) notesInput.value = '';
+
+            updateFinalGradePreview();
+
             const modalEl = document.getElementById('gradeModal');
             if (modalEl) {
                 bootstrap.Modal.getOrCreateInstance(modalEl).show();
@@ -656,41 +725,97 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('gradeValue')?.addEventListener('input', updateFinalGradePreview);
+            document.getElementById('recoveryValue')?.addEventListener('input', updateFinalGradePreview);
+
             const btnSaveGrade = document.getElementById('btnSaveGrade');
             if (btnSaveGrade) {
                 btnSaveGrade.addEventListener('click', async () => {
                     const gradeId = document.getElementById('existingGradeId').value;
                     const rawVal = document.getElementById('gradeValue').value;
+                    const rawRec = document.getElementById('recoveryValue').value;
                     const notesEl = document.getElementById('gradeNotes');
                     const notesVal = notesEl && notesEl.value.trim() !== '' ? notesEl.value.trim() : null;
 
                     const normalizedVal = rawVal !== undefined && rawVal !== null ? String(rawVal).trim().replace(',', '.') : '';
-                    const gradeVal = parseFloat(normalizedVal);
+                    const normalizedRec = rawRec !== undefined && rawRec !== null ? String(rawRec).trim().replace(',', '.') : '';
 
-                    if (!gradeId || normalizedVal === '' || isNaN(gradeVal)) {
-                        if (window.showAlertModal) await window.showAlertModal('Aviso', 'Informe um valor de nota válido entre 0 e 10.');
+                    if (!gradeId || normalizedVal === '' || isNaN(parseFloat(normalizedVal))) {
+                        if (window.showAlertModal) await window.showAlertModal('Aviso', 'Informe um valor de 1ª nota válido entre 0 e 10.');
                         return;
                     }
+                    const gradeVal = parseFloat(normalizedVal);
                     if (gradeVal < 0 || gradeVal > 10) {
-                        if (window.showAlertModal) await window.showAlertModal('Aviso', 'A nota deve estar entre 0,0 e 10,0.');
+                        if (window.showAlertModal) await window.showAlertModal('Aviso', 'A 1ª nota deve estar entre 0,0 e 10,0.');
+                        return;
+                    }
+
+                    let recVal = null;
+                    if (normalizedRec !== '') {
+                        recVal = parseFloat(normalizedRec);
+                        if (isNaN(recVal) || recVal < 0 || recVal > 10) {
+                            if (window.showAlertModal) await window.showAlertModal('Aviso', 'A nota de recuperação deve estar entre 0,0 e 10,0.');
+                            return;
+                        }
+                    }
+
+                    const gradeChanged = (originalGradeValue === null) || Math.abs(originalGradeValue - gradeVal) > 1e-6;
+                    const recChanged = (recVal !== null && (originalRecoveryValue === null || Math.abs(originalRecoveryValue - recVal) > 1e-6));
+                    const recRemoved = (recVal === null && originalRecoveryValue !== null);
+
+                    if (!gradeChanged && !recChanged && !recRemoved) {
+                        const modalEl = document.getElementById('gradeModal');
+                        if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
                         return;
                     }
 
                     btnSaveGrade.disabled = true;
                     try {
-                        const res = await fetch(`/api/grades/${gradeId}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${jwtToken}`
-                            },
-                            body: JSON.stringify({ value: gradeVal, notes: notesVal })
-                        });
-                        if (!res.ok) {
-                            const err = await res.json().catch(() => null);
-                            const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao atualizar a nota.') : (err?.message || 'Erro ao atualizar a nota.');
-                            throw new Error(msg);
+                        if (gradeChanged) {
+                            const res = await fetch(`/api/grades/${gradeId}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${jwtToken}`
+                                },
+                                body: JSON.stringify({ value: gradeVal, notes: notesVal })
+                            });
+                            if (!res.ok) {
+                                const err = await res.json().catch(() => null);
+                                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao atualizar a 1ª nota.') : (err?.message || 'Erro ao atualizar a 1ª nota.');
+                                throw new Error(msg);
+                            }
                         }
+
+                        if (recChanged) {
+                            const recRes = await fetch(`/api/grades/${gradeId}/recovery`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${jwtToken}`
+                                },
+                                body: JSON.stringify({ recoveryValue: recVal, notes: notesVal })
+                            });
+                            if (!recRes.ok) {
+                                const err = await recRes.json().catch(() => null);
+                                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao salvar a nota de recuperação.') : (err?.message || 'Erro ao salvar a nota de recuperação.');
+                                throw new Error(msg);
+                            }
+                        } else if (recRemoved) {
+                            const delUrl = `/api/grades/${gradeId}/recovery` + (notesVal ? `?notes=${encodeURIComponent(notesVal)}` : '');
+                            const delRes = await fetch(delUrl, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${jwtToken}`
+                                }
+                            });
+                            if (!delRes.ok) {
+                                const err = await delRes.json().catch(() => null);
+                                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao remover a nota de recuperação.') : (err?.message || 'Erro ao remover a nota de recuperação.');
+                                throw new Error(msg);
+                            }
+                        }
+
                         const modalEl = document.getElementById('gradeModal');
                         if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
                         const currentSubj = document.getElementById('currentSubjectNameNotes')?.textContent;
@@ -717,7 +842,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="gradeForm">
+                <form id="gradeForm" onsubmit="return false;">
                     <input type="hidden" id="gradeTcsId">
                     <input type="hidden" id="gradePeriodId">
                     <input type="hidden" id="gradeAssessmentId">
@@ -727,9 +852,20 @@
                         <label class="form-label" for="assessmentName">Avaliação (Nome)</label>
                         <input type="text" class="form-control" id="assessmentName" readonly>
                     </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="gradeValue">1ª Nota (0 a 10) *</label>
+                            <input type="number" step="0.1" min="0" max="10" class="form-control" id="gradeValue" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="recoveryValue">Nota de Recuperação (0 a 10)</label>
+                            <input type="number" step="0.1" min="0" max="10" class="form-control" id="recoveryValue" placeholder="Opcional">
+                        </div>
+                    </div>
                     <div class="mb-3">
-                        <label class="form-label" for="gradeValue">Nota (0 a 10) *</label>
-                        <input type="number" step="0.1" min="0" max="10" class="form-control" id="gradeValue" required>
+                        <label class="form-label">Nota Final (Maior Nota)</label>
+                        <input type="text" class="form-control fw-bold" id="finalGradePreview" readonly value="-">
+                        <small class="text-muted">Prevalece na média a maior nota entre a 1ª Nota e a Recuperação.</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="gradeNotes">Justificativa / Observação</label>

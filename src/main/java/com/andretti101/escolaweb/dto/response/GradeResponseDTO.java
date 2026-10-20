@@ -16,7 +16,28 @@ public record GradeResponseDTO(
         String subjectName,
         String periodName,
         BigDecimal value,
+        BigDecimal recoveryValue,
+        BigDecimal effectiveValue,
         StudentSituation studentSituation,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
-) {}
+) {
+    public GradeResponseDTO(
+            Integer id,
+            Integer studentId,
+            String studentName,
+            Integer assessmentId,
+            String assessmentTitle,
+            String assessmentType,
+            Integer tcsId,
+            String subjectName,
+            String periodName,
+            BigDecimal value,
+            StudentSituation studentSituation,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
+        this(id, studentId, studentName, assessmentId, assessmentTitle, assessmentType,
+                tcsId, subjectName, periodName, value, null, value, studentSituation, createdAt, updatedAt);
+    }
+}

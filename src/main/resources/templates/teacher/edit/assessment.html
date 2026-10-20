@@ -87,7 +87,7 @@
                                 </div>
                                 <div class="card" id="gradesSection">
                                     <h5 class="card-header border-bottom d-flex justify-content-between align-items-center">
-                                        <span>2. Lançamento de Notas</span>
+                                        <span>2. Lançamento de Notas e Recuperação</span>
                                         <span class="badge bg-label-info" id="studentCountBadge">Carregando...</span>
                                     </h5>
                                     <div class="card-body mt-3">
@@ -100,7 +100,9 @@
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Nome do Aluno</th>
-                                                        <th class="text-center" style="min-width: 110px; width: 140px;">Nota (0 a 10)</th>
+                                                        <th class="text-center" style="min-width: 120px; width: 150px;">1ª Nota (0 a 10)</th>
+                                                        <th class="text-center" style="min-width: 130px; width: 160px;">Recuperação (0 a 10)</th>
+                                                        <th class="text-center" style="min-width: 110px; width: 130px;">Nota Final (Maior)</th>
                                                         <th>Justificativa / Observação</th>
                                                     </tr>
                                                 </thead>
@@ -109,7 +111,9 @@
                                             </table>
                                         </div>
                                         <div class="mt-4 text-end">
-                                            <p class="text-muted small mb-2 text-start"><i class="bx bx-info-circle"></i> Deixe o campo em branco para alunos que não fizeram a prova.</p>
+                                            <p class="text-muted small mb-2 text-start">
+                                                <i class="bx bx-info-circle"></i> Toda nota possui uma recuperação correspondente. Prevalece na média do aluno a <strong>maior nota</strong> entre a 1ª nota e a recuperação. Para fechar o período, todas as recuperações devem estar lançadas.
+                                            </p>
                                             <button type="button" class="btn btn-primary btn-lg" id="btnSave" onclick="updateAssessmentAndGrades()" disabled>
                                                 <i class="bx bx-save me-1"></i> Atualizar Avaliação e Notas
                                             </button>
@@ -231,7 +235,7 @@
                     
                     const tbody = document.getElementById('studentsTableBody');
                     if (currentStudents.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum aluno matriculado.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum aluno matriculado.</td></tr>';
                     } else {
                         renderGradesTable();
                         document.getElementById('btnSave').disabled = false;
@@ -239,11 +243,38 @@
                 }
             } catch(e) {
                 console.error('Erro ao carregar alunos/notas', e);
-                document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Erro ao carregar diário.</td></tr>';
+                document.getElementById('studentsTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar diário.</td></tr>';
             } finally {
                 document.getElementById('studentsLoading').classList.add('d-none');
                 document.getElementById('tableContainer').classList.remove('d-none');
             }
+        }
+
+        function formatFinalBadge(val1, val2) {
+            const n1 = (val1 !== '' && val1 != null && !isNaN(parseFloat(String(val1).replace(',', '.')))) ? parseFloat(String(val1).replace(',', '.')) : null;
+            const n2 = (val2 !== '' && val2 != null && !isNaN(parseFloat(String(val2).replace(',', '.')))) ? parseFloat(String(val2).replace(',', '.')) : null;
+            if (n1 === null && n2 === null) {
+                return '<span class="badge bg-label-secondary">—</span>';
+            }
+            const eff = (n1 !== null && n2 !== null) ? Math.max(n1, n2) : (n1 !== null ? n1 : n2);
+            const fromRec = (n1 !== null && n2 !== null && n2 > n1);
+            const badgeClass = eff >= 6.0 ? 'bg-label-success' : 'bg-label-danger';
+            const recHint = fromRec ? ' <i class="bx bx-up-arrow-alt" title="Prevaleceu a recuperação"></i>' : '';
+            return `<span class="badge ${badgeClass} fs-6">${eff.toFixed(1).replace('.', ',')}${recHint}</span>`;
+        }
+
+        function onStudentScoreInput(studentId) {
+            const gradeEl = document.getElementById(`grade_${studentId}`);
+            const recEl = document.getElementById(`recovery_${studentId}`);
+            const finalEl = document.getElementById(`effective_${studentId}`);
+            if (!gradeEl || !recEl || !finalEl) return;
+
+            const hasGrade = gradeEl.value.trim() !== '';
+            recEl.disabled = !hasGrade;
+            if (!hasGrade) {
+                recEl.value = '';
+            }
+            finalEl.innerHTML = formatFinalBadge(gradeEl.value.trim(), recEl.value.trim());
         }
 
         function renderGradesTable() {
@@ -257,7 +288,9 @@
                 const safeName = s.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 const existingGrade = gradesMap[s.id];
                 const gradeValue = (existingGrade && existingGrade.value != null) ? existingGrade.value : '';
-                const currentLabel = gradeValue !== '' ? `<small class="text-muted d-block mt-1">Nota Atual: <strong>${Number(gradeValue).toFixed(1).replace('.', ',')}</strong></small>` : '<small class="text-muted d-block mt-1">Sem nota lançada</small>';
+                const recoveryValue = (existingGrade && existingGrade.recoveryValue != null) ? existingGrade.recoveryValue : '';
+                const currentLabel = gradeValue !== '' ? `<small class="text-muted d-block mt-1">1ª Nota: <strong>${Number(gradeValue).toFixed(1).replace('.', ',')}</strong></small>` : '<small class="text-muted d-block mt-1">Sem nota lançada</small>';
+                const currentRecoveryLabel = recoveryValue !== '' ? `<small class="text-muted d-block mt-1">Rec. Atual: <strong>${Number(recoveryValue).toFixed(1).replace('.', ',')}</strong></small>` : '<small class="text-muted d-block mt-1">Sem recuperação</small>';
                 
                 html += `
                     <tr data-student-name="${safeName.toLowerCase()}">
@@ -269,16 +302,34 @@
                                         name="grade_${s.id}" id="grade_${s.id}" 
                                         data-grade-id="${existingGrade ? existingGrade.id : ''}"
                                         data-original-value="${gradeValue}"
-                                        value="${gradeValue}" step="0.1" min="0" max="10">
+                                        value="${gradeValue}" step="0.1" min="0" max="10"
+                                        oninput="onStudentScoreInput(${s.id})">
                                 </div>
                                 ${currentLabel}
                             </div>
+                        </td>
+                        <td class="text-center align-middle">
+                            <div class="w-75 mx-auto">
+                                <div class="input-group input-group-sm">
+                                    <input type="number" class="form-control text-center fw-bold" 
+                                        name="recovery_${s.id}" id="recovery_${s.id}" 
+                                        data-original-recovery="${recoveryValue}"
+                                        value="${recoveryValue}" step="0.1" min="0" max="10"
+                                        ${gradeValue === '' ? 'disabled' : ''}
+                                        placeholder="--"
+                                        oninput="onStudentScoreInput(${s.id})">
+                                </div>
+                                ${currentRecoveryLabel}
+                            </div>
+                        </td>
+                        <td class="text-center align-middle" id="effective_${s.id}">
+                            ${formatFinalBadge(gradeValue, recoveryValue)}
                         </td>
                         <td class="align-middle">
                             <input type="text" class="form-control form-control-sm"
                                 name="notes_${s.id}" id="notes_${s.id}"
                                 maxlength="500"
-                                placeholder="Informe o motivo da alteração da nota (opcional)">
+                                placeholder="Informe o motivo da alteração da nota/recuperação (opcional)">
                         </td>
                     </tr>
                 `;
@@ -299,11 +350,25 @@
 
             for (const student of currentStudents) {
                 const inputEl = document.getElementById(`grade_${student.id}`);
+                const recEl = document.getElementById(`recovery_${student.id}`);
                 const gradeInput = inputEl ? inputEl.value.trim() : '';
+                const recInput = recEl ? recEl.value.trim() : '';
+
                 if (gradeInput !== '') {
                     const gradeVal = parseFloat(gradeInput.replace(',', '.'));
                     if (isNaN(gradeVal) || gradeVal < 0 || gradeVal > 10) {
-                        showAlert(`A nota do aluno ${student.name} deve estar entre 0,0 e 10,0.`, 'warning');
+                        showAlert(`A 1ª nota do aluno ${student.name} deve estar entre 0,0 e 10,0.`, 'warning');
+                        return;
+                    }
+                }
+                if (recInput !== '') {
+                    if (gradeInput === '') {
+                        showAlert(`Para lançar recuperação para o aluno ${student.name}, informe primeiro a 1ª nota.`, 'warning');
+                        return;
+                    }
+                    const recVal = parseFloat(recInput.replace(',', '.'));
+                    if (isNaN(recVal) || recVal < 0 || recVal > 10) {
+                        showAlert(`A nota de recuperação do aluno ${student.name} deve estar entre 0,0 e 10,0.`, 'warning');
                         return;
                     }
                 }
@@ -335,59 +400,91 @@
                     throw new Error(msg);
                 }
 
-                const gradePromises = [];
-                currentStudents.forEach(student => {
+                const errors = [];
+                for (const student of currentStudents) {
                     const inputEl = document.getElementById(`grade_${student.id}`);
+                    const recEl = document.getElementById(`recovery_${student.id}`);
                     const notesEl = document.getElementById(`notes_${student.id}`);
-                    const gradeInput = inputEl.value;
-                    const gradeId = inputEl.getAttribute('data-grade-id');
+
+                    const gradeInput = inputEl ? inputEl.value.trim() : '';
+                    const recInput = recEl ? recEl.value.trim() : '';
+                    let gradeId = inputEl.getAttribute('data-grade-id');
                     const originalValStr = inputEl.getAttribute('data-original-value') || '';
+                    const originalRecStr = recEl ? (recEl.getAttribute('data-original-recovery') || '') : '';
                     const notesVal = notesEl && notesEl.value.trim() !== '' ? notesEl.value.trim() : null;
 
-                    if (gradeInput && gradeInput.trim() !== '') {
+                    if (gradeInput !== '') {
                         const gradeVal = parseFloat(gradeInput.replace(',', '.'));
-                        
                         if (gradeId) {
                             const originalVal = originalValStr !== '' ? parseFloat(originalValStr) : null;
                             const valueChanged = originalVal === null || Math.abs(originalVal - gradeVal) > 1e-6;
                             if (valueChanged) {
-                                gradePromises.push(
-                                    fetch(`/api/grades/${gradeId}`, {
-                                        method: 'PUT',
-                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                                        body: JSON.stringify({ value: gradeVal, notes: notesVal })
-                                    })
-                                );
+                                const res = await fetch(`/api/grades/${gradeId}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                                    body: JSON.stringify({ value: gradeVal, notes: notesVal })
+                                });
+                                if (!res.ok) {
+                                    const err = await res.json().catch(() => null);
+                                    errors.push(window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao atualizar nota') : (err?.message || 'Erro ao atualizar nota'));
+                                    continue;
+                                }
                             }
                         } else {
-                            gradePromises.push(
-                                fetch('/api/grades', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                                    body: JSON.stringify({ studentId: student.id, assessmentId: Number(assessmentId), value: gradeVal })
-                                })
-                            );
+                            const res = await fetch('/api/grades', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                                body: JSON.stringify({ studentId: student.id, assessmentId: Number(assessmentId), value: gradeVal })
+                            });
+                            if (!res.ok) {
+                                const err = await res.json().catch(() => null);
+                                errors.push(window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao lançar nota') : (err?.message || 'Erro ao lançar nota'));
+                                continue;
+                            }
+                            const created = await res.json();
+                            gradeId = created.id;
                         }
-                    } else if (gradeId && gradeInput.trim() === '') {
-                        gradePromises.push(
-                            fetch(`/api/grades/${gradeId}`, {
-                                method: 'DELETE',
-                                headers: { 'Authorization': `Bearer ${getToken()}` }
-                            })
-                        );
-                    }
-                });
 
-                const results = await Promise.all(gradePromises);
-                
-                const errors = [];
-                for (let res of results) {
-                    if (res && !res.ok) {
-                        const err = await res.json().catch(() => null);
-                        const msg = window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao salvar nota') : (err?.message || 'Erro ao salvar nota');
-                        errors.push(msg);
+                        // Tratamento da nota de recuperação
+                        if (gradeId) {
+                            if (recInput !== '') {
+                                const recVal = parseFloat(recInput.replace(',', '.'));
+                                const originalRec = originalRecStr !== '' ? parseFloat(originalRecStr) : null;
+                                const recChanged = originalRec === null || Math.abs(originalRec - recVal) > 1e-6;
+                                if (recChanged) {
+                                    const recRes = await fetch(`/api/grades/${gradeId}/recovery`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                                        body: JSON.stringify({ recoveryValue: recVal, notes: notesVal })
+                                    });
+                                    if (!recRes.ok) {
+                                        const err = await recRes.json().catch(() => null);
+                                        errors.push(window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao salvar recuperação') : (err?.message || 'Erro ao salvar recuperação'));
+                                    }
+                                }
+                            } else if (originalRecStr !== '') {
+                                const delRecRes = await fetch(`/api/grades/${gradeId}/recovery` + (notesVal ? `?notes=${encodeURIComponent(notesVal)}` : ''), {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                                });
+                                if (!delRecRes.ok) {
+                                    const err = await delRecRes.json().catch(() => null);
+                                    errors.push(window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao remover recuperação') : (err?.message || 'Erro ao remover recuperação'));
+                                }
+                            }
+                        }
+                    } else if (gradeId && gradeInput === '') {
+                        const delRes = await fetch(`/api/grades/${gradeId}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${getToken()}` }
+                        });
+                        if (!delRes.ok) {
+                            const err = await delRes.json().catch(() => null);
+                            errors.push(window.extractErrorMessage ? window.extractErrorMessage(err, 'Erro ao excluir nota') : (err?.message || 'Erro ao excluir nota'));
+                        }
                     }
                 }
+
                 if (errors.length > 0) {
                     await loadGradesAndStudents();
                     throw new Error('Algumas notas não puderam ser salvas: ' + errors.join(', '));
@@ -403,4 +500,3 @@
     </script>
 </body>
 </html>
-

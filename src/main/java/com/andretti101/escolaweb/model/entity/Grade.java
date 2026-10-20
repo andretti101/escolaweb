@@ -48,6 +48,22 @@ public class Grade implements Serializable {
     @Column(name = "score", precision = 5, scale = 2)
     private BigDecimal value;
 
+    @DecimalMin(value = "0.0", message = "A nota de recuperação deve ser de pelo menos 0.")
+    @DecimalMax(value = "10.0", message = "A nota de recuperação deve ser no máximo 10.")
+    @Column(name = "recovery_score", precision = 5, scale = 2)
+    private BigDecimal recoveryValue;
+
+    @Transient
+    public BigDecimal getEffectiveValue() {
+        if (value == null) {
+            return recoveryValue;
+        }
+        if (recoveryValue == null) {
+            return value;
+        }
+        return value.max(recoveryValue);
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(name = "student_situation", length = 20)
     private StudentSituation studentSituation;

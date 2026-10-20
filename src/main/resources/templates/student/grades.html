@@ -107,6 +107,7 @@
                         <div id="gradesTableContainer" class="card d-none">
                             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                                 <h5 class="mb-0">Notas de <span id="currentSubjectName" class="text-primary"></span></h5>
+                                <small class="text-muted"><i class="bx bx-info-circle"></i> Prevalece na média a maior nota entre a 1ª Nota e a Recuperação.</small>
                             </div>
                             <div class="table-responsive">
                                 <table class="table table-hover">
@@ -115,7 +116,9 @@
                                             <th>Avaliação</th>
                                             <th>Tipo</th>
                                             <th>Data Lançamento</th>
-                                            <th>Nota</th>
+                                            <th class="text-center">1ª Nota</th>
+                                            <th class="text-center">Recuperação</th>
+                                            <th class="text-center">Nota Final (Maior)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="gradesTableBody">
@@ -196,7 +199,6 @@
                 return;
             }
 
-            // Removendo o "-- Escolha um período --" e setando as opções diretas
             select.innerHTML = periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
 
             select.value = periods[0];
@@ -239,21 +241,32 @@
             const typeMap = {
                 'EXAM': 'Prova',
                 'ASSIGNMENT': 'Trabalho',
+                'NOTEBOOK': 'Caderno',
                 'PROJECT': 'Projeto',
                 'PRESENTATION': 'Apresentação'
             };
 
             if (grades.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma avaliação encontrada.</td></tr>';
             } else {
-                tbody.innerHTML = grades.map(g => `
-                    <tr>
-                        <td><strong>${escapeHtml(g.assessmentTitle)}</strong></td>
-                        <td><span class="badge bg-label-info">${escapeHtml(typeMap[g.assessmentType] || g.assessmentType)}</span></td>
-                        <td>${new Date(g.createdAt).toLocaleDateString('pt-BR')}</td>
-                        <td><strong>${g.value != null ? Number(g.value).toFixed(1) : '-'}</strong></td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = grades.map(g => {
+                    const orig = g.value != null ? Number(g.value) : null;
+                    const rec = g.recoveryValue != null ? Number(g.recoveryValue) : null;
+                    const eff = g.effectiveValue != null ? Number(g.effectiveValue) : (orig !== null && rec !== null ? Math.max(orig, rec) : (orig ?? rec));
+                    const recWins = orig !== null && rec !== null && rec > orig;
+                    const origWins = orig !== null && (rec === null || orig >= rec);
+                    const effBadgeClass = eff != null && eff >= 6.0 ? 'bg-label-success' : 'bg-label-danger';
+                    return `
+                        <tr>
+                            <td><strong>${escapeHtml(g.assessmentTitle)}</strong></td>
+                            <td><span class="badge bg-label-info">${escapeHtml(typeMap[g.assessmentType] || g.assessmentType)}</span></td>
+                            <td>${new Date(g.createdAt).toLocaleDateString('pt-BR')}</td>
+                            <td class="text-center">${orig !== null ? (origWins ? `<strong>${orig.toFixed(1)}</strong>` : `<span class="text-muted">${orig.toFixed(1)}</span>`) : '-'}</td>
+                            <td class="text-center">${rec !== null ? (recWins ? `<strong class="text-success">${rec.toFixed(1)}</strong>` : `<span class="text-muted">${rec.toFixed(1)}</span>`) : '<span class="text-muted">Pendente</span>'}</td>
+                            <td class="text-center">${eff !== null ? `<span class="badge ${effBadgeClass} fs-6">${eff.toFixed(1)}</span>` : '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
             }
 
             document.getElementById('gradesTableContainer').classList.remove('d-none');
@@ -263,4 +276,3 @@
     </script>
 </body>
 </html>
-

@@ -402,6 +402,9 @@
             const subjectText = escapeHtml(h.subjectName || '—');
             const assessmentText = escapeHtml(h.assessmentTitle || 'Avaliação');
             const periodText = h.periodName ? ` (${escapeHtml(h.periodName)})` : '';
+            const kindBadge = h.gradeKind === 'RECOVERY'
+                ? ' <span class="badge bg-label-warning ms-1">Recuperação</span>'
+                : '';
             const teacherText = escapeHtml(h.teacherName || '—');
             const authorHtml = h.changedByName
                 ? `<div class="mt-1"><span class="badge bg-label-info badge-author"><i class="bx bx-user me-1"></i>${escapeHtml(h.changedByName)}</span></div>`
@@ -421,7 +424,7 @@
                     </td>
                     <td>
                         <span class="fw-semibold text-primary">${subjectText}</span>
-                        <div class="small text-muted">${assessmentText}${periodText}</div>
+                        <div class="small text-muted">${assessmentText}${periodText}${kindBadge}</div>
                     </td>
                     <td class="text-nowrap">
                         <div class="d-flex align-items-center gap-1">
@@ -686,6 +689,7 @@
                                 <small class="text-muted"><i class="bx bx-user me-1"></i>${author}</small>
                             </div>
                             <div class="my-1">
+                                ${item.gradeKind === 'RECOVERY' ? '<span class="badge bg-label-warning me-1">Recuperação</span>' : '<span class="badge bg-label-primary me-1">1ª Nota</span>'}
                                 Alteração: ${renderGradeBadge(item.previousGrade)}
                                 <i class="bx bx-right-arrow-alt text-muted mx-1"></i>
                                 ${renderGradeBadge(item.newGrade)}

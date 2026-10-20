@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.model.entity;
 
+import com.andretti101.escolaweb.model.enums.GradeKind;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -29,6 +30,11 @@ public class GradeHistory implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grade_id", nullable = false)
     private Grade grade;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grade_kind", length = 20, nullable = false)
+    private GradeKind gradeKind = GradeKind.ORIGINAL;
 
     @Column(name = "old_grade", precision = 5, scale = 2)
     private BigDecimal previousGrade;

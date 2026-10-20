@@ -44,7 +44,10 @@ public class StudentAiTools {
             }
             var grades = gradeService.findByStudent(student.getId());
             String info = grades.stream()
-                    .map(g -> "Matéria: " + g.getAssessment().getTeacherClassSubject().getSubject().getName() + " - Avaliação: " + g.getAssessment().getTitle() + ", Nota: " + g.getValue())
+                    .map(g -> "Matéria: " + g.getAssessment().getTeacherClassSubject().getSubject().getName()
+                            + " - Avaliação: " + g.getAssessment().getTitle()
+                            + ", Nota: " + g.getEffectiveValue()
+                            + (g.getRecoveryValue() != null ? " (1ª Nota: " + g.getValue() + ", Recuperação: " + g.getRecoveryValue() + ")" : ""))
                     .collect(Collectors.joining("; "));
             return info.isEmpty() ? "Nenhuma nota encontrada." : info;
         });

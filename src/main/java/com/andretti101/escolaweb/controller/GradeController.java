@@ -1,6 +1,7 @@
 package com.andretti101.escolaweb.controller;
 
 import com.andretti101.escolaweb.dto.request.GradeLaunchRequestDTO;
+import com.andretti101.escolaweb.dto.request.GradeRecoveryRequestDTO;
 import com.andretti101.escolaweb.dto.request.GradeUpdateRequestDTO;
 import com.andretti101.escolaweb.dto.response.GradeResponseDTO;
 import com.andretti101.escolaweb.model.entity.Assessment;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.andretti101.escolaweb.dto.response.PagedResponse;
@@ -114,7 +116,7 @@ public class GradeController {
     @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY', 'PRINCIPAL', 'STUDENT')")
     public ResponseEntity<List<GradeResponseDTO>> findByStudent(
             @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
-            @Parameter(description = "ID do ano letivo opcional") @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
+            @Parameter(description = "ID do ano letivo opcional") @RequestParam(required = false) Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
 
         List<Grade> grades = gradeService.findByStudent(studentId);
@@ -157,7 +159,7 @@ public class GradeController {
         );
     }
 
-    @Operation(summary = "Calcular média do estudante na disciplina", description = "Calcula a média ponderada/aritmética das notas do estudante para a atribuição docente especificada.")
+    @Operation(summary = "Calcular média do estudante na disciplina", description = "Calcula a média ponderada/aritmética das notas do estudante para a atribuição docente especificada, prevalecendo a maior nota entre a primeira nota e a recuperação.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Média calculada com sucesso (ex: 8.75)"),
             @ApiResponse(responseCode = "403", description = "Acesso negado"),
@@ -198,16 +200,61 @@ public class GradeController {
         return ResponseEntity.ok(toResponse(gradeService.update(id, incoming, dto.notes())));
     }
 
-    @Operation(summary = "Excluir nota", description = "Remove um lançamento de nota do sistema. Exclusivo para Secretaria.")
+    @Operation(summary = "Lançar ou atualizar nota de recuperação", description = "Registra ou atualiza a nota de recuperação vinculada a uma nota existente. Prevalecerá na média a maior nota entre a primeira nota e a recuperação.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Nota de recuperação salva com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Valor inválido ou período encerrado"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Nota não encontrada")
+    })
+    @PutMapping("/{id}/recovery")
+    @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
+    public ResponseEntity<GradeResponseDTO> launchRecovery(
+            @Parameter(description = "ID da nota") @PathVariable Integer id,
+            @Valid @RequestBody GradeRecoveryRequestDTO dto) {
+        if (authenticatedUserService.isTeacher()) {
+            Grade existing = gradeService.findById(id);
+            authenticatedUserService.enforceTeacherOwnership(
+                    existing.getAssessment().getTeacherClassSubject());
+        }
+        return ResponseEntity.ok(toResponse(gradeService.launchRecovery(id, dto.recoveryValue(), dto.notes())));
+    }
+
+    @Operation(summary = "Remover nota de recuperação", description = "Remove a nota de recuperação vinculada a uma nota quando o período está aberto.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Nota de recuperação removida com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Período encerrado"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Nota não encontrada")
+    })
+    @DeleteMapping("/{id}/recovery")
+    @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
+    public ResponseEntity<GradeResponseDTO> removeRecovery(
+            @Parameter(description = "ID da nota") @PathVariable Integer id,
+            @Parameter(description = "Motivo opcional") @RequestParam(required = false) String notes) {
+        if (authenticatedUserService.isTeacher()) {
+            Grade existing = gradeService.findById(id);
+            authenticatedUserService.enforceTeacherOwnership(
+                    existing.getAssessment().getTeacherClassSubject());
+        }
+        return ResponseEntity.ok(toResponse(gradeService.removeRecovery(id, notes)));
+    }
+
+    @Operation(summary = "Excluir nota", description = "Remove um lançamento de nota do sistema. Professores só excluem notas de suas próprias avaliações.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Nota excluída com sucesso"),
             @ApiResponse(responseCode = "403", description = "Acesso negado"),
             @ApiResponse(responseCode = "404", description = "Nota não encontrada")
     })
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('SECRETARY')")
+    @PreAuthorize("hasAnyRole('TEACHER', 'SECRETARY')")
     public ResponseEntity<Void> delete(
             @Parameter(description = "ID da nota a ser excluída") @PathVariable Integer id) {
+        if (authenticatedUserService.isTeacher()) {
+            Grade existing = gradeService.findById(id);
+            authenticatedUserService.enforceTeacherOwnership(
+                    existing.getAssessment().getTeacherClassSubject());
+        }
         gradeService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -251,6 +298,8 @@ public class GradeController {
                 g.getAssessment().getTeacherClassSubject().getSubject().getName(),
                 g.getAssessment().getPeriod().getName(),
                 g.getValue(),
+                g.getRecoveryValue(),
+                g.getEffectiveValue(),
                 g.getStudentSituation(),
                 g.getCreatedAt(),
                 g.getUpdatedAt()

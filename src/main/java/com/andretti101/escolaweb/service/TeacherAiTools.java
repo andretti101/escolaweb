@@ -62,11 +62,11 @@ public class TeacherAiTools {
                 for (var a : assessments) {
                     var grades = gradeRepository.findByAssessment(a);
                     var badGrades = grades.stream()
-                        .filter(g -> g.getValue().compareTo(new BigDecimal("6.0")) < 0)
+                        .filter(g -> g.getEffectiveValue() != null && g.getEffectiveValue().compareTo(new BigDecimal("6.0")) < 0)
                         .collect(Collectors.toList());
                     if (!badGrades.isEmpty()) {
                         sb.append("  Avaliação: ").append(a.getTitle()).append(" - Alunos com nota baixa:\n");
-                        badGrades.forEach(g -> sb.append("    - ").append(g.getStudent().getName()).append(": ").append(g.getValue()).append("\n"));
+                        badGrades.forEach(g -> sb.append("    - ").append(g.getStudent().getName()).append(": ").append(g.getEffectiveValue()).append("\n"));
                     }
                 }
             }

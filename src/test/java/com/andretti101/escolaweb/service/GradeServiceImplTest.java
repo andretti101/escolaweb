@@ -294,6 +294,104 @@ class GradeServiceImplTest {
     }
 
     @Test
+    @DisplayName("calculateAverage prevalece a maior nota entre a primeira nota e a nota da recuperação")
+    void calculateAverage_usesHighestBetweenOriginalAndRecovery() {
+        when(studentService.findById(11)).thenReturn(student);
+        when(teacherClassSubjectService.findById(10)).thenReturn(tcs);
+
+        Assessment a1 = Assessment.builder().id(1).period(period1).teacherClassSubject(tcs).build();
+        Assessment a2 = Assessment.builder().id(2).period(period1).teacherClassSubject(tcs).build();
+        Assessment a3 = Assessment.builder().id(3).period(period2).teacherClassSubject(tcs).build();
+
+        // g1: original 4.0, recuperação 8.0 -> prevalece 8.0
+        Grade g1 = Grade.builder().value(new BigDecimal("4.0")).recoveryValue(new BigDecimal("8.0")).assessment(a1).build();
+        // g2: original 9.0, recuperação 6.0 -> prevalece 9.0
+        Grade g2 = Grade.builder().value(new BigDecimal("9.0")).recoveryValue(new BigDecimal("6.0")).assessment(a2).build();
+        // g3: original 5.0, recuperação 7.5 -> prevalece 7.5
+        Grade g3 = Grade.builder().value(new BigDecimal("5.0")).recoveryValue(new BigDecimal("7.5")).assessment(a3).build();
+
+        assertEquals(new BigDecimal("8.0"), g1.getEffectiveValue());
+        assertEquals(new BigDecimal("9.0"), g2.getEffectiveValue());
+        assertEquals(new BigDecimal("7.5"), g3.getEffectiveValue());
+
+        when(gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs))
+                .thenReturn(List.of(g1, g2, g3));
+
+        // P1 avg = (8.0 + 9.0)/2 = 8.5000; P2 avg = 7.5000 -> (8.5 + 7.5)/2 = 8.00
+        BigDecimal avg = gradeService.calculateAverage(11, 10);
+        assertEquals(new BigDecimal("8.00"), avg);
+    }
+
+    @Test
+    @DisplayName("launchRecovery e removeRecovery gravam histórico RECOVERY, notificam o aluno e atualizam situação")
+    void launchAndRemoveRecovery_updatesSituationAndRecordsRecoveryHistory() {
+        Assessment assessment2 = Assessment.builder()
+                .id(51)
+                .title("Prova 2")
+                .teacherClassSubject(tcs)
+                .period(period2)
+                .build();
+        Grade g1 = Grade.builder()
+                .id(500)
+                .student(student)
+                .assessment(assessment1)
+                .value(new BigDecimal("3.0"))
+                .studentSituation(StudentSituation.FAILED)
+                .build();
+        Grade g2 = Grade.builder()
+                .id(501)
+                .student(student)
+                .assessment(assessment2)
+                .value(new BigDecimal("7.0"))
+                .studentSituation(StudentSituation.FAILED)
+                .build();
+
+        when(gradeRepository.findById(500)).thenReturn(Optional.of(g1));
+        when(studentService.findById(11)).thenReturn(student);
+        when(teacherClassSubjectService.findById(10)).thenReturn(tcs);
+        when(schoolSettingsService.findSettings()).thenReturn(settings);
+        when(gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs))
+                .thenReturn(List.of(g1, g2));
+        when(attendanceService.calculateFrequency(11, 10)).thenReturn(new BigDecimal("90.00"));
+
+        // Lançando recuperação 8.0 na nota g1 (que tinha 3.0) -> média passa de 5.0 para (8.0 + 7.0)/2 = 7.50 -> APPROVED
+        Grade updated = gradeService.launchRecovery(500, new BigDecimal("8.0"), null);
+
+        assertEquals(new BigDecimal("8.0"), updated.getRecoveryValue());
+        assertEquals(new BigDecimal("8.0"), updated.getEffectiveValue());
+        assertEquals(StudentSituation.APPROVED, updated.getStudentSituation());
+        verify(gradeHistoryRepository, never()).save(any());
+
+        verify(notificationPublisherService).notifyStudent(eq(11), argThat(notif ->
+                "GRADE_LAUNCHED".equals(notif.getType()) &&
+                "Nota de Recuperação Lançada".equals(notif.getTitle()) &&
+                notif.getMessage().contains("8.0")
+        ));
+
+        // Alterando a recuperação de 8.0 para 8.5 -> grava GradeHistory com GradeKind.RECOVERY
+        gradeService.launchRecovery(500, new BigDecimal("8.5"), "Revisão da recuperação");
+
+        ArgumentCaptor<GradeHistory> captor = ArgumentCaptor.forClass(GradeHistory.class);
+        verify(gradeHistoryRepository).save(captor.capture());
+        GradeHistory history = captor.getValue();
+        assertEquals(com.andretti101.escolaweb.model.enums.GradeKind.RECOVERY, history.getGradeKind());
+        assertEquals(0, new BigDecimal("8.0").compareTo(history.getPreviousGrade()));
+        assertEquals(0, new BigDecimal("8.5").compareTo(history.getNewGrade()));
+        assertEquals("Revisão da recuperação", history.getNotes());
+
+        // Removendo a recuperação -> volta a valer 3.0 -> média 5.00 -> FAILED
+        Grade afterRemoval = gradeService.removeRecovery(500, "Estorno de lançamento");
+        assertNull(afterRemoval.getRecoveryValue());
+        assertEquals(new BigDecimal("3.0"), afterRemoval.getEffectiveValue());
+        assertEquals(StudentSituation.FAILED, afterRemoval.getStudentSituation());
+
+        // Período fechado bloqueia launchRecovery e removeRecovery
+        period1.setClosed(true);
+        assertThrows(IllegalStateException.class, () -> gradeService.launchRecovery(500, new BigDecimal("7.0"), null));
+        assertThrows(IllegalStateException.class, () -> gradeService.removeRecovery(500, null));
+    }
+
+    @Test
     @DisplayName("findById e delete lançam EntityNotFoundException quando nota não existe")
     void findByIdAndDelete_whenNotFound_throwsEntityNotFound() {
         when(gradeRepository.findById(999)).thenReturn(Optional.empty());
