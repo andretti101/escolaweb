@@ -40,7 +40,7 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Turmas /</span> Edição</h4>
-                        <a href="/secretary/classrooms.html" class="btn btn-outline-secondary">
+                        <a href="/secretaria/turmas" class="btn btn-outline-secondary">
                             <i class="bx bx-arrow-back me-1"></i> Voltar
                         </a>
                     </div>
@@ -172,7 +172,7 @@
         const classId = urlParams.get('id');
 
         if (!classId) {
-            loadingIndicator.innerHTML = '<div class="alert alert-danger">ID da turma não fornecido. <a href="/secretary/classrooms.html">Voltar</a></div>';
+            loadingIndicator.innerHTML = '<div class="alert alert-danger">ID da turma não fornecido. <a href="/secretaria/turmas">Voltar</a></div>';
             return;
         }
 

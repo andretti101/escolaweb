@@ -307,7 +307,7 @@
                                             </a>
                                         </div>
                                         <div class="col-md-4 col-6">
-                                            <a href="/secretary/classrooms.html" class="quick-action-card card bg-label-warning border-0 text-center p-3 h-100">
+                                            <a href="/secretaria/turmas" class="quick-action-card card bg-label-warning border-0 text-center p-3 h-100">
                                                 <i class="bx bx-id-card fs-2 mb-2 text-warning"></i>
                                                 <h6 class="mb-1 text-warning fw-semibold">Matrículas e Turmas</h6>
                                                 <small class="text-muted" style="font-size:0.75rem;">Enturmar aluno</small>
@@ -335,7 +335,7 @@
                                             </a>
                                         </div>
                                         <div class="col-md-4 col-6">
-                                            <a href="/secretary/classrooms.html" class="quick-action-card card bg-label-dark border-0 text-center p-3 h-100">
+                                            <a href="/secretaria/turmas" class="quick-action-card card bg-label-dark border-0 text-center p-3 h-100">
                                                 <i class="bx bx-slider fs-2 mb-2 text-dark"></i>
                                                 <h6 class="mb-1 text-dark fw-semibold">Gerenciar Turmas</h6>
                                                 <small class="text-muted" style="font-size:0.75rem;">Grade e docentes</small>
@@ -403,7 +403,7 @@
                             <div class="card shadow-sm">
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <h5 class="card-title m-0"><i class="bx bx-user me-2 text-primary"></i>Últimos Alunos Cadastrados</h5>
-                                    <a href="/secretary/students.html" class="btn btn-sm btn-outline-primary">Ver todos</a>
+                                    <a href="/secretaria/usuarios?role=STUDENT" class="btn btn-sm btn-outline-primary">Ver todos</a>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">
@@ -650,7 +650,7 @@
                             <small class="text-muted">Alunos ativos no sistema sem turma vinculada no ano.</small>
                         </div>
                     </div>
-                    <a href="/secretary/classrooms.html" class="btn btn-sm btn-danger ms-2">Matricular</a>
+                    <a href="/secretaria/turmas" class="btn btn-sm btn-danger ms-2">Matricular</a>
                 </li>
             `);
         }
@@ -738,7 +738,7 @@
                         <td><span class="badge bg-label-secondary">${s.registrationNumber || 'N/A'}</span></td>
                         <td><small class="text-muted">${date}</small></td>
                         <td>
-                            <a href="/secretary/students.html" class="btn btn-sm btn-icon btn-outline-primary" title="Ver Detalhes">
+                            <a href="/secretaria/desempenho-aluno?studentId=${s.id}" class="btn btn-sm btn-icon btn-outline-primary" title="Ver Desempenho">
                                 <i class="bx bx-show"></i>
                             </a>
                         </td>

@@ -380,10 +380,18 @@
                 const tbody = document.getElementById('drawerStudentsTableBody');
                 tbody.innerHTML = enrollments.map(e => {
                     const initial = (e.studentName || 'A').charAt(0).toUpperCase();
-                    const situationText = (e.generalSituation && e.generalSituation.label) 
-                        ? e.generalSituation.label 
-                        : (e.generalSituation || (e.active ? 'Ativo' : 'Inativo'));
-                    const sitBadgeClass = (situationText === 'Aprovado' || situationText === 'Ativo') ? 'bg-label-success' : 'bg-label-secondary';
+                    const sitMap = {
+                        'APPROVED': { text: 'Aprovado', badge: 'bg-label-success' },
+                        'FAILED': { text: 'Reprovado', badge: 'bg-label-danger' },
+                        'REPROVED': { text: 'Reprovado', badge: 'bg-label-danger' },
+                        'IN_RECOVERY': { text: 'Recuperação', badge: 'bg-label-warning' },
+                        'PENDING': { text: 'Cursando', badge: 'bg-label-primary' },
+                        'ENROLLED': { text: 'Cursando', badge: 'bg-label-primary' }
+                    };
+                    const sitKey = (e.generalSituation && typeof e.generalSituation === 'object') ? e.generalSituation.name : e.generalSituation;
+                    const sitObj = sitMap[sitKey] || (e.active ? { text: 'Cursando', badge: 'bg-label-primary' } : { text: 'Inativo', badge: 'bg-label-secondary' });
+                    const situationText = sitObj.text;
+                    const sitBadgeClass = sitObj.badge;
 
                     return `
                         <tr>

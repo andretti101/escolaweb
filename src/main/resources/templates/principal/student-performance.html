@@ -74,10 +74,10 @@
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Alunos /</span> Desempenho <span id="studentNameTitle"></span></h4>
-                            <a href="students.html" class="btn btn-outline-secondary">
+                            <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Acadêmico /</span> Desempenho <span id="studentNameTitle"></span></h4>
+                            <button type="button" class="btn btn-outline-secondary" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href='/direcao/turmas'; }">
                                 <i class="bx bx-arrow-back me-1"></i> Voltar
-                            </a>
+                            </button>
                         </div>
 
                         
@@ -379,9 +379,10 @@
                         finalAvgHtml = `<strong>${finalAvg.toFixed(1)}</strong>`;
                     }
 
-                            let situationHtml = '<span class="badge bg-label-secondary">PENDENTE</span>';
-                            if (s.situation === 'APPROVED') situationHtml = '<span class="badge bg-label-success">APROVADO</span>';
-                            else if (s.situation === 'FAILED') situationHtml = '<span class="badge bg-label-danger">REPROVADO</span>';
+                            let situationHtml = '<span class="badge bg-label-primary">Cursando</span>';
+                            if (s.situation === 'APPROVED') situationHtml = '<span class="badge bg-label-success">Aprovado</span>';
+                            else if (s.situation === 'FAILED') situationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
+                            else if (s.situation === 'IN_RECOVERY') situationHtml = '<span class="badge bg-label-warning">Recuperação</span>';
 
                             const absences = (attendanceReport && attendanceReport.absencesPerSubject) 
                                             ? (attendanceReport.absencesPerSubject[s.subjectName] || 0) 
@@ -397,12 +398,13 @@
 
                         const freq = rc.frequency.generalFrequency;
                         const freqSituationHtml = rc.frequency.situation === 'APPROVED' 
-                            ? '<span class="badge bg-label-success">APROVADO</span>' 
-                            : '<span class="badge bg-label-danger">REPROVADO</span>';
+                            ? '<span class="badge bg-label-success">Aprovado</span>' 
+                            : '<span class="badge bg-label-danger">Reprovado</span>';
 
-                        let generalSituationHtml = '<span class="badge bg-label-secondary">PENDENTE</span>';
-                        if(rc.generalSituation === 'APPROVED') generalSituationHtml = '<span class="badge bg-label-success">APROVADO</span>';
-                        else if(rc.generalSituation === 'FAILED') generalSituationHtml = '<span class="badge bg-label-danger">REPROVADO</span>';
+                        let generalSituationHtml = '<span class="badge bg-label-primary">Cursando</span>';
+                        if (rc.generalSituation === 'APPROVED') generalSituationHtml = '<span class="badge bg-label-success">Aprovado</span>';
+                        else if (rc.generalSituation === 'FAILED') generalSituationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
+                        else if (rc.generalSituation === 'IN_RECOVERY') generalSituationHtml = '<span class="badge bg-label-warning">Recuperação</span>';
 
                         if (rc.subjects.length > 0) {
                             html += `
