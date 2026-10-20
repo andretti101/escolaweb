@@ -59,7 +59,7 @@ BEGIN; -- tudo é executado em uma única transação: ou entra tudo, ou nada.
 TRUNCATE TABLE
     -- Histórico e dados acadêmicos (tabelas "folha", que dependem de outras)
     grade_history, grades, attendance_history, attendances,
-    lessons, assessments, timetable_slots, teacher_class_subject, teacher_subjects, enrollments,
+    lessons, assessments, timetable_slots, meal_menu_slots, teacher_class_subject, teacher_subjects, enrollments,
     -- Avisos e chat
     announcement_classrooms, chat_hidden_messages, chat_read_receipts,
     chat_messages, chat_message_history, announcements,
@@ -976,6 +976,28 @@ INSERT INTO chat_message_history (content, conversation_id, created_at, message_
 -- ao vivo durante a apresentacao do projeto.
 
 -- =====================================================================
+-- 14.1 CARDÁPIO ESCOLAR SEMANAL (meal_menu_slots)
+-- =====================================================================
+-- Cardápio semanal balanceado e nutritivo para o ano letivo ativo (2026, id = 3),
+-- cobrindo os 5 dias letivos em 3 períodos de refeição diários.
+INSERT INTO meal_menu_slots (id, academic_year_id, day_of_week, meal_period, title, description, nutritional_notes, created_at, updated_at) VALUES
+ (1, 3, 'SEGUNDA', 'MORNING', 'Salada de Frutas e Iogurte Natural', 'Frutas frescas da estação picadas acompanhadas de iogurte integral e granola artesanal.', 'Sem glúten. Rico em probióticos e fibras.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (2, 3, 'SEGUNDA', 'LUNCH', 'Arroz, Feijão Carioca e Frango Grelhado', 'Arroz branco soltinho, feijão carioca temperado, filé de frango grelhado e salada mista de alface com cenoura ralada.', 'Rico em proteínas e ferro. Opção vegetariana: omelete de legumes.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (3, 3, 'SEGUNDA', 'AFTERNOON', 'Pão de Queijo Mineiro e Suco de Uva', 'Pão de queijo quentinho com queijo da Canastra acompanhado de suco de uva integral 100% natural.', 'Sem glúten. Contém derivados de leite.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (4, 3, 'TERCA', 'MORNING', 'Vitamina de Banana e Torradas Integrais', 'Vitamina batida com banana, leite e aveia em flocos, servida com torradas integrais e geleia de morango.', 'Rico em potássio e energia. Contém aveia e lactose.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (5, 3, 'TERCA', 'LUNCH', 'Arroz Integral, Feijão Preto e Carne Moída', 'Arroz integral, feijão preto com louro, patinho bovino moído com abobrinha e cenoura, e salada de tomate com manjericão.', 'Rico em ferro e vitamina A. Baixo teor de gordura.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (6, 3, 'TERCA', 'AFTERNOON', 'Bolo Caseiro de Cenoura e Leite com Cacau', 'Bolo de cenoura fofinho sem cobertura industrializada e copo de leite integral com cacau 100%.', 'Fonte de cálcio e antioxidantes naturais.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (7, 3, 'QUARTA', 'MORNING', 'Sanduíche Natural de Queijo Branco', 'Pão multigrãos com queijo minas frescal, orégano e tomate fatiado, acompanhado de suco de laranja natural.', 'Fonte de vitamina C e cálcio. Contém glúten e lactose.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (8, 3, 'QUARTA', 'LUNCH', 'Iscas de Peixe ao Forno e Purê de Batatas', 'Filé de tilápia empanado no milho assado ao forno, purê cremoso de batata e brócolis no vapor.', 'Rico em ômega-3 e fósforo. Alérgenos: contém peixe.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (9, 3, 'QUARTA', 'AFTERNOON', 'Macedônia de Frutas com Cereais e Mel', 'Mix de maçã, melão, mamão e kiwi com flocos de milho não açucarados e fio de mel silvestre.', 'Lanche leve e hidratante. Rico em antioxidantes.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (10, 3, 'QUINTA', 'MORNING', 'Mingau de Aveia com Morangos Frescos', 'Mingau cremoso de aveia preparado com leite desnatado, pitada de canela em pó e morangos frescos fatiados.', 'Baixo índice glicêmico e saciedade prolongada.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (11, 3, 'QUINTA', 'LUNCH', 'Macarrão com Almôndegas e Molho Caseiro', 'Espaguete grano duro com almôndegas de frango assadas e molho de tomate caseiro com manjericão, com salada de rúcula.', 'Rico em licopeno e carboidratos complexos.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (12, 3, 'QUINTA', 'AFTERNOON', 'Tapioca de Queijo Coalho e Suco de Melancia', 'Tapioca feita na hora com recheio de queijo coalho leve e suco refrescante de melancia natural.', 'Sem glúten. Fonte de hidratação natural.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (13, 3, 'SEXTA', 'MORNING', 'Panquecas Integrais com Mel e Suco de Manga', 'Mini panquecas de aveia e banana feitas na chapa, servidas com mel e suco de manga natural.', 'Rico em potássio e fibras solúveis.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (14, 3, 'SEXTA', 'LUNCH', 'Feijoada Escolar Light com Couve e Laranja', 'Feijoada leve com carnes magras e feijão preto, arroz branco, couve manteiga refogada no alho e fatias de laranja.', 'A vitamina C da laranja otimiza a absorção do ferro.', '2026-02-09 07:00:00', '2026-02-09 07:00:00'),
+ (15, 3, 'SEXTA', 'AFTERNOON', 'Salada de Frutas com Biscoitos de Polvilho', 'Taça de frutas variadas da época, iogurte batido e biscoitinhos crocantes de polvilho artesanal.', 'Sem glúten. Lanche leve para encerrar a semana.', '2026-02-09 07:00:00', '2026-02-09 07:00:00');
+
+-- =====================================================================
 -- 15. SINCRONIZAÇÃO DAS SEQUENCES
 -- =====================================================================
 -- Nas tabelas em que os IDs foram informados manualmente, a sequence
@@ -992,5 +1014,6 @@ SELECT setval(pg_get_serial_sequence('announcements','id'),        (SELECT max(i
 SELECT setval(pg_get_serial_sequence('chat_messages','id'),        (SELECT max(id) FROM chat_messages));
 SELECT setval(pg_get_serial_sequence('chat_hidden_messages','id'), (SELECT max(id) FROM chat_hidden_messages));
 SELECT setval(pg_get_serial_sequence('chat_read_receipts','id'),   (SELECT max(id) FROM chat_read_receipts));
+SELECT setval(pg_get_serial_sequence('meal_menu_slots','id'),      (SELECT max(id) FROM meal_menu_slots));
 
 COMMIT; -- confirma a transação

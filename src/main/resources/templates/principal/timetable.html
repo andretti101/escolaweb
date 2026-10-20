@@ -781,8 +781,6 @@
         if (window.showConfirmModal) {
             const confirmed = await window.showConfirmModal('Excluir Horário', 'Deseja realmente remover este período da grade de horários?');
             if (!confirmed) return;
-        } else if (!confirm('Deseja realmente remover este período da grade de horários?')) {
-            return;
         }
 
         try {

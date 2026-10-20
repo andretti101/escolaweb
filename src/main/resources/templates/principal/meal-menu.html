@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
+      data-assets-path="/assets/" data-template="vertical-menu-template-free">
+<head>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <title>Cardápio Escolar | Direção - Escola Web</title>
+    <script src="/js/auth-guard.js"></script>
+    <meta name="description" content="Gestão e Planejamento do Cardápio Escolar Semanal"/>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="/assets/vendor/fonts/boxicons.css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/core.css" class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/assets/vendor/css/theme-default.css" class="template-customizer-theme-css"/>
+    <script src="/js/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/demo.css"/>
+    <link rel="stylesheet" href="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+    <script src="/assets/vendor/js/helpers.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <link rel="stylesheet" href="/assets/css/dark-mode.css" />
+    <script src="/js/global-modals.js"></script>
+    <style>
+        .menu-day-col {
+            min-width: 220px;
+            flex: 1 1 0;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #e7e7e8;
+            box-shadow: 0 1px 3px rgba(67, 89, 102, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .day-header {
+            font-weight: 700;
+            text-align: center;
+            padding: 10px;
+            background: #f5f5f9;
+            border-radius: 8px;
+            color: #566a7f;
+            text-transform: uppercase;
+            font-size: 0.82rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .day-header.today {
+            background: #e8fadf !important;
+            color: #71dd37 !important;
+            border: 1px solid #c3f3ab;
+        }
+        .meal-period-section {
+            border-radius: 8px;
+            padding: 10px;
+            background: #fafafc;
+            border: 1px solid #eeeeee;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 140px;
+        }
+        .period-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            width: fit-content;
+        }
+        .period-morning {
+            border-left: 4px solid #ffab00;
+        }
+        .period-lunch {
+            border-left: 4px solid #696cff;
+        }
+        .period-afternoon {
+            border-left: 4px solid #03c3ec;
+        }
+        .meal-card {
+            position: relative;
+            background: #ffffff;
+            border-radius: 6px;
+            padding: 8px 10px;
+            border: 1px solid #e2e4e8;
+            transition: all 0.15s ease-in-out;
+        }
+        .meal-card:hover {
+            box-shadow: 0 3px 8px rgba(67, 89, 102, 0.12);
+            transform: translateY(-1px);
+        }
+        .meal-card .card-actions {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease-in-out;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 2px 4px;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(67, 89, 102, 0.15);
+        }
+        .meal-card:hover .card-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .meal-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #384554;
+            margin-bottom: 3px;
+            padding-right: 36px;
+        }
+        .meal-desc {
+            font-size: 0.76rem;
+            color: #697a8d;
+            line-height: 1.35;
+            margin-bottom: 4px;
+            white-space: pre-line;
+        }
+        .nutritional-badge {
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #eefbee;
+            color: #398839;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .btn-add-meal-empty {
+            border: 1px dashed #c4c8d0;
+            background: transparent;
+            color: #8592a3;
+            font-size: 0.74rem;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 10px 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 100%;
+            min-height: 70px;
+        }
+        .btn-add-meal-empty:hover {
+            border-color: #696cff;
+            color: #696cff;
+            background: #f7f7ff;
+        }
+
+        /* Dark Mode Overrides */
+        html.dark-style .menu-day-col {
+            background-color: #2b2c40 !important;
+            border-color: #444564 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+        }
+        html.dark-style .day-header {
+            background-color: #232333 !important;
+            color: #cbcbe2 !important;
+            border: 1px solid #444564 !important;
+        }
+        html.dark-style .day-header.today {
+            background: #2e4b30 !important;
+            color: #71dd37 !important;
+            border-color: #4e8352 !important;
+        }
+        html.dark-style .meal-period-section {
+            background-color: #232333 !important;
+            border-color: #3f405c !important;
+        }
+        html.dark-style .meal-card {
+            background-color: #2b2c40 !important;
+            border-color: #444564 !important;
+        }
+        html.dark-style .meal-card:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+        }
+        html.dark-style .meal-card .card-actions {
+            background: rgba(43, 44, 64, 0.96) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+        }
+        html.dark-style .meal-title {
+            color: #e1def5 !important;
+        }
+        html.dark-style .meal-desc {
+            color: #a3a4cc !important;
+        }
+        html.dark-style .nutritional-badge {
+            background: #283e2e !important;
+            color: #71dd37 !important;
+        }
+        html.dark-style .btn-add-meal-empty {
+            border-color: #444564 !important;
+            color: #7e7fa8 !important;
+        }
+        html.dark-style .btn-add-meal-empty:hover {
+            border-color: #696cff !important;
+            color: #696cff !important;
+            background: #323249 !important;
+        }
+        html.dark-style .layout-menu-toggle a.bg-white {
+            background-color: #2b2c40 !important;
+            color: #cbcbe2 !important;
+            border: 1px solid #444564 !important;
+        }
+        html.dark-style #deleteMealConfirmModal .modal-content {
+            background-color: #2b2c40 !important;
+            border: 1px solid #444564 !important;
+        }
+        html.dark-style #deleteMealConfirmModal .modal-title,
+        html.dark-style #deleteMealConfirmModal #deleteMealDishName {
+            color: #e1def5 !important;
+        }
+        html.dark-style #deleteMealConfirmModal .text-muted {
+            color: #a3a4cc !important;
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <!-- Sidebar Direção -->
+        <div id="sidebar-container" data-sidebar="/components/principal-sidebar.html"></div>
+
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none mb-3">
+                        <a class="nav-item nav-link px-0 me-xl-4 bg-white rounded shadow-sm p-2"
+                           href="javascript:void(0)">
+                            <i class="bx bx-menu bx-sm"></i> <span class="ms-1 fw-bold">Menu</span>
+                        </a>
+                    </div>
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                        <div>
+                            <h4 class="fw-bold py-1 mb-1">
+                                <span class="text-muted fw-light">Alimentação /</span> Cardápio Escolar
+                            </h4>
+                            <p class="text-muted mb-0 small">Gestão semanal da alimentação e refeições dos alunos da instituição.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary" id="btnRefreshMenu" title="Recarregar Cardápio">
+                                <i class="bx bx-refresh me-1"></i> Atualizar
+                            </button>
+                            <button id="btnOpenAddModal" class="btn btn-primary">
+                                <i class="bx bx-plus me-1"></i> Adicionar Refeição
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="alertContainer"></div>
+
+                    <!-- Quadro Semanal de Alimentação -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bx bx-restaurant me-2 text-primary"></i>Grade Semanal de Alimentação
+                                <span class="badge bg-label-primary ms-2" id="academicYearBadge">Ano Letivo Ativo</span>
+                            </h5>
+                            <div class="d-flex align-items-center gap-3 small text-muted">
+                                <span><i class="bx bxs-circle text-warning me-1" style="font-size:0.6rem;"></i>Manhã</span>
+                                <span><i class="bx bxs-circle text-primary me-1" style="font-size:0.6rem;"></i>Almoço</span>
+                                <span><i class="bx bxs-circle text-info me-1" style="font-size:0.6rem;"></i>Tarde</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div id="menuGridContainer">
+                                <div class="row g-3 flex-nowrap overflow-auto pb-2" id="menuDaysRow">
+                                    <!-- Colunas dos dias geradas via JS -->
+                                    <div class="text-center py-5 w-100">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Carregando cardápio...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar/Editar Refeição -->
+<div class="modal fade" id="modalMealMenu" tabindex="-1" aria-labelledby="modalMealMenuLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalMealMenuLabel">
+                    <i class="bx bx-restaurant text-primary me-2"></i><span id="modalMealTitle">Adicionar Refeição</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <form id="formMealMenu">
+                <input type="hidden" id="mealId" />
+                <div class="modal-body">
+                    <div id="modalAlertContainer"></div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label for="mealDayOfWeek" class="form-label fw-bold small">Dia da Semana <span class="text-danger">*</span></label>
+                            <select id="mealDayOfWeek" class="form-select" required>
+                                <option value="SEGUNDA">Segunda-feira</option>
+                                <option value="TERCA">Terça-feira</option>
+                                <option value="QUARTA">Quarta-feira</option>
+                                <option value="QUINTA">Quinta-feira</option>
+                                <option value="SEXTA">Sexta-feira</option>
+                                <option value="SABADO">Sábado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mealPeriod" class="form-label fw-bold small">Período <span class="text-danger">*</span></label>
+                            <select id="mealPeriod" class="form-select" required>
+                                <option value="MORNING">☀️ Manhã (Café / Lanche)</option>
+                                <option value="LUNCH">🍲 Almoço (Principal)</option>
+                                <option value="AFTERNOON">🥪 Tarde (Lanche)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="mealDishTitle" class="form-label fw-bold small">Prato Principal / Alimento <span class="text-danger">*</span></label>
+                        <input type="text" id="mealDishTitle" class="form-control" placeholder="Ex: Arroz, feijão e frango grelhado" maxlength="150" required />
+                        <div class="form-text small">Até 150 caracteres.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="mealDescription" class="form-label fw-bold small">Acompanhamentos, Sobremesa e Bebida</label>
+                        <textarea id="mealDescription" class="form-control" rows="3" placeholder="Ex: Salada de alface e cenoura, suco de maracujá e maçã da estação." maxlength="500"></textarea>
+                        <div class="form-text small">Detalhe os acompanhamentos e guarnições oferecidas.</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="mealNutritionalNotes" class="form-label fw-bold small">Observações Nutricionais / Alérgenos</label>
+                        <input type="text" id="mealNutritionalNotes" class="form-control" placeholder="Ex: Rico em ferro. Opção vegetariana: omelete de legumes. Sem lactose." maxlength="255" />
+                        <div class="form-text small">Avisos importantes para alunos com restrições alimentares.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveMeal">
+                        <i class="bx bx-check me-1"></i><span id="btnSaveMealText">Salvar Refeição</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão de Refeição -->
+<div class="modal fade" id="deleteMealConfirmModal" tabindex="-1" aria-labelledby="deleteMealConfirmModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content text-center p-3 shadow-lg border-0">
+            <div class="modal-body p-2">
+                <div class="d-inline-flex align-items-center justify-content-center bg-label-danger rounded-circle mb-3" style="width: 64px; height: 64px;">
+                    <i class="bx bx-trash text-danger" style="font-size: 2rem;"></i>
+                </div>
+                <h5 class="modal-title fw-bold text-dark mb-2" id="deleteMealConfirmModalLabel">Excluir Refeição?</h5>
+                <p class="text-muted small mb-3">
+                    Deseja realmente remover <strong id="deleteMealDishName" class="text-dark">esta refeição</strong> do cardápio escolar?
+                    <br><span class="text-danger small">Esta ação não poderá ser desfeita.</span>
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger px-3" id="btnConfirmDeleteMeal">
+                        <i class="bx bx-trash me-1"></i><span id="btnConfirmDeleteMealText">Sim, Excluir</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/assets/vendor/libs/jquery/jquery.js"></script>
+<script src="/assets/vendor/libs/popper/popper.js"></script>
+<script src="/assets/vendor/js/bootstrap.js"></script>
+<script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+<script src="/assets/vendor/js/menu.js"></script>
+<script src="/assets/js/main.js"></script>
+<script src="/js/load-sidebar.js"></script>
+
+<script>
+    const jwtToken = localStorage.getItem('jwt_token');
+
+    let mealModalInstance = null;
+    let deleteMealConfirmModalInstance = null;
+    let mealToDeleteId = null;
+    let weeklyData = null;
+
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function showAlert(msg, type = 'info', containerId = 'alertContainer') {
+        const c = document.getElementById(containerId);
+        if (!c) return;
+        c.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${msg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+
+    function isToday(dayKey) {
+        const todayDayIndex = new Date().getDay(); // 0 Sun, 1 Mon, 2 Tue, 3 Wed, 4 Thu, 5 Fri, 6 Sat
+        const map = {
+            'SEGUNDA': 1,
+            'TERCA': 2,
+            'QUARTA': 3,
+            'QUINTA': 4,
+            'SEXTA': 5,
+            'SABADO': 6
+        };
+        return map[dayKey] === todayDayIndex;
+    }
+
+    async function loadWeeklyMenu() {
+        const row = document.getElementById('menuDaysRow');
+        row.innerHTML = `
+            <div class="text-center py-5 w-100">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando cardápio...</span>
+                </div>
+            </div>
+        `;
+
+        try {
+            const res = await fetch('/api/menu/weekly', {
+                headers: { 'Authorization': `Bearer ${jwtToken}` }
+            });
+
+            if (!res.ok) {
+                throw new Error('Falha ao carregar o cardápio escolar');
+            }
+
+            weeklyData = await res.json();
+            renderWeeklyMenu(weeklyData);
+        } catch (err) {
+            console.error(err);
+            row.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bx bx-error-circle display-4 text-danger mb-3"></i>
+                    <p class="text-danger fw-bold">Não foi possível carregar o cardápio escolar.</p>
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadWeeklyMenu()">
+                        <i class="bx bx-refresh me-1"></i> Tentar novamente
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    function renderWeeklyMenu(data) {
+        const row = document.getElementById('menuDaysRow');
+        row.innerHTML = '';
+
+        if (data.academicYear) {
+            document.getElementById('academicYearBadge').textContent = `Ano Letivo ${data.academicYear}`;
+        }
+
+        const days = data.days || [];
+        if (days.length === 0) {
+            row.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bx bx-restaurant display-4 text-muted mb-3"></i>
+                    <h6 class="text-muted">Nenhum dia cadastrado no cardápio escolar.</h6>
+                </div>
+            `;
+            return;
+        }
+
+        days.forEach(day => {
+            const todayClass = isToday(day.dayOfWeek) ? 'today' : '';
+            const todayBadge = isToday(day.dayOfWeek) ? '<span class="badge bg-success ms-1">Hoje</span>' : '';
+
+            const col = document.createElement('div');
+            col.className = 'col menu-day-col';
+
+            col.innerHTML = `
+                <div class="day-header ${todayClass}">
+                    <span>${escapeHtml(day.dayOfWeekLabel || day.dayOfWeek)}</span>
+                    ${todayBadge}
+                </div>
+
+                <!-- Manhã -->
+                <div class="meal-period-section period-morning">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="period-badge text-warning"><i class="bx bx-sun"></i> Manhã</span>
+                    </div>
+                    ${renderMealSlotContent(day.morning, day.dayOfWeek, 'MORNING')}
+                </div>
+
+                <!-- Almoço -->
+                <div class="meal-period-section period-lunch">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="period-badge text-primary"><i class="bx bx-dish"></i> Almoço</span>
+                    </div>
+                    ${renderMealSlotContent(day.lunch, day.dayOfWeek, 'LUNCH')}
+                </div>
+
+                <!-- Tarde -->
+                <div class="meal-period-section period-afternoon">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="period-badge text-info"><i class="bx bx-coffee"></i> Tarde</span>
+                    </div>
+                    ${renderMealSlotContent(day.afternoon, day.dayOfWeek, 'AFTERNOON')}
+                </div>
+            `;
+
+            row.appendChild(col);
+        });
+    }
+
+    function renderMealSlotContent(meal, dayOfWeek, period) {
+        if (!meal) {
+            return `
+                <button type="button" class="btn-add-meal-empty" onclick="openAddModalForSlot('${dayOfWeek}', '${period}')">
+                    <i class="bx bx-plus"></i> Definir Cardápio
+                </button>
+            `;
+        }
+
+        const nutritionalHtml = meal.nutritionalNotes
+            ? `<div class="nutritional-badge mt-1"><i class="bx bx-check-shield"></i> ${escapeHtml(meal.nutritionalNotes)}</div>`
+            : '';
+
+        const descHtml = meal.description
+            ? `<div class="meal-desc">${escapeHtml(meal.description)}</div>`
+            : '';
+
+        return `
+            <div class="meal-card" data-id="${meal.id}">
+                <div class="card-actions">
+                    <button type="button" class="btn btn-icon btn-xs btn-outline-primary" title="Editar" onclick="openEditModal(${meal.id})">
+                        <i class="bx bx-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-icon btn-xs btn-outline-danger" title="Excluir" onclick="deleteMeal(${meal.id})">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                </div>
+                <div class="meal-title">${escapeHtml(meal.title)}</div>
+                ${descHtml}
+                ${nutritionalHtml}
+            </div>
+        `;
+    }
+
+    function openAddModalForSlot(dayOfWeek, period) {
+        document.getElementById('formMealMenu').reset();
+        document.getElementById('mealId').value = '';
+        document.getElementById('modalMealTitle').textContent = 'Adicionar Refeição';
+        document.getElementById('btnSaveMealText').textContent = 'Salvar Refeição';
+        document.getElementById('modalAlertContainer').innerHTML = '';
+
+        if (dayOfWeek) document.getElementById('mealDayOfWeek').value = dayOfWeek;
+        if (period) document.getElementById('mealPeriod').value = period;
+
+        mealModalInstance.show();
+    }
+
+    function openEditModal(mealId) {
+        if (!weeklyData || !weeklyData.slots) return;
+        const meal = weeklyData.slots.find(s => s.id == mealId);
+        if (!meal) return;
+
+        document.getElementById('mealId').value = meal.id;
+        document.getElementById('mealDayOfWeek').value = meal.dayOfWeek;
+        document.getElementById('mealPeriod').value = meal.mealPeriod;
+        document.getElementById('mealDishTitle').value = meal.title || '';
+        document.getElementById('mealDescription').value = meal.description || '';
+        document.getElementById('mealNutritionalNotes').value = meal.nutritionalNotes || '';
+
+        document.getElementById('modalMealTitle').textContent = 'Editar Refeição';
+        document.getElementById('btnSaveMealText').textContent = 'Atualizar Refeição';
+        document.getElementById('modalAlertContainer').innerHTML = '';
+
+        mealModalInstance.show();
+    }
+
+    function deleteMeal(mealId) {
+        mealToDeleteId = mealId;
+        let dishTitle = 'esta refeição';
+        if (weeklyData && weeklyData.slots) {
+            const found = weeklyData.slots.find(s => s.id == mealId);
+            if (found && found.title) {
+                dishTitle = `"${found.title}"`;
+            }
+        }
+        const nameEl = document.getElementById('deleteMealDishName');
+        if (nameEl) nameEl.textContent = dishTitle;
+
+        deleteMealConfirmModalInstance.show();
+    }
+
+    async function executeDeleteMeal() {
+        if (!mealToDeleteId) return;
+        const btn = document.getElementById('btnConfirmDeleteMeal');
+        const btnText = document.getElementById('btnConfirmDeleteMealText');
+        const originalText = btnText ? btnText.textContent : 'Sim, Excluir';
+
+        if (btn) btn.disabled = true;
+        if (btnText) btnText.textContent = 'Excluindo...';
+
+        try {
+            const res = await fetch(`/api/menu/${mealToDeleteId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${jwtToken}` }
+            });
+
+            deleteMealConfirmModalInstance.hide();
+
+            if (res.ok) {
+                showAlert('Refeição removida com sucesso!', 'success');
+                loadWeeklyMenu();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showAlert(err.message || 'Erro ao remover refeição.', 'danger');
+            }
+        } catch (e) {
+            console.error(e);
+            showAlert('Erro de comunicação ao remover refeição.', 'danger');
+        } finally {
+            if (btn) btn.disabled = false;
+            if (btnText) btnText.textContent = originalText;
+            mealToDeleteId = null;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        mealModalInstance = new bootstrap.Modal(document.getElementById('modalMealMenu'));
+        deleteMealConfirmModalInstance = new bootstrap.Modal(document.getElementById('deleteMealConfirmModal'));
+
+        document.getElementById('btnConfirmDeleteMeal')?.addEventListener('click', executeDeleteMeal);
+
+        document.getElementById('btnRefreshMenu').addEventListener('click', loadWeeklyMenu);
+        document.getElementById('btnOpenAddModal').addEventListener('click', () => openAddModalForSlot());
+
+        document.getElementById('formMealMenu').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mealId = document.getElementById('mealId').value;
+            const isEditing = Boolean(mealId);
+
+            const payload = {
+                academicYearId: (weeklyData && weeklyData.academicYearId) ? weeklyData.academicYearId : null,
+                dayOfWeek: document.getElementById('mealDayOfWeek').value,
+                mealPeriod: document.getElementById('mealPeriod').value,
+                title: document.getElementById('mealDishTitle').value.trim(),
+                description: document.getElementById('mealDescription').value.trim() || null,
+                nutritionalNotes: document.getElementById('mealNutritionalNotes').value.trim() || null
+            };
+
+            const btn = document.getElementById('btnSaveMeal');
+            const originalText = document.getElementById('btnSaveMealText').textContent;
+            btn.disabled = true;
+            document.getElementById('btnSaveMealText').textContent = 'Salvando...';
+
+            try {
+                const url = isEditing ? `/api/menu/${mealId}` : '/api/menu';
+                const method = isEditing ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    mealModalInstance.hide();
+                    showAlert(isEditing ? 'Refeição atualizada com sucesso!' : 'Refeição adicionada com sucesso!', 'success');
+                    loadWeeklyMenu();
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    showAlert(err.message || 'Erro ao salvar refeição.', 'danger', 'modalAlertContainer');
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert('Erro de comunicação com o servidor.', 'danger', 'modalAlertContainer');
+            } finally {
+                btn.disabled = false;
+                document.getElementById('btnSaveMealText').textContent = originalText;
+            }
+        });
+
+        loadWeeklyMenu();
+    });
+</script>
+</body>
+</html>

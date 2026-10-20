@@ -127,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "/direcao/editar/ano-letivo": "/principal/edit/academic-year.html",
                 "/direcao/editar/aviso": "/principal/edit/announcement.html",
                 "/direcao/grade-horaria": "/principal/timetable.html",
+                "/direcao/cardapio": "/principal/meal-menu.html",
 
                 "/secretaria/painel": "/secretary/dashboard.html",
                 "/secretaria/alunos": "/secretary/students.html",
@@ -162,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "/secretaria/editar/secretario": "/secretary/edit/secretary.html",
                 "/secretaria/editar/aviso": "/secretary/edit/announcement.html",
                 "/secretaria/grade-horaria": "/secretary/timetable.html",
+                "/secretaria/cardapio": "/secretary/meal-menu.html",
 
                 "/professor/painel": "/teacher/dashboard.html",
                 "/professor/aulas": "/teacher/lessons.html",
@@ -183,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "/professor/editar/avaliacao": "/teacher/edit/assessment.html",
                 "/professor/editar/aviso": "/teacher/edit/announcement.html",
                 "/professor/grade-horaria": "/teacher/timetable.html",
+                "/professor/cardapio": "/teacher/meal-menu.html",
 
                 "/aluno/painel": "/student/dashboard.html",
                 "/aluno/boletim": "/student/report-card.html",
@@ -196,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "/aluno/anos-letivos": "/student/academic-years.html",
                 "/aluno/configuracoes-escola": "/student/school-settings.html",
                 "/aluno/grade-horaria": "/student/timetable.html",
+                "/aluno/cardapio": "/student/meal-menu.html",
 
                 "/entrar": "/login.html",
                 "/recuperar-senha": "/forgot-password.html",

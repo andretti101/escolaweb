@@ -542,5 +542,72 @@ class DtoValidationTest {
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("cep")));
     }
+
+    @Test
+    @DisplayName("MealMenuSlotRequestDTO: valid with required fields and normalizes whitespace")
+    void mealMenuSlotRequest_validWithRequiredFields() {
+        var dto = new com.andretti101.escolaweb.dto.request.MealMenuSlotRequestDTO(
+                1,
+                com.andretti101.escolaweb.model.enums.DayOfWeekEnum.SEGUNDA,
+                com.andretti101.escolaweb.model.enums.MealPeriodEnum.LUNCH,
+                "  Frango Grelhado com Salada  ",
+                "  Acompanha suco natural  ",
+                "  Sem glúten  "
+        );
+        Set<ConstraintViolation<com.andretti101.escolaweb.dto.request.MealMenuSlotRequestDTO>> violations = validator.validate(dto);
+        assertTrue(violations.isEmpty());
+        assertEquals("Frango Grelhado com Salada", dto.title());
+        assertEquals("Acompanha suco natural", dto.description());
+        assertEquals("Sem glúten", dto.nutritionalNotes());
+    }
+
+    @Test
+    @DisplayName("MealMenuSlotRequestDTO: invalid when title is blank")
+    void mealMenuSlotRequest_invalidWhenTitleBlank() {
+        var dto = new com.andretti101.escolaweb.dto.request.MealMenuSlotRequestDTO(
+                1,
+                com.andretti101.escolaweb.model.enums.DayOfWeekEnum.SEGUNDA,
+                com.andretti101.escolaweb.model.enums.MealPeriodEnum.LUNCH,
+                "   ",
+                null,
+                null
+        );
+        Set<ConstraintViolation<com.andretti101.escolaweb.dto.request.MealMenuSlotRequestDTO>> violations = validator.validate(dto);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("title")));
+    }
+
+    @Test
+    @DisplayName("MealMenuSlotRequestDTO: invalid when dayOfWeek or mealPeriod is null")
+    void mealMenuSlotRequest_invalidWhenEnumsNull() {
+        var dto = new com.andretti101.escolaweb.dto.request.MealMenuSlotRequestDTO(
+                1,
+                null,
+                null,
+                "Prato",
+                null,
+                null
+        );
+        Set<ConstraintViolation<com.andretti101.escolaweb.dto.request.MealMenuSlotRequestDTO>> violations = validator.validate(dto);
+        assertEquals(2, violations.size());
+    }
+
+    @Test
+    @DisplayName("MealMenuSlotRequestDTO: invalid when title, description or nutritionalNotes exceed max length")
+    void mealMenuSlotRequest_invalidWhenFieldsExceedMaxLength() {
+        var dto = new com.andretti101.escolaweb.dto.request.MealMenuSlotRequestDTO(
+                1,
+                com.andretti101.escolaweb.model.enums.DayOfWeekEnum.SEGUNDA,
+                com.andretti101.escolaweb.model.enums.MealPeriodEnum.LUNCH,
+                "A".repeat(151),
+                "B".repeat(501),
+                "C".repeat(256)
+        );
+        Set<ConstraintViolation<com.andretti101.escolaweb.dto.request.MealMenuSlotRequestDTO>> violations = validator.validate(dto);
+        assertEquals(3, violations.size());
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("title")));
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("description")));
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("nutritionalNotes")));
+    }
 }
 

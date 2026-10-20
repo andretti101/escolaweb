@@ -131,6 +131,42 @@ class TemplateControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "PRINCIPAL")
+    @DisplayName("Cardápio: rotas de cardápio escolar renderizam os templates corretos")
+    void mealMenuRoutes() throws Exception {
+        mockMvc.perform(get("/direcao/cardapio"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("principal/meal-menu"));
+    }
+
+    @Test
+    @WithMockUser(roles = "SECRETARY")
+    @DisplayName("Cardápio Secretaria: rota /secretaria/cardapio renderiza template da secretaria")
+    void mealMenuSecretaryRoute() throws Exception {
+        mockMvc.perform(get("/secretaria/cardapio"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("secretary/meal-menu"));
+    }
+
+    @Test
+    @WithMockUser(roles = "TEACHER")
+    @DisplayName("Cardápio Professor: rota /professor/cardapio renderiza template do professor")
+    void mealMenuTeacherRoute() throws Exception {
+        mockMvc.perform(get("/professor/cardapio"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("teacher/meal-menu"));
+    }
+
+    @Test
+    @WithMockUser(roles = "STUDENT")
+    @DisplayName("Cardápio Aluno: rota /aluno/cardapio renderiza template do aluno")
+    void mealMenuStudentRoute() throws Exception {
+        mockMvc.perform(get("/aluno/cardapio"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("student/meal-menu"));
+    }
+
+    @Test
     @WithMockUser(roles = "STUDENT")
     @DisplayName("Assistente IA: rota /assistente-ia autenticada renderiza ai-chat")
     void aiAssistantRoute() throws Exception {

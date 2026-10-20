@@ -22,7 +22,7 @@ public class SequenceSyncRunner implements CommandLineRunner {
             "academic_periods", "academic_years", "announcements", "assessments",
             "attendance_history", "attendances", "chat_hidden_messages", "chat_message_history",
             "chat_messages", "chat_read_receipts", "class_rooms", "enrollments",
-            "grade_history", "grades", "lessons", "password_reset_tokens",
+            "grade_history", "grades", "lessons", "meal_menu_slots", "password_reset_tokens",
             "refresh_tokens", "school_settings", "subjects", "teacher_class_subject",
             "timetable_slots", "users"
         };

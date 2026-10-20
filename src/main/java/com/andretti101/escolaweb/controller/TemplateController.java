@@ -58,6 +58,7 @@ public class TemplateController {
         routes.put("/direcao/editar/ano-letivo", "principal/edit/academic-year");
         routes.put("/direcao/editar/aviso", "principal/edit/announcement");
         routes.put("/direcao/grade-horaria", "principal/timetable");
+        routes.put("/direcao/cardapio", "principal/meal-menu");
 
         // Secretaria
         routes.put("/secretaria/painel", "secretary/dashboard");
@@ -94,6 +95,7 @@ public class TemplateController {
         routes.put("/secretaria/editar/secretario", "secretary/edit/secretary");
         routes.put("/secretaria/editar/aviso", "secretary/edit/announcement");
         routes.put("/secretaria/grade-horaria", "secretary/timetable");
+        routes.put("/secretaria/cardapio", "secretary/meal-menu");
 
         // Professor
         routes.put("/professor/painel", "teacher/dashboard");
@@ -116,6 +118,7 @@ public class TemplateController {
         routes.put("/professor/editar/avaliacao", "teacher/edit/assessment");
         routes.put("/professor/editar/aviso", "teacher/edit/announcement");
         routes.put("/professor/grade-horaria", "teacher/timetable");
+        routes.put("/professor/cardapio", "teacher/meal-menu");
 
         // Aluno
         routes.put("/aluno/painel", "student/dashboard");
@@ -130,6 +133,7 @@ public class TemplateController {
         routes.put("/aluno/anos-letivos", "student/academic-years");
         routes.put("/aluno/configuracoes-escola", "student/school-settings");
         routes.put("/aluno/grade-horaria", "student/timetable");
+        routes.put("/aluno/cardapio", "student/meal-menu");
 
         PORTUGUESE_ROUTES = Collections.unmodifiableMap(routes);
     }
