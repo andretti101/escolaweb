@@ -458,13 +458,10 @@
                     const sitMap = {
                         'APPROVED': { text: 'Aprovado', badge: 'bg-label-success' },
                         'FAILED': { text: 'Reprovado', badge: 'bg-label-danger' },
-                        'REPROVED': { text: 'Reprovado', badge: 'bg-label-danger' },
-                        'IN_RECOVERY': { text: 'Recuperação', badge: 'bg-label-warning' },
-                        'PENDING': { text: 'Cursando', badge: 'bg-label-primary' },
-                        'ENROLLED': { text: 'Cursando', badge: 'bg-label-primary' }
+                        'PENDING': { text: 'Pendente', badge: 'bg-label-warning' }
                     };
                     const sitKey = (e.generalSituation && typeof e.generalSituation === 'object') ? e.generalSituation.name : e.generalSituation;
-                    const sitObj = sitMap[sitKey] || (e.active ? { text: 'Cursando', badge: 'bg-label-primary' } : { text: 'Inativo', badge: 'bg-label-secondary' });
+                    const sitObj = sitMap[sitKey] || (e.active ? { text: 'Pendente', badge: 'bg-label-warning' } : { text: 'Inativo', badge: 'bg-label-secondary' });
                     const situationText = sitObj.text;
                     const sitBadgeClass = sitObj.badge;
 

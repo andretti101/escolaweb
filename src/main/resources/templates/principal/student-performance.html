@@ -373,16 +373,15 @@
 
                             let finalAvgHtml = `<span class="text-muted">-</span>`;
                     let gradesCount = s.periodGrades.filter(pg => pg.average != null).length;
-                    if (gradesCount === rc.totalPeriods) {
+                    if (gradesCount === rc.totalPeriods || s.situation === 'APPROVED' || s.situation === 'FAILED') {
                         let sumAverages = s.periodGrades.reduce((acc, pg) => acc + (pg.average || 0), 0);
                         let finalAvg = sumAverages / rc.totalPeriods;
                         finalAvgHtml = `<strong>${finalAvg.toFixed(1)}</strong>`;
                     }
 
-                            let situationHtml = '<span class="badge bg-label-primary">Cursando</span>';
+                            let situationHtml = '<span class="badge bg-label-warning">Pendente</span>';
                             if (s.situation === 'APPROVED') situationHtml = '<span class="badge bg-label-success">Aprovado</span>';
                             else if (s.situation === 'FAILED') situationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
-                            else if (s.situation === 'IN_RECOVERY') situationHtml = '<span class="badge bg-label-warning">Recuperação</span>';
 
                             const absences = (attendanceReport && attendanceReport.absencesPerSubject) 
                                             ? (attendanceReport.absencesPerSubject[s.subjectName] || 0) 
@@ -401,10 +400,9 @@
                             ? '<span class="badge bg-label-success">Aprovado</span>' 
                             : '<span class="badge bg-label-danger">Reprovado</span>';
 
-                        let generalSituationHtml = '<span class="badge bg-label-primary">Cursando</span>';
+                        let generalSituationHtml = '<span class="badge bg-label-warning">Pendente</span>';
                         if (rc.generalSituation === 'APPROVED') generalSituationHtml = '<span class="badge bg-label-success">Aprovado</span>';
                         else if (rc.generalSituation === 'FAILED') generalSituationHtml = '<span class="badge bg-label-danger">Reprovado</span>';
-                        else if (rc.generalSituation === 'IN_RECOVERY') generalSituationHtml = '<span class="badge bg-label-warning">Recuperação</span>';
 
                         if (rc.subjects.length > 0) {
                             html += `

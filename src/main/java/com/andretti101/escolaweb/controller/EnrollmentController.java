@@ -2,12 +2,16 @@ package com.andretti101.escolaweb.controller;
 
 import com.andretti101.escolaweb.dto.request.EnrollmentRequestDTO;
 import com.andretti101.escolaweb.dto.response.EnrollmentResponseDTO;
+import com.andretti101.escolaweb.dto.response.ReportCardDTO;
+import com.andretti101.escolaweb.model.entity.AcademicYear;
 import com.andretti101.escolaweb.model.entity.ClassRoom;
 import com.andretti101.escolaweb.model.entity.Enrollment;
 import com.andretti101.escolaweb.model.entity.Student;
+import com.andretti101.escolaweb.model.enums.StudentSituation;
 import com.andretti101.escolaweb.service.AuthenticatedUserService;
 import com.andretti101.escolaweb.service.EnrollmentService;
 import com.andretti101.escolaweb.service.PdfDocumentService;
+import com.andretti101.escolaweb.service.ReportCardService;
 import com.andretti101.escolaweb.service.TeacherClassSubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +35,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Matrículas", description = "Endpoints para gerenciamento de matrículas de estudantes em turmas, enturmações e transferências")
 @RestController
@@ -43,6 +49,7 @@ public class EnrollmentController {
     private final AuthenticatedUserService authenticatedUserService;
     private final TeacherClassSubjectService teacherClassSubjectService;
     private final PdfDocumentService pdfDocumentService;
+    private final ReportCardService reportCardService;
 
     @Operation(summary = "Realizar matrícula", description = "Matricula um estudante em uma turma específica. Exclusivo para Secretaria.")
     @ApiResponses({
@@ -98,8 +105,21 @@ public class EnrollmentController {
     public ResponseEntity<List<EnrollmentResponseDTO>> findByStudent(
             @Parameter(description = "ID do estudante") @PathVariable Integer studentId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
+        List<Enrollment> enrollments = enrollmentService.findByStudent(studentId);
+        Map<Integer, StudentSituation> situationMap = new HashMap<>();
+        for (Enrollment e : enrollments) {
+            if (e.isActive() && e.getClassRoom() != null && e.getClassRoom().getAcademicYear() != null && e.getClassRoom().getAcademicYear().isActive()) {
+                try {
+                    ReportCardDTO rc = reportCardService.generateReportCard(studentId, e.getClassRoom().getAcademicYear().getId());
+                    if (rc != null) {
+                        situationMap.put(e.getId(), rc.generalSituation());
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
         return ResponseEntity.ok(
-                enrollmentService.findByStudent(studentId).stream().map(this::toResponse).toList()
+                enrollments.stream().map(e -> toResponse(e, situationMap.get(e.getId()))).toList()
         );
     }
 
@@ -131,8 +151,30 @@ public class EnrollmentController {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
             }
         }
+        
+        List<Enrollment> enrollments = enrollmentService.findByClassRoom(classRoomId);
+        if (enrollments.isEmpty()) {
+            return ResponseEntity.ok(java.util.List.of());
+        }
+
+        Map<Integer, StudentSituation> situationMap = new HashMap<>();
+        try {
+            AcademicYear year = enrollments.get(0).getClassRoom().getAcademicYear();
+            if (year != null && year.isActive()) {
+                List<Enrollment> activeEnrollments = enrollments.stream().filter(Enrollment::isActive).toList();
+                if (!activeEnrollments.isEmpty()) {
+                    List<ReportCardDTO> reports = reportCardService.generateReportCardsBatch(activeEnrollments, year);
+                    for (ReportCardDTO r : reports) {
+                        situationMap.put(r.studentId(), r.generalSituation());
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            // fallback to stored situation in enrollment
+        }
+
         return ResponseEntity.ok(
-                enrollmentService.findByClassRoom(classRoomId).stream().map(this::toResponse).toList()
+                enrollments.stream().map(e -> toResponse(e, situationMap.get(e.getStudent().getId()))).toList()
         );
     }
 
@@ -243,7 +285,8 @@ public class EnrollmentController {
         return enrollment;
     }
 
-    private EnrollmentResponseDTO toResponse(Enrollment e) {
+    private EnrollmentResponseDTO toResponse(Enrollment e, StudentSituation liveSituation) {
+        StudentSituation sit = liveSituation != null ? liveSituation : e.getGeneralSituation();
         return new EnrollmentResponseDTO(
                 e.getId(),
                 e.getStudent().getId(),
@@ -258,8 +301,12 @@ public class EnrollmentController {
                 e.getClassRoom().getAcademicYear() != null ? e.getClassRoom().getAcademicYear().getYear() : null,
                 e.getEnrollmentDate(),
                 e.isActive(),
-                e.getGeneralSituation(),
+                sit,
                 e.getCreatedAt()
         );
+    }
+
+    private EnrollmentResponseDTO toResponse(Enrollment e) {
+        return toResponse(e, null);
     }
 }

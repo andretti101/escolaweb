@@ -117,7 +117,23 @@ public class StudentController {
     public ResponseEntity<StudentResponseDTO> findById(
             @Parameter(description = "ID do estudante") @PathVariable Integer id) {
         authenticatedUserService.enforceStudentOwnership(id);
-        return ResponseEntity.ok(toResponse(studentService.findById(id)));
+        Student s = studentService.findById(id);
+        java.util.Map<Integer, String> situationMap = new java.util.HashMap<>();
+        try {
+            com.andretti101.escolaweb.model.entity.AcademicYear activeYear = academicYearService.findActive();
+            if (activeYear != null && s.getEnrollments() != null) {
+                for (com.andretti101.escolaweb.model.entity.Enrollment e : s.getEnrollments()) {
+                    if (e.isActive() && e.getClassRoom().getAcademicYear().getId().equals(activeYear.getId())) {
+                        var rc = reportCardService.generateReportCard(s.getId(), activeYear.getId());
+                        if (rc != null) {
+                            situationMap.put(s.getId(), rc.generalSituation().getLabel());
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return ResponseEntity.ok(toResponse(s, situationMap));
     }
 
     @Operation(summary = "Atualizar estudante (completo)", description = "Atualiza todos os dados cadastrais do estudante (nome, e-mail, senha opcional, telefones, matrícula, data de nascimento). Exclusivo para Secretaria.")

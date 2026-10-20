@@ -531,12 +531,12 @@
 
             // 2. Preenche Indicadores e Contexto a partir do Boletim
             const situationMap = {
-                'ENROLLED': { text: 'Cursando', badge: 'bg-label-primary' },
+                
                 'APPROVED': { text: 'Aprovado', badge: 'bg-label-success' },
                 'FAILED': { text: 'Reprovado', badge: 'bg-label-danger' },
                 'REPROVED': { text: 'Reprovado', badge: 'bg-label-danger' },
-                'RECOVERY': { text: 'Recuperação', badge: 'bg-label-warning' },
-                'IN_RECOVERY': { text: 'Recuperação', badge: 'bg-label-warning' },
+                
+                
                 'PENDING': { text: 'Pendente', badge: 'bg-label-warning' }
             };
 
@@ -544,7 +544,7 @@
                 document.getElementById('studentPeriodType').textContent = reportCard.periodTypeLabel || reportCard.periodType || 'Regular';
 
                 // Situação Geral
-                const sitObj = situationMap[reportCard.generalSituation] || { text: reportCard.generalSituation || 'Cursando', badge: 'bg-label-primary' };
+                const sitObj = situationMap[reportCard.generalSituation] || { text: 'Pendente', badge: 'bg-label-warning' };
                 document.getElementById('studentSituationContainer').innerHTML = `<span class="badge ${sitObj.badge} fs-6">${sitObj.text}</span>`;
 
                 // Frequência
@@ -593,7 +593,7 @@
                 if (subjectsCalculated.length > 0) {
                     subjectsTbody.innerHTML = subjectsCalculated.map(s => {
                         const score = s.calculatedAverage != null ? s.calculatedAverage.toFixed(1) : '-';
-                        const sSit = situationMap[s.situation] || { text: s.situation || 'Cursando', badge: 'bg-label-secondary' };
+                        const sSit = situationMap[s.situation] || { text: 'Pendente', badge: 'bg-label-warning' };
                         return `
                             <tr>
                                 <td><span class="fw-bold">${s.subjectName}</span></td>
