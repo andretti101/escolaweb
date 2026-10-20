@@ -57,7 +57,7 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Acadêmico /</span> Turmas e Matrículas</h4>
-                        <a href="/secretary/create/classroom.html" class="btn btn-primary d-none" id="btnNovaTurma">
+                        <a href="/secretary/create/classroom.html" class="btn btn-primary" id="btnNovaTurma">
                             <i class="bx bx-plus me-1"></i> Nova Turma
                         </a>
                     </div>
@@ -94,13 +94,12 @@
                                     <th>Divisão</th>
                                     <th>Turno</th>
                                     <th>Status</th>
-                                    <th class="text-center">Painel da Turma</th>
-                                    <th>Ações</th>
+                                    <th class="text-center">Ações</th>
                                 </tr>
                                 </thead>
                                 <tbody id="tableBody">
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">
+                                    <td colspan="7" class="text-center py-4">
                                         <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                                         <span class="ms-2">Carregando turmas...</span>
                                     </td>
@@ -271,13 +270,6 @@
         }, 5000);
     }
 
-    function checkSecretaryPermissions() {
-        if (window.isSecretary) {
-            const btnNovaTurma = document.getElementById('btnNovaTurma');
-            if (btnNovaTurma) btnNovaTurma.classList.remove('d-none');
-        }
-    }
-
     async function loadYears() {
         try {
             const res = await fetch('/api/academic-years', {
@@ -308,12 +300,11 @@
                 const raw = await response.json();
                 classroomsData = Array.isArray(raw) ? raw : (raw.content || []);
                 renderTable();
-                checkSecretaryPermissions();
             } else {
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Erro ao carregar dados.</td></tr>';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Erro ao carregar dados.</td></tr>';
             }
         } catch (error) {
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Falha de conexão.</td></tr>';
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Falha de conexão.</td></tr>';
         }
     }
 
@@ -335,7 +326,7 @@
         });
 
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhuma turma encontrada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma turma encontrada.</td></tr>';
             return;
         }
 
@@ -350,32 +341,9 @@
             const academicYearText = c.academicYear || c.academicYearId || '-';
             const periodTypeBadge = `<span class="badge bg-label-primary">${escapeHtml(c.periodTypeLabel || c.periodType || '-')}</span>`;
 
-            let actionsHtml = '';
-            if (window.isSecretary) {
-                let editBtn = '';
-                if (c.active) {
-                    editBtn = `<a class="dropdown-item" href="/secretary/edit/classroom.html?id=${c.id}"><i class="bx bx-edit-alt me-1"></i> Editar Dados</a>`;
-                }
-
-                actionsHtml = `
-                    <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            ${editBtn}
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item ${actionColor}" href="javascript:void(0);" onclick="toggleStatus(${c.id}, ${!c.active})">
-                                <i class="bx ${actionIcon} me-1"></i> ${actionText}
-                            </a>
-                            <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="confirmDelete(${c.id})">
-                                <i class="bx bx-trash me-1"></i> Excluir
-                            </a>
-                        </div>
-                    </div>
-                `;
-            } else {
-                actionsHtml = `<span class="text-muted"><i class="bx bx-lock-alt"></i> Restrito</span>`;
+            let editBtn = '';
+            if (c.active) {
+                editBtn = `<a class="dropdown-item" href="/secretary/edit/classroom.html?id=${c.id}"><i class="bx bx-edit-alt me-1"></i> Editar Dados</a>`;
             }
 
             return `
@@ -387,13 +355,31 @@
                     <td><span class="badge bg-label-info">${shiftLabel}</span></td>
                     <td><span class="badge ${badgeClass}">${badgeText}</span></td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-primary"
-                                onclick="openDrawer(${c.id})">
-                            <i class="bx bx-sidebar me-1"></i> Alunos & Grade
-                        </button>
-                    </td>
-                    <td>
-                        ${actionsHtml}
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                    onclick="openDrawer(${c.id})" title="Ver Alunos e Grade Curricular">
+                                <i class="bx bx-sidebar me-1"></i> Alunos & Grade
+                            </button>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-secondary dropdown-toggle hide-arrow"
+                                        data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-label="Mais opções">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" href="/secretaria/gerenciar-turma?classroomId=${c.id}">
+                                        <i class="bx bx-cog me-1"></i> Gerenciar Turma
+                                    </a>
+                                    ${editBtn}
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item ${actionColor}" href="javascript:void(0);" onclick="toggleStatus(${c.id}, ${!c.active})">
+                                        <i class="bx ${actionIcon} me-1"></i> ${actionText}
+                                    </a>
+                                    <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="confirmDelete(${c.id})">
+                                        <i class="bx bx-trash me-1"></i> Excluir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             `;
