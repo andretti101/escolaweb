@@ -7,15 +7,21 @@ import com.andretti101.escolaweb.dto.request.LoginRequestDTO;
 import com.andretti101.escolaweb.dto.request.RefreshTokenRequestDTO;
 import com.andretti101.escolaweb.dto.request.ResetPasswordRequestDTO;
 import com.andretti101.escolaweb.dto.response.AuthResponseDTO;
+import com.andretti101.escolaweb.model.entity.AcademicYear;
+import com.andretti101.escolaweb.model.entity.ClassRoom;
+import com.andretti101.escolaweb.model.entity.Enrollment;
 import com.andretti101.escolaweb.model.entity.PasswordResetToken;
 import com.andretti101.escolaweb.model.entity.RefreshToken;
 import com.andretti101.escolaweb.model.entity.Student;
+import com.andretti101.escolaweb.model.entity.Subject;
 import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.entity.User;
 import com.andretti101.escolaweb.model.enums.UserRole;
+import com.andretti101.escolaweb.repository.EnrollmentRepository;
 import com.andretti101.escolaweb.repository.PasswordResetTokenRepository;
 import com.andretti101.escolaweb.repository.RefreshTokenRepository;
+import com.andretti101.escolaweb.repository.TeacherClassSubjectRepository;
 import com.andretti101.escolaweb.repository.UserRepository;
 import com.andretti101.escolaweb.service.exception.UnauthorizedOperationException;
 import com.andretti101.escolaweb.service.impl.AuthServiceImpl;
@@ -47,6 +53,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -354,6 +361,10 @@ class AuthAndRefreshTokenServiceTest {
         private UserRepository userRepository;
         @Mock
         private PasswordEncoder passwordEncoder;
+        @Mock
+        private EnrollmentRepository enrollmentRepository;
+        @Mock
+        private TeacherClassSubjectRepository teacherClassSubjectRepository;
 
         @InjectMocks
         private UserServiceImpl userService;
@@ -401,6 +412,66 @@ class AuthAndRefreshTokenServiceTest {
 
             userService.deactivate(7);
             assertFalse(user.isActive());
+        }
+
+        @Test
+        @DisplayName("UserServiceImpl.findSummaries consolida dados de alunos e professores corretamente")
+        void findSummaries_consolidatesUsers() {
+            Student student = Student.builder()
+                    .id(1)
+                    .name("Lucas")
+                    .email("lucas@example.com")
+                    .registrationNumber("MAT-01")
+                    .active(true)
+                    .role(UserRole.STUDENT)
+                    .build();
+
+            Teacher teacher = Teacher.builder()
+                    .id(2)
+                    .name("Mariana")
+                    .email("mariana@example.com")
+                    .active(true)
+                    .role(UserRole.TEACHER)
+                    .subjects(Set.of(Subject.builder().name("Matemática").build()))
+                    .build();
+
+            ClassRoom classRoom = ClassRoom.builder()
+                    .id(10)
+                    .name("3º Ano A")
+                    .academicYear(AcademicYear.builder().id(1).year(2026).build())
+                    .build();
+
+            Enrollment enrollment = Enrollment.builder()
+                    .id(100)
+                    .student(student)
+                    .classRoom(classRoom)
+                    .active(true)
+                    .build();
+
+            TeacherClassSubject tcs = TeacherClassSubject.builder()
+                    .id(200)
+                    .teacher(teacher)
+                    .classRoom(classRoom)
+                    .subject(Subject.builder().name("Física").build())
+                    .build();
+
+            when(userRepository.findUsersFiltered(null, null)).thenReturn(List.of(student, teacher));
+            when(enrollmentRepository.findByActiveTrue()).thenReturn(List.of(enrollment));
+            when(teacherClassSubjectRepository.findAll()).thenReturn(List.of(tcs));
+
+            var summaries = userService.findSummaries(null, null);
+
+            assertEquals(2, summaries.size());
+            var sDto = summaries.stream().filter(u -> u.id().equals(1)).findFirst().orElseThrow();
+            assertEquals("MAT-01", sDto.enrollmentNumber());
+            assertEquals("3º Ano A", sDto.className());
+            assertEquals(10, sDto.classroomId());
+            assertEquals("2026", sDto.academicYear());
+
+            var tDto = summaries.stream().filter(u -> u.id().equals(2)).findFirst().orElseThrow();
+            assertTrue(tDto.subjects().contains("Matemática"));
+            assertTrue(tDto.subjects().contains("Física"));
+            assertTrue(tDto.classrooms().contains("3º Ano A"));
         }
 
         @Test

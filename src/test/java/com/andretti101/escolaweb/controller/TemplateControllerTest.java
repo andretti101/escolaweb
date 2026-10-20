@@ -77,6 +77,10 @@ class TemplateControllerTest {
         mockMvc.perform(get("/direcao/cadastrar/periodo"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("principal/create/academic-period"));
+
+        mockMvc.perform(get("/direcao/usuarios"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("principal/users"));
     }
 
     @Test
@@ -86,6 +90,10 @@ class TemplateControllerTest {
         mockMvc.perform(get("/secretaria/painel"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("secretary/dashboard"));
+
+        mockMvc.perform(get("/secretaria/usuarios"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("secretary/users"));
 
         mockMvc.perform(get("/secretaria/alunos"))
                 .andExpect(status().isOk())

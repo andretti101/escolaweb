@@ -14,4 +14,5 @@ public interface UserService {
     void resetPassword(Integer id, String newPassword);
     User activate(Integer id);
     User deactivate(Integer id);
+    List<com.andretti101.escolaweb.dto.response.UserSummaryDTO> findSummaries(com.andretti101.escolaweb.model.enums.UserRole role, Boolean active);
 }

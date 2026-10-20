@@ -22,4 +22,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<Integer> findIdsByRoles(@org.springframework.data.repository.query.Param("roles") List<com.andretti101.escolaweb.model.enums.UserRole> roles);
 
     List<User> findByRole(com.andretti101.escolaweb.model.enums.UserRole role);
+
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE (:role IS NULL OR u.role = :role) AND (:active IS NULL OR u.active = :active) ORDER BY u.name ASC")
+    List<User> findUsersFiltered(@org.springframework.data.repository.query.Param("role") com.andretti101.escolaweb.model.enums.UserRole role,
+                                 @org.springframework.data.repository.query.Param("active") Boolean active);
 }

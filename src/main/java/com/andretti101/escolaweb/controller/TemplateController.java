@@ -38,6 +38,7 @@ public class TemplateController {
         routes.put("/direcao/conclusao-ano", "principal/year-conclusion");
         routes.put("/direcao/resultado-conclusao-ano", "principal/year-conclusion-results");
         routes.put("/direcao/turmas", "principal/classrooms");
+        routes.put("/direcao/usuarios", "principal/users");
         routes.put("/direcao/professores", "principal/teachers");
         routes.put("/direcao/alunos", "principal/students");
         routes.put("/direcao/desempenho-aluno", "principal/student-performance");
@@ -62,6 +63,7 @@ public class TemplateController {
 
         // Secretaria
         routes.put("/secretaria/painel", "secretary/dashboard");
+        routes.put("/secretaria/usuarios", "secretary/users");
         routes.put("/secretaria/alunos", "secretary/students");
         routes.put("/secretaria/desempenho-aluno", "secretary/student-performance");
         routes.put("/secretaria/turmas", "secretary/classrooms");

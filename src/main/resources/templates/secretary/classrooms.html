@@ -6,9 +6,9 @@
     <meta charset="utf-8"/>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
-    <title>Turmas | Escola Web</title>
+    <title>Turmas e Matrículas | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
-    <meta name="description" content="Gestão de Turmas"/>
+    <meta name="description" content="Gestão Consolidada de Turmas e Matrículas"/>
     
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -26,6 +26,16 @@
         .inactive-row {
             opacity: 0.65;
             background-color: #f8f9fa;
+        }
+        .student-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
         }
     </style>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
@@ -46,7 +56,7 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Turmas /</span> Listagem</h4>
+                        <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Acadêmico /</span> Turmas e Matrículas</h4>
                         <a href="/secretary/create/classroom.html" class="btn btn-primary d-none" id="btnNovaTurma">
                             <i class="bx bx-plus me-1"></i> Nova Turma
                         </a>
@@ -58,7 +68,6 @@
                             <div class="d-flex flex-column flex-sm-row gap-2">
                                 <select id="yearFilter" class="form-select form-select-sm" style="min-width: 0;">
                                     <option value="all">Todos os Anos</option>
-                                    <!-- Options via JS -->
                                 </select>
                                 <select id="statusFilter" class="form-select form-select-sm" style="min-width: 0;">
                                     <option value="all">Todas as Turmas</option>
@@ -85,18 +94,103 @@
                                     <th>Divisão</th>
                                     <th>Turno</th>
                                     <th>Status</th>
+                                    <th class="text-center">Painel da Turma</th>
                                     <th>Ações</th>
                                 </tr>
                                 </thead>
                                 <tbody id="tableBody">
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="8" class="text-center py-4">
                                         <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                                         <span class="ms-2">Carregando turmas...</span>
                                     </td>
                                 </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drawer Retrátil / Offcanvas de Detalhes da Turma -->
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="classroomDrawer" aria-labelledby="classroomDrawerLabel" style="width: 680px; max-width: 95vw;">
+                    <div class="offcanvas-header border-bottom">
+                        <div>
+                            <h5 id="classroomDrawerLabel" class="offcanvas-title fw-bold">
+                                <i class="bx bx-group me-1 text-primary"></i> <span id="drawerClassroomName">Turma</span>
+                            </h5>
+                            <small class="text-muted" id="drawerClassroomSubtitle"></small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <a id="drawerManageLink" href="/secretaria/gerenciar-turma" class="btn btn-xs btn-outline-primary" title="Gerenciar Matrículas e Atribuições">
+                                <i class="bx bx-link-alt me-1"></i> Gerenciar Turma
+                            </a>
+                            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        </div>
+                    </div>
+                    <div class="offcanvas-body p-4">
+                        <!-- Abas de navegação -->
+                        <ul class="nav nav-pills nav-fill mb-3" role="tablist">
+                            <li class="nav-item">
+                                <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#tabStudents">
+                                    <i class="bx bx-user me-1"></i> Alunos (<span id="drawerStudentCount">0</span>)
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#tabTeachers">
+                                    <i class="bx bx-book-open me-1"></i> Grade Curricular (<span id="drawerTeacherCount">0</span>)
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content p-0">
+                            <!-- Aba 1: Alunos -->
+                            <div class="tab-pane fade show active" id="tabStudents" role="tabpanel">
+                                <div id="drawerStudentsLoading" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                    <span class="ms-2">Carregando alunos da turma...</span>
+                                </div>
+                                <div id="drawerStudentsContent" class="table-responsive text-nowrap d-none">
+                                    <table class="table table-sm table-hover align-middle">
+                                        <thead>
+                                        <tr>
+                                            <th>Aluno</th>
+                                            <th>Matrícula</th>
+                                            <th>Situação</th>
+                                            <th class="text-center">Desempenho</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="drawerStudentsTableBody"></tbody>
+                                    </table>
+                                </div>
+                                <div id="drawerStudentsEmpty" class="text-center text-muted py-4 d-none">
+                                    <i class="bx bx-user-x fs-1 d-block mb-2 text-muted"></i>
+                                    Nenhum aluno matriculado nesta turma.
+                                </div>
+                            </div>
+
+                            <!-- Aba 2: Grade Curricular -->
+                            <div class="tab-pane fade" id="tabTeachers" role="tabpanel">
+                                <div id="drawerTeachersLoading" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                    <span class="ms-2">Carregando grade curricular...</span>
+                                </div>
+                                <div id="drawerTeachersContent" class="table-responsive text-nowrap d-none">
+                                    <table class="table table-sm table-hover align-middle">
+                                        <thead>
+                                        <tr>
+                                            <th>Disciplina</th>
+                                            <th>Professor</th>
+                                            <th class="text-center">Aulas Semanais</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="drawerTeachersTableBody"></tbody>
+                                    </table>
+                                </div>
+                                <div id="drawerTeachersEmpty" class="text-center text-muted py-4 d-none">
+                                    <i class="bx bx-book-x fs-1 d-block mb-2 text-muted"></i>
+                                    Nenhuma disciplina cadastrada na grade desta turma.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -150,19 +244,7 @@
     const jwtToken = localStorage.getItem('jwt_token');
     let classroomsData = [];
     let deleteId = null;
-
-    // Verificar se é SECRETARY para mostrar botão de "Nova Turma"
-    if (jwtToken) {
-        try {
-            const payload = JSON.parse(atob(jwtToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-            const payloadString = JSON.stringify(payload).toUpperCase();
-            if (payloadString.includes("SECRETARY")) {
-                document.getElementById('btnNovaTurma').classList.remove('d-none');
-                window.isSecretary = true;
-            }
-        } catch (e) {
-        }
-    }
+    let classroomDrawerInstance = null;
 
     function escapeHtml(unsafe) {
         if (!unsafe) return '';
@@ -187,6 +269,13 @@
         setTimeout(() => {
             container.innerHTML = '';
         }, 5000);
+    }
+
+    function checkSecretaryPermissions() {
+        if (window.isSecretary) {
+            const btnNovaTurma = document.getElementById('btnNovaTurma');
+            if (btnNovaTurma) btnNovaTurma.classList.remove('d-none');
+        }
     }
 
     async function loadYears() {
@@ -219,11 +308,12 @@
                 const raw = await response.json();
                 classroomsData = Array.isArray(raw) ? raw : (raw.content || []);
                 renderTable();
+                checkSecretaryPermissions();
             } else {
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Erro ao carregar dados.</td></tr>';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Erro ao carregar dados.</td></tr>';
             }
         } catch (error) {
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Falha de conexão.</td></tr>';
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Falha de conexão.</td></tr>';
         }
     }
 
@@ -245,7 +335,7 @@
         });
 
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhuma turma encontrada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhuma turma encontrada.</td></tr>';
             return;
         }
 
@@ -278,7 +368,7 @@
                             <a class="dropdown-item ${actionColor}" href="javascript:void(0);" onclick="toggleStatus(${c.id}, ${!c.active})">
                                 <i class="bx ${actionIcon} me-1"></i> ${actionText}
                             </a>
-                            <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="confirmDelete(${c.id}, '${escapeHtml(c.name)}')">
+                            <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="confirmDelete(${c.id})">
                                 <i class="bx bx-trash me-1"></i> Excluir
                             </a>
                         </div>
@@ -289,19 +379,152 @@
             }
 
             return `
-                <tr class="${c.active ? '' : 'inactive-row'}">
+                <tr class="${c.active ? '' : 'inactive-row'}" style="cursor: pointer;" onclick="if (!event.target.closest('button, a, .dropdown')) openDrawer(${c.id})">
                     <td><strong>${escapeHtml(c.name)}</strong></td>
                     <td>${escapeHtml(schoolGradeLabel)}</td>
                     <td>${academicYearText}</td>
                     <td>${periodTypeBadge}</td>
                     <td><span class="badge bg-label-info">${shiftLabel}</span></td>
                     <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                onclick="openDrawer(${c.id})">
+                            <i class="bx bx-sidebar me-1"></i> Alunos & Grade
+                        </button>
+                    </td>
                     <td>
                         ${actionsHtml}
                     </td>
                 </tr>
             `;
         }).join('');
+    }
+
+    async function openDrawer(classroomId) {
+        const c = classroomsData.find(item => item.id === classroomId) || {};
+        const className = c.name || 'Turma';
+        const shiftLabel = shiftMap[c.shift] || c.shift || 'N/A';
+        const schoolGradeLabel = c.schoolGradeLabel || c.schoolGrade || '-';
+        const academicYearText = c.academicYear || c.academicYearId || '-';
+        const classSubtitle = `${schoolGradeLabel} - ${shiftLabel} (${academicYearText})`;
+
+        document.getElementById('drawerClassroomName').textContent = className;
+        document.getElementById('drawerClassroomSubtitle').textContent = classSubtitle;
+        document.getElementById('drawerManageLink').href = `/secretaria/gerenciar-turma?classroomId=${classroomId}`;
+
+        // Reset counters & states
+        document.getElementById('drawerStudentCount').textContent = '...';
+        document.getElementById('drawerTeacherCount').textContent = '...';
+
+        document.getElementById('drawerStudentsLoading').classList.remove('d-none');
+        document.getElementById('drawerStudentsContent').classList.add('d-none');
+        document.getElementById('drawerStudentsEmpty').classList.add('d-none');
+
+        document.getElementById('drawerTeachersLoading').classList.remove('d-none');
+        document.getElementById('drawerTeachersContent').classList.add('d-none');
+        document.getElementById('drawerTeachersEmpty').classList.add('d-none');
+
+        if (!classroomDrawerInstance) {
+            classroomDrawerInstance = new bootstrap.Offcanvas(document.getElementById('classroomDrawer'));
+        }
+        classroomDrawerInstance.show();
+
+        // 1. Carregar alunos
+        loadDrawerStudents(classroomId);
+
+        // 2. Carregar grade de professores
+        loadDrawerTeachers(classroomId);
+    }
+
+    async function loadDrawerStudents(classroomId) {
+        try {
+            const res = await fetch(`/api/enrollments/classroom/${classroomId}`, {
+                headers: { 'Authorization': `Bearer ${jwtToken || ''}` }
+            });
+            document.getElementById('drawerStudentsLoading').classList.add('d-none');
+            if (res.ok) {
+                const enrollments = await res.json();
+                document.getElementById('drawerStudentCount').textContent = enrollments.length;
+
+                if (enrollments.length === 0) {
+                    document.getElementById('drawerStudentsEmpty').classList.remove('d-none');
+                    return;
+                }
+
+                document.getElementById('drawerStudentsContent').classList.remove('d-none');
+                const tbody = document.getElementById('drawerStudentsTableBody');
+                tbody.innerHTML = enrollments.map(e => {
+                    const initial = (e.studentName || 'A').charAt(0).toUpperCase();
+                    const situationText = (e.generalSituation && e.generalSituation.label) 
+                        ? e.generalSituation.label 
+                        : (e.generalSituation || (e.active ? 'Ativo' : 'Inativo'));
+                    const sitBadgeClass = (situationText === 'Aprovado' || situationText === 'Ativo') ? 'bg-label-success' : 'bg-label-secondary';
+
+                    return `
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="student-avatar bg-label-primary me-2">${initial}</span>
+                                    <span class="fw-semibold text-dark">${escapeHtml(e.studentName)}</span>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-label-light text-dark">${escapeHtml(e.studentRegistrationNumber || '-')}</span></td>
+                            <td><span class="badge ${sitBadgeClass}">${escapeHtml(situationText)}</span></td>
+                            <td class="text-center">
+                                <a href="/secretaria/desempenho-aluno?studentId=${e.studentId}" class="btn btn-xs btn-icon btn-outline-primary" title="Ver Desempenho">
+                                    <i class="bx bx-line-chart"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                document.getElementById('drawerStudentsEmpty').textContent = 'Erro ao carregar alunos.';
+                document.getElementById('drawerStudentsEmpty').classList.remove('d-none');
+            }
+        } catch (e) {
+            document.getElementById('drawerStudentsLoading').classList.add('d-none');
+            document.getElementById('drawerStudentsEmpty').textContent = 'Falha de comunicação.';
+            document.getElementById('drawerStudentsEmpty').classList.remove('d-none');
+        }
+    }
+
+    async function loadDrawerTeachers(classroomId) {
+        try {
+            const res = await fetch(`/api/teacher-class-subjects/classroom/${classroomId}`, {
+                headers: { 'Authorization': `Bearer ${jwtToken || ''}` }
+            });
+            document.getElementById('drawerTeachersLoading').classList.add('d-none');
+            if (res.ok) {
+                const tcsList = await res.json();
+                document.getElementById('drawerTeacherCount').textContent = tcsList.length;
+
+                if (tcsList.length === 0) {
+                    document.getElementById('drawerTeachersEmpty').classList.remove('d-none');
+                    return;
+                }
+
+                document.getElementById('drawerTeachersContent').classList.remove('d-none');
+                const tbody = document.getElementById('drawerTeachersTableBody');
+                tbody.innerHTML = tcsList.map(t => {
+                    const lessons = t.weeklyLessons || 2;
+                    return `
+                        <tr>
+                            <td><span class="badge bg-label-success"><i class="bx bx-book me-1"></i>${escapeHtml(t.subjectName)}</span></td>
+                            <td class="fw-semibold text-dark">${escapeHtml(t.teacherName)}</td>
+                            <td class="text-center"><span class="badge bg-label-info">${lessons} aulas/sem</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                document.getElementById('drawerTeachersEmpty').textContent = 'Erro ao carregar grade curricular.';
+                document.getElementById('drawerTeachersEmpty').classList.remove('d-none');
+            }
+        } catch (e) {
+            document.getElementById('drawerTeachersLoading').classList.add('d-none');
+            document.getElementById('drawerTeachersEmpty').textContent = 'Falha de comunicação.';
+            document.getElementById('drawerTeachersEmpty').classList.remove('d-none');
+        }
     }
 
     async function toggleStatus(id, activate) {
@@ -333,7 +556,9 @@
         }
     }
 
-    function confirmDelete(id, name) {
+    function confirmDelete(id) {
+        const c = classroomsData.find(item => item.id === id);
+        const name = c ? c.name : 'Turma';
         deleteId = id;
         document.getElementById('deleteTargetName').textContent = name;
         new bootstrap.Modal(document.getElementById('deleteModal')).show();
@@ -384,12 +609,8 @@
     document.getElementById('statusFilter').addEventListener('change', renderTable);
     document.getElementById('yearFilter').addEventListener('change', renderTable);
 
-    // Initial load
     loadYears().then(loadClassrooms);
 </script>
 <script src="/js/load-sidebar.js"></script>
 </body>
 </html>
-
-
-

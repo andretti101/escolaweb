@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "/direcao/conclusao-ano": "/principal/year-conclusion.html",
                 "/direcao/resultado-conclusao-ano": "/principal/year-conclusion-results.html",
                 "/direcao/turmas": "/principal/classrooms.html",
+                "/direcao/usuarios": "/principal/users.html",
                 "/direcao/professores": "/principal/teachers.html",
                 "/direcao/alunos": "/principal/students.html",
                 "/direcao/desempenho-aluno": "/principal/student-performance.html",
@@ -130,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "/direcao/cardapio": "/principal/meal-menu.html",
 
                 "/secretaria/painel": "/secretary/dashboard.html",
+                "/secretaria/usuarios": "/secretary/users.html",
                 "/secretaria/alunos": "/secretary/students.html",
                 "/secretaria/desempenho-aluno": "/secretary/student-performance.html",
                 "/secretaria/turmas": "/secretary/classrooms.html",
@@ -227,6 +229,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const normHref = toCanonical(href);
                 let isActive = (currentPath === href) || currentPath.endsWith(href) || (normCurrent === normHref) || normCurrent.endsWith(normHref);
 
+                if ((normCurrent.includes('/create/student.html') || normCurrent.includes('/edit/student.html') || normCurrent.includes('student-performance.html') || normCurrent.includes('students.html') || normCurrent.includes('teachers.html') || normCurrent.includes('principals.html') || normCurrent.includes('secretaries.html') || normCurrent.includes('/create/teacher.html') || normCurrent.includes('/create/principal.html') || normCurrent.includes('/create/secretary.html') || normCurrent.includes('/edit/teacher.html') || normCurrent.includes('/edit/principal.html') || normCurrent.includes('/edit/secretary.html')) && normHref.includes('users.html')) {
+                    isActive = true;
+                }
                 if ((normCurrent.includes('/create/student.html') || normCurrent.includes('/edit/student.html') || normCurrent.includes('student-performance.html')) && normHref.includes('students.html')) {
                     isActive = true;
                 }
