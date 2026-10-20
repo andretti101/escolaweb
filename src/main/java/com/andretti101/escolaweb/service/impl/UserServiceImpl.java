@@ -1,15 +1,20 @@
 package com.andretti101.escolaweb.service.impl;
 
+import com.andretti101.escolaweb.dto.response.ReportCardDTO;
 import com.andretti101.escolaweb.dto.response.UserSummaryDTO;
+import com.andretti101.escolaweb.model.entity.AcademicYear;
 import com.andretti101.escolaweb.model.entity.Enrollment;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.entity.User;
+import com.andretti101.escolaweb.model.enums.StudentSituation;
 import com.andretti101.escolaweb.model.enums.UserRole;
+import com.andretti101.escolaweb.repository.AcademicYearRepository;
 import com.andretti101.escolaweb.repository.EnrollmentRepository;
 import com.andretti101.escolaweb.repository.TeacherClassSubjectRepository;
 import com.andretti101.escolaweb.repository.UserRepository;
+import com.andretti101.escolaweb.service.ReportCardService;
 import com.andretti101.escolaweb.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -27,6 +33,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EnrollmentRepository enrollmentRepository;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
+    private final AcademicYearRepository academicYearRepository;
+    private final ReportCardService reportCardService;
 
     @Override
     @Transactional(readOnly = true)
@@ -62,7 +70,6 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
-
     }
 
     @Override
@@ -97,6 +104,7 @@ public class UserServiceImpl implements UserService {
         }
 
         Map<Integer, Enrollment> studentActiveEnrollmentMap = new HashMap<>();
+        Map<Integer, StudentSituation> studentSituationMap = new HashMap<>();
         boolean hasStudents = role == null || role == UserRole.STUDENT || users.stream().anyMatch(u -> u instanceof Student);
         if (hasStudents) {
             List<Enrollment> activeEnrollments = enrollmentRepository.findByActiveTrue();
@@ -111,6 +119,24 @@ public class UserServiceImpl implements UserService {
                         studentActiveEnrollmentMap.put(sId, e);
                     }
                 }
+            }
+
+            try {
+                AcademicYear activeYear = academicYearRepository.findByActiveTrue().orElse(null);
+                if (activeYear != null) {
+                    List<Enrollment> currentYearEnrollments = studentActiveEnrollmentMap.values().stream()
+                            .filter(e -> e.getClassRoom() != null
+                                    && e.getClassRoom().getAcademicYear() != null
+                                    && e.getClassRoom().getAcademicYear().getId().equals(activeYear.getId()))
+                            .toList();
+                    if (!currentYearEnrollments.isEmpty()) {
+                        List<ReportCardDTO> reports = reportCardService.generateReportCardsBatch(currentYearEnrollments, activeYear);
+                        for (ReportCardDTO r : reports) {
+                            studentSituationMap.put(r.studentId(), r.generalSituation());
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
             }
         }
 
@@ -139,15 +165,27 @@ public class UserServiceImpl implements UserService {
             String academicYear = null;
             List<String> subjects = List.of();
             List<String> classrooms = List.of();
+            StudentSituation generalSituation = null;
+            String ownPhone = null;
+            String guardianPhone = null;
+            LocalDate birthDate = null;
 
             if (u instanceof Student student) {
                 enrollmentNumber = student.getRegistrationNumber();
+                ownPhone = student.getOwnPhone();
+                guardianPhone = student.getGuardianPhone();
+                birthDate = student.getBirthDate();
+
                 Enrollment enr = studentActiveEnrollmentMap.get(student.getId());
                 if (enr != null && enr.getClassRoom() != null) {
                     className = enr.getClassRoom().getName();
                     classroomId = enr.getClassRoom().getId();
                     if (enr.getClassRoom().getAcademicYear() != null && enr.getClassRoom().getAcademicYear().getYear() != null) {
                         academicYear = String.valueOf(enr.getClassRoom().getAcademicYear().getYear());
+                    }
+                    generalSituation = studentSituationMap.get(student.getId());
+                    if (generalSituation == null) {
+                        generalSituation = enr.getGeneralSituation();
                     }
                 }
             } else if (u instanceof Teacher teacher) {
@@ -179,7 +217,11 @@ public class UserServiceImpl implements UserService {
                     classroomId,
                     academicYear,
                     subjects,
-                    classrooms
+                    classrooms,
+                    generalSituation,
+                    ownPhone,
+                    guardianPhone,
+                    birthDate
             );
         }).toList();
     }
