@@ -3,6 +3,7 @@ package com.andretti101.escolaweb.controller;
 import com.andretti101.escolaweb.dto.request.AnnouncementRequestDTO;
 import com.andretti101.escolaweb.dto.response.AnnouncementResponseDTO;
 import com.andretti101.escolaweb.dto.response.ClassRoomSimpleDTO;
+import com.andretti101.escolaweb.dto.response.PagedResponse;
 import com.andretti101.escolaweb.model.entity.Announcement;
 import com.andretti101.escolaweb.model.entity.ClassRoom;
 import com.andretti101.escolaweb.service.AnnouncementService;
@@ -58,7 +59,7 @@ public class AnnouncementController {
             @Parameter(description = "Filtro para comunicados voltados a professores") @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean targetTeachers,
             @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
         org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> page = announcementService.findWithFilters(authorId, classRoomId, academicYearId, targetTeachers, pageable);
-        return ResponseEntity.ok(page.map(this::toResponse));
+        return ResponseEntity.ok(PagedResponse.of(page.map(this::toResponse)));
     }
 
     @Operation(summary = "Listar comunicados arquivados (com filtros)", description = "Retorna uma lista paginada de comunicados arquivados com opções de filtros.")
@@ -75,7 +76,7 @@ public class AnnouncementController {
             @Parameter(description = "Filtro para comunicados voltados a professores") @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean targetTeachers,
             @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
         org.springframework.data.domain.Page<com.andretti101.escolaweb.model.entity.Announcement> page = announcementService.findArchivedWithFilters(authorId, classRoomId, academicYearId, targetTeachers, pageable);
-        return ResponseEntity.ok(page.map(this::toResponse));
+        return ResponseEntity.ok(PagedResponse.of(page.map(this::toResponse)));
     }
 
     @Operation(summary = "Buscar comunicado por ID", description = "Retorna os detalhes de um aviso específico.")

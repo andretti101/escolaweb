@@ -358,6 +358,9 @@
                         </div>
                     </div>
 
+                    <!-- Paginação -->
+                    <div id="paginationContainer" class="d-flex justify-content-center mt-3 mb-4"></div>
+
                 </div>
 
                 <footer class="content-footer footer bg-footer-theme">
@@ -414,7 +417,7 @@
         else if (role === 'TEACHER') document.getElementById('cardFilterTeacher').classList.add('active-stat');
         else if (role === 'STUDENT') document.getElementById('cardFilterStudent').classList.add('active-stat');
 
-        renderTables();
+        loadUsers(0);
     }
 
     function toggleSituationFilter(situation) {
@@ -448,15 +451,76 @@
         }
     }
 
-    async function loadUsers() {
+    let currentPage = 0;
+    const pageSize = 20;
+    let totalPages = 1;
+    let totalElements = 0;
+
+    async function loadStats() {
         try {
-            const res = await fetch('/api/users', {
+            const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'active';
+            let url = '/api/users/stats';
+            if (statusVal === 'active') url += '?active=true';
+            else if (statusVal === 'inactive') url += '?active=false';
+
+            const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${jwtToken || ''}` }
             });
             if (res.ok) {
-                allUsers = await res.json();
-                updateStats();
+                const stats = await res.json();
+                document.getElementById('statTotalUsers').textContent = stats.totalUsers ?? 0;
+                document.getElementById('statStaff').textContent = stats.totalStaff ?? 0;
+                document.getElementById('statTeachers').textContent = stats.totalTeachers ?? 0;
+                document.getElementById('statStudents').textContent = stats.totalStudents ?? 0;
+                document.getElementById('statStudentsApproved').textContent = stats.studentsApproved ?? 0;
+                document.getElementById('statStudentsPending').textContent = stats.studentsPending ?? 0;
+                document.getElementById('statStudentsFailed').textContent = stats.studentsFailed ?? 0;
+            }
+        } catch (e) {
+            console.error('Erro ao carregar estatísticas:', e);
+        }
+    }
+
+    async function loadUsers(page = 0) {
+        if (page < 0) return;
+        if (totalPages > 0 && page >= totalPages && page !== 0) return;
+        currentPage = page;
+        try {
+            const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'active';
+            const roleVal = document.getElementById('roleFilter')?.value || 'ALL';
+
+            let url = `/api/users?page=${currentPage}&size=${pageSize}`;
+            if (statusVal === 'active') url += '&active=true';
+            else if (statusVal === 'inactive') url += '&active=false';
+            if (roleVal === 'TEACHER') url += '&role=TEACHER';
+            else if (roleVal === 'STUDENT') url += '&role=STUDENT';
+            else if (roleVal === 'STAFF') url += '&role=STAFF';
+            else if (roleVal === 'PRINCIPAL') url += '&role=PRINCIPAL';
+            else if (roleVal === 'SECRETARY') url += '&role=SECRETARY';
+
+            const res = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${jwtToken || ''}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.content) {
+                    allUsers = data.content;
+                    totalPages = data.totalPages ?? 1;
+                    totalElements = data.totalElements ?? data.content.length;
+                } else if (Array.isArray(data)) {
+                    allUsers = data;
+                    totalPages = 1;
+                    totalElements = data.length;
+                } else {
+                    allUsers = Object.keys(data)
+                        .filter(k => !isNaN(k))
+                        .sort((a,b) => Number(a) - Number(b))
+                        .map(k => data[k]);
+                    totalPages = data.totalPages ?? 1;
+                    totalElements = data.totalElements ?? allUsers.length;
+                }
                 renderTables();
+                renderPagination();
             } else {
                 document.getElementById('tbodyStaff').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Erro ao carregar usuários.</td></tr>';
             }
@@ -466,37 +530,57 @@
         }
     }
 
-    function updateStats() {
-        const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'active';
-        const sourceUsers = (statusVal === 'all')
-            ? allUsers
-            : (statusVal === 'active' ? allUsers.filter(u => u.active) : allUsers.filter(u => !u.active));
+    function renderPagination() {
+        const container = document.getElementById('paginationContainer');
+        if (!container) return;
 
-        const total = sourceUsers.length;
-        const staffList = sourceUsers.filter(u => u.role === 'PRINCIPAL' || u.role === 'SECRETARY');
-        const teachersList = sourceUsers.filter(u => u.role === 'TEACHER');
-        const studentsList = sourceUsers.filter(u => u.role === 'STUDENT');
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
 
-        document.getElementById('statTotalUsers').textContent = total;
-        document.getElementById('statStaff').textContent = staffList.length;
-        document.getElementById('statTeachers').textContent = teachersList.length;
-        document.getElementById('statStudents').textContent = studentsList.length;
+        let html = '<nav aria-label="Navegação de páginas"><ul class="pagination pagination-sm m-0">';
 
-        // Contagem de situação acadêmica dos alunos
-        let approved = 0;
-        let pending = 0;
-        let failed = 0;
+        if (currentPage > 0) {
+            html += `<li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="loadUsers(${currentPage - 1})"><i class="bx bx-chevron-left"></i> Anterior</a></li>`;
+        } else {
+            html += `<li class="page-item disabled"><span class="page-link"><i class="bx bx-chevron-left"></i> Anterior</span></li>`;
+        }
 
-        studentsList.forEach(u => {
-            const sit = (u.generalSituation && typeof u.generalSituation === 'object') ? u.generalSituation.name : (u.generalSituation || 'PENDING');
-            if (sit === 'APPROVED') approved++;
-            else if (sit === 'FAILED') failed++;
-            else pending++;
-        });
+        const maxButtons = 7;
+        let startPage = Math.max(0, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxButtons - 1);
+        if (endPage - startPage + 1 < maxButtons) {
+            startPage = Math.max(0, endPage - maxButtons + 1);
+        }
 
-        document.getElementById('statStudentsApproved').textContent = approved;
-        document.getElementById('statStudentsPending').textContent = pending;
-        document.getElementById('statStudentsFailed').textContent = failed;
+        if (startPage > 0) {
+            html += `<li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="loadUsers(0)">1</a></li>`;
+            if (startPage > 1) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">`;
+            html += `<a class="page-link" href="javascript:void(0);" onclick="loadUsers(${i})">${i + 1}</a></li>`;
+        }
+
+        if (endPage < totalPages - 1) {
+            if (endPage < totalPages - 2) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            html += `<li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="loadUsers(${totalPages - 1})">${totalPages}</a></li>`;
+        }
+
+        if (currentPage < totalPages - 1) {
+            html += `<li class="page-item"><a class="page-link" href="javascript:void(0);" onclick="loadUsers(${currentPage + 1})">Próxima <i class="bx bx-chevron-right"></i></a></li>`;
+        } else {
+            html += `<li class="page-item disabled"><span class="page-link">Próxima <i class="bx bx-chevron-right"></i></span></li>`;
+        }
+
+        html += '</ul></nav>';
+        container.innerHTML = html;
     }
 
     function renderTables() {
@@ -770,12 +854,13 @@
     });
     document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
         radio.addEventListener('change', () => {
-            updateStats();
-            renderTables();
+            loadStats();
+            loadUsers(0);
         });
     });
 
-    loadUsers();
+    loadStats();
+    loadUsers(0);
 </script>
 <script src="/js/load-sidebar.js"></script>
 </body>

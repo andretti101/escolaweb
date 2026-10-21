@@ -26,4 +26,21 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE (:role IS NULL OR u.role = :role) AND (:active IS NULL OR u.active = :active) ORDER BY u.name ASC")
     List<User> findUsersFiltered(@org.springframework.data.repository.query.Param("role") com.andretti101.escolaweb.model.enums.UserRole role,
                                  @org.springframework.data.repository.query.Param("active") Boolean active);
+
+    @org.springframework.data.jpa.repository.Query(value = "SELECT u FROM User u WHERE (:role IS NULL OR u.role = :role) AND (:active IS NULL OR u.active = :active)",
+            countQuery = "SELECT count(u) FROM User u WHERE (:role IS NULL OR u.role = :role) AND (:active IS NULL OR u.active = :active)")
+    org.springframework.data.domain.Page<User> findUsersFilteredPageable(
+            @org.springframework.data.repository.query.Param("role") com.andretti101.escolaweb.model.enums.UserRole role,
+            @org.springframework.data.repository.query.Param("active") Boolean active,
+            org.springframework.data.domain.Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query(value = "SELECT u FROM User u WHERE u.role IN :roles AND (:active IS NULL OR u.active = :active)",
+            countQuery = "SELECT count(u) FROM User u WHERE u.role IN :roles AND (:active IS NULL OR u.active = :active)")
+    org.springframework.data.domain.Page<User> findUsersByRolesFilteredPageable(
+            @org.springframework.data.repository.query.Param("roles") java.util.Collection<com.andretti101.escolaweb.model.enums.UserRole> roles,
+            @org.springframework.data.repository.query.Param("active") Boolean active,
+            org.springframework.data.domain.Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT u.role, count(u) FROM User u WHERE (:active IS NULL OR u.active = :active) GROUP BY u.role")
+    List<Object[]> countByRoleGrouped(@org.springframework.data.repository.query.Param("active") Boolean active);
 }

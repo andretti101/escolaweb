@@ -233,4 +233,33 @@ class PaginationIntegrationTest {
                 .andExpect(jsonPath("$.content", hasSize(lessThanOrEqualTo(5))))
                 .andExpect(jsonPath("$.size", is(5)));
     }
+
+    @Test
+    @DisplayName("GET /api/users with page=0&size=5 should paginate")
+    @WithMockUser(username = "direcao@example.com", roles = {"PRINCIPAL"})
+    void testUsersPagination() throws Exception {
+        mockMvc.perform(get("/api/users")
+                        .param("page", "0")
+                        .param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(5)))
+                .andExpect(jsonPath("$.size", is(5)))
+                .andExpect(jsonPath("$.number", is(0)))
+                .andExpect(jsonPath("$.totalElements", greaterThanOrEqualTo(5)))
+                .andExpect(jsonPath("$[*].name", hasSize(greaterThanOrEqualTo(5))));
+    }
+
+    @Test
+    @DisplayName("GET /api/announcements with page=0&size=5 should paginate")
+    @WithMockUser(username = "direcao@example.com", roles = {"PRINCIPAL"})
+    void testAnnouncementsPagination() throws Exception {
+        mockMvc.perform(get("/api/announcements")
+                        .param("page", "0")
+                        .param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(lessThanOrEqualTo(5))))
+                .andExpect(jsonPath("$.size", is(5)))
+                .andExpect(jsonPath("$.number", is(0)))
+                .andExpect(jsonPath("$.totalElements", greaterThanOrEqualTo(0)));
+    }
 }

@@ -21,10 +21,16 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("EscolaWeb API")
                         .description("Documentação da API RESTful do Sistema de Gestão Escolar EscolaWeb. "
-                                + "Esta documentação abrange todos os módulos da aplicação: controle de acesso e autenticação, "
+                                + "Esta documentação abrange todos os módulos da aplicação: controle de acesso e autenticação JWT, "
+                                + "gestão de usuários com paginação e métricas consolidadas, "
                                 + "gestão do ano letivo e períodos acadêmicos, turmas e enturmações, professores e disciplinas, "
-                                + "alunos e boletins, diário de classe (aulas, presenças e notas), auditoria histórica, "
-                                + "comunicados escolares, comunicação por chat em tempo real e assistente de inteligência artificial.")
+                                + "alunos, boletins e histórico escolar, diário de classe (aulas, presenças e notas), "
+                                + "recuperação paralela/final e encerramento de ano letivo, "
+                                + "grade horária escolar inteligente, gestão de cardápio escolar e merenda, "
+                                + "comunicados escolares com filtros avançados e controle de leitura, "
+                                + "comunicação por chat em tempo real e notificações via WebSocket, "
+                                + "geração de relatórios em PDF (Boletim e Declaração de Matrícula), "
+                                + "configurações institucionais da escola e assistente inteligente com IA generativa.")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Suporte EscolaWeb")
