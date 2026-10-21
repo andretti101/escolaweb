@@ -35,11 +35,6 @@
             </a>
         </li>
 
-        <!-- Seção: Acadêmico -->
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Acadêmico</span>
-        </li>
-
         <!-- Turmas e Matrículas -->
         <li class="menu-item">
             <a href="/direcao/turmas" class="menu-link">
@@ -48,33 +43,26 @@
             </a>
         </li>
 
-        <!-- Grade Horária -->
-        <li class="menu-item">
-            <a href="/direcao/grade-horaria" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div data-i18n="Grade Horária">Grade Horária</div>
-            </a>
+        <!-- Seção: Acadêmico -->
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Acadêmico</span>
         </li>
 
-        <!-- Cardápio Escolar -->
-        <li class="menu-item">
-            <a href="/direcao/cardapio" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-restaurant"></i>
-                <div data-i18n="Cardápio Escolar">Cardápio Escolar</div>
-            </a>
-        </li>
-
-        <!-- Matérias -->
+        <!-- Ano Acadêmico -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-book"></i>
-                <div data-i18n="Matérias">Matérias</div>
+                <i class="menu-icon tf-icons bx bx-calendar-check"></i>
+                <div data-i18n="Ano Acadêmico">Ano Acadêmico</div>
             </a>
             <ul class="menu-sub">
-
                 <li class="menu-item">
-                    <a href="/direcao/disciplinas" class="menu-link">
-                        <div data-i18n="Listar matérias">Listar matérias</div>
+                    <a href="/direcao/cadastrar/ano-letivo" class="menu-link">
+                        <div data-i18n="Cadastrar ano">Cadastrar ano</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/direcao/anos-letivos" class="menu-link">
+                        <div data-i18n="Listar anos">Listar anos</div>
                     </a>
                 </li>
             </ul>
@@ -100,50 +88,55 @@
             </ul>
         </li>
 
-        <!-- Ano Acadêmico -->
+        <!-- Matérias -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div data-i18n="Ano Acadêmico">Ano Acadêmico</div>
+                <i class="menu-icon tf-icons bx bx-book"></i>
+                <div data-i18n="Matérias">Matérias</div>
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
-                    <a href="/direcao/cadastrar/ano-letivo" class="menu-link">
-                        <div data-i18n="Cadastrar ano">Cadastrar ano</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="/direcao/anos-letivos" class="menu-link">
-                        <div data-i18n="Listar anos">Listar anos</div>
+                    <a href="/direcao/disciplinas" class="menu-link">
+                        <div data-i18n="Listar matérias">Listar matérias</div>
                     </a>
                 </li>
             </ul>
         </li>
 
-        <!-- Histórico de Alterações -->
-        <li class="menu-item">
-            <a href="/direcao/historico-alteracoes" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-revision"></i>
-                <div data-i18n="Histórico de Alterações">Histórico de Alterações</div>
-            </a>
+        <!-- Seção: Administrativo -->
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Administrativo</span>
         </li>
 
-        <li class="menu-item">
-            <a href="/direcao/chat" class="menu-link">
-                <i class="menu-icon tf-icons bx bxs-chat"></i>
-                <div data-i18n="Monitoramento de Chat">Monitoramento de Chat</div>
-            </a>
-        </li>
-        <li class="menu-item">
-            <a href="/direcao/chat-arquivado" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-archive"></i>
-                <div data-i18n="Mensagens Arquivadas">Mensagens Arquivadas</div>
-            </a>
-        </li>
+        <!-- EscolaIA -->
         <li class="menu-item">
             <a href="/assistente-ia" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-bot"></i>
                 <div data-i18n="EscolaIA">EscolaIA</div>
+            </a>
+        </li>
+
+        <!-- Cardápio Escolar -->
+        <li class="menu-item">
+            <a href="/direcao/cardapio" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-restaurant"></i>
+                <div data-i18n="Cardápio Escolar">Cardápio Escolar</div>
+            </a>
+        </li>
+
+        <!-- Grade Horária -->
+        <li class="menu-item">
+            <a href="/direcao/grade-horaria" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-calendar"></i>
+                <div data-i18n="Grade Horária">Grade Horária</div>
+            </a>
+        </li>
+
+        <!-- Monitoramento de Chat -->
+        <li class="menu-item">
+            <a href="/direcao/chat" class="menu-link">
+                <i class="menu-icon tf-icons bx bxs-chat"></i>
+                <div data-i18n="Monitoramento de Chat">Monitoramento de Chat</div>
             </a>
         </li>
 
@@ -164,25 +157,7 @@
                         <div data-i18n="Meus Recados">Meus Recados</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="/direcao/avisos-arquivados" class="menu-link">
-                        <div data-i18n="Recados Arquivados">Recados Arquivados</div>
-                    </a>
-                </li>
             </ul>
-        </li>
-
-        <!-- Seção: Sistema -->
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Sistema</span>
-        </li>
-
-        <!-- Configurações da escola -->
-        <li class="menu-item">
-            <a href="/direcao/configuracoes-escola" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-cog"></i>
-                <div data-i18n="Configurações da escola">Configurações da escola</div>
-            </a>
         </li>
 
         <!-- Conclusão do Ano Letivo -->
@@ -192,10 +167,49 @@
                 <div data-i18n="Conclusão do Ano">Conclusão do Ano</div>
             </a>
         </li>
+
+        <!-- Configurações da Escola -->
+        <li class="menu-item">
+            <a href="/direcao/configuracoes-escola" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-cog"></i>
+                <div data-i18n="Configurações da escola">Configurações da Escola</div>
+            </a>
+        </li>
+
+        <!-- Seção: Histórico -->
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text">Histórico</span>
+        </li>
+
+        <!-- Histórico de Conclusões -->
         <li class="menu-item">
             <a href="/direcao/resultado-conclusao-ano" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-history"></i>
                 <div data-i18n="Histórico de Conclusões">Histórico de Conclusões</div>
+            </a>
+        </li>
+
+        <!-- Histórico de Alterações -->
+        <li class="menu-item">
+            <a href="/direcao/historico-alteracoes" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-revision"></i>
+                <div data-i18n="Histórico de Alterações">Histórico de Alterações</div>
+            </a>
+        </li>
+
+        <!-- Mensagens Arquivadas -->
+        <li class="menu-item">
+            <a href="/direcao/chat-arquivado" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-archive"></i>
+                <div data-i18n="Mensagens Arquivadas">Mensagens Arquivadas</div>
+            </a>
+        </li>
+
+        <!-- Recados Arquivados -->
+        <li class="menu-item">
+            <a href="/direcao/avisos-arquivados" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-archive-in"></i>
+                <div data-i18n="Recados Arquivados">Recados Arquivados</div>
             </a>
         </li>
 
@@ -204,11 +218,11 @@
             <span class="menu-header-text">Sessão</span>
         </li>
 
-        <!-- Tema (Claro / Escuro) -->
+        <!-- Modo Claro / Escuro -->
         <li class="menu-item">
-            <a href="javascript:void(0);" class="menu-link theme-toggle-link" data-theme-toggle role="button" aria-pressed="false" title="Ativar modo escuro">
-                <i class="menu-icon tf-icons bx bx-moon" data-theme-icon></i>
-                <div data-theme-label>Modo Escuro</div>
+            <a href="javascript:void(0);" class="menu-link theme-toggle-link" data-theme-toggle role="button" aria-pressed="false" title="Alternar tema">
+                <i class="menu-icon tf-icons bx bx-sun" data-theme-icon></i>
+                <div data-theme-label>Modo Claro</div>
                 <span class="theme-switch" aria-hidden="true"></span>
             </a>
         </li>
