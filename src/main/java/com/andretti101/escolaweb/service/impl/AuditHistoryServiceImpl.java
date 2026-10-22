@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Serviço de auditoria acadêmica para rastreabilidade de alterações em notas e frequências
 @Service
 @RequiredArgsConstructor
 public class AuditHistoryServiceImpl implements AuditHistoryService {
@@ -42,6 +43,7 @@ public class AuditHistoryServiceImpl implements AuditHistoryService {
     private final AttendanceRepository attendanceRepository;
     private final AuthenticatedUserService authenticatedUserService;
 
+    // Consulta paginada do histórico de alterações de notas aplicando escopo de visibilidade do usuário
     @Override
     @Transactional(readOnly = true)
     public Page<GradeHistoryResponseDTO> searchGradeHistory(HistoryFilter filter, int page, int size) {

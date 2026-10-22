@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 
+// Componente responsável pela emissão, assinatura criptográfica (HS256) e validação de tokens JWT
 @Component
 public class JwtTokenProvider {
 
@@ -26,8 +27,7 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
 
-    // ── Access token generation
-
+    // Gera o token de acesso contendo o e-mail (subject) e o papel do usuário (claim role)
     public String generateToken(UserDetails userDetails) {
         String role = userDetails.getAuthorities().stream()
                 .findFirst()

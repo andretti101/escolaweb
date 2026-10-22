@@ -12,9 +12,11 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de slots de horário da grade semanal com detecção de colisões de tempo para turmas e professores
 @Repository
 public interface TimetableSlotRepository extends JpaRepository<TimetableSlot, Integer> {
 
+    // Carrega o slot com associações de turma, atribuição docente e disciplina via EntityGraph
     @Override
     @EntityGraph(attributePaths = {"classRoom", "teacherClassSubject", "teacherClassSubject.teacher", "teacherClassSubject.subject"})
     Optional<TimetableSlot> findById(Integer id);

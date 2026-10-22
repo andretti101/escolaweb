@@ -166,6 +166,7 @@ public class PdfDocumentServiceImpl implements PdfDocumentService {
                 : (reportCard.frequency() != null && reportCard.frequency().situation() == StudentSituation.FAILED ? "REPROVADO" : "PENDENTE");
         String freqBadgeClass = "APROVADO".equals(freqSitLabel) ? "badge-success" : ("REPROVADO".equals(freqSitLabel) ? "badge-danger" : "badge-warning");
 
+        // Popula os dados consolidados do discente no contexto do Thymeleaf para o PDF
         Context context = new Context();
         context.setVariable("schoolSettings", settings);
         context.setVariable("reportCard", reportCard);
@@ -238,7 +239,8 @@ public class PdfDocumentServiceImpl implements PdfDocumentService {
                     (enrollment != null && enrollment.getStudent() != null ? enrollment.getStudent().getRegistrationNumber() : "0") + ":" +
                     (enrollment != null ? enrollment.getEnrollmentDate() : "") + ":" +
                     (enrollment != null && enrollment.getClassRoom() != null ? enrollment.getClassRoom().getId() : "0");
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            // Gera selo criptográfico SHA-256 para comprovação e verificação de autenticidade
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] digest = md.digest(raw.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             for (byte b : digest) {
@@ -252,6 +254,7 @@ public class PdfDocumentServiceImpl implements PdfDocumentService {
         }
     }
 
+    // Converte o template HTML/CSS em arquivo binário PDF via FlyingSaucer e iText
     private byte[] renderHtmlToPdf(String html) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             ITextRenderer renderer = new ITextRenderer();

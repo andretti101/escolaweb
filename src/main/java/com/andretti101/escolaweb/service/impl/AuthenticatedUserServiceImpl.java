@@ -14,14 +14,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// Utilitário de segurança para resolução polimórfica da entidade do usuário logado a partir do SecurityContextHolder
 @Service
 @RequiredArgsConstructor
 public class AuthenticatedUserServiceImpl implements AuthenticatedUserService {
 
     private final UserRepository userRepository;
 
-    // ── Entity resolution
-
+    // Recupera a entidade completa do usuário conectado com base no principal JWT
     @Override
     @Transactional(readOnly = true)
     public User getAuthenticatedUser() {

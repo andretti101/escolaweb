@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para ciclo de vida dos anos letivos, ativação de calendário e encerramento anual com apuração da LDB
 @Tag(name = "Anos Letivos", description = "Endpoints para gerenciamento do calendário e ciclo de vida dos anos letivos e processo de conclusão anual")
 @RestController
 @RequestMapping("/api/academic-years")
@@ -31,6 +32,7 @@ public class AcademicYearController {
     private final AcademicYearService academicYearService;
     private final AcademicYearConclusionService conclusionService;
 
+    // Registra um novo ano letivo no sistema com validação de datas e regras de vigência
     @Operation(summary = "Criar ano letivo", description = "Cadastra um novo ano letivo definindo o ano civil, data de início e término. Apenas para o perfil Direção (PRINCIPAL).")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Ano letivo criado com sucesso"),

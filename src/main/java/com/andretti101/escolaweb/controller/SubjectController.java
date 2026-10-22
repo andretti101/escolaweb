@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para gestão do catálogo de disciplinas da grade curricular
 @Tag(name = "Disciplinas", description = "Endpoints para gerenciamento do catálogo de disciplinas escolares")
 @RestController
 @RequestMapping("/api/subjects")

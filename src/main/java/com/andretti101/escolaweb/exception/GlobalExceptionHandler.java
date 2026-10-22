@@ -27,6 +27,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// Interceptador global de exceções da API REST (RFC 7807 Problem Details)
+// Converte erros técnicos e violações de regras em mensagens amigáveis internacionalizadas (i18n)
 @Slf4j
 @RestControllerAdvice
 @lombok.RequiredArgsConstructor
@@ -34,12 +36,13 @@ public class GlobalExceptionHandler {
 
     private final org.springframework.context.MessageSource messageSource;
 
+    // Obtém a mensagem traduzida do messages_pt_BR.properties de acordo com o Locale atual
     private String getMessage(String key, Object... args) {
         return messageSource.getMessage(key, args, org.springframework.context.i18n.LocaleContextHolder.getLocale());
     }
 
     // ═════════════════════════════
-    // 400 BAD REQUEST
+    // 400 BAD REQUEST - Validações de entrada (@Valid / DTOs)
     // ═════════════════════════════
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

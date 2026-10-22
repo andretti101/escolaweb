@@ -26,18 +26,21 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final StudentService studentService;
     private final ClassRoomService classRoomService;
 
+    // Realiza a matrícula do estudante validando a atividade do aluno/turma e a unicidade anual
     @Override
     @Transactional
     public Enrollment create(Enrollment enrollment) {
         Student student = resolveStudent(enrollment.getStudent());
         ClassRoom classRoom = resolveClassRoom(enrollment.getClassRoom());
 
+        // 1. Aluno e turma devem estar devidamente ativos no sistema
         if (!student.isActive()) {
             throw new IllegalStateException("Não é possível matricular um aluno inativo.");
         }
         if (!classRoom.isActive()) {
             throw new IllegalStateException("Não é possível realizar matrículas em uma turma inativa.");
         }
+        // 2. Não permite múltiplas matrículas ativas do mesmo estudante no mesmo ano letivo
         if (enrollmentRepository.existsByStudentAndClassRoom_AcademicYearAndActiveTrue(
                 student, classRoom.getAcademicYear())) {
             throw new IllegalStateException("O aluno já possui uma matrícula ativa para este ano letivo.");

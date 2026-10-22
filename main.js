@@ -1,3 +1,8 @@
+// ==============================================================================
+// Processo Principal do Electron - EscolaWeb Desktop
+// Gerencia janelas nativas, ciclo de vida da aplicação e comunicação com o backend Spring Boot
+// ==============================================================================
+
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 const { app, BrowserWindow, protocol, session, ipcMain } = require('electron');
 const path = require('path');
@@ -6,6 +11,7 @@ const { fileURLToPath } = require('url');
 const { buildFrontend, DIST_DIR } = require('./scripts/build-frontend');
 const { ROUTE_MAP } = require('./scripts/routes-map');
 
+// Resolução da URL configurada para a API backend
 const configuredBackendUrl = (
   process.env.BACKEND_URL ||
   process.env.APP_URL ||
@@ -18,6 +24,7 @@ let activeBackendUrl = configuredBackendUrl
   ? configuredBackendUrl.replace(/\/+$/, '')
   : null;
 
+// Lista de URLs candidatas para encontrar o backend local em execução
 function getCandidateBackendUrls() {
   if (configuredBackendUrl) {
     return [configuredBackendUrl.replace(/\/+$/, '')];
@@ -29,6 +36,7 @@ function getCandidateBackendUrls() {
   return defaultCandidates;
 }
 
+// Testa a conectividade com as portas candidatas para localizar o Spring Boot ativo
 async function detectActiveBackendPort() {
   if (configuredBackendUrl) {
     activeBackendUrl = configuredBackendUrl.replace(/\/+$/, '');
@@ -49,7 +57,7 @@ async function detectActiveBackendPort() {
         return;
       }
     } catch (_e) {
-      // Continue to next candidate
+      // Continua para o próximo candidato se falhar
     }
   }
   activeBackendUrl = 'http://localhost';
@@ -63,6 +71,7 @@ function getRawPathFromUrl(parsedUrl) {
   }
 }
 
+// Tabela de MIME types para servir arquivos locais corretamente no protocolo file://
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -86,6 +95,7 @@ function getMimeType(filePath) {
   return MIME_TYPES[ext] || 'application/octet-stream';
 }
 
+// Garante que o build frontend exista antes de iniciar a interface desktop
 function ensureProductionBuild() {
   if (app.isPackaged) {
     return;
@@ -100,6 +110,7 @@ function ensureProductionBuild() {
   }
 }
 
+// Localiza o arquivo físico no dist correspondente à rota solicitada
 function resolveDistFilePath(rawFilePath) {
   if (fs.existsSync(rawFilePath) && fs.statSync(rawFilePath).isFile()) {
     return rawFilePath;
@@ -137,6 +148,7 @@ function resolveDistFilePath(rawFilePath) {
   return null;
 }
 
+// Configura o handler customizado do protocolo file:// para carregar recursos estáticos e templates compilados
 function setupFileProtocolHandler() {
   protocol.handle('file', async (request) => {
     try {
@@ -168,11 +180,14 @@ function setupFileProtocolHandler() {
   });
 }
 
+// Configura interceptores IPC e cabeçalhos de requisição para comunicação segura com a API
 function setupBackendInterceptors() {
+  // Retorna a URL base ativa do backend para o processo de renderização
   ipcMain.on('escolaweb:get-backend-url-sync', (event) => {
     event.returnValue = activeBackendUrl || getCandidateBackendUrls()[0];
   });
 
+  // Proxy de requisições HTTP via Node.js para contornar restrições de CORS no ambiente desktop
   ipcMain.handle('escolaweb:fetch', async (_event, urlPath, options = {}) => {
     const candidates = getCandidateBackendUrls();
     let response = null;
@@ -240,6 +255,7 @@ function setupBackendInterceptors() {
     };
   });
 
+  // Filtros de requisições de rede para inserção de cabeçalhos CORS e origem apropriados
   const filter = {
     urls: [
       'http://escolaweb/*',
@@ -280,6 +296,7 @@ function setupBackendInterceptors() {
   });
 }
 
+// Inicializa a janela principal da aplicação com configurações seguras do Chromium
 function createWindow() {
   ensureProductionBuild();
 
@@ -304,6 +321,7 @@ function createWindow() {
     }
   });
 
+  // Intercepta navegações internas para manter a rota correta dentro dos arquivos empacotados
   mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
     try {
       const parsed = new URL(navigationUrl);
@@ -324,7 +342,7 @@ function createWindow() {
         }
       }
     } catch (_err) {
-      // Ignore malformed navigation URLs
+      // Ignora URLs com formatação inválida
     }
   });
 
@@ -334,6 +352,7 @@ function createWindow() {
   return mainWindow;
 }
 
+// Inicialização dos serviços do Electron quando o ambiente estiver pronto
 app.whenReady().then(async () => {
   await detectActiveBackendPort();
   setupFileProtocolHandler();
@@ -347,6 +366,7 @@ app.whenReady().then(async () => {
   });
 });
 
+// Encerra a aplicação quando todas as janelas forem fechadas (exceto no macOS)
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();

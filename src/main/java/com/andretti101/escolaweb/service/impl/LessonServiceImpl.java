@@ -25,6 +25,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     @Transactional
     public Lesson create(Lesson lesson) {
+        // Vincula a aula ao professor, disciplina e turma no diário eletrônico
         if (lesson.getLessonDate() == null) {
             throw new IllegalArgumentException("A data da aula é obrigatória.");
         }
@@ -59,6 +60,8 @@ public class LessonServiceImpl implements LessonService {
     @Transactional
     public void delete(Integer id) {
         Lesson lesson = findLessonOrThrow(id);
+
+        // Exclui em cascata frequências e históricos de presença vinculados à aula
 
         List<com.andretti101.escolaweb.model.entity.Attendance> attendances = attendanceRepository.findByLesson(lesson);
         if (!attendances.isEmpty()) {

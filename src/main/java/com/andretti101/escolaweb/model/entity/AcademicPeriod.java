@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade de Período Acadêmico (Bimestre, Trimestre ou Semestre) com controle de abertura/fechamento
 @Entity
 @Table(name = "academic_periods")
 @Getter

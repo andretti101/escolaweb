@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade de aula (diário de classe) que registra a data, o conteúdo ministrado e a contagem de tempos de aula
 @Entity
 @Table(name = "lessons")
 @Getter

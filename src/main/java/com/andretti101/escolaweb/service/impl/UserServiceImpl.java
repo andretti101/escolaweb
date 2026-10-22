@@ -122,6 +122,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<UserSummaryDTO> findSummaries(List<UserRole> roles, Boolean active, Pageable pageable) {
+        // Consulta paginada com ordenação padrão por nome alfabético e filtros combinados
         Pageable effectivePageable = (pageable == null || pageable.isUnpaged())
                 ? Pageable.unpaged()
                 : (pageable.getSort().isUnsorted()
@@ -146,6 +147,7 @@ public class UserServiceImpl implements UserService {
         return PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements());
     }
 
+    // Calcula métricas consolidadas leves para os cards do dashboard (sem carregar registros inteiros na memória)
     @Override
     @Transactional(readOnly = true)
     public UserStatsDTO getUserStats(Boolean active) {
@@ -231,6 +233,7 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    // Mapeia usuários para DTOs, calculando boletins estritamente para os alunos da página atual
     private List<UserSummaryDTO> mapUsersToSummaries(List<User> users) {
         Map<Integer, Enrollment> studentActiveEnrollmentMap = new HashMap<>();
         Map<Integer, StudentSituation> studentSituationMap = new HashMap<>();

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Regras de negócio de cadastro discente: unicidade de matrícula/e-mail, criptografia de senha e moderação de chat
 @Service
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
@@ -22,6 +23,7 @@ public class StudentServiceImpl implements StudentService {
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.context.MessageSource messageSource;
 
+    // Registra estudante garantindo unicidade de matrícula e e-mail
     @Override
     @Transactional
     public Student create(Student student) {

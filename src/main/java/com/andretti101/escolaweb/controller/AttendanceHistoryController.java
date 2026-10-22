@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.List;
 
+// Controlador REST para consulta de trilha de auditoria e linha do tempo de retificações de presenças
 @Tag(name = "Histórico de Frequência", description = "Endpoints de auditoria e linha do tempo de alterações nos registros de frequência escolar")
 @RestController
 @RequestMapping("/api/attendance-history")

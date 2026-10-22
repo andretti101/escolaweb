@@ -1,3 +1,8 @@
+// ==============================================================================
+// Chat em Tempo Real por Turma - Frontend Client
+// Utiliza WebSocket e protocolo STOMP para troca de mensagens entre alunos e professores
+// ==============================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
     const chatHistory = document.getElementById("chatHistory");
     const messageInput = document.getElementById("messageInput");
@@ -10,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const replyPreviewText = document.getElementById("replyPreviewText");
     const replyPreviewClose = document.getElementById("replyPreviewClose");
     
+    // Autenticação e credenciais do usuário ativo
     const token = localStorage.getItem("jwt_token");
     const btnEmoji = document.getElementById("btnEmoji");
     const emojiPickerContainer = document.getElementById("emojiPickerContainer");

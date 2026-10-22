@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
+// Entidade discente derivada de User, com campos cadastrais específicos e controle de chat
 @Entity
 @Table(name = "students")
 @DiscriminatorValue("STUDENT")

@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade de Registro de Frequência discente (presença / falta) com unicidade por aula e aluno
 @Entity
 @Table(
         name = "attendances",

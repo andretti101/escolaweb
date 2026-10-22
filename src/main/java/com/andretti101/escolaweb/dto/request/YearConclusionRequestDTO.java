@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
+// DTO de parâmetros para apuração do encerramento do ano letivo (LDB: nota mínima e frequência mínima de 75%)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record YearConclusionRequestDTO(
 

@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+// Controlador REST para cadastro discente, dados de contato dos responsáveis e consulta de perfil de alunos
 @Tag(name = "Estudantes", description = "Endpoints para gerenciamento do cadastro de alunos, dados de contato e responsáveis")
 @RestController
 @RequestMapping("/api/students")

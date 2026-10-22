@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para consulta de boletins escolares e emissão de PDFs oficiais
 @Tag(name = "Boletins Escolares", description = "Endpoints para consulta e emissão do boletim escolar consolidado de alunos")
 @RestController
 @RequestMapping("/api/report-cards")
@@ -36,6 +37,7 @@ public class ReportCardController {
             @ApiResponse(responseCode = "403", description = "Acesso negado (estudante só pode consultar seu próprio boletim)"),
             @ApiResponse(responseCode = "404", description = "Estudante ou ano letivo não encontrado")
     })
+    // Retorna o DTO estruturado do boletim garantindo que o aluno só consulte seus próprios dados
     @GetMapping("/student/{studentId}/year/{yearId}")
     @PreAuthorize("hasAnyRole('PRINCIPAL', 'SECRETARY', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ReportCardDTO> getReportCard(

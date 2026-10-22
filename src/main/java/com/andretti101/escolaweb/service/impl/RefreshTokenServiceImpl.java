@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+// Gerenciamento e rotação segura de refresh tokens (UUID v4) com revogação e controle temporal de expiração
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements RefreshTokenService {
@@ -22,6 +23,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
+    // Gera um novo refresh token associado ao usuário com validade estendida
     @Override
     @Transactional
     public RefreshToken create(User user) {

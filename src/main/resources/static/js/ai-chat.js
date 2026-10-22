@@ -1,8 +1,14 @@
+// ==============================================================================
+// Assistente Virtual EscolaIA - Frontend Client
+// Comunicação em tempo real via STOMP/WebSocket com Spring AI (Google Gemini)
+// ==============================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
     const chatHistory = document.getElementById("chatHistory");
     const messageInput = document.getElementById("messageInput");
     const btnSend = document.getElementById("btnSend");
     
+    // Valida autenticação antes de inicializar o socket do chat
     const token = localStorage.getItem("jwt_token");
     if (!token) {
         document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
@@ -14,12 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let userId = localStorage.getItem("user_id") || "anonymous";
     let conversationIdKey = "chat_conversation_id_" + userId;
     let conversationId = localStorage.getItem(conversationIdKey);
+    // Identificador persistente da sessão de conversa para contextualizar a IA
     if (!conversationId) {
         conversationId = "conv-" + userId + "-" + Date.now();
         localStorage.setItem(conversationIdKey, conversationId);
     }
     let pendingRequests = 0;
 
+    // Estabelece o túnel WebSocket com o broker STOMP e escuta respostas da IA
     function connect() {
         const socket = new SockJS('/ws-chat');
         stompClient = Stomp.over(socket);

@@ -1,17 +1,23 @@
-// auth-guard.js
+// ==============================================================================
+// Auth Guard - Proteção de Rotas no Frontend (SPA / MPA)
+// Valida a presença e expiração do token JWT antes da renderização da página
+// ==============================================================================
 
 const token       = localStorage.getItem("jwt_token");
 const refreshToken = localStorage.getItem("refresh_token");
 
+// Redireciona imediatamente para o login caso o usuário não possua token de autenticação
 if (!token) {
     document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
     window.location.href = "/entrar";
 } else {
     try {
+        // Decodifica o payload do JWT (formato Base64Url) sem depender de bibliotecas externas
         const payloadBase64  = token.split('.')[1];
         const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
         const decodedPayload = JSON.parse(atob(base64));
 
+        // Verifica a validade temporal do token (claim exp em segundos comparada a Date.now() em ms)
         const isExpired = decodedPayload.exp * 1000 < Date.now();
 
         if (isExpired) {
@@ -20,6 +26,7 @@ if (!token) {
             document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
             window.location.href = "/entrar";
         } else {
+            // Validação de Perfil de Acesso (RBAC) com base no caminho da URL
             const rawRole = (decodedPayload.role || '').toUpperCase();
             const role = rawRole.startsWith("ROLE_") ? rawRole : "ROLE_" + rawRole;
             const currentPath   = window.location.pathname;

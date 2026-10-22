@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade de turma escolar com vínculo a ano letivo, turno, série e divisão letiva (Bimestre/Trimestre)
 @Entity
 @Table(name = "class_rooms")
 @Getter

@@ -146,6 +146,7 @@ public class ReportCardServiceImpl implements ReportCardService {
                     totalFrequency = totalFrequency.add(freq);
                     count++;
                 }
+                // Frequência mínima legal de 75% (LDB art. 24, VI): discente abaixo do limite é reprovado por falta
                 java.math.BigDecimal generalFrequency = count > 0 ? totalFrequency.divide(java.math.BigDecimal.valueOf(count), 2, java.math.RoundingMode.HALF_UP) : java.math.BigDecimal.valueOf(100);
                 com.andretti101.escolaweb.model.enums.StudentSituation sit = generalFrequency.compareTo(minimumAttendance) >= 0 ? com.andretti101.escolaweb.model.enums.StudentSituation.APPROVED : com.andretti101.escolaweb.model.enums.StudentSituation.FAILED;
                 frequency = new ReportCardDTO.FrequencySituationDTO(generalFrequency, minimumAttendance, sit);

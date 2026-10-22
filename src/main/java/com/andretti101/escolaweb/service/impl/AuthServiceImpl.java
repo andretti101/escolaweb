@@ -51,18 +51,21 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponseDTO login(LoginRequestDTO dto) {
+        // Autentica as credenciais com o AuthenticationManager do Spring Security (BCrypt)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.email(), dto.password()));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(dto.email());
         User user = findUserByEmailOrThrow(dto.email());
 
+        // Emite o token JWT de acesso e cria o refresh token para renovação de sessão
         String accessToken = jwtTokenProvider.generateToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.create(user);
 
         return buildResponse(accessToken, refreshToken.getToken(), userDetails, user);
     }
 
+    // Rotaciona o refresh token para evitar reutilização indevida
     @Override
     @Transactional
     public AuthResponseDTO refresh(RefreshTokenRequestDTO dto) {

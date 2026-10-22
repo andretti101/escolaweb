@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+// Configuração central de segurança (Spring Security) com autenticação stateless baseada em JWT
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -36,13 +37,17 @@ public class SecurityConfig {
         this.exceptionResolver = exceptionResolver;
     }
 
+    // Define a cadeia de filtros de segurança (FilterChain), regras de autorização e tratamento de exceções
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Desativa CSRF pois a API é stateless e autenticada via tokens nos cabeçalhos
                 .csrf(AbstractHttpConfigurer::disable)
+                // Não mantém estado de sessão no servidor HTTP
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Rotas públicas (autenticação, documentação OpenAPI e arquivos estáticos)
                         .requestMatchers(
                                 "/auth/**",
                                 "/swagger-ui/**",
@@ -63,6 +68,7 @@ public class SecurityConfig {
                                 "/ws-chat/**",
                                 "/"
                         ).permitAll()
+                        // Restrições de acesso por perfil (RBAC)
                         .requestMatchers("/direcao", "/direcao/**", "/principal", "/principal/**").hasRole("PRINCIPAL")
                         .requestMatchers("/secretaria", "/secretaria/**", "/secretary", "/secretary/**").hasAnyRole("SECRETARY", "PRINCIPAL")
                         .requestMatchers("/professor", "/professor/**", "/teacher", "/teacher/**").hasAnyRole("TEACHER", "SECRETARY", "PRINCIPAL")
@@ -71,8 +77,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
+                // Injeta o filtro JWT antes do filtro padrão de credenciais
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
+                        // Redireciona navegadores para o login ou retorna JSON RFC 7807 para requisições de API
                         .authenticationEntryPoint((request, response, e) -> {
                             boolean isHtmlOrWebRoute = request.getRequestURI().endsWith(".html")
                                     || (request.getHeader("Accept") != null && request.getHeader("Accept").contains("text/html"))

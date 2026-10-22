@@ -15,10 +15,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+// Controlador MVC que resolve URLs amigáveis em português para as respectivas visualizações Thymeleaf
 @Hidden
 @Controller
 public class TemplateController {
 
+    // Mapeamento bidirecional entre rotas amigáveis (em português e inglês) e os caminhos de templates
     private static final Map<String, String> PORTUGUESE_ROUTES;
 
     static {

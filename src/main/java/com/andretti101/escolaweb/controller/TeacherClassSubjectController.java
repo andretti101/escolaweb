@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para alocação docente: vinculação entre professor, turma e disciplina com carga horária
 @Tag(name = "Atribuições Professor-Turma-Disciplina", description = "Endpoints para vínculo pedagógico entre professor, turma e disciplina, incluindo limites de avaliações")
 @RestController
 @RequestMapping("/api/teacher-class-subjects")

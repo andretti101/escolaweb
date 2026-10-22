@@ -10,11 +10,13 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+// Configuração da documentação interativa da API via OpenAPI 3 / Swagger UI
 @Configuration
 public class OpenApiConfig {
 
     public static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
+    // Registra metadados do sistema e o esquema de segurança Bearer JWT para testes diretos na interface Swagger
     @Bean
     public OpenAPI escolaWebOpenAPI() {
         return new OpenAPI()

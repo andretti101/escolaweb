@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+// Controlador REST para gestão nutricional e visualização do cardápio escolar semanal por turno e dia
 @Tag(name = "Cardápio Escolar", description = "Endpoints para consulta e gestão da grade do cardápio escolar semanal")
 @RestController
 @RequestMapping("/api/menu")

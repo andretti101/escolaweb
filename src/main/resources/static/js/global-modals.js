@@ -1,8 +1,14 @@
+// ==============================================================================
+// Gerenciador de Modais Globais Assíncronos (Alert / Confirm)
+// Substitui os alert() e confirm() nativos do navegador por diálogos estilizados baseados em Promises
+// ==============================================================================
+
 (function (window) {
     'use strict';
 
     let modalCounter = 0;
 
+    // Modal de confirmação assíncrono (retorna Promise<boolean>)
     window.showConfirmModal = function (title, message, onConfirm) {
         return new Promise((resolve) => {
             modalCounter++;

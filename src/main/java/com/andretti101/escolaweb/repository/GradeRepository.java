@@ -16,9 +16,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de persistência de notas, configurado com EntityGraphs para evitar o problema N+1 ao carregar avaliações e alunos
 @Repository
 public interface GradeRepository extends JpaRepository<Grade, Integer> {
 
+    // Carrega a nota com todas as associações de aluno, avaliação, período e turma em um único SELECT via JOIN FETCH
     @Override
     @EntityGraph(attributePaths = {
         "student", "assessment", "assessment.period", "assessment.period.academicYear", "assessment.teacherClassSubject", "assessment.teacherClassSubject.subject", "assessment.teacherClassSubject.teacher", "assessment.teacherClassSubject.classRoom"

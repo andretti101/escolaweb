@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Gerenciamento do ciclo de vida dos anos letivos, ativação de ano corrente e garantia de unicidade de ano ativo
 @Service
 @RequiredArgsConstructor
 public class AcademicYearServiceImpl implements AcademicYearService {
@@ -20,6 +21,7 @@ public class AcademicYearServiceImpl implements AcademicYearService {
     private final ClassRoomRepository classRoomRepository;
     private final AcademicPeriodRepository academicPeriodRepository;
 
+    // Cadastra um novo ano letivo garantindo que não haja duplicidade de ano civil
     @Override
     @Transactional
     public AcademicYear create(AcademicYear academicYear) {

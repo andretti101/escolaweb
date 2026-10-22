@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+// Entidade para comunicados e avisos murais emitidos para turmas ou corpo docente
 @Entity
 @Table(name = "announcements")
 @Getter

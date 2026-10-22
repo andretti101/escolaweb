@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Regras de negócio para cadastro, alteração e controle de acesso de diretores escolares
 @Service
 @RequiredArgsConstructor
 public class PrincipalServiceImpl implements PrincipalService {
@@ -21,6 +22,7 @@ public class PrincipalServiceImpl implements PrincipalService {
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.context.MessageSource messageSource;
 
+    // Cadastra um novo diretor aplicando criptografia BCrypt na senha e ativando a conta
     @Override
     @Transactional
     public Principal create(Principal principal) {

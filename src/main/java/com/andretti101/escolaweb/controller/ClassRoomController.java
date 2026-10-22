@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para cadastro e consulta de turmas escolares, séries e turnos
 @Tag(name = "Turmas", description = "Endpoints para gerenciamento de turmas escolares, turnos, séries e vinculação ao ano letivo")
 @RestController
 @RequestMapping("/api/classrooms")

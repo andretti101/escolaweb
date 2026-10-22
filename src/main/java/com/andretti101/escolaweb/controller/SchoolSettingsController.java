@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RestController;
 
+// Controlador REST para consulta e atualização dos parâmetros institucionais da escola (endereço, contatos e cabeçalhos de documentos)
 @Tag(name = "Configurações da Escola", description = "Endpoints para consulta e atualização dos dados cadastrais da instituição de ensino")
 @RestController
 @RequestMapping("/api/school-settings")

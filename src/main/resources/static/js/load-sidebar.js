@@ -1,4 +1,10 @@
+// ==============================================================================
+// Carregador Dinâmico de Navegação (Sidebar) do EscolaWeb
+// Injeta a barra lateral apropriada para cada papel e gerencia o menu mobile e rotas ativas
+// ==============================================================================
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Configura listeners para alternância e fechamento do menu responsivo
     const initMenuToggles = () => {
         let overlay = document.querySelector(".layout-overlay");
         if (!overlay) {

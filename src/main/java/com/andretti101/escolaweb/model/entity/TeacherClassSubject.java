@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade associativa que consolida a atribuição de um professor a uma disciplina e turma com regras de carga horária
 @Entity
 @Table(
         name = "teacher_class_subject",

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+// Entidade docente derivada de User, com relação de disciplinas habilitadas (teacher_subjects)
 @Entity
 @Table(name = "teachers")
 @DiscriminatorValue("TEACHER")

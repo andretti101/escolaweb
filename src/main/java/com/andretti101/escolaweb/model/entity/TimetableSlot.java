@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+// Entidade que representa um horário de aula na grade semanal por turma, dia da semana e ordem
 @Entity
 @Table(name = "timetable_slots")
 @Getter

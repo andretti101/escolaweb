@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// Regras de negócio do corpo docente: credenciais, especialidades habilitadas e status pedagógico
 @Service
 @RequiredArgsConstructor
 public class TeacherServiceImpl implements TeacherService {
@@ -32,6 +33,7 @@ public class TeacherServiceImpl implements TeacherService {
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.context.MessageSource messageSource;
 
+    // Cadastra professor associando suas disciplinas de habilitação e criptografando a senha
     @Override
     @Transactional
     public Teacher create(Teacher teacher) {

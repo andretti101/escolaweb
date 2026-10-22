@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade de Ano Letivo do calendário escolar (apenas um ano ativo por vez no sistema)
 @Entity
 @Table(name = "academic_years")
 @Getter

@@ -13,6 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+// Entidade base abstrata de usuários com estratégia de herança JOINED (tabela users + tabelas específicas)
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)

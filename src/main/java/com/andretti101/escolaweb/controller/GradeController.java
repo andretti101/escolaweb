@@ -44,6 +44,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para lançamento de notas, provas de recuperação e apuração de médias
 @Tag(name = "Notas e Avaliações", description = "Endpoints para lançamento, edição e cálculo de médias das notas escolares")
 @RestController
 @RequestMapping("/api/grades")

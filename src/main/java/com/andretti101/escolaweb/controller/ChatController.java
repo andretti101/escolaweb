@@ -24,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.security.Principal;
 import java.util.List;
 
+// Controlador REST e WebSocket STOMP para troca de mensagens em tempo real entre alunos e professores por turma
 @Tag(name = "Chat e Mensagens", description = "Endpoints para consulta de histórico, membros, controle de leitura, moderação e bloqueio no chat de turmas e sala dos professores")
 @RestController
 @RequiredArgsConstructor

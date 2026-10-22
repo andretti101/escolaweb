@@ -42,6 +42,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para apontamento de chamada (presença/falta) e acompanhamento do percentual de frequência
 @Tag(name = "Frequência e Presença", description = "Endpoints para chamada escolar, registro de presenças/faltas e cálculo de frequência")
 @RestController
 @RequestMapping("/api/attendances")

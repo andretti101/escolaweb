@@ -30,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
+        // Extrai o token do cabeçalho Authorization Bearer ou cookie HTTP-only
         String token = null;
         String authHeader = request.getHeader("Authorization");
 
@@ -52,6 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String email = jwtTokenProvider.extractUsername(token);
 
+            // Valida a assinatura e expiração do token e autentica o usuário no Spring Security
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 

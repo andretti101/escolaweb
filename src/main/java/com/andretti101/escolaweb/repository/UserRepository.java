@@ -7,8 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de acesso a dados da entidade base User com consultas de autenticação, filtros por perfil e agregação de contagens
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+    // Localiza usuário pelo e-mail único para o processo de login e autenticação JWT
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByEmailAndIdNot(String email, Integer id);

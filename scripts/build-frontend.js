@@ -1,3 +1,9 @@
+// ==============================================================================
+// Script de Build do Frontend para o Electron (Desktop)
+// Transforma os templates Thymeleaf e assets estáticos em um pacote estático (dist)
+// compatível com execução local off-line e protocolo file://
+// ==============================================================================
+
 const fs = require('fs');
 const path = require('path');
 const { ROUTE_MAP } = require('./routes-map');
@@ -5,16 +11,19 @@ const { ROUTE_MAP } = require('./routes-map');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 
+// Locais candidatos para os assets estáticos (código-fonte ou compilação Maven)
 const STATIC_CANDIDATES = [
   path.join(ROOT_DIR, 'src', 'main', 'resources', 'static'),
   path.join(ROOT_DIR, 'target', 'classes', 'static')
 ];
 
+// Locais candidatos para os templates HTML
 const TEMPLATES_CANDIDATES = [
   path.join(ROOT_DIR, 'src', 'main', 'resources', 'templates'),
   path.join(ROOT_DIR, 'target', 'classes', 'templates')
 ];
 
+// Identifica o diretório existente dentre os caminhos candidatos
 function findExistingDir(candidates) {
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) {
@@ -24,6 +33,7 @@ function findExistingDir(candidates) {
   return null;
 }
 
+// Copia recursivamente pastas e arquivos para o diretório de distribuição
 function copyDirectoryRecursive(srcDir, destDir) {
   if (!fs.existsSync(srcDir)) return;
   fs.mkdirSync(destDir, { recursive: true });
@@ -41,6 +51,7 @@ function copyDirectoryRecursive(srcDir, destDir) {
   }
 }
 
+// Gera o script injetado nas páginas para interceptar fetch, rotas e redirecionamentos
 function createElectronBridgeScript(distDir) {
   const jsDir = path.join(distDir, 'js');
   fs.mkdirSync(jsDir, { recursive: true });
@@ -49,6 +60,7 @@ function createElectronBridgeScript(distDir) {
   if (window.__ESCOLAWEB_ELECTRON_BRIDGE__) return;
   window.__ESCOLAWEB_ELECTRON_BRIDGE__ = true;
 
+  // URL padrão do backend Spring Boot caso não informada
   var DEFAULT_BACKEND = 'http://localhost';
   function getBackendUrl() {
     if (window.escolawebDesktop && typeof window.escolawebDesktop.getBackendUrl === 'function') {
@@ -272,6 +284,7 @@ function createElectronBridgeScript(distDir) {
   fs.writeFileSync(path.join(jsDir, 'electron-bridge.js'), bridgeCode, 'utf8');
 }
 
+// Ajusta links e caminhos estáticos dos arquivos HTML para funcionamento sob file://
 function processHtmlFiles(dirPath, rootDistDir) {
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
   for (const entry of entries) {
@@ -286,14 +299,14 @@ function processHtmlFiles(dirPath, rootDistDir) {
 
       let content = fs.readFileSync(fullPath, 'utf8');
 
-      // Normalize pathname check so it works under both HTTP and file:// paths
+      // Normaliza checagens de pathname para compatibilidade entre HTTP e file://
       content = content.replace(
         /window\.location\.pathname\.startsWith\((['"])\/secretary\1\)/g,
         "window.location.pathname.includes('/secretary')"
       );
 
       if (!isComponent) {
-        // Rewrite root-relative static asset references to relative paths for file:// compatibility
+        // Converte assets absolutos (/assets/...) em relativos para o protocolo file://
         content = content.replace(
           /\b(href|src)=(["'])\/(assets|js|favicon\.ico)/g,
           `$1=$2${prefix}/$3`
@@ -303,7 +316,7 @@ function processHtmlFiles(dirPath, rootDistDir) {
           `data-assets-path=$1${prefix}/assets/$2`
         );
 
-        // Inject electron-bridge.js right after <head> if not already present
+        // Injeta o electron-bridge.js logo após a tag <head>
         const bridgeTag = `<script src="${prefix}/js/electron-bridge.js"></script>`;
         if (!content.includes('electron-bridge.js')) {
           content = content.replace(/<head(\s[^>]*)?>/i, (match) => `${match}\n    ${bridgeTag}`);
@@ -315,6 +328,7 @@ function processHtmlFiles(dirPath, rootDistDir) {
   }
 }
 
+// Orquestra a geração completa do frontend na pasta dist/
 function buildFrontend() {
   const staticDir = findExistingDir(STATIC_CANDIDATES);
   const templatesDir = findExistingDir(TEMPLATES_CANDIDATES);

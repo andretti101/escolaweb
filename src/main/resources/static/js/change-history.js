@@ -1,12 +1,9 @@
-/**
- * change-history.js
- * Gerencia a consulta de histórico de alterações de notas e frequência.
- * Compatível com perfis: SECRETARY, PRINCIPAL e TEACHER.
- */
-
+// Gerencia a consulta da trilha de auditoria e linha do tempo de alterações de notas e frequência
+// Suporta filtragem reativa por ano letivo, período, turma, professor e estudante para Direção, Secretaria e Docentes
 (function () {
     'use strict';
 
+    // Recupera token de autenticação e papel do usuário do DOM
     const token = localStorage.getItem('jwt_token');
     const role = (document.body.getAttribute('data-role') || 'SECRETARY').toUpperCase();
     const isTeacher = role === 'TEACHER';

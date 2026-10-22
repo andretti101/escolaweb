@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade de Notas do estudante com suporte a nota regular e nota de recuperação
 @Entity
 @Table(
         name = "grades",
@@ -53,6 +54,7 @@ public class Grade implements Serializable {
     @Column(name = "recovery_score", precision = 5, scale = 2)
     private BigDecimal recoveryValue;
 
+    // Retorna a nota válida para o cálculo da média (a nota de recuperação substitui a original caso seja superior)
     @Transient
     public BigDecimal getEffectiveValue() {
         if (value == null) {

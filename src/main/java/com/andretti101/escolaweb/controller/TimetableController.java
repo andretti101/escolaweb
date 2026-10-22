@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+// Controlador REST para montagem, validação de conflitos e consulta da grade horária semanal de aulas
 @Tag(name = "Grade Horária", description = "Endpoints para consulta e gestão da grade horária semanal de aulas")
 @RestController
 @RequestMapping("/api/timetable")

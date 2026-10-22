@@ -40,6 +40,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos"),
             @ApiResponse(responseCode = "401", description = "Credenciais incorretas ou conta inativa")
     })
+    // Autentica o usuário com e-mail e senha, retornando access token JWT e refresh token
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
         return ResponseEntity.ok(authService.login(dto));
@@ -52,6 +53,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Refresh token inválido ou formato incorreto"),
             @ApiResponse(responseCode = "401", description = "Refresh token expirado ou revogado")
     })
+    // Renova a sessão emitindo novo par de tokens a partir do refresh token válido
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponseDTO> refresh(@Valid @RequestBody RefreshTokenRequestDTO dto) {
         return ResponseEntity.ok(authService.refresh(dto));

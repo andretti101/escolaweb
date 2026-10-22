@@ -1,25 +1,33 @@
+# ==============================================================================
+# EscolaWeb - Docker Compose Orchestration
+# Ambiente de Banco de Dados Relacional (PostgreSQL 16)
+# ==============================================================================
 services:
 
+  # Serviço do Banco de Dados PostgreSQL para persistência do EscolaWeb
   postgres:
     image: postgres:16
-
     container_name: escola_postgres
-
     restart: always
 
+    # Carrega variáveis de ambiente a partir do arquivo .env
     env_file:
       - .env
 
+    # Configuração das credenciais e banco padrão a partir das variáveis
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
 
+    # Mapeamento da porta padrão do PostgreSQL (5432 no host -> 5432 no container)
     ports:
       - "5432:5432"
 
+    # Volume persistente para garantir integridade dos dados entre reinicializações
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+# Definição de volumes nomeados para persistência gerenciada pelo Docker
 volumes:
   postgres_data:

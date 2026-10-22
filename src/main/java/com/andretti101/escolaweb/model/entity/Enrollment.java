@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+// Entidade de matrícula que vincula o aluno a uma turma em um ano letivo específico com situação acadêmica
 @Entity
 @Table(
         name = "enrollments",

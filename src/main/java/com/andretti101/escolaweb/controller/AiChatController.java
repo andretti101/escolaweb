@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.security.Principal;
 import java.util.List;
 
+// Controlador responsável pela comunicação em tempo real e histórico do Assistente Virtual de IA
 @Tag(name = "Assistente de IA", description = "Endpoints para interação e gerenciamento do histórico com o assistente inteligente escolar")
 @Controller
 @RequiredArgsConstructor
@@ -45,6 +46,7 @@ public class AiChatController {
     public record ChatResponse(String reply, String conversationId) {}
     public record HistoryMessage(String role, String content) {}
 
+    // Valida se o usuário autenticado é proprietário da sessão de conversa da IA
     private boolean isAuthorizedConversation(String conversationId, Principal principal) {
         if (principal == null || conversationId == null || conversationId.isBlank()) {
             return false;
@@ -130,6 +132,7 @@ public class AiChatController {
         return ResponseEntity.ok().build();
     }
 
+    // Processa a mensagem recebida via WebSocket (/app/ai/chat) e despacha a resposta na fila do usuário
     @MessageMapping("/ai/chat")
     public void handleAiChat(@Payload ChatRequest request, Principal principal) {
         if (principal == null) {

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Regras de negócio para cadastro, manutenção e controle de acesso de secretários escolares
 @Service
 @RequiredArgsConstructor
 public class SecretaryServiceImpl implements SecretaryService {
@@ -21,6 +22,7 @@ public class SecretaryServiceImpl implements SecretaryService {
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.context.MessageSource messageSource;
 
+    // Registra novo secretário com validação de unicidade de e-mail e hash BCrypt
     @Override
     @Transactional
     public Secretary create(Secretary secretary) {

@@ -9,12 +9,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+// Serviço de gestão dos parâmetros institucionais da escola (média de aprovação, frequência mínima LDB)
 @Service
 @RequiredArgsConstructor
 public class SchoolSettingsServiceImpl implements SchoolSettingsService {
 
     private final SchoolSettingsRepository schoolSettingsRepository;
 
+    // Recupera a configuração institucional única da escola ou cria valores padrão (LDB art. 24)
     @Override
     @Transactional
     public SchoolSettings findSettings() {

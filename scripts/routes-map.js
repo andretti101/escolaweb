@@ -1,8 +1,12 @@
+// Mapeamento de rotas web (URLs amigáveis) para os arquivos HTML correspondentes
+// Utilizado pelo Electron para carregar as telas certas quando empacotado como app desktop
 const ROUTE_MAP = {
+  // Rotas públicas e de autenticação
   '/entrar': '/login.html',
   '/recuperar-senha': '/forgot-password.html',
   '/redefinir-senha': '/reset-password.html',
   '/assistente-ia': '/ai-chat.html',
+  // Módulos da Direção (PRINCIPAL)
   '/direcao': '/principal/dashboard.html',
   '/direcao/painel': '/principal/dashboard.html',
   '/direcao/periodos-academicos': '/principal/academic-periods.html',
@@ -32,6 +36,7 @@ const ROUTE_MAP = {
   '/direcao/editar/aviso': '/principal/edit/announcement.html',
   '/direcao/grade-horaria': '/principal/timetable.html',
   '/direcao/cardapio': '/principal/meal-menu.html',
+  // Módulos da Secretaria (SECRETARY)
   '/secretaria': '/secretary/dashboard.html',
   '/secretaria/painel': '/secretary/dashboard.html',
   '/secretaria/usuarios': '/secretary/users.html',
@@ -69,6 +74,7 @@ const ROUTE_MAP = {
   '/secretaria/editar/aviso': '/secretary/edit/announcement.html',
   '/secretaria/grade-horaria': '/secretary/timetable.html',
   '/secretaria/cardapio': '/secretary/meal-menu.html',
+  // Módulos do Professor (TEACHER)
   '/professor': '/teacher/dashboard.html',
   '/professor/painel': '/teacher/dashboard.html',
   '/professor/aulas': '/teacher/lessons.html',
@@ -91,6 +97,7 @@ const ROUTE_MAP = {
   '/professor/editar/aviso': '/teacher/edit/announcement.html',
   '/professor/grade-horaria': '/teacher/timetable.html',
   '/professor/cardapio': '/teacher/meal-menu.html',
+  // Módulos do Aluno (STUDENT)
   '/aluno': '/student/dashboard.html',
   '/aluno/painel': '/student/dashboard.html',
   '/aluno/boletim': '/student/report-card.html',

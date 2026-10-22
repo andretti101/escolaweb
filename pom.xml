@@ -11,8 +11,8 @@
 	<groupId>com.andretti101</groupId>
 	<artifactId>escolaweb</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>escolaweb</name>
+	<description>EscolaWeb - Sistema Integrado de Gestão Escolar com IA para Educação Básica</description>
 	<url/>
 	<licenses>
 		<license/>

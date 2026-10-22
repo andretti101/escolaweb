@@ -15,9 +15,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de atribuição docente: vínculo entre professor, turma e disciplina com consultas otimizadas para ano ativo
 @Repository
 public interface TeacherClassSubjectRepository extends JpaRepository<TeacherClassSubject, Integer> {
 
+    // Carrega a atribuição com professor, turma, ano letivo e disciplina em consulta única
     @Override
     @EntityGraph(attributePaths = {"teacher", "classRoom", "classRoom.academicYear", "subject"})
     Optional<TeacherClassSubject> findById(Integer id);

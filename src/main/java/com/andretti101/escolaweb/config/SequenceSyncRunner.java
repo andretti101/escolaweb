@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+// Sincroniza as sequences do PostgreSQL na inicialização para evitar conflitos de ID com o data.sql
 @Component
 public class SequenceSyncRunner implements CommandLineRunner {
 
@@ -18,6 +19,7 @@ public class SequenceSyncRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         log.info("Sincronizando Auto-Increments (Sequences) do PostgreSQL...");
+        // Tabelas relacionais que possuem sequências auto-increment associadas ao campo id
         String[] tables = {
             "academic_periods", "academic_years", "announcements", "assessments",
             "attendance_history", "attendances", "chat_hidden_messages", "chat_message_history",

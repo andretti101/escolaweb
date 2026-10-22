@@ -15,9 +15,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de persistência de aulas e diário escolar com queries para anos letivos ativos e inativação em lote
 @Repository
 public interface LessonRepository extends JpaRepository<Lesson, Integer> {
 
+    // Carrega a aula com o grafo completo de atribuição docente, turma e ano letivo em SELECT único
     @Override
     @EntityGraph(attributePaths = {
         "teacherClassSubject", "teacherClassSubject.subject", "teacherClassSubject.teacher", "teacherClassSubject.classRoom", "teacherClassSubject.classRoom.academicYear"

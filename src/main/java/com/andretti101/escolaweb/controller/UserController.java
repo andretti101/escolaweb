@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+// Controlador REST para consulta unificada de contas de usuários, métricas de acesso e papéis do sistema
 @Tag(name = "Usuários", description = "Endpoints consolidados para consulta de usuários da escola com paginação e estatísticas")
 @RestController
 @RequestMapping("/api/users")

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de matrículas com carregamento antecipado (EntityGraph) para relatórios e boletins
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer> {
 
@@ -31,6 +32,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     @EntityGraph(attributePaths = {"student", "classRoom", "classRoom.academicYear"})
     List<Enrollment> findByStudent(Student student);
 
+    // Listagem nominal de alunos enturmados ordenada alfabeticamente para diário de classe
     @EntityGraph(attributePaths = {"student", "classRoom", "classRoom.academicYear"})
     List<Enrollment> findByClassRoomOrderByStudentNameAsc(ClassRoom classRoom);
 
@@ -55,6 +57,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
 
     @EntityGraph(attributePaths = {"student", "classRoom", "classRoom.academicYear"})
     List<Enrollment> findByClassRoom_AcademicYearAndActiveTrue(AcademicYear academicYear);
+
+    // Encerra em lote as matrículas ativas ao concluir o ano letivo
     @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true)
     @org.springframework.data.jpa.repository.Query("UPDATE Enrollment e SET e.active = false WHERE e.classRoom.academicYear = :year AND e.active = true")
     int deactivateAllByAcademicYear(@org.springframework.data.repository.query.Param("year") AcademicYear academicYear);

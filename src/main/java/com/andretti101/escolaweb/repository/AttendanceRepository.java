@@ -17,9 +17,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de dados de frequência escolar com consultas otimizadas para cálculo de assiduidade e percentual da LDB
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
 
+    // Recupera o registro de presença com grafo completo de aula, matéria, professor e ano letivo
     @Override
     @EntityGraph(attributePaths = {
         "student", "lesson", "lesson.teacherClassSubject", "lesson.teacherClassSubject.subject", "lesson.teacherClassSubject.teacher", "lesson.teacherClassSubject.classRoom", "lesson.teacherClassSubject.classRoom.academicYear"

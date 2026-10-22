@@ -59,6 +59,7 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
 
         AcademicYear activeYear = academicYearService.findActive();
 
+        // 1. Todas as divisões de período (bimestres/trimestres) das turmas devem estar fechadas
         List<AcademicPeriodType> inUse = classRoomRepository.findDistinctActivePeriodTypesByYear(activeYear);
         if (inUse.isEmpty()) {
             throw new IllegalStateException(
@@ -77,6 +78,7 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
                     + ". Feche os períodos das divisões: " + String.join(", ", pending) + ".");
         }
 
+        // 2. Carrega as matrículas ativas e processa os boletins finais em lote
         List<Enrollment> activeEnrollments = enrollmentRepository
                 .findByClassRoom_AcademicYearAndActiveTrue(activeYear);
 
@@ -87,6 +89,7 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
         Map<Integer, ReportCardDTO> reportCardMap = batchReportCards.stream()
                 .collect(Collectors.toMap(ReportCardDTO::studentId, rc -> rc, (a, b) -> a));
 
+        // 3. Aplica a situação acadêmica final baseada em nota e frequência mínima (LDB art. 24)
         for (Enrollment enrollment : activeEnrollments) {
             ReportCardDTO reportCard = reportCardMap.get(enrollment.getStudent().getId());
 
@@ -117,6 +120,7 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
             }
         }
 
+        // 4. Desativa os registros operacionais do ano encerrado (matrículas, notas, aulas)
         enrollmentRepository.deactivateAllByAcademicYear(activeYear);
         assessmentRepository.deactivateAllByAcademicYear(activeYear);
         lessonRepository.deactivateAllByAcademicYear(activeYear);
@@ -131,6 +135,7 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
 
         activeYear.setActive(false);
 
+        // 5. Salva parâmetros institucionais no ano encerrado e inaugura o novo calendário letivo
         SchoolSettings settings = schoolSettingsService.findSettings();
         
         activeYear.setMinimumGrade(settings.getMinimumGrade());

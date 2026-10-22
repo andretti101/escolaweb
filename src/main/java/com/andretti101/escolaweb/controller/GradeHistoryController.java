@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.List;
 
+// Controlador REST para rastreabilidade e auditoria de alterações ou retificações de notas escolares
 @Tag(name = "Histórico de Notas", description = "Endpoints de auditoria e linha do tempo de alterações nas notas dos estudantes")
 @RestController
 @RequestMapping("/api/grade-history")

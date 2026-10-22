@@ -42,10 +42,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final com.andretti101.escolaweb.repository.AcademicYearRepository academicYearRepository;
     private final com.andretti101.escolaweb.service.NotificationPublisherService notificationPublisherService;
 
+    // Cria um comunicado escolar validando o público-alvo (turmas ou docentes) e permissões do autor
     @Override
     @Transactional
     public Announcement create(Announcement announcement, List<Integer> classRoomIds) {
         User authUser = authenticatedUserService.getAuthenticatedUser();
+        // Professores não podem enviar comunicados restritos aos próprios colegas (apenas gestão)
         if (Boolean.TRUE.equals(announcement.getTargetTeachers()) && authUser.getRole() == UserRole.TEACHER) {
             throw new org.springframework.security.access.AccessDeniedException("Professores não podem enviar recados para professores.");
         }
@@ -56,6 +58,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             throw new IllegalArgumentException("Selecione pelo menos uma turma ou marque a opção para professores.");
         }
 
+        // Professor só pode emitir comunicado para turmas em que possui atribuição ativa
         if (authUser.getRole() == UserRole.TEACHER && classRoomIds != null && !classRoomIds.isEmpty()) {
             Teacher teacher = teacherService.findById(authUser.getId());
             List<Integer> allowedIds = teacherClassSubjectRepository.findByTeacher(teacher)

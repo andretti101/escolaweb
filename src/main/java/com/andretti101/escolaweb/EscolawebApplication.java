@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+// Ponto de entrada principal da aplicação Spring Boot EscolaWeb
 @SpringBootApplication
 public class EscolawebApplication {
      
@@ -14,6 +15,7 @@ public class EscolawebApplication {
         SpringApplication.run(EscolawebApplication.class, args);
     }
 
+    // Executado na inicialização para remover eventuais mensagens corrompidas no histórico de chat
     @Bean
     public CommandLineRunner dbCleanup(JdbcTemplate jdbcTemplate) {
         return args -> {

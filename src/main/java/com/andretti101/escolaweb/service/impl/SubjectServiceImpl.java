@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Gestão da matriz curricular: criação de disciplinas, verificação de duplicidade e desativação segura
 @Service
 @RequiredArgsConstructor
 public class SubjectServiceImpl implements SubjectService {
@@ -20,6 +21,7 @@ public class SubjectServiceImpl implements SubjectService {
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
     private final TeacherRepository teacherRepository;
 
+    // Cadastra nova matéria na matriz curricular verificando duplicidade de nomenclatura
     @Override
     @Transactional
     public Subject create(Subject subject) {

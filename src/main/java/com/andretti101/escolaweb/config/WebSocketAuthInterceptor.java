@@ -31,6 +31,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
+        // 1. Conexao inicial: valida o token JWT Bearer e autentica a sessao WebSocket
         if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -45,6 +46,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                     }
                 }
             }
+        // 2. Inscricao em canais: garante que cada perfil so escute topicos autorizados
         } else if (accessor != null && StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             Principal principal = accessor.getUser();
             if (principal == null) {
@@ -56,6 +58,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 User user = userRepository.findByEmail(principal.getName())
                         .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
+                // Notificacoes pessoais: restrito ao proprio usuario ou a gestao escolar
                 if (destination.startsWith("/topic/user/")) {
                     String[] parts = destination.split("/");
                     if (parts.length >= 4) {
@@ -70,20 +73,22 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                     } else {
                         throw new IllegalArgumentException("Destino inválido para notificações.");
                     }
+                // Sala dos professores: alunos nao podem acessar
                 } else if (destination.startsWith("/topic/teachers")) {
                     if (user.getRole() == UserRole.STUDENT) {
                         throw new IllegalArgumentException("Acesso negado: Alunos não podem acessar o chat dos professores.");
                     }
+                // Chat da turma: restrito aos discentes com matricula ativa na sala
                 } else if (destination.startsWith("/topic/classroom/")) {
                     String roomIdStr = destination.substring("/topic/classroom/".length());
                     Integer roomId = Integer.parseInt(roomIdStr);
 
-                    // DIRETORIA ou SECRETARIA possuem acesso livre
+                    // Direcao e secretaria possuem supervisao livre em qualquer turma
                     if (user.getRole() == UserRole.SECRETARY || user.getRole() == UserRole.PRINCIPAL) {
                         return message;
                     }
 
-                    // Se for Aluno, valida a matrícula
+                    // Se for aluno, verifica se esta ativamente matriculado na turma solicitada
                     if (user.getRole() == UserRole.STUDENT) {
                         boolean enrolled = enrollmentRepository.existsByStudent_IdAndClassRoom_IdAndActiveTrue(user.getId(), roomId);
                         if (!enrolled) {

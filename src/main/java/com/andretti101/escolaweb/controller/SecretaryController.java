@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para cadastro e manutenção de contas da equipe de secretaria escolar
 @Tag(name = "Secretários", description = "Endpoints para gerenciamento dos usuários com perfil de Secretaria Escolar")
 @RestController
 @RequestMapping("/api/secretaries")

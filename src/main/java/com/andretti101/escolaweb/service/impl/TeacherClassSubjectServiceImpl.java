@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Gestão do vínculo pedagógico entre professor, turma e disciplina com carga horária semanal e limites de avaliações
 @Service
 @RequiredArgsConstructor
 public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectService {
@@ -29,6 +30,7 @@ public class TeacherClassSubjectServiceImpl implements TeacherClassSubjectServic
     private final ClassRoomService classRoomService;
     private final SubjectService subjectService;
 
+    // Vincula professor à turma e matéria com validação de status ativo e limites avaliativos
     @Override
     @Transactional
     public TeacherClassSubject create(TeacherClassSubject tcs) {

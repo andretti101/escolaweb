@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para cadastro e gerenciamento de contas de diretores e equipe gestora
 @Tag(name = "Diretores", description = "Endpoints para gerenciamento dos usuários com perfil de Direção Escolar (Principal)")
 @RestController
 @RequestMapping("/api/principals")

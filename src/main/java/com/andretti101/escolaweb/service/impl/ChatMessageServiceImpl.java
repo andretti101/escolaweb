@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// Gerenciamento de mensagens de chat em tempo real, confirmações de leitura (read receipts) e moderação de alunos
 @Service
 @RequiredArgsConstructor
 public class ChatMessageServiceImpl implements ChatMessageService {
@@ -27,6 +28,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final com.andretti101.escolaweb.repository.ChatHiddenMessageRepository chatHiddenMessageRepository;
     private final com.andretti101.escolaweb.repository.AcademicYearRepository academicYearRepository;
 
+    // Persiste nova mensagem verificando bloqueio disciplinar de chat e vinculação à turma
     @Override
     @Transactional
     public ChatMessageResponseDTO saveMessage(Integer classroomId, Integer senderId, String content, Integer repliedToId) {

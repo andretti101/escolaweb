@@ -38,6 +38,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para cadastro e consulta de instrumentos de avaliação (provas, trabalhos e recuperações)
 @Tag(name = "Avaliações", description = "Endpoints para criação e gestão de instrumentos avaliativos (provas, trabalhos, testes)")
 @RestController
 @RequestMapping("/api/assessments")

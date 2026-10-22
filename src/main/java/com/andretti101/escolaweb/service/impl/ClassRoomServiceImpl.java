@@ -26,6 +26,7 @@ public class ClassRoomServiceImpl implements ClassRoomService {
     private final AcademicYearService academicYearService;
     private final com.andretti101.escolaweb.repository.AcademicYearRepository academicYearRepository;
 
+    // Cria uma nova turma validando obrigatoriedade da série, existência prévia dos períodos e unicidade
     @Override
     @Transactional
     public ClassRoom create(ClassRoom classRoom) {
@@ -40,11 +41,13 @@ public class ClassRoomServiceImpl implements ClassRoomService {
             throw new IllegalArgumentException("A série da turma é obrigatória.");
         }
 
+        // A direção precisa ter configurado a divisão (Bimestre/Trimestre) no ano antes de criar turmas daquele modelo
         if (!academicPeriodRepository.existsByAcademicYearAndPeriodType(year, classRoom.getPeriodType())) {
             throw new IllegalStateException("A direção ainda não criou a divisão de "
                     + classRoom.getPeriodType().getLabel() + " para o ano letivo " + year.getYear() + ".");
         }
 
+        // Unicidade do nome da turma dentro do mesmo ano letivo
         if (classRoomRepository.existsByAcademicYearAndName(year, classRoom.getName())) {
             throw new IllegalStateException(
                     "Já existe uma turma com o nome '" + classRoom.getName() + "' no ano letivo " + year.getYear() + ".");

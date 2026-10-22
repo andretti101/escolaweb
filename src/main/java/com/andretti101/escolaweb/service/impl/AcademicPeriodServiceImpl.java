@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+// Implementação das regras de negócio de períodos letivos: fechamento de notas, validações de calendário e divisões periódicas
 @Service
 @RequiredArgsConstructor
 public class AcademicPeriodServiceImpl implements AcademicPeriodService {

@@ -10,9 +10,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de mensagens de chat por turma e sala dos professores com contagem de não-lidas e arquivamento
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Integer> {
     
+    // Busca a mensagem com o remetente e a mensagem respondida (quote) carregados via EntityGraph
     @Override
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sender", "repliedTo", "repliedTo.sender"})
     Optional<ChatMessage> findById(Integer id);

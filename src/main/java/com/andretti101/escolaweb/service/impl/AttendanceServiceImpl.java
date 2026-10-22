@@ -48,6 +48,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (attendance.getStatus() == null) {
             throw new IllegalArgumentException("O status da frequência é obrigatório.");
         }
+        // Impede lancamento duplicado de frequencia para o mesmo discente na mesma aula
         if (attendanceRepository.existsByLessonAndStudent(lesson, student)) {
             throw new IllegalStateException(
                     "A frequência do aluno '" + student.getName() + "' nesta aula já foi registrada.");
@@ -80,6 +81,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         existing.setStatus(incoming.getStatus());
 
+        // Registra historico de auditoria caso o status da presenca seja alterado (ex: falta para justificada)
         if (previous != incoming.getStatus()) {
             recordHistory(existing, previous, existing.getStatus());
             dispatchAttendanceNotification(existing, "Frequência Atualizada");

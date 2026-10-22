@@ -24,17 +24,20 @@ public class AssessmentServiceImpl implements AssessmentService {
     private final TeacherClassSubjectService teacherClassSubjectService;
     private final AcademicPeriodService academicPeriodService;
 
+    // Cadastra uma avaliação aplicando regras de consistência acadêmica e calendário letivo
     @Override
     @Transactional
     public Assessment create(Assessment assessment) {
         TeacherClassSubject tcs = resolveTcs(assessment.getTeacherClassSubject());
         AcademicPeriod period = resolvePeriod(assessment.getPeriod());
 
+        // Validações de coerência: ano letivo coincidente, tipo de período compatível, período aberto e data válida
         validateCrossAcademicYear(tcs, period);
         validatePeriodType(tcs, period);
         validatePeriodOpen(period);
         validateDate(assessment, period);
 
+        // Garante que o número máximo de avaliações permitidas no período não seja ultrapassado
         validateMaxAssessments(tcs, period);
 
         assessment.setTeacherClassSubject(tcs);

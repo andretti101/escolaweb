@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Representação padronizada de erros de API (RFC 7807 Problem Details) retornada pelo GlobalExceptionHandler
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record ApiErrorResponse(
         LocalDateTime timestamp,

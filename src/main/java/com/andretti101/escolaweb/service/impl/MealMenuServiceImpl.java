@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+// Serviço de gestão do cardápio de alimentação escolar e merenda nutricional (PNAE)
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class MealMenuServiceImpl implements MealMenuService {
     private final MealMenuSlotRepository mealMenuSlotRepository;
     private final AcademicYearRepository academicYearRepository;
 
+    // Constrói o cardápio da semana agrupando as refeições pelos dias letivos (segunda a sábado)
     @Override
     @Transactional(readOnly = true)
     public WeeklyMealMenuDTO getWeeklyMenu(Integer academicYearId) {

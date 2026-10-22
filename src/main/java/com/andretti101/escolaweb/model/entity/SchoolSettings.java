@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+// Entidade de configuração institucional com informações cadastrais e critérios normativos da escola
 @Entity
 @Table(name = "school_settings")
 @Getter

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+// Serviço de gestão da grade horária escolar e geração automatizada de horários sem conflitos
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,7 @@ public class TimetableServiceImpl implements TimetableService {
     private final AcademicYearRepository academicYearRepository;
     private final AuthenticatedUserService authenticatedUserService;
 
+    // Adiciona um horário na grade checando conflito de professor ocupado e sala ocupada
     @Override
     @Transactional
     public TimetableSlotResponseDTO addSlot(TimetableSlotRequestDTO dto) {
@@ -42,6 +44,7 @@ public class TimetableServiceImpl implements TimetableService {
         TeacherClassSubject tcs = findTeacherClassSubject(dto.teacherClassSubjectId());
 
         validateClassRoomAndTeacherClassSubject(classRoom, tcs);
+        // Previne choque de horário: nem a turma nem o docente podem ter outro compromisso no mesmo intervalo
         checkConflicts(classRoom, tcs, dto.dayOfWeek(), dto.startTime(), dto.endTime(), null);
 
         TimetableSlot slot = TimetableSlot.builder()

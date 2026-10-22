@@ -10,6 +10,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+// Serviço de mensageria assíncrona/SMTP para envio de comunicados e links de redefinição de credenciais
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class EmailServiceImpl implements EmailService {
     @Value("${password-reset.base-url}")
     private String baseUrl;
 
+    // Dispara e-mail com layout HTML responsivo contendo token seguro para recuperação de senha
     @Override
     public void sendPasswordResetEmail(String to, String userName, String token) {
         String resetLink = baseUrl + "/reset-password.html?token=" + token;

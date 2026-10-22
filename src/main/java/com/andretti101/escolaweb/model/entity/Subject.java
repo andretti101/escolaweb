@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade que representa uma matéria ou disciplina da matriz curricular da instituição
 @Entity
 @Table(name = "subjects")
 @Getter

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// Controlador REST para comunicados e murais escolares direcionados por turma ou corpo docente
 @Tag(name = "Comunicados e Avisos", description = "Endpoints para emissão de murais de avisos, comunicados por turma, comunicados para professores e notificações de leitura")
 @RestController
 @RequestMapping("/api/announcements")
@@ -31,6 +32,7 @@ public class AnnouncementController {
     private final AnnouncementService announcementService;
     private final AuthenticatedUserService authenticatedUserService;
 
+    // Publica um novo comunicado associando-o opcionalmente a turmas ou aos docentes
     @Operation(summary = "Criar comunicado escolar", description = "Publica um novo comunicado podendo direcioná-lo a turmas específicas ou a todos os professores.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Comunicado criado com sucesso"),

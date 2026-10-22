@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Controlador REST para enturmação, rematrícula e gestão da situação de matrícula de estudantes
 @Tag(name = "Matrículas", description = "Endpoints para gerenciamento de matrículas de estudantes em turmas, enturmações e transferências")
 @RestController
 @RequestMapping("/api/enrollments")

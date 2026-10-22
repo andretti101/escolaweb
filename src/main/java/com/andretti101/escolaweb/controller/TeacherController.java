@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST para cadastro e gestão de professores e vinculação das disciplinas que estão aptos a lecionar
 @Tag(name = "Professores", description = "Endpoints para gerenciamento do corpo docente, especialidades e habilitações")
 @RestController
 @RequestMapping("/api/teachers")

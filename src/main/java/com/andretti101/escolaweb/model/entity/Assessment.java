@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Entidade de instrumento avaliativo (prova, teste, trabalho) vinculado ao período e atribuição docente
 @Entity
 @Table(name = "assessments")
 @Getter

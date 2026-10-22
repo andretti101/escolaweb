@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+// Controlador REST responsável pela gestão do calendário e subdivisões de períodos letivos (Bimestre, Trimestre, Semestre)
 @Tag(name = "Períodos Acadêmicos", description = "Endpoints para gerenciamento de períodos letivos (bimestres, trimestres, semestres) e divisões anuais")
 @RestController
 @RequestMapping("/api/academic-periods")
@@ -37,6 +38,7 @@ public class AcademicPeriodController {
     private final AcademicYearService academicYearService;
     private final ClassRoomRepository classRoomRepository;
 
+    // Cadastra um período acadêmico individual vinculado ao ano letivo especificado
     @Operation(summary = "Criar período acadêmico", description = "Cadastra individualmente um novo período acadêmico associado a um ano letivo. Exclusivo para Direção.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Período criado com sucesso"),

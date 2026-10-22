@@ -14,9 +14,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+// Repositório de instrumentos de avaliação com contagem por período letivo e grafo de entidades associadas
 @Repository
 public interface AssessmentRepository extends JpaRepository<Assessment, Integer> {
 
+    // Carrega a avaliação com período, atribuição, disciplina, professor e turma em um SELECT único
     @Override
     @EntityGraph(attributePaths = {"teacherClassSubject", "teacherClassSubject.subject", "teacherClassSubject.teacher", "teacherClassSubject.classRoom", "period"})
     Optional<Assessment> findById(Integer id);

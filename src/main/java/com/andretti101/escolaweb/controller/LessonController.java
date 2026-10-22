@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
+// Controlador REST para diário de classe eletrônico, registro de conteúdos ministrados e planejamento pedagógico
 @Tag(name = "Aulas", description = "Endpoints para registro de diário de classe, planejamento de aulas e conteúdos ministrados")
 @RestController
 @RequestMapping("/api/lessons")

@@ -1,3 +1,8 @@
+// ==============================================================================
+// Notificações Globais em Tempo Real (Toasts e Avisos)
+// Conecta via WebSocket para receber alertas instantâneos de novos avisos e comunicados
+// ==============================================================================
+
 (function() {
     const token = localStorage.getItem("jwt_token");
     const userIdStr = localStorage.getItem("user_id");
@@ -5,7 +10,7 @@
     if (!token || !userIdStr) return;
     const userId = parseInt(userIdStr, 10);
 
-    if (window.appStompClient) return; // Evita múltiplas conexões
+    if (window.appStompClient) return; // Evita conexões duplicadas na mesma aba
 
     let initAttempts = 0;
     function initWebSocketNotifications() {

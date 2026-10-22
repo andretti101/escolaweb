@@ -87,6 +87,7 @@ public class GradeServiceImpl implements GradeService {
     public Grade update(Integer id, Grade incoming, String notes) {
         Grade existing = findGradeOrThrow(id);
 
+        // Impede alteracao de notas se o periodo letivo ja tiver sido fechado
         validatePeriodOpen(existing.getAssessment());
         validateGradeValue(incoming.getValue());
 
@@ -99,6 +100,7 @@ public class GradeServiceImpl implements GradeService {
                 && incoming.getValue() != null
                 && previousValue.compareTo(incoming.getValue()) != 0;
 
+        // Registra historico de auditoria com a nota anterior e a nova nota para rastreabilidade
         if (valueChanged) {
             recordHistory(existing, GradeKind.ORIGINAL, previousValue, existing.getValue(), cleanNotes);
             dispatchGradeNotification(existing, existing.getValue(), "Sua nota em %s foi atualizada para %s na avaliação \"%s\"", "Nota Atualizada");
@@ -113,6 +115,8 @@ public class GradeServiceImpl implements GradeService {
     @Transactional
     public Grade launchRecovery(Integer id, BigDecimal recoveryValue, String notes) {
         Grade existing = findGradeOrThrow(id);
+
+        // Regra de recuperacao paralela: nota de recuperacao substitui a nota regular se for maior
 
         validatePeriodOpen(existing.getAssessment());
         if (recoveryValue == null) {
