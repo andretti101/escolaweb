@@ -78,8 +78,8 @@ public class AdminAiTools {
         return transactionTemplate.execute(status -> {
             AcademicYear year = yearService.findActive();
             if (year == null) return "Sem ano letivo ativo.";
-            var grades = gradeRepository.findAll().stream()
-                .filter(g -> g.getEffectiveValue() != null && g.getAssessment().getPeriod().getAcademicYear().getId().equals(year.getId()))
+            var grades = gradeRepository.findByAcademicYear(year).stream()
+                .filter(g -> g.getEffectiveValue() != null)
                 .collect(Collectors.toList());
             if (grades.isEmpty()) return "Nenhuma nota registrada.";
             BigDecimal sum = grades.stream().map(Grade::getEffectiveValue).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -93,8 +93,8 @@ public class AdminAiTools {
         return transactionTemplate.execute(status -> {
             AcademicYear year = yearService.findActive();
             if (year == null) return "Sem ano letivo ativo.";
-            var grades = gradeRepository.findAll().stream()
-                .filter(g -> g.getEffectiveValue() != null && g.getAssessment().getPeriod().getAcademicYear().getId().equals(year.getId()))
+            var grades = gradeRepository.findByAcademicYear(year).stream()
+                .filter(g -> g.getEffectiveValue() != null)
                 .collect(Collectors.toList());
             Map<Integer, List<Grade>> gradesByTcs = grades.stream()
                 .collect(Collectors.groupingBy(g -> g.getAssessment().getTeacherClassSubject().getId()));
@@ -181,9 +181,7 @@ public class AdminAiTools {
                 .filter(e -> e.getClassRoom().getAcademicYear().getId().equals(year.getId()))
                 .collect(Collectors.toList());
             long activeStudents = enrollments.stream().map(e -> e.getStudent().getId()).distinct().count();
-            var classrooms = classRoomService.findAll().stream()
-                .filter(c -> c.getAcademicYear().getId().equals(year.getId()))
-                .collect(Collectors.toList());
+            var classrooms = classRoomService.findByAcademicYear(year.getId());
             long totalClassrooms = classrooms.size();
             double avg = totalClassrooms == 0 ? 0 : (double) activeStudents / totalClassrooms;
             return String.format("Total de Alunos Ativos: %d\nTotal de Turmas: %d\nMédia de alunos por turma: %.2f", 

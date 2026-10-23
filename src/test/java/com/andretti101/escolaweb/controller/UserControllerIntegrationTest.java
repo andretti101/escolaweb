@@ -52,10 +52,10 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", not(empty())))
                 .andExpect(jsonPath("$.totalElements", greaterThan(0)))
-                .andExpect(jsonPath("$[*].id", not(empty())))
-                .andExpect(jsonPath("$[*].name", not(empty())))
-                .andExpect(jsonPath("$[*].email", not(empty())))
-                .andExpect(jsonPath("$[*].role", not(empty())));
+                .andExpect(jsonPath("$.content[*].id", not(empty())))
+                .andExpect(jsonPath("$.content[*].name", not(empty())))
+                .andExpect(jsonPath("$.content[*].email", not(empty())))
+                .andExpect(jsonPath("$.content[*].role", not(empty())));
     }
 
     @Test

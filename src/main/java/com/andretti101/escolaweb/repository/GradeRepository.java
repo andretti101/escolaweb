@@ -59,6 +59,12 @@ public interface GradeRepository extends JpaRepository<Grade, Integer> {
     @Query("SELECT g FROM Grade g WHERE g.student IN :students AND g.assessment.period.academicYear = :year")
     List<Grade> findByStudentsAndYear(@Param("students") List<com.andretti101.escolaweb.model.entity.Student> students, @Param("year") AcademicYear year);
 
+    @EntityGraph(attributePaths = {
+        "student", "assessment", "assessment.period", "assessment.period.academicYear", "assessment.teacherClassSubject", "assessment.teacherClassSubject.subject", "assessment.teacherClassSubject.teacher", "assessment.teacherClassSubject.classRoom"
+    })
+    @Query("SELECT g FROM Grade g WHERE g.assessment.period.academicYear = :year")
+    List<Grade> findByAcademicYear(@Param("year") AcademicYear year);
+
     Optional<Grade> findByStudent_IdAndAssessment_Id(Integer studentId, Integer assessmentId);
 
     long countByStudent_IdAndAssessment_Id(Integer studentId, Integer assessmentId);

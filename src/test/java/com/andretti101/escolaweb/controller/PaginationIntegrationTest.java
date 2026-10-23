@@ -34,7 +34,7 @@ class PaginationIntegrationTest {
                 .andExpect(jsonPath("$.size", is(5)))
                 .andExpect(jsonPath("$.number", is(0)))
                 .andExpect(jsonPath("$.totalElements", greaterThanOrEqualTo(5)))
-                .andExpect(jsonPath("$[*].name", hasSize(greaterThanOrEqualTo(5))));
+                .andExpect(jsonPath("$.content[*].name", hasSize(greaterThanOrEqualTo(5))));
     }
 
     @Test
@@ -246,7 +246,7 @@ class PaginationIntegrationTest {
                 .andExpect(jsonPath("$.size", is(5)))
                 .andExpect(jsonPath("$.number", is(0)))
                 .andExpect(jsonPath("$.totalElements", greaterThanOrEqualTo(5)))
-                .andExpect(jsonPath("$[*].name", hasSize(greaterThanOrEqualTo(5))));
+                .andExpect(jsonPath("$.content[*].name", hasSize(greaterThanOrEqualTo(5))));
     }
 
     @Test

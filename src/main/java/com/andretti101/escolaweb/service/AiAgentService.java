@@ -19,6 +19,37 @@ public class AiAgentService {
     private final TeacherAiTools teacherAiTools;
     private final AdminAiTools adminAiTools;
 
+    private volatile ChatClient cachedChatClient;
+    private volatile MessageChatMemoryAdvisor cachedMemoryAdvisor;
+
+    private ChatClient getChatClient() {
+        ChatClient client = this.cachedChatClient;
+        if (client == null) {
+            synchronized (this) {
+                client = this.cachedChatClient;
+                if (client == null) {
+                    client = chatClientBuilder.build();
+                    this.cachedChatClient = client;
+                }
+            }
+        }
+        return client;
+    }
+
+    private MessageChatMemoryAdvisor getMemoryAdvisor() {
+        MessageChatMemoryAdvisor advisor = this.cachedMemoryAdvisor;
+        if (advisor == null) {
+            synchronized (this) {
+                advisor = this.cachedMemoryAdvisor;
+                if (advisor == null) {
+                    advisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
+                    this.cachedMemoryAdvisor = advisor;
+                }
+            }
+        }
+        return advisor;
+    }
+
     public String chat(String message, String conversationId) {
         String systemPrompt;
         Object tools;
@@ -117,13 +148,14 @@ public class AiAgentService {
             tools = adminAiTools;
         }
 
-        ChatClient chatClient = chatClientBuilder.build();
+        ChatClient chatClient = getChatClient();
+        MessageChatMemoryAdvisor memoryAdvisor = getMemoryAdvisor();
 
         try {
             // Tentativa principal usando o modelo configurado (gemini-2.0-flash)
             return chatClient.prompt()
                     .system(systemPrompt)
-                    .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                    .advisors(memoryAdvisor)
                     .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                     .tools(tools)
                     .user(message)
@@ -135,7 +167,7 @@ public class AiAgentService {
                 // Fallback para um modelo alternativo em caso de falha (ex: 503 High Demand)
                 return chatClient.prompt()
                         .system(systemPrompt)
-                        .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                        .advisors(memoryAdvisor)
                         .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                         .tools(tools)
                         .user(message)

@@ -526,14 +526,14 @@ class ArchivedContentIntegrationTest {
         mockMvc.perform(get("/api/classrooms")
                         .param("academicYearId", ay2024.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].name", hasItem("Turma Teste Ano 2024")))
-                .andExpect(jsonPath("$[*].name", not(hasItem("Turma Teste Ano 2025"))));
+                .andExpect(jsonPath("$.content[*].name", hasItem("Turma Teste Ano 2024")))
+                .andExpect(jsonPath("$.content[*].name", not(hasItem("Turma Teste Ano 2025"))));
 
         mockMvc.perform(get("/api/classrooms")
                         .param("academicYearId", ay2025.getId().toString()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].name", hasItem("Turma Teste Ano 2025")))
-                .andExpect(jsonPath("$[*].name", not(hasItem("Turma Teste Ano 2024"))));
+                .andExpect(jsonPath("$.content[*].name", hasItem("Turma Teste Ano 2025")))
+                .andExpect(jsonPath("$.content[*].name", not(hasItem("Turma Teste Ano 2024"))));
     }
 
     @Test
@@ -555,7 +555,7 @@ class ArchivedContentIntegrationTest {
                         .param("academicYearId", "2024")
                         .param("activeOnly", "false"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].name", hasItem("Turma Ano 2024 Cal")));
+                .andExpect(jsonPath("$.content[*].name", hasItem("Turma Ano 2024 Cal")));
     }
 
     @Test
