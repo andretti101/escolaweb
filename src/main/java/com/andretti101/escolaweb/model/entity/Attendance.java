@@ -58,6 +58,6 @@ public class Attendance implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "attendance", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "attendance", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AttendanceHistory> history;
 }

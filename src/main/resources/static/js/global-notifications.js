@@ -149,18 +149,28 @@
                 typeBadge = '<span class="badge bg-label-warning me-1">Comunicado</span>';
             }
 
+            function escapeHtml(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
             const resolvedUrl = resolveNotificationUrl(linkUrl);
 
             toastEl.innerHTML = `
                 <div class="toast-header">
                     <i class="${iconClass} fs-5 me-2"></i>
                     ${typeBadge}
-                    <strong class="me-auto text-truncate" style="max-width: 170px;">${title || 'Notificação'}</strong>
+                    <strong class="me-auto text-truncate" style="max-width: 170px;">${escapeHtml(title || 'Notificação')}</strong>
                     <small class="text-muted ms-1">Agora</small>
                     <button type="button" class="btn-close ms-2" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body" style="font-size: 0.9rem;">
-                    <div>${message || ''}</div>
+                    <div>${escapeHtml(message || '')}</div>
                     ${resolvedUrl ? `
                         <div class="mt-2 pt-2 border-top d-flex justify-end justify-content-end">
                             <a href="${resolvedUrl}" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.78rem;">

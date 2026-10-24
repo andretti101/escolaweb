@@ -2,6 +2,7 @@ package com.andretti101.escolaweb.service;
 
 import com.andretti101.escolaweb.dto.request.StudentPatchRequestDTO;
 import com.andretti101.escolaweb.dto.request.TeacherPatchRequestDTO;
+import com.andretti101.escolaweb.exception.BusinessException;
 import com.andretti101.escolaweb.model.entity.*;
 import com.andretti101.escolaweb.model.enums.UserRole;
 import com.andretti101.escolaweb.repository.*;
@@ -46,6 +47,12 @@ class UserManagementAndEmailServiceTest {
         private SecretaryRepository secretaryRepository;
         @Mock
         private UserRepository userRepository;
+        @Mock
+        private AnnouncementRepository announcementRepository;
+        @Mock
+        private ChatMessageRepository chatMessageRepository;
+        @Mock
+        private RefreshTokenService refreshTokenService;
         @Mock
         private PasswordEncoder passwordEncoder;
         @Mock
@@ -156,6 +163,51 @@ class UserManagementAndEmailServiceTest {
             secretaryService.delete(2);
             verify(secretaryRepository).deleteById(2);
         }
+
+        @Test
+        @DisplayName("delete e deactivate de Principal e Secretary revogam tokens e bloqueiam exclusão quando há comunicados ou mensagens")
+        void principalAndSecretaryDelete_blocksWhenHasAnnouncementsOrMessages() {
+            Principal principal = Principal.builder().id(1).name("Helena").email("helena@example.com").active(true).build();
+            when(principalRepository.findById(1)).thenReturn(Optional.of(principal));
+
+            // Bloqueio por comunicado
+            when(announcementRepository.existsByAuthor_Id(1)).thenReturn(true);
+            BusinessException ex1 = assertThrows(BusinessException.class, () -> principalService.delete(1));
+            assertTrue(ex1.getMessage().contains("comunicados ou mensagens vinculadas"));
+
+            // Bloqueio por mensagem de chat
+            when(announcementRepository.existsByAuthor_Id(1)).thenReturn(false);
+            when(chatMessageRepository.existsBySender_Id(1)).thenReturn(true);
+            BusinessException ex2 = assertThrows(BusinessException.class, () -> principalService.delete(1));
+            assertTrue(ex2.getMessage().contains("comunicados ou mensagens vinculadas"));
+
+            // Exclusão bem-sucedida sem vínculos: revoga tokens e deleta
+            when(chatMessageRepository.existsBySender_Id(1)).thenReturn(false);
+            principalService.delete(1);
+            verify(refreshTokenService).revokeAllByUser(principal);
+            verify(principalRepository).deleteById(1);
+
+            // Deactivate revoga tokens
+            principalService.deactivate(1);
+            assertFalse(principal.isActive());
+            verify(refreshTokenService, times(2)).revokeAllByUser(principal);
+
+            // Secretary
+            Secretary sec = Secretary.builder().id(2).name("Ricardo").email("ricardo@example.com").active(true).build();
+            when(secretaryRepository.findById(2)).thenReturn(Optional.of(sec));
+            when(announcementRepository.existsByAuthor_Id(2)).thenReturn(true);
+            assertThrows(BusinessException.class, () -> secretaryService.delete(2));
+
+            when(announcementRepository.existsByAuthor_Id(2)).thenReturn(false);
+            when(chatMessageRepository.existsBySender_Id(2)).thenReturn(false);
+            secretaryService.delete(2);
+            verify(refreshTokenService).revokeAllByUser(sec);
+            verify(secretaryRepository).deleteById(2);
+
+            secretaryService.deactivate(2);
+            assertFalse(sec.isActive());
+            verify(refreshTokenService, times(2)).revokeAllByUser(sec);
+        }
     }
 
     @Nested
@@ -172,6 +224,12 @@ class UserManagementAndEmailServiceTest {
         private SubjectRepository subjectRepository;
         @Mock
         private TeacherClassSubjectRepository teacherClassSubjectRepository;
+        @Mock
+        private AnnouncementRepository announcementRepository;
+        @Mock
+        private ChatMessageRepository chatMessageRepository;
+        @Mock
+        private RefreshTokenService refreshTokenService;
         @Mock
         private PasswordEncoder passwordEncoder;
         @Mock
@@ -298,6 +356,52 @@ class UserManagementAndEmailServiceTest {
             when(teacherClassSubjectRepository.existsByTeacher(existing)).thenReturn(false);
             teacherService.delete(5);
             verify(teacherRepository).deleteById(5);
+        }
+
+        @Test
+        @DisplayName("delete e deactivate de Teacher e Student revogam tokens e bloqueiam exclusão quando há comunicados ou mensagens")
+        void teacherAndStudentDelete_blocksWhenHasAnnouncementsOrMessages() {
+            Teacher teacher = Teacher.builder().id(5).name("Carlos").email("carlos@example.com").active(true).build();
+            when(teacherRepository.findById(5)).thenReturn(Optional.of(teacher));
+            when(teacherClassSubjectRepository.existsByTeacher(teacher)).thenReturn(false);
+
+            when(announcementRepository.existsByAuthor_Id(5)).thenReturn(true);
+            BusinessException ex1 = assertThrows(BusinessException.class, () -> teacherService.delete(5));
+            assertTrue(ex1.getMessage().contains("comunicados ou mensagens vinculadas"));
+
+            when(announcementRepository.existsByAuthor_Id(5)).thenReturn(false);
+            when(chatMessageRepository.existsBySender_Id(5)).thenReturn(true);
+            BusinessException ex2 = assertThrows(BusinessException.class, () -> teacherService.delete(5));
+            assertTrue(ex2.getMessage().contains("comunicados ou mensagens vinculadas"));
+
+            when(chatMessageRepository.existsBySender_Id(5)).thenReturn(false);
+            teacherService.delete(5);
+            verify(refreshTokenService).revokeAllByUser(teacher);
+            verify(teacherRepository).deleteById(5);
+
+            teacherService.deactivate(5);
+            assertFalse(teacher.isActive());
+            verify(refreshTokenService, times(2)).revokeAllByUser(teacher);
+
+            // Student
+            Student student = Student.builder().id(11).name("Lucas").email("lucas@example.com").active(true).build();
+            when(studentRepository.findById(11)).thenReturn(Optional.of(student));
+
+            when(announcementRepository.existsByAuthor_Id(11)).thenReturn(true);
+            assertThrows(BusinessException.class, () -> studentService.delete(11));
+
+            when(announcementRepository.existsByAuthor_Id(11)).thenReturn(false);
+            when(chatMessageRepository.existsBySender_Id(11)).thenReturn(true);
+            assertThrows(BusinessException.class, () -> studentService.delete(11));
+
+            when(chatMessageRepository.existsBySender_Id(11)).thenReturn(false);
+            studentService.delete(11);
+            verify(refreshTokenService).revokeAllByUser(student);
+            verify(studentRepository).deleteById(11);
+
+            studentService.deactivate(11);
+            assertFalse(student.isActive());
+            verify(refreshTokenService, times(2)).revokeAllByUser(student);
         }
     }
 

@@ -452,6 +452,16 @@
     <script src="/js/load-sidebar.js"></script>
 
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         function logout() {
             localStorage.removeItem('jwt_token');
             localStorage.removeItem('refresh_token');
@@ -600,7 +610,7 @@
                         const sSit = situationMap[s.situation] || { text: 'Pendente', badge: 'bg-label-warning' };
                         return `
                             <tr>
-                                <td><span class="fw-bold">${s.subjectName}</span></td>
+                                <td><span class="fw-bold">${escapeHtml(s.subjectName)}</span></td>
                                 <td><span class="badge bg-label-primary fw-bold">${score}</span></td>
                                 <td><small class="text-muted">${minGrade}</small></td>
                                 <td><span class="badge ${sSit.badge}">${sSit.text}</span></td>
@@ -668,11 +678,11 @@
                     return `
                         <div class="announcement-item p-3 rounded bg-light">
                             <div class="d-flex justify-content-between align-items-start mb-1">
-                                <h6 class="mb-0 fw-bold text-dark">${a.title}</h6>
+                                <h6 class="mb-0 fw-bold text-dark">${escapeHtml(a.title)}</h6>
                                 <small class="text-muted">${date}</small>
                             </div>
-                            <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${a.message || a.content || ''}</p>
-                            <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${a.authorName || 'Coordenação'}</small>
+                            <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${escapeHtml(a.message || a.content || '')}</p>
+                            <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${escapeHtml(a.authorName || 'Coordenação')}</small>
                         </div>
                     `;
                 }).join('');

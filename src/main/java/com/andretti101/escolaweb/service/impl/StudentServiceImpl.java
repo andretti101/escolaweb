@@ -1,9 +1,13 @@
 package com.andretti101.escolaweb.service.impl;
 
 import com.andretti101.escolaweb.dto.request.StudentPatchRequestDTO;
+import com.andretti101.escolaweb.exception.BusinessException;
 import com.andretti101.escolaweb.model.entity.Student;
+import com.andretti101.escolaweb.repository.AnnouncementRepository;
+import com.andretti101.escolaweb.repository.ChatMessageRepository;
 import com.andretti101.escolaweb.repository.StudentRepository;
 import com.andretti101.escolaweb.repository.UserRepository;
+import com.andretti101.escolaweb.service.RefreshTokenService;
 import com.andretti101.escolaweb.service.StudentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,9 @@ public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final AnnouncementRepository announcementRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.context.MessageSource messageSource;
 
@@ -118,7 +125,11 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public void delete(Integer id) {
-        findStudentOrThrow(id);
+        Student student = findStudentOrThrow(id);
+        if (announcementRepository.existsByAuthor_Id(id) || chatMessageRepository.existsBySender_Id(id)) {
+            throw new BusinessException("Não é possível excluir o usuário pois existem comunicados ou mensagens vinculadas. Recomenda-se desativar o cadastro.");
+        }
+        refreshTokenService.revokeAllByUser(student);
         studentRepository.deleteById(id);
     }
 
@@ -177,6 +188,7 @@ public class StudentServiceImpl implements StudentService {
     public Student deactivate(Integer id) {
         Student student = findStudentOrThrow(id);
         student.setActive(false);
+        refreshTokenService.revokeAllByUser(student);
         return student;
     }
 

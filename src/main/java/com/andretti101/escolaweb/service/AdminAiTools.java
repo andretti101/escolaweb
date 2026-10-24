@@ -7,6 +7,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -32,6 +33,11 @@ public class AdminAiTools {
 
     private static final java.util.regex.Pattern FORBIDDEN_SQL_PATTERN = java.util.regex.Pattern.compile(
             "\\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|EXECUTE|GRANT|REVOKE|CREATE|REPLACE|MERGE|INTO|LOCK|CALL)\\b",
+            java.util.regex.Pattern.CASE_INSENSITIVE
+    );
+
+    private static final java.util.regex.Pattern SENSITIVE_SQL_PATTERN = java.util.regex.Pattern.compile(
+            "\\b(password_reset_tokens|refresh_tokens|flyway_schema_history|chat_message_history|password|pg_sleep|pg_read_file|lo_import|lo_export)\\b",
             java.util.regex.Pattern.CASE_INSENSITIVE
     );
 
@@ -190,6 +196,7 @@ public class AdminAiTools {
     }
 
     @Tool(description = "Executa consultas SQL (PostgreSQL) no banco de dados para análises customizadas. Útil para descobrir 'quem é o aluno com a pior nota', cruzar dados não previstos e responder análises gerais. Retorna até 50 resultados.")
+    @Transactional(readOnly = true, timeout = 5)
     public String executeFlexibleSql(String sql) {
         if (sql == null || sql.trim().isEmpty()) {
             return "Erro de validação: Instrução SQL não informada.";
@@ -211,6 +218,10 @@ public class AdminAiTools {
 
         if (FORBIDDEN_SQL_PATTERN.matcher(trimmedSql).find()) {
             return "Erro de segurança: Comando SQL rejeitado por conter palavra-chave restrita de modificação de dados.";
+        }
+
+        if (SENSITIVE_SQL_PATTERN.matcher(trimmedSql).find()) {
+            return "Erro de segurança: Acesso a tabelas, colunas ou funções restritas do sistema não é permitido.";
         }
 
         final String finalSql = trimmedSql;
@@ -280,10 +291,30 @@ public class AdminAiTools {
     public String getDatabaseSchema() {
         return transactionTemplate.execute(status -> {
             try {
-                String sql = "SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public'";
+                String sql = "SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS " +
+                        "WHERE TABLE_SCHEMA = 'public' " +
+                        "AND LOWER(TABLE_NAME) NOT IN ('password_reset_tokens', 'refresh_tokens', 'flyway_schema_history', 'chat_message_history') " +
+                        "AND NOT (LOWER(TABLE_NAME) = 'users' AND LOWER(COLUMN_NAME) = 'password') " +
+                        "ORDER BY TABLE_NAME, ORDINAL_POSITION";
                 List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
                 if (results.isEmpty()) return "Schema public não possui tabelas visíveis ou não encontrado.";
-                return results.toString();
+                List<Map<String, Object>> filteredResults = results.stream()
+                        .filter(row -> {
+                            Object tblVal = row.get("TABLE_NAME") != null ? row.get("TABLE_NAME") : row.get("table_name");
+                            Object colVal = row.get("COLUMN_NAME") != null ? row.get("COLUMN_NAME") : row.get("column_name");
+                            String tbl = String.valueOf(tblVal).toLowerCase(Locale.ROOT);
+                            String col = String.valueOf(colVal).toLowerCase(Locale.ROOT);
+                            if (tbl.equals("password_reset_tokens") || tbl.equals("refresh_tokens") ||
+                                    tbl.equals("flyway_schema_history") || tbl.equals("chat_message_history")) {
+                                return false;
+                            }
+                            if (tbl.equals("users") && col.equals("password")) {
+                                return false;
+                            }
+                            return true;
+                        })
+                        .collect(Collectors.toList());
+                return filteredResults.toString();
             } catch (Exception e) {
                 return "Erro ao buscar schema do banco: " + e.getMessage();
             }

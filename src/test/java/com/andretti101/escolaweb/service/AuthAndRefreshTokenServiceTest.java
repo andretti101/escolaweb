@@ -159,6 +159,32 @@ class AuthAndRefreshTokenServiceTest {
         }
 
         @Test
+        @DisplayName("refresh rejeita usuário inativo com BadCredentialsException e revoga tokens")
+        void refresh_disabledUser_revokesTokensAndThrowsBadCredentials() {
+            RefreshToken rotated = RefreshToken.builder()
+                    .token("new-refresh-uuid")
+                    .user(principalUser)
+                    .revoked(false)
+                    .expiresAt(LocalDateTime.now().plusDays(7))
+                    .build();
+
+            UserDetails disabledUserDetails = org.springframework.security.core.userdetails.User.builder()
+                    .username("direcao@example.com")
+                    .password("encodedPass")
+                    .authorities(new SimpleGrantedAuthority("ROLE_PRINCIPAL"))
+                    .disabled(true)
+                    .build();
+
+            when(refreshTokenService.rotate("old-refresh-uuid")).thenReturn(rotated);
+            when(userDetailsService.loadUserByUsername("direcao@example.com")).thenReturn(disabledUserDetails);
+
+            assertThrows(BadCredentialsException.class, () ->
+                    authService.refresh(new RefreshTokenRequestDTO("old-refresh-uuid")));
+
+            verify(refreshTokenService).revokeAllByUser(principalUser);
+        }
+
+        @Test
         @DisplayName("logout revoga o refresh token informado")
         void logout_delegatesToRefreshTokenService() {
             authService.logout(new RefreshTokenRequestDTO("token-to-revoke"));
@@ -322,11 +348,12 @@ class AuthAndRefreshTokenServiceTest {
             assertThrows(BadCredentialsException.class, () -> refreshTokenService.rotate("reused-rt"));
 
             verify(refreshTokenRepository).deleteByUser(user);
+            verify(refreshTokenRepository).flush();
         }
 
         @Test
-        @DisplayName("rotate remove token expirado e lança IllegalStateException")
-        void rotate_expiredToken_deletesTokenAndThrowsIllegalState() {
+        @DisplayName("rotate remove token expirado e lança BadCredentialsException")
+        void rotate_expiredToken_deletesTokenAndThrowsBadCredentials() {
             RefreshToken expired = RefreshToken.builder()
                     .token("expired-rt")
                     .user(user)
@@ -335,9 +362,10 @@ class AuthAndRefreshTokenServiceTest {
                     .build();
             when(refreshTokenRepository.findByToken("expired-rt")).thenReturn(Optional.of(expired));
 
-            assertThrows(IllegalStateException.class, () -> refreshTokenService.rotate("expired-rt"));
+            assertThrows(BadCredentialsException.class, () -> refreshTokenService.rotate("expired-rt"));
 
             verify(refreshTokenRepository).delete(expired);
+            verify(refreshTokenRepository).flush();
         }
 
         @Test

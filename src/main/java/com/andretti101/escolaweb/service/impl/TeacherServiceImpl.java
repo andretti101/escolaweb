@@ -1,12 +1,16 @@
 package com.andretti101.escolaweb.service.impl;
 
 import com.andretti101.escolaweb.dto.request.TeacherPatchRequestDTO;
+import com.andretti101.escolaweb.exception.BusinessException;
 import com.andretti101.escolaweb.model.entity.Subject;
 import com.andretti101.escolaweb.model.entity.Teacher;
+import com.andretti101.escolaweb.repository.AnnouncementRepository;
+import com.andretti101.escolaweb.repository.ChatMessageRepository;
 import com.andretti101.escolaweb.repository.SubjectRepository;
 import com.andretti101.escolaweb.repository.TeacherClassSubjectRepository;
 import com.andretti101.escolaweb.repository.TeacherRepository;
 import com.andretti101.escolaweb.repository.UserRepository;
+import com.andretti101.escolaweb.service.RefreshTokenService;
 import com.andretti101.escolaweb.service.TeacherService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,9 @@ public class TeacherServiceImpl implements TeacherService {
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final TeacherClassSubjectRepository teacherClassSubjectRepository;
+    private final AnnouncementRepository announcementRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.context.MessageSource messageSource;
 
@@ -174,6 +181,11 @@ public class TeacherServiceImpl implements TeacherService {
                     "Não é possível excluir o professor '" + teacher.getName() + "' pois ele possui atribuições de turmas ativas. Remova as atribuições antes de excluir.");
         }
 
+        if (announcementRepository.existsByAuthor_Id(id) || chatMessageRepository.existsBySender_Id(id)) {
+            throw new BusinessException("Não é possível excluir o usuário pois existem comunicados ou mensagens vinculadas. Recomenda-se desativar o cadastro.");
+        }
+
+        refreshTokenService.revokeAllByUser(teacher);
         teacherRepository.deleteById(id);
     }
 
@@ -220,6 +232,7 @@ public class TeacherServiceImpl implements TeacherService {
     public Teacher deactivate(Integer id) {
         Teacher teacher = findTeacherOrThrow(id);
         teacher.setActive(false);
+        refreshTokenService.revokeAllByUser(teacher);
         return teacher;
     }
 

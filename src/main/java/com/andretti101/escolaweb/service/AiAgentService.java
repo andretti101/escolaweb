@@ -172,7 +172,7 @@ public class AiAgentService {
                         .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                         .tools(tools)
                         .user(message)
-                        .options(org.springframework.ai.google.genai.GoogleGenAiChatOptions.builder().model("gemini-3.5-flash-lite").build())
+                        .options(org.springframework.ai.google.genai.GoogleGenAiChatOptions.builder().model("gemini-2.0-flash-lite").build())
                         .call()
                         .content();
             } catch (Exception fallbackException) {

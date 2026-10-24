@@ -263,11 +263,21 @@ document.addEventListener("DOMContentLoaded", () => {
         attachMessageEvents(msgDiv, message, isMine);
     }
 
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function generateMessageInnerHtml(message, isMine, isPending) {
         const isMsgDeleted = message.isDeleted || message.deleted;
         const timeString = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
-        let innerContent = message.content;
+        let innerContent = escapeHtml(message.content);
         if (isMsgDeleted) {
             if (message.deletedByAdmin) {
                 innerContent = '<span class="text-danger" style="opacity: 0.8;"><i class="bx bx-block"></i> Esta mensagem foi apagada pela Dire&ccedil;&atilde;o/Secretaria.</span>';            } else {
@@ -290,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let replyHtml = "";
         if (message.repliedToId && !isMsgDeleted) {
             const authorColor = isMine ? "#ffffff" : "#696cff";
-            replyHtml = '<div class="replied-box"><strong style="color: ' + authorColor + ';">' + message.repliedToSenderName + '</strong><div style="opacity: 0.9; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">' + message.repliedToContent + '</div></div>';
+            replyHtml = '<div class="replied-box"><strong style="color: ' + authorColor + ';">' + escapeHtml(message.repliedToSenderName) + '</strong><div style="opacity: 0.9; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">' + escapeHtml(message.repliedToContent) + '</div></div>';
         }
 
         let actionsHtml = "";
@@ -308,7 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
             actionsHtml += '<button class="action-btn btn-hide" title="Apagar para mim"><i class="bx bx-hide"></i></button></div>';
         }
 
-        return actionsHtml + '<span class="author">' + message.senderName + badge + '</span><div class="msg-content-wrapper">' + replyHtml + '<span style="padding-right: 8px; word-break: break-word;">' + innerContent + '</span><div class="time-container">' + editedText + '<span class="time-text">' + timeString + '</span>' + statusHtml + '</div></div>';
+        return actionsHtml + '<span class="author">' + escapeHtml(message.senderName) + badge + '</span><div class="msg-content-wrapper">' + replyHtml + '<span style="padding-right: 8px; word-break: break-word;">' + innerContent + '</span><div class="time-container">' + editedText + '<span class="time-text">' + timeString + '</span>' + statusHtml + '</div></div>';
     }
 
     function attachMessageEvents(msgDiv, message, isMine) {
@@ -425,11 +435,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const li = document.createElement("li");
                 li.className = "list-group-item d-flex justify-content-between align-items-center";
                 
-                let infoHtml = '<div><strong>' + member.name + '</strong>';
+                let infoHtml = '<div><strong>' + escapeHtml(member.name) + '</strong>';
                 if (currentClassroomId === 'TEACHERS' && member.email) {
-                    infoHtml += '<br><small class="text-muted">' + member.email + '</small>';
+                    infoHtml += '<br><small class="text-muted">' + escapeHtml(member.email) + '</small>';
                 } else if (member.registrationNumber) {
-                    infoHtml += '<br><small class="text-muted">Matr&iacute;cula: ' + member.registrationNumber + '</small>';
+                    infoHtml += '<br><small class="text-muted">Matr&iacute;cula: ' + escapeHtml(member.registrationNumber) + '</small>';
                 }
                 infoHtml += '</div>';
 

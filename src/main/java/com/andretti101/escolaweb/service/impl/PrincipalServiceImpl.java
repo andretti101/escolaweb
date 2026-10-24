@@ -1,9 +1,13 @@
 package com.andretti101.escolaweb.service.impl;
 
+import com.andretti101.escolaweb.exception.BusinessException;
 import com.andretti101.escolaweb.model.entity.Principal;
+import com.andretti101.escolaweb.repository.AnnouncementRepository;
+import com.andretti101.escolaweb.repository.ChatMessageRepository;
 import com.andretti101.escolaweb.repository.PrincipalRepository;
 import com.andretti101.escolaweb.repository.UserRepository;
 import com.andretti101.escolaweb.service.PrincipalService;
+import com.andretti101.escolaweb.service.RefreshTokenService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +23,9 @@ public class PrincipalServiceImpl implements PrincipalService {
 
     private final PrincipalRepository principalRepository;
     private final UserRepository userRepository;
+    private final AnnouncementRepository announcementRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.context.MessageSource messageSource;
 
@@ -58,7 +65,11 @@ public class PrincipalServiceImpl implements PrincipalService {
     @Override
     @Transactional
     public void delete(Integer id) {
-        findPrincipalOrThrow(id);
+        Principal principal = findPrincipalOrThrow(id);
+        if (announcementRepository.existsByAuthor_Id(id) || chatMessageRepository.existsBySender_Id(id)) {
+            throw new BusinessException("Não é possível excluir o usuário pois existem comunicados ou mensagens vinculadas. Recomenda-se desativar o cadastro.");
+        }
+        refreshTokenService.revokeAllByUser(principal);
         principalRepository.deleteById(id);
     }
 
@@ -105,6 +116,7 @@ public class PrincipalServiceImpl implements PrincipalService {
     public Principal deactivate(Integer id) {
         Principal principal = findPrincipalOrThrow(id);
         principal.setActive(false);
+        refreshTokenService.revokeAllByUser(principal);
         return principal;
     }
 

@@ -144,6 +144,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 else upcomingList.push(a);
         });
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         const renderCards = (list, containerId) => {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -178,14 +188,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <div class="card card-announcement h-100 ${borderClass}">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0">${item.title}</h5>
+                                    <h5 class="card-title mb-0">${escapeHtml(item.title)}</h5>
                                     <div class="flex-shrink-0 text-nowrap ms-2">${editButtonHtml}</div>
                                 </div>
                                 <p class="card-text text-muted mb-2"><i class="bx bx-calendar-event me-1"></i> Data: ${eventDateStr}</p>
-                                <p class="card-text mb-3" style="white-space: pre-wrap;">${(item.message || "").replace(/(?:\r?\n\s*){2,}/g, "\n")}</p>
+                                <p class="card-text mb-3" style="white-space: pre-wrap;">${escapeHtml((item.message || "").replace(/(?:\r?\n\s*){2,}/g, "\n"))}</p>
                                 <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
-                                    <small class="text-muted"><i class="bx bx-user me-1"></i> ${item.authorName || 'Desconhecido'}</small>
-                                    <span class="badge bg-label-secondary text-wrap" style="max-width: 60%;"><i class="bx bx-group me-1"></i> ${classNames}</span>
+                                    <small class="text-muted"><i class="bx bx-user me-1"></i> ${escapeHtml(item.authorName || 'Desconhecido')}</small>
+                                    <span class="badge bg-label-secondary text-wrap" style="max-width: 60%;"><i class="bx bx-group me-1"></i> ${escapeHtml(classNames)}</span>
                                 </div>
                             </div>
                         </div>

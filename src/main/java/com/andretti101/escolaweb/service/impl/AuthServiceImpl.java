@@ -7,6 +7,7 @@ import com.andretti101.escolaweb.dto.request.LoginRequestDTO;
 import com.andretti101.escolaweb.dto.request.RefreshTokenRequestDTO;
 import com.andretti101.escolaweb.dto.request.ResetPasswordRequestDTO;
 import com.andretti101.escolaweb.dto.response.AuthResponseDTO;
+import com.andretti101.escolaweb.exception.BusinessException;
 import com.andretti101.escolaweb.model.entity.PasswordResetToken;
 import com.andretti101.escolaweb.model.entity.RefreshToken;
 import com.andretti101.escolaweb.model.entity.User;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -67,16 +69,22 @@ public class AuthServiceImpl implements AuthService {
 
     // Rotaciona o refresh token para evitar reutilização indevida
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = BadCredentialsException.class)
     public AuthResponseDTO refresh(RefreshTokenRequestDTO dto) {
         RefreshToken newRefreshToken = refreshTokenService.rotate(dto.refreshToken());
+        User user = newRefreshToken.getUser();
 
         UserDetails userDetails = userDetailsService
-                .loadUserByUsername(newRefreshToken.getUser().getEmail());
+                .loadUserByUsername(user.getEmail());
+
+        if (!userDetails.isEnabled()) {
+            refreshTokenService.revokeAllByUser(user);
+            throw new BadCredentialsException("Usuário inativo.");
+        }
 
         String accessToken = jwtTokenProvider.generateToken(userDetails);
 
-        return buildResponse(accessToken, newRefreshToken.getToken(), userDetails, newRefreshToken.getUser());
+        return buildResponse(accessToken, newRefreshToken.getToken(), userDetails, user);
     }
 
     @Override
@@ -133,15 +141,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = BusinessException.class)
     public void resetPassword(ResetPasswordRequestDTO dto) {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(dto.token())
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new BusinessException(
                         "O link de redefinição de senha é inválido ou já foi utilizado. Solicite um novo link."));
 
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             passwordResetTokenRepository.delete(resetToken);
-            throw new IllegalArgumentException(
+            throw new BusinessException(
                     "O link de redefinição de senha expirou. Por favor, solicite um novo link.");
         }
 

@@ -224,4 +224,32 @@ class AdminAiToolsTest {
         assertTrue(draft.contains("Apresentação do calendário acadêmico"));
         assertTrue(draft.contains("Direção Escolar"));
     }
+
+    @Test
+    @DisplayName("executeFlexibleSql bloqueia acesso a tabelas e colunas sensíveis")
+    void testExecuteFlexibleSql_blocksSensitiveTablesAndColumns() {
+        String passResult = adminAiTools.executeFlexibleSql("SELECT id, password FROM users");
+        assertTrue(passResult.contains("Erro de segurança"), "Deveria bloquear coluna password: " + passResult);
+
+        String rtResult = adminAiTools.executeFlexibleSql("SELECT * FROM refresh_tokens");
+        assertTrue(rtResult.contains("Erro de segurança"), "Deveria bloquear refresh_tokens: " + rtResult);
+
+        String prtResult = adminAiTools.executeFlexibleSql("SELECT * FROM password_reset_tokens");
+        assertTrue(prtResult.contains("Erro de segurança"), "Deveria bloquear password_reset_tokens: " + prtResult);
+
+        String sleepResult = adminAiTools.executeFlexibleSql("SELECT pg_sleep(5)");
+        assertTrue(sleepResult.contains("Erro de segurança"), "Deveria bloquear pg_sleep: " + sleepResult);
+    }
+
+    @Test
+    @DisplayName("getDatabaseSchema oculta tabelas sensíveis e coluna password")
+    void testGetDatabaseSchema_filtersSensitiveTablesAndColumns() {
+        String schema = adminAiTools.getDatabaseSchema();
+        assertNotNull(schema);
+        assertFalse(schema.toLowerCase().contains("password_reset_tokens"));
+        assertFalse(schema.toLowerCase().contains("refresh_tokens"));
+        assertFalse(schema.toLowerCase().contains("chat_message_history"));
+        assertFalse(schema.toLowerCase().contains("flyway_schema_history"));
+        assertFalse(schema.toLowerCase().contains("{table_name=users, column_name=password"));
+    }
 }

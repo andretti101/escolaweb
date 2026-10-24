@@ -55,4 +55,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ChatMessage m SET m.archived = true WHERE m.archived = false AND m.isGlobalTeacherChat = false")
     int archiveAll();
+
+    boolean existsBySender_Id(Integer senderId);
 }

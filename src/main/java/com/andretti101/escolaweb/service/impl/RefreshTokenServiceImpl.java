@@ -39,7 +39,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = BadCredentialsException.class)
     public RefreshToken rotate(String tokenValue) {
         RefreshToken existing = refreshTokenRepository.findByToken(tokenValue)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -48,6 +48,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         if (existing.isRevoked()) {
             User compromisedUser = existing.getUser();
             refreshTokenRepository.deleteByUser(compromisedUser);
+            refreshTokenRepository.flush();
             throw new BadCredentialsException(
                     "Reutilização de token detectada. Todas as sessões foram encerradas por segurança. "
                             + "Faça login novamente.");
@@ -56,7 +57,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         // ── Expiration check
         if (existing.getExpiresAt().isBefore(LocalDateTime.now())) {
             refreshTokenRepository.delete(existing);
-            throw new IllegalStateException(
+            refreshTokenRepository.flush();
+            throw new BadCredentialsException(
                     "Refresh token expirado. Faça login novamente.");
         }
 

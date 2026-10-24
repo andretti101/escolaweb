@@ -31,6 +31,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -225,6 +226,104 @@ class SecurityAndAiToolsUnitTest {
                     MessageBuilder.createMessage(new byte[0], teacherClassSub.getMessageHeaders());
             assertThrows(IllegalArgumentException.class, () ->
                     webSocketAuthInterceptor.preSend(teacherClassMsg, messageChannel));
+
+            // 6. CONNECT com usuário desativado -> AccessDeniedException
+            org.springframework.security.core.userdetails.UserDetails disabledUser =
+                    org.springframework.security.core.userdetails.User.builder()
+                            .username("inativo@example.com")
+                            .password("pass")
+                            .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                            .disabled(true)
+                            .build();
+            String disabledToken = jwtTokenProvider.generateToken(disabledUser);
+            when(userDetailsService.loadUserByUsername("inativo@example.com")).thenReturn(disabledUser);
+            StompHeaderAccessor disabledConnect = StompHeaderAccessor.create(StompCommand.CONNECT);
+            disabledConnect.addNativeHeader("Authorization", "Bearer " + disabledToken);
+            disabledConnect.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> disabledConnectMsg =
+                    MessageBuilder.createMessage(new byte[0], disabledConnect.getMessageHeaders());
+            assertThrows(AccessDeniedException.class, () ->
+                    webSocketAuthInterceptor.preSend(disabledConnectMsg, messageChannel));
+
+            // 7. SUBSCRIBE com curingas ou tópico desconhecido -> AccessDeniedException
+            StompHeaderAccessor wildcardSub = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+            wildcardSub.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            wildcardSub.setDestination("/topic/**");
+            wildcardSub.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> wildcardMsg =
+                    MessageBuilder.createMessage(new byte[0], wildcardSub.getMessageHeaders());
+            assertThrows(AccessDeniedException.class, () ->
+                    webSocketAuthInterceptor.preSend(wildcardMsg, messageChannel));
+
+            StompHeaderAccessor unknownSub = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+            unknownSub.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            unknownSub.setDestination("/topic/unknown-secret");
+            unknownSub.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> unknownMsg =
+                    MessageBuilder.createMessage(new byte[0], unknownSub.getMessageHeaders());
+            assertThrows(AccessDeniedException.class, () ->
+                    webSocketAuthInterceptor.preSend(unknownMsg, messageChannel));
+
+            // 8. SUBSCRIBE em /topic/global/notifications e /user/queue/* permitido para autenticados
+            StompHeaderAccessor globalSub = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+            globalSub.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            globalSub.setDestination("/topic/global/notifications");
+            globalSub.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> globalMsg =
+                    MessageBuilder.createMessage(new byte[0], globalSub.getMessageHeaders());
+            assertDoesNotThrow(() -> webSocketAuthInterceptor.preSend(globalMsg, messageChannel));
+
+            StompHeaderAccessor userQueueErrorsSub = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+            userQueueErrorsSub.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            userQueueErrorsSub.setDestination("/user/queue/errors");
+            userQueueErrorsSub.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> userQueueErrorsMsg =
+                    MessageBuilder.createMessage(new byte[0], userQueueErrorsSub.getMessageHeaders());
+            assertDoesNotThrow(() -> webSocketAuthInterceptor.preSend(userQueueErrorsMsg, messageChannel));
+
+            StompHeaderAccessor aiReplySub = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+            aiReplySub.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            aiReplySub.setDestination("/user/queue/ai/reply");
+            aiReplySub.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> aiReplyMsg =
+                    MessageBuilder.createMessage(new byte[0], aiReplySub.getMessageHeaders());
+            assertDoesNotThrow(() -> webSocketAuthInterceptor.preSend(aiReplyMsg, messageChannel));
+
+            // 9. SUBSCRIBE com ? ou null -> AccessDeniedException
+            StompHeaderAccessor nullSub = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+            nullSub.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            nullSub.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> nullMsg =
+                    MessageBuilder.createMessage(new byte[0], nullSub.getMessageHeaders());
+            assertThrows(AccessDeniedException.class, () ->
+                    webSocketAuthInterceptor.preSend(nullMsg, messageChannel));
+
+            StompHeaderAccessor questionSub = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
+            questionSub.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            questionSub.setDestination("/topic/chat?");
+            questionSub.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> questionMsg =
+                    MessageBuilder.createMessage(new byte[0], questionSub.getMessageHeaders());
+            assertThrows(AccessDeniedException.class, () ->
+                    webSocketAuthInterceptor.preSend(questionMsg, messageChannel));
+
+            // 10. SEND com destino fora de /app/ ou sem autenticação -> AccessDeniedException
+            StompHeaderAccessor invalidSend = StompHeaderAccessor.create(StompCommand.SEND);
+            invalidSend.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            invalidSend.setDestination("/topic/bypass");
+            invalidSend.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> invalidSendMsg =
+                    MessageBuilder.createMessage(new byte[0], invalidSend.getMessageHeaders());
+            assertThrows(AccessDeniedException.class, () ->
+                    webSocketAuthInterceptor.preSend(invalidSendMsg, messageChannel));
+
+            StompHeaderAccessor validSend = StompHeaderAccessor.create(StompCommand.SEND);
+            validSend.setUser(new UsernamePasswordAuthenticationToken("aluno@example.com", null));
+            validSend.setDestination("/app/chat.sendMessage");
+            validSend.setLeaveMutable(true);
+            org.springframework.messaging.Message<byte[]> validSendMsg =
+                    MessageBuilder.createMessage(new byte[0], validSend.getMessageHeaders());
+            assertDoesNotThrow(() -> webSocketAuthInterceptor.preSend(validSendMsg, messageChannel));
         }
     }
 

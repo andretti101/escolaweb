@@ -88,4 +88,6 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Inte
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Announcement a SET a.archived = true WHERE a.archived = false")
     int archiveAll();
+
+    boolean existsByAuthor_Id(Integer authorId);
 }

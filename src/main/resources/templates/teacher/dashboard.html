@@ -444,6 +444,16 @@
     <script src="/js/load-sidebar.js"></script>
 
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         function logout() {
             localStorage.removeItem('jwt_token');
             localStorage.removeItem('refresh_token');
@@ -616,7 +626,7 @@
                     return `
                         <tr>
                             <td><small class="fw-semibold">${date}</small></td>
-                            <td><span class="text-truncate d-block" style="max-width: 250px;">${title}</span></td>
+                            <td><span class="text-truncate d-block" style="max-width: 250px;">${escapeHtml(title)}</span></td>
                             <td><span class="badge bg-label-info">${count} aula(s)</span></td>
                         </tr>
                     `;
@@ -635,11 +645,11 @@
                     return `
                         <div class="announcement-item p-3 rounded bg-light">
                             <div class="d-flex justify-content-between align-items-start mb-1">
-                                <h6 class="mb-0 fw-bold text-dark">${a.title}</h6>
+                                <h6 class="mb-0 fw-bold text-dark">${escapeHtml(a.title)}</h6>
                                 <small class="text-muted">${date}</small>
                             </div>
-                            <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${a.message || a.content || ''}</p>
-                            <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${a.authorName || 'Direção / Secretaria'}</small>
+                            <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${escapeHtml(a.message || a.content || '')}</p>
+                            <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${escapeHtml(a.authorName || 'Direção / Secretaria')}</small>
                         </div>
                     `;
                 }).join('');

@@ -40,6 +40,7 @@ COPY --from=builder --chown=appuser:appgroup /build/target/extracted/*.jar ./app
 USER appuser:appgroup
 
 # Expõe a porta padrão da aplicação
+ENV SERVER_PORT=8080
 EXPOSE 8080
 
 # Otimizações de memória e recursos para containers
