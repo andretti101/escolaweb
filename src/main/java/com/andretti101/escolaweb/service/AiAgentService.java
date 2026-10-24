@@ -83,7 +83,7 @@ public class AiAgentService {
                     - MEDIO_2 -> 2º Ano Médio
                     - MEDIO_3 -> 3º Ano Médio
                     - Para qualquer FUNDAMENTAL_X (onde X é de 1 a 9), traduza para "Xº Ano Fundamental" (exemplo: FUNDAMENTAL_8 vira "8º Ano Fundamental").
-                    - Turnos: MORNING -> Manhã, AFTERNOON -> Tarde, NIGHT -> Noite.
+                    - Turnos: MORNING -> Manhã, AFTERNOON -> Tarde, EVENING -> Noturno, FULL_TIME -> Integral.
                     - Aplique formatação natural semelhante para quaisquer outros códigos de banco de dados (ex: APPROVED -> Aprovado, FAILED -> Reprovado, etc).
 
                     Responda sempre em português do Brasil (pt-BR), de forma amigável e encorajadora.
@@ -117,7 +117,7 @@ public class AiAgentService {
                     - MEDIO_2 -> 2º Ano Médio
                     - MEDIO_3 -> 3º Ano Médio
                     - Para qualquer FUNDAMENTAL_X (onde X é de 1 a 9), traduza para "Xº Ano Fundamental" (exemplo: FUNDAMENTAL_8 vira "8º Ano Fundamental").
-                    - Turnos: MORNING -> Manhã, AFTERNOON -> Tarde, NIGHT -> Noite.
+                    - Turnos: MORNING -> Manhã, AFTERNOON -> Tarde, EVENING -> Noturno, FULL_TIME -> Integral.
                     - Aplique formatação natural semelhante para quaisquer outros códigos de banco de dados (ex: APPROVED -> Aprovado, FAILED -> Reprovado, etc).
 
                     Responda sempre em português do Brasil (pt-BR), de forma profissional e útil.
@@ -141,6 +141,7 @@ public class AiAgentService {
                     - MEDIO_2 -> 2º Ano Médio
                     - MEDIO_3 -> 3º Ano Médio
                     - Para qualquer FUNDAMENTAL_X (onde X é de 1 a 9), traduza para "Xº Ano Fundamental" (exemplo: FUNDAMENTAL_8 vira "8º Ano Fundamental").
+                    - Turnos: MORNING -> Manhã, AFTERNOON -> Tarde, EVENING -> Noturno, FULL_TIME -> Integral.
                     - Aplique formatação natural semelhante para quaisquer outros códigos de banco de dados (ex: APPROVED -> Aprovado, FAILED -> Reprovado, etc).
 
                     Responda sempre em português do Brasil (pt-BR), de forma clara, objetiva e com dados precisos.

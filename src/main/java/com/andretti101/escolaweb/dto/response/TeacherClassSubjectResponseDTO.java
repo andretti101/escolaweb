@@ -13,5 +13,6 @@ public record TeacherClassSubjectResponseDTO(
         Integer weeklyLessons,
         Integer minAssessmentsPerPeriod,
         Integer maxAssessmentsPerPeriod,
+        boolean active,
         LocalDateTime createdAt
 ) {}

@@ -31,6 +31,7 @@ public class LessonServiceImpl implements LessonService {
         }
 
         TeacherClassSubject tcs = resolveTcs(lesson.getTeacherClassSubject());
+        validateAcademicYearActive(tcs);
         lesson.setTeacherClassSubject(tcs);
 
         return lessonRepository.save(lesson);
@@ -45,7 +46,9 @@ public class LessonServiceImpl implements LessonService {
             throw new IllegalArgumentException("A data da aula é obrigatória.");
         }
 
+        validateAcademicYearActive(existing.getTeacherClassSubject());
         TeacherClassSubject tcs = resolveTcs(incoming.getTeacherClassSubject());
+        validateAcademicYearActive(tcs);
 
         existing.setLessonDate(incoming.getLessonDate());
         existing.setContent(incoming.getContent());
@@ -60,6 +63,7 @@ public class LessonServiceImpl implements LessonService {
     @Transactional
     public void delete(Integer id) {
         Lesson lesson = findLessonOrThrow(id);
+        validateAcademicYearActive(lesson.getTeacherClassSubject());
 
         // Exclui em cascata frequências e históricos de presença vinculados à aula
 
@@ -117,5 +121,14 @@ public class LessonServiceImpl implements LessonService {
             throw new IllegalArgumentException("Selecione a disciplina e a turma correspondentes à aula.");
         }
         return teacherClassSubjectService.findById(ref.getId());
+    }
+
+    private void validateAcademicYearActive(TeacherClassSubject tcs) {
+        if (tcs != null && tcs.getClassRoom() != null && tcs.getClassRoom().getAcademicYear() != null
+                && !tcs.getClassRoom().getAcademicYear().isActive()) {
+            throw new IllegalStateException(
+                    "O ano letivo '" + tcs.getClassRoom().getAcademicYear().getYear()
+                    + "' não está ativo. Não é permitido criar, alterar ou excluir aulas de anos letivos encerrados.");
+        }
     }
 }

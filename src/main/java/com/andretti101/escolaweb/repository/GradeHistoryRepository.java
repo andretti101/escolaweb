@@ -25,9 +25,12 @@ public interface GradeHistoryRepository extends JpaRepository<GradeHistory, Inte
             JOIN FETCH tcs.classRoom c
             JOIN FETCH tcs.teacher t
             LEFT JOIN FETCH h.changedBy u
-            WHERE h.previousGrade IS NOT NULL
-              AND h.newGrade IS NOT NULL
-              AND h.previousGrade <> h.newGrade
+            WHERE (
+                  (h.previousGrade IS NOT NULL AND h.newGrade IS NOT NULL AND h.previousGrade <> h.newGrade)
+               OR (h.gradeKind = com.andretti101.escolaweb.model.enums.GradeKind.RECOVERY
+                   AND ((h.previousGrade IS NOT NULL AND h.newGrade IS NULL)
+                        OR (h.previousGrade IS NULL AND h.newGrade IS NOT NULL)))
+            )
               AND (:teacherId IS NULL OR t.id = :teacherId)
               AND (:classRoomId IS NULL OR c.id = :classRoomId)
               AND (:studentId IS NULL OR s.id = :studentId)
@@ -45,9 +48,12 @@ public interface GradeHistoryRepository extends JpaRepository<GradeHistory, Inte
             JOIN a.teacherClassSubject tcs
             JOIN tcs.classRoom c
             JOIN tcs.teacher t
-            WHERE h.previousGrade IS NOT NULL
-              AND h.newGrade IS NOT NULL
-              AND h.previousGrade <> h.newGrade
+            WHERE (
+                  (h.previousGrade IS NOT NULL AND h.newGrade IS NOT NULL AND h.previousGrade <> h.newGrade)
+               OR (h.gradeKind = com.andretti101.escolaweb.model.enums.GradeKind.RECOVERY
+                   AND ((h.previousGrade IS NOT NULL AND h.newGrade IS NULL)
+                        OR (h.previousGrade IS NULL AND h.newGrade IS NOT NULL)))
+            )
               AND (:teacherId IS NULL OR t.id = :teacherId)
               AND (:classRoomId IS NULL OR c.id = :classRoomId)
               AND (:studentId IS NULL OR s.id = :studentId)
@@ -77,9 +83,12 @@ public interface GradeHistoryRepository extends JpaRepository<GradeHistory, Inte
             JOIN FETCH tcs.teacher t
             LEFT JOIN FETCH h.changedBy u
             WHERE g.id = :gradeId
-              AND h.previousGrade IS NOT NULL
-              AND h.newGrade IS NOT NULL
-              AND h.previousGrade <> h.newGrade
+              AND (
+                  (h.previousGrade IS NOT NULL AND h.newGrade IS NOT NULL AND h.previousGrade <> h.newGrade)
+               OR (h.gradeKind = com.andretti101.escolaweb.model.enums.GradeKind.RECOVERY
+                   AND ((h.previousGrade IS NOT NULL AND h.newGrade IS NULL)
+                        OR (h.previousGrade IS NULL AND h.newGrade IS NOT NULL)))
+              )
             ORDER BY h.changedAt DESC, h.id DESC
             """)
     List<GradeHistory> findTimelineByGradeId(@Param("gradeId") Integer gradeId);

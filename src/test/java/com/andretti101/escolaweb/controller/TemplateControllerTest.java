@@ -19,9 +19,13 @@ class TemplateControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("Público: /entrar e /login.html retornam 200 com a view login")
+    @DisplayName("Público: /entrar, /login e /login.html retornam 200 com a view login")
     void publicLoginRoutes() throws Exception {
         mockMvc.perform(get("/entrar"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("login"));
+
+        mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("login"));
 
@@ -188,6 +192,17 @@ class TemplateControllerTest {
     @DisplayName("Rota inexistente sob prefixo conhecido retorna 404 Not Found")
     void nonexistentRouteReturns404() throws Exception {
         mockMvc.perform(get("/direcao/rota-que-nao-existe"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "PRINCIPAL")
+    @DisplayName("Rota legada .html inexistente retorna 404 Not Found")
+    void nonexistentLegacyHtmlReturns404() throws Exception {
+        mockMvc.perform(get("/principal/pagina-que-nao-existe.html"))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/principal/sub/pagina-que-nao-existe.html"))
                 .andExpect(status().isNotFound());
     }
 

@@ -20,8 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,12 +85,16 @@ public class ReportCardServiceImpl implements ReportCardService {
                 
                 for (com.andretti101.escolaweb.model.entity.AcademicPeriod period : periods) {
                     List<com.andretti101.escolaweb.model.entity.Grade> gradesInPeriod = tcsGrades.stream()
-                            .filter(g -> g.getAssessment().getPeriod().getId().equals(period.getId()))
+                            .filter(g -> g.getEffectiveValue() != null
+                                    && g.getAssessment() != null
+                                    && g.getAssessment().getPeriod() != null
+                                    && g.getAssessment().getPeriod().getId().equals(period.getId()))
                             .collect(Collectors.toList());
                     
                     java.math.BigDecimal periodAverage = null;
                     if (!gradesInPeriod.isEmpty()) {
-                        java.math.BigDecimal sum = gradesInPeriod.stream().filter(g -> g.getEffectiveValue() != null).map(com.andretti101.escolaweb.model.entity.Grade::getEffectiveValue)
+                        java.math.BigDecimal sum = gradesInPeriod.stream()
+                                .map(com.andretti101.escolaweb.model.entity.Grade::getEffectiveValue)
                                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
                         periodAverage = sum.divide(java.math.BigDecimal.valueOf(gradesInPeriod.size()), 2, java.math.RoundingMode.HALF_UP);
                     }
@@ -124,8 +130,8 @@ public class ReportCardServiceImpl implements ReportCardService {
             if (tcsList.isEmpty()) {
                 frequency = new ReportCardDTO.FrequencySituationDTO(java.math.BigDecimal.valueOf(100), minimumAttendance, com.andretti101.escolaweb.model.enums.StudentSituation.APPROVED);
             } else {
-                java.math.BigDecimal totalFrequency = java.math.BigDecimal.ZERO;
-                int count = 0;
+                int overallTotalClasses = 0;
+                int overallPresentClasses = 0;
                 for (com.andretti101.escolaweb.model.entity.TeacherClassSubject tcs : tcsList) {
                     List<com.andretti101.escolaweb.model.entity.Attendance> tcsAtt = studentAttendances.stream()
                             .filter(a -> a.getLesson().getTeacherClassSubject().getId().equals(tcs.getId()))
@@ -137,17 +143,14 @@ public class ReportCardServiceImpl implements ReportCardService {
                             .mapToInt(a -> a.getLesson().getLessonCount() != null ? a.getLesson().getLessonCount().getValue() : 1)
                             .sum();
                             
-                    java.math.BigDecimal freq = java.math.BigDecimal.valueOf(100);
-                    if (totalClasses > 0) {
-                        int presentClasses = totalClasses - absentClasses;
-                        freq = java.math.BigDecimal.valueOf(presentClasses).multiply(java.math.BigDecimal.valueOf(100))
-                                .divide(java.math.BigDecimal.valueOf(totalClasses), 2, java.math.RoundingMode.HALF_UP);
-                    }
-                    totalFrequency = totalFrequency.add(freq);
-                    count++;
+                    overallTotalClasses += totalClasses;
+                    overallPresentClasses += (totalClasses - absentClasses);
                 }
-                // Frequência mínima legal de 75% (LDB art. 24, VI): discente abaixo do limite é reprovado por falta
-                java.math.BigDecimal generalFrequency = count > 0 ? totalFrequency.divide(java.math.BigDecimal.valueOf(count), 2, java.math.RoundingMode.HALF_UP) : java.math.BigDecimal.valueOf(100);
+                // Frequência mínima legal de 75% (LDB art. 24, VI) ponderada pelo total real de aulas ministradas
+                java.math.BigDecimal generalFrequency = overallTotalClasses > 0
+                        ? java.math.BigDecimal.valueOf(overallPresentClasses).multiply(java.math.BigDecimal.valueOf(100))
+                                .divide(java.math.BigDecimal.valueOf(overallTotalClasses), 2, java.math.RoundingMode.HALF_UP)
+                        : java.math.BigDecimal.valueOf(100);
                 com.andretti101.escolaweb.model.enums.StudentSituation sit = generalFrequency.compareTo(minimumAttendance) >= 0 ? com.andretti101.escolaweb.model.enums.StudentSituation.APPROVED : com.andretti101.escolaweb.model.enums.StudentSituation.FAILED;
                 frequency = new ReportCardDTO.FrequencySituationDTO(generalFrequency, minimumAttendance, sit);
             }
@@ -177,6 +180,7 @@ public class ReportCardServiceImpl implements ReportCardService {
 
         Enrollment enrollment = enrollmentRepository.findByStudent(student).stream()
                 .filter(e -> e.getClassRoom().getAcademicYear().getId().equals(academicYearId))
+                .sorted(Comparator.comparing(Enrollment::isActive).reversed())
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
                         "O aluno '" + student.getName() + "' não possui matrícula no ano letivo " + year.getYear() + "."));
@@ -301,17 +305,47 @@ public class ReportCardServiceImpl implements ReportCardService {
                     BigDecimal.valueOf(100), minimumAttendance, StudentSituation.APPROVED);
         }
 
-        BigDecimal totalFrequency = BigDecimal.ZERO;
-        int count = 0;
-        for (TeacherClassSubject tcs : tcsList) {
-            BigDecimal freq = attendanceService.calculateFrequency(student.getId(), tcs.getId());
-            totalFrequency = totalFrequency.add(freq);
-            count++;
-        }
+        Set<Integer> tcsIds = tcsList.stream().map(TeacherClassSubject::getId).collect(Collectors.toSet());
+        List<Attendance> studentAttendances = attendanceRepository != null
+                ? attendanceRepository.findByStudent(student)
+                : List.of();
 
-        BigDecimal generalFrequency = count > 0
-                ? totalFrequency.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP)
-                : BigDecimal.valueOf(100);
+        List<Attendance> classAttendances = studentAttendances != null
+                ? studentAttendances.stream()
+                        .filter(a -> a.getLesson() != null
+                                && a.getLesson().getTeacherClassSubject() != null
+                                && tcsIds.contains(a.getLesson().getTeacherClassSubject().getId()))
+                        .toList()
+                : List.of();
+
+        BigDecimal generalFrequency;
+        if (!classAttendances.isEmpty()) {
+            int totalClasses = classAttendances.stream()
+                    .mapToInt(a -> a.getLesson().getLessonCount() != null ? a.getLesson().getLessonCount().getValue() : 1)
+                    .sum();
+            int absentClasses = classAttendances.stream()
+                    .filter(a -> a.getStatus() == com.andretti101.escolaweb.model.enums.AttendanceStatus.ABSENT)
+                    .mapToInt(a -> a.getLesson().getLessonCount() != null ? a.getLesson().getLessonCount().getValue() : 1)
+                    .sum();
+            int presentClasses = totalClasses - absentClasses;
+            generalFrequency = totalClasses > 0
+                    ? BigDecimal.valueOf(presentClasses).multiply(BigDecimal.valueOf(100))
+                            .divide(BigDecimal.valueOf(totalClasses), 2, RoundingMode.HALF_UP)
+                    : BigDecimal.valueOf(100);
+        } else {
+            BigDecimal totalFrequency = BigDecimal.ZERO;
+            int count = 0;
+            for (TeacherClassSubject tcs : tcsList) {
+                BigDecimal freq = attendanceService.calculateFrequency(student.getId(), tcs.getId());
+                if (freq != null) {
+                    totalFrequency = totalFrequency.add(freq);
+                    count++;
+                }
+            }
+            generalFrequency = count > 0
+                    ? totalFrequency.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP)
+                    : BigDecimal.valueOf(100);
+        }
 
         StudentSituation situation = generalFrequency.compareTo(minimumAttendance) >= 0
                 ? StudentSituation.APPROVED
@@ -341,4 +375,3 @@ public class ReportCardServiceImpl implements ReportCardService {
         return StudentSituation.APPROVED;
     }
 }
-

@@ -96,6 +96,8 @@ public class LessonController {
             @Parameter(description = "ID da aula") @PathVariable Integer id) {
         Lesson lesson = lessonService.findById(id);
         authenticatedUserService.enforceTeacherOwnership(lesson.getTeacherClassSubject());
+        authenticatedUserService.enforceStudentClassRoomOwnership(
+                lesson.getTeacherClassSubject() != null ? lesson.getTeacherClassSubject().getClassRoom() : null);
         return ResponseEntity.ok(toResponse(lesson));
     }
 

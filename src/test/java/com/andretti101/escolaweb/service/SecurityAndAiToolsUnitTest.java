@@ -418,6 +418,43 @@ class SecurityAndAiToolsUnitTest {
         }
 
         @Test
+        @DisplayName("TeacherAiTools ignora turmas inativas, ano letivo inativo e períodos de tipo incompatível")
+        void teacherAiTools_filtersInactiveAndPeriodTypeMismatch() {
+            Teacher teacher = Teacher.builder().id(5).name("Carlos").active(true).build();
+            AcademicYear yearActive = AcademicYear.builder().id(1).year(2026).active(true).build();
+            AcademicYear yearInactive = AcademicYear.builder().id(2).year(2025).active(false).build();
+
+            AcademicPeriod trimPeriod = AcademicPeriod.builder().id(10).name("1º Trimestre").periodType(AcademicPeriodType.TRIMESTER).build();
+            AcademicPeriod bimPeriod = AcademicPeriod.builder().id(20).name("1º Bimestre").periodType(AcademicPeriodType.BIMESTER).build();
+
+            ClassRoom crActiveTrim = ClassRoom.builder().id(20).name("2º A").academicYear(yearActive).periodType(AcademicPeriodType.TRIMESTER).build();
+            ClassRoom crInactiveYear = ClassRoom.builder().id(21).name("3º A").academicYear(yearInactive).periodType(AcademicPeriodType.TRIMESTER).build();
+
+            Subject physics = Subject.builder().id(3).name("Física").build();
+            TeacherClassSubject tcsActive = TeacherClassSubject.builder()
+                    .id(100).teacher(teacher).classRoom(crActiveTrim).subject(physics).active(true).minAssessmentsPerPeriod(2).build();
+            TeacherClassSubject tcsInactiveAssignment = TeacherClassSubject.builder()
+                    .id(101).teacher(teacher).classRoom(crActiveTrim).subject(physics).active(false).minAssessmentsPerPeriod(2).build();
+            TeacherClassSubject tcsInactiveYear = TeacherClassSubject.builder()
+                    .id(102).teacher(teacher).classRoom(crInactiveYear).subject(physics).active(true).minAssessmentsPerPeriod(2).build();
+
+            when(authService.getAuthenticatedTeacher()).thenReturn(teacher);
+            when(teacherClassSubjectService.findByTeacher(5)).thenReturn(List.of(tcsActive, tcsInactiveAssignment, tcsInactiveYear));
+
+            String classes = teacherAiTools.getTeacherClasses();
+            assertTrue(classes.contains("Turma: 2º A"));
+            assertFalse(classes.contains("Turma: 3º A"));
+
+            when(academicYearService.findActive()).thenReturn(yearActive);
+            when(academicPeriodService.findByAcademicYear(1)).thenReturn(List.of(trimPeriod, bimPeriod));
+            when(assessmentRepository.countByTeacherClassSubjectAndPeriod(tcsActive, trimPeriod)).thenReturn(0L);
+
+            String pending = teacherAiTools.getTeacherPendingAssessments();
+            assertTrue(pending.contains("1º Trimestre"));
+            assertFalse(pending.contains("1º Bimestre"));
+        }
+
+        @Test
         @DisplayName("TeacherAiTools gera plano de aula BNCC e rascunho de avaliação com gabarito comentado")
         void teacherAiTools_generatesLessonPlanAndExamQuestions() {
             SchoolSettings settings = SchoolSettings.builder().schoolName("Escola Modelo").build();

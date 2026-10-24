@@ -104,6 +104,8 @@ public class AssessmentController {
             @Parameter(description = "ID da avaliação") @PathVariable Integer id) {
         Assessment assessment = assessmentService.findById(id);
         authenticatedUserService.enforceTeacherOwnership(assessment.getTeacherClassSubject());
+        authenticatedUserService.enforceStudentClassRoomOwnership(
+                assessment.getTeacherClassSubject() != null ? assessment.getTeacherClassSubject().getClassRoom() : null);
         return ResponseEntity.ok(toResponse(assessment));
     }
 

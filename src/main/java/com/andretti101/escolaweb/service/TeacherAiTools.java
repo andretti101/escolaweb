@@ -30,9 +30,14 @@ public class TeacherAiTools {
         return transactionTemplate.execute(status -> {
             Teacher teacher = authService.getAuthenticatedTeacher();
             var classes = tcsService.findByTeacher(teacher.getId());
-            if (classes.isEmpty()) return "Você não tem turmas atribuídas.";
+            if (classes != null) {
+                classes = classes.stream()
+                        .filter(tcs -> tcs.isActive() && (tcs.getClassRoom() == null || tcs.getClassRoom().getAcademicYear() == null || tcs.getClassRoom().getAcademicYear().isActive()))
+                        .toList();
+            }
+            if (classes == null || classes.isEmpty()) return "Você não tem turmas atribuídas.";
             return classes.stream().map(tcs -> 
-                "Turma: " + tcs.getClassRoom().getName() + " - Matéria: " + tcs.getSubject().getName()
+                "Turma: " + (tcs.getClassRoom() != null ? tcs.getClassRoom().getName() : "Sem Turma") + " - Matéria: " + (tcs.getSubject() != null ? tcs.getSubject().getName() : "Sem Matéria")
             ).collect(Collectors.joining("\n"));
         });
     }
@@ -54,19 +59,26 @@ public class TeacherAiTools {
         return transactionTemplate.execute(status -> {
             Teacher teacher = authService.getAuthenticatedTeacher();
             var classes = tcsService.findByTeacher(teacher.getId());
+            if (classes != null) {
+                classes = classes.stream()
+                        .filter(tcs -> tcs.isActive() && (tcs.getClassRoom() == null || tcs.getClassRoom().getAcademicYear() == null || tcs.getClassRoom().getAcademicYear().isActive()))
+                        .toList();
+            }
             StringBuilder sb = new StringBuilder();
-            for (var tcs : classes) {
-                sb.append("Turma: ").append(tcs.getClassRoom().getName())
-                  .append(" - ").append(tcs.getSubject().getName()).append("\n");
-                var assessments = assessmentRepository.findByTeacherClassSubject(tcs);
-                for (var a : assessments) {
-                    var grades = gradeRepository.findByAssessment(a);
-                    var badGrades = grades.stream()
-                        .filter(g -> g.getEffectiveValue() != null && g.getEffectiveValue().compareTo(new BigDecimal("6.0")) < 0)
-                        .collect(Collectors.toList());
-                    if (!badGrades.isEmpty()) {
-                        sb.append("  Avaliação: ").append(a.getTitle()).append(" - Alunos com nota baixa:\n");
-                        badGrades.forEach(g -> sb.append("    - ").append(g.getStudent().getName()).append(": ").append(g.getEffectiveValue()).append("\n"));
+            if (classes != null) {
+                for (var tcs : classes) {
+                    sb.append("Turma: ").append(tcs.getClassRoom() != null ? tcs.getClassRoom().getName() : "Sem Turma")
+                      .append(" - ").append(tcs.getSubject() != null ? tcs.getSubject().getName() : "Sem Matéria").append("\n");
+                    var assessments = assessmentRepository.findByTeacherClassSubject(tcs);
+                    for (var a : assessments) {
+                        var grades = gradeRepository.findByAssessment(a);
+                        var badGrades = grades.stream()
+                            .filter(g -> g.getEffectiveValue() != null && g.getEffectiveValue().compareTo(new BigDecimal("6.0")) < 0)
+                            .collect(Collectors.toList());
+                        if (!badGrades.isEmpty()) {
+                            sb.append("  Avaliação: ").append(a.getTitle()).append(" - Alunos com nota baixa:\n");
+                            badGrades.forEach(g -> sb.append("    - ").append(g.getStudent().getName()).append(": ").append(g.getEffectiveValue()).append("\n"));
+                        }
                     }
                 }
             }
@@ -84,16 +96,26 @@ public class TeacherAiTools {
             
             var periods = periodService.findByAcademicYear(year.getId());
             var classes = tcsService.findByTeacher(teacher.getId());
+            if (classes != null) {
+                classes = classes.stream()
+                        .filter(tcs -> tcs.isActive() && (tcs.getClassRoom() == null || tcs.getClassRoom().getAcademicYear() == null || tcs.getClassRoom().getAcademicYear().isActive()))
+                        .toList();
+            }
             StringBuilder sb = new StringBuilder();
-            for (var tcs : classes) {
-                for (var period : periods) {
-                    long count = assessmentRepository.countByTeacherClassSubjectAndPeriod(tcs, period);
-                    long min = tcs.getMinAssessmentsPerPeriod();
-                    if (count < min) {
-                        sb.append("Turma: ").append(tcs.getClassRoom().getName())
-                          .append(", Matéria: ").append(tcs.getSubject().getName())
-                          .append(", Período: ").append(period.getName())
-                          .append(" - Pendentes: ").append(min - count).append(" avaliações.\n");
+            if (classes != null) {
+                for (var tcs : classes) {
+                    for (var period : periods) {
+                        if (period.getPeriodType() != null && tcs.getClassRoom() != null && tcs.getClassRoom().getPeriodType() != null && period.getPeriodType() != tcs.getClassRoom().getPeriodType()) {
+                            continue;
+                        }
+                        long count = assessmentRepository.countByTeacherClassSubjectAndPeriod(tcs, period);
+                        long min = tcs.getMinAssessmentsPerPeriod();
+                        if (count < min) {
+                            sb.append("Turma: ").append(tcs.getClassRoom() != null ? tcs.getClassRoom().getName() : "Sem Turma")
+                              .append(", Matéria: ").append(tcs.getSubject() != null ? tcs.getSubject().getName() : "Sem Matéria")
+                              .append(", Período: ").append(period.getName())
+                              .append(" - Pendentes: ").append(min - count).append(" avaliações.\n");
+                        }
                     }
                 }
             }

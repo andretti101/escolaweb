@@ -153,45 +153,99 @@
                 document.getElementById('content').value = lesson.content || '';
                 document.getElementById('notes').value = lesson.notes || '';
                 
-                await loadAttendances(lesson.id);
+                let classRoomId = null;
+                try {
+                    const tcsRes = await fetch(`/api/teacher-class-subjects/${lesson.teacherClassSubjectId}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    if (tcsRes.ok) {
+                        const tcs = await tcsRes.json();
+                        classRoomId = tcs.classRoomId;
+                    }
+                } catch(e) {
+                    console.warn('Erro ao obter classRoomId do vínculo:', e);
+                }
+
+                await loadAttendances(lesson.id, classRoomId);
             } catch(e) {
                 showAlert(e.message, 'danger');
                 document.getElementById('mainCard').style.display = 'none';
             }
         }
 
-        async function loadAttendances(lessonId) {
+        async function loadAttendances(lessonId, classRoomId) {
             try {
                 const res = await fetch(`/api/attendances/lesson/${lessonId}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
                 if (!res.ok) throw new Error('Erro ao carregar a chamada.');
-                currentAttendances = await res.json();
+                const existingAttendances = await res.json();
+
+                let activeEnrollments = [];
+                if (classRoomId) {
+                    try {
+                        const enrRes = await fetch(`/api/enrollments/classroom/${classRoomId}`, {
+                            headers: { 'Authorization': `Bearer ${getToken()}` }
+                        });
+                        if (enrRes.ok) {
+                            const enrData = await enrRes.json();
+                            const enrollments = Array.isArray(enrData) ? enrData : (enrData.content || []);
+                            activeEnrollments = enrollments.filter(e => e.active);
+                        }
+                    } catch(e) {
+                        console.warn('Erro ao buscar matrículas ativas da turma:', e);
+                    }
+                }
+
+                const attendanceMap = new Map();
+                existingAttendances.forEach(att => {
+                    attendanceMap.set(att.studentId, {
+                        id: att.id,
+                        studentId: att.studentId,
+                        studentName: att.studentName,
+                        status: att.status,
+                        isNew: false
+                    });
+                });
+
+                activeEnrollments.forEach(enr => {
+                    if (!attendanceMap.has(enr.studentId)) {
+                        attendanceMap.set(enr.studentId, {
+                            id: null,
+                            studentId: enr.studentId,
+                            studentName: enr.studentName,
+                            status: null,
+                            isNew: true
+                        });
+                    }
+                });
+
+                currentAttendances = Array.from(attendanceMap.values());
+                currentAttendances.sort((a, b) => (a.studentName || '').localeCompare(b.studentName || ''));
                 const tbody = document.getElementById('studentsTableBody');
                 let html = '';
-                
-                currentAttendances.sort((a, b) => a.studentName.localeCompare(b.studentName));
 
                 if (currentAttendances.length === 0) {
                     html = '<tr><td colspan="2" class="text-center text-muted">Nenhum registro de chamada encontrado para esta aula.</td></tr>';
                 } else {
                     currentAttendances.forEach(att => {
-                        const safeName = att.studentName.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        const key = att.id != null ? att.id : (`new_${att.studentId}`);
+                        const safeName = (att.studentName || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         const pChecked = att.status === 'PRESENT' ? 'checked' : '';
                         const aChecked = att.status === 'ABSENT' ? 'checked' : '';
                         const jChecked = att.status === 'JUSTIFIED_ABSENCE' || att.status === 'EXCUSED' || att.status === 'JUSTIFIED' ? 'checked' : '';
                         
                         html += `
                             <tr>
-                                <td class="align-middle fw-semibold">${safeName}</td>
+                                <td class="align-middle fw-semibold">${safeName}${att.isNew ? ' <span class="badge bg-label-info ms-1">Novo</span>' : ''}</td>
                                 <td>
                                     <div class="d-flex justify-content-center gap-2">
-                                        <input type="radio" class="btn-check attendance-radio attendance-radio-present" name="attendance_${att.id}" id="present_${att.id}" value="PRESENT" ${pChecked} autocomplete="off">
-                                        <label class="btn btn-outline-success btn-sm" for="present_${att.id}"><i class="bx bx-check me-1"></i> Presente</label>
+                                        <input type="radio" class="btn-check attendance-radio attendance-radio-present" name="attendance_${key}" id="present_${key}" value="PRESENT" ${pChecked} autocomplete="off">
+                                        <label class="btn btn-outline-success btn-sm" for="present_${key}"><i class="bx bx-check me-1"></i> Presente</label>
 
-                                        <input type="radio" class="btn-check attendance-radio attendance-radio-absent" name="attendance_${att.id}" id="absent_${att.id}" value="ABSENT" ${aChecked} autocomplete="off">
-                                        <label class="btn btn-outline-danger btn-sm" for="absent_${att.id}"><i class="bx bx-x me-1"></i> Falta</label>
+                                        <input type="radio" class="btn-check attendance-radio attendance-radio-absent" name="attendance_${key}" id="absent_${key}" value="ABSENT" ${aChecked} autocomplete="off">
+                                        <label class="btn btn-outline-danger btn-sm" for="absent_${key}"><i class="bx bx-x me-1"></i> Falta</label>
 
-                                        <input type="radio" class="btn-check attendance-radio attendance-radio-justified" name="attendance_${att.id}" id="justified_${att.id}" value="JUSTIFIED_ABSENCE" ${jChecked} autocomplete="off">
-                                        <label class="btn btn-outline-warning btn-sm" for="justified_${att.id}"><i class="bx bx-info-circle me-1"></i> Justificada</label>
+                                        <input type="radio" class="btn-check attendance-radio attendance-radio-justified" name="attendance_${key}" id="justified_${key}" value="JUSTIFIED_ABSENCE" ${jChecked} autocomplete="off">
+                                        <label class="btn btn-outline-warning btn-sm" for="justified_${key}"><i class="bx bx-info-circle me-1"></i> Justificada</label>
                                     </div>
                                 </td>
                             </tr>
@@ -210,9 +264,10 @@
 
             // Validação: garantir que todos os alunos possuem status de presença
             for (const att of currentAttendances) {
-                const selected = document.querySelector(`input[name="attendance_${att.id}"]:checked`);
+                const key = att.id != null ? att.id : (`new_${att.studentId}`);
+                const selected = document.querySelector(`input[name="attendance_${key}"]:checked`);
                 if (!selected) {
-                    showAlert(`Aluno "${att.studentName}" não possui status de presença definido. Marque Presente, Falta ou Justificada para todos os alunos.`, 'danger');
+                    showAlert(`Aluno "${att.studentName || 'Sem Nome'}" não possui status de presença definido. Marque Presente, Falta ou Justificada para todos os alunos.`, 'danger');
                     return;
                 }
             }
@@ -242,21 +297,30 @@
                     throw new Error(msg);
                 }
                 
-                // 2. Update Attendances
+                // 2. Update or Create Attendances
                 const attendancePromises = currentAttendances.map(att => {
-                    const status = document.querySelector(`input[name="attendance_${att.id}"]:checked`).value;
-                    if (status === att.status) return Promise.resolve(); // no change needed
-                    
-                    const attPayload = {
-                        studentId: att.studentId,
-                        lessonId: parseInt(lessonId),
-                        status: status
-                    };
-                    return fetch(`/api/attendances/${att.id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                        body: JSON.stringify(attPayload)
-                    });
+                    const key = att.id != null ? att.id : (`new_${att.studentId}`);
+                    const selected = document.querySelector(`input[name="attendance_${key}"]:checked`);
+                    const status = selected ? selected.value : null;
+
+                    if (att.id != null) {
+                        if (status === att.status) return Promise.resolve(); // no change needed
+                        return fetch(`/api/attendances/${att.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                            body: JSON.stringify({ status: status })
+                        });
+                    } else {
+                        return fetch('/api/attendances', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                            body: JSON.stringify({
+                                studentId: att.studentId,
+                                lessonId: parseInt(lessonId),
+                                status: status
+                            })
+                        });
+                    }
                 });
 
                 const attResults = await Promise.all(attendancePromises);

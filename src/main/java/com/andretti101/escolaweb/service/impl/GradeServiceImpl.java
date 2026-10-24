@@ -165,8 +165,12 @@ public class GradeServiceImpl implements GradeService {
     @Override
     @Transactional
     public void delete(Integer id) {
-        findGradeOrThrow(id);
+        Grade existing = findGradeOrThrow(id);
+        validatePeriodOpen(existing.getAssessment());
         gradeRepository.deleteById(id);
+        if (existing.getAssessment() != null && existing.getAssessment().getTeacherClassSubject() != null && existing.getStudent() != null) {
+            updateStudentSituation(existing);
+        }
     }
 
     @Override
@@ -233,7 +237,7 @@ public class GradeServiceImpl implements GradeService {
 
         int periodsWithGrades = gradesByPeriod.size();
 
-        return sumOfPeriodAverages.divide(BigDecimal.valueOf(periodsWithGrades), 2, RoundingMode.CEILING);
+        return sumOfPeriodAverages.divide(BigDecimal.valueOf(periodsWithGrades), 2, RoundingMode.HALF_UP);
     }
 
     // ── Private helpers
@@ -244,8 +248,11 @@ public class GradeServiceImpl implements GradeService {
         SchoolSettings settings = schoolSettingsService.findSettings();
 
         List<Grade> allGrades = gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs);
+        if (allGrades == null || allGrades.isEmpty()) {
+            return;
+        }
         long periodsWithGrades = allGrades.stream()
-                .filter(g -> g.getAssessment() != null && g.getAssessment().getPeriod() != null)
+                .filter(g -> g.getEffectiveValue() != null && g.getAssessment() != null && g.getAssessment().getPeriod() != null)
                 .map(g -> g.getAssessment().getPeriod().getId())
                 .distinct()
                 .count();
@@ -259,11 +266,19 @@ public class GradeServiceImpl implements GradeService {
             return;
         }
 
+        var academicYear = tcs.getClassRoom() != null ? tcs.getClassRoom().getAcademicYear() : null;
+        BigDecimal minGrade = (academicYear != null && academicYear.getMinimumGrade() != null)
+                ? academicYear.getMinimumGrade()
+                : (settings != null ? settings.getMinimumGrade() : new BigDecimal("6.0"));
+        BigDecimal minAttendance = (academicYear != null && academicYear.getMinimumAttendance() != null)
+                ? academicYear.getMinimumAttendance()
+                : (settings != null ? settings.getMinimumAttendance() : new BigDecimal("75.0"));
+
         BigDecimal average = calculateAverage(student.getId(), tcs.getId());
         BigDecimal frequency = attendanceService.calculateFrequency(student.getId(), tcs.getId());
 
-        boolean approvedByGrade = average.compareTo(settings.getMinimumGrade()) >= 0;
-        boolean approvedByFrequency = frequency.compareTo(settings.getMinimumAttendance()) >= 0;
+        boolean approvedByGrade = average.compareTo(minGrade) >= 0;
+        boolean approvedByFrequency = frequency.compareTo(minAttendance) >= 0;
 
         StudentSituation situation = approvedByGrade && approvedByFrequency
                 ? StudentSituation.APPROVED
@@ -285,7 +300,7 @@ public class GradeServiceImpl implements GradeService {
     }
 
     private void validatePeriodOpen(Assessment assessment) {
-        if (assessment.getPeriod().isClosed()) {
+        if (assessment != null && assessment.getPeriod() != null && assessment.getPeriod().isClosed()) {
             throw new IllegalStateException(
                     "O período acadêmico '" + assessment.getPeriod().getName()
                     + "' está fechado. Não é permitido lançar ou alterar notas.");

@@ -3,29 +3,63 @@
 // Valida a presença e expiração do token JWT antes da renderização da página
 // ==============================================================================
 
-const token       = localStorage.getItem("jwt_token");
+let token          = localStorage.getItem("jwt_token");
 const refreshToken = localStorage.getItem("refresh_token");
+
+function clearTokensAndRedirect() {
+    document.documentElement.style.display = 'none';
+    localStorage.removeItem("jwt_token");
+    localStorage.removeItem("refresh_token");
+    document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+    window.location.href = "/entrar";
+}
+
+function decodeJwtPayload(jwtStr) {
+    const payloadBase64 = jwtStr.split('.')[1];
+    const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(base64));
+}
 
 // Redireciona imediatamente para o login caso o usuário não possua token de autenticação
 if (!token) {
-    document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
-    window.location.href = "/entrar";
+    clearTokensAndRedirect();
 } else {
     try {
-        // Decodifica o payload do JWT (formato Base64Url) sem depender de bibliotecas externas
-        const payloadBase64  = token.split('.')[1];
-        const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
-        const decodedPayload = JSON.parse(atob(base64));
-
-        // Verifica a validade temporal do token (claim exp em segundos comparada a Date.now() em ms)
+        let decodedPayload = decodeJwtPayload(token);
         const isExpired = decodedPayload.exp * 1000 < Date.now();
 
         if (isExpired) {
-            localStorage.removeItem("jwt_token");
-            localStorage.removeItem("refresh_token");
-            document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
-            window.location.href = "/entrar";
-        } else {
+            let renewed = false;
+            if (refreshToken) {
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/auth/refresh", false);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(JSON.stringify({ refreshToken: refreshToken }));
+                    if (xhr.status === 200) {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data && data.accessToken) {
+                            token = data.accessToken;
+                            localStorage.setItem("jwt_token", data.accessToken);
+                            if (data.refreshToken) {
+                                localStorage.setItem("refresh_token", data.refreshToken);
+                            }
+                            document.cookie = `jwt_token=${encodeURIComponent(data.accessToken)}; path=/; SameSite=Strict`;
+                            decodedPayload = decodeJwtPayload(token);
+                            renewed = true;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Erro na renovação síncrona do token:", err);
+                }
+            }
+
+            if (!renewed) {
+                clearTokensAndRedirect();
+            }
+        }
+
+        if (token && decodedPayload && decodedPayload.exp * 1000 >= Date.now()) {
             // Validação de Perfil de Acesso (RBAC) com base no caminho da URL
             const rawRole = (decodedPayload.role || '').toUpperCase();
             const role = rawRole.startsWith("ROLE_") ? rawRole : "ROLE_" + rawRole;
@@ -62,9 +96,6 @@ if (!token) {
     } catch (error) {
         // Token corrompido ou malformado — limpa os dois tokens e expulsa
         console.error("Token inválido ou corrompido:", error);
-        localStorage.removeItem("jwt_token");
-        localStorage.removeItem("refresh_token");
-        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
-        window.location.href = "/entrar";
+        clearTokensAndRedirect();
     }
 }

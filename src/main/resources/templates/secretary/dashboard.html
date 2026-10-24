@@ -555,14 +555,14 @@
         document.getElementById('countEnrollments').textContent = enrollmentsData?.totalElements ?? enrollments.length;
 
         // ── Gráfico 1: Turnos das Turmas ────────────────────────────────
-        const shiftCounts = { 'MORNING': 0, 'AFTERNOON': 0, 'NIGHT': 0, 'FULL_TIME': 0 };
+        const shiftCounts = { 'MORNING': 0, 'AFTERNOON': 0, 'EVENING': 0, 'FULL_TIME': 0, 'NIGHT': 0 };
         classrooms.forEach(c => {
             const s = c.shift || 'MORNING';
             if (shiftCounts[s] !== undefined) shiftCounts[s]++;
         });
 
         const shiftLabels = ['Manhã', 'Tarde', 'Noite', 'Integral'];
-        const shiftSeries = [shiftCounts['MORNING'], shiftCounts['AFTERNOON'], shiftCounts['NIGHT'], shiftCounts['FULL_TIME']];
+        const shiftSeries = [shiftCounts['MORNING'], shiftCounts['AFTERNOON'], ((shiftCounts['EVENING'] || 0) + (shiftCounts['NIGHT'] || 0)), shiftCounts['FULL_TIME']];
         const hasShiftData = shiftSeries.some(v => v > 0);
 
         const shiftsOptions = {

@@ -84,6 +84,7 @@ public class AnnouncementController {
     @Operation(summary = "Buscar comunicado por ID", description = "Retorna os detalhes de um aviso específico.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Comunicado encontrado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
             @ApiResponse(responseCode = "404", description = "Comunicado não encontrado")
     })
     @GetMapping("/{id}")
@@ -91,6 +92,7 @@ public class AnnouncementController {
     public ResponseEntity<AnnouncementResponseDTO> findById(
             @Parameter(description = "ID do comunicado") @PathVariable Integer id) {
         Announcement announcement = announcementService.findById(id);
+        authenticatedUserService.enforceAnnouncementAccess(announcement);
         return ResponseEntity.ok(toResponse(announcement));
     }
 
@@ -115,14 +117,9 @@ public class AnnouncementController {
     @GetMapping("/my-teaching-classrooms")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<List<AnnouncementResponseDTO>> findByTeacherClassRooms() {
-        try {
-            Integer teacherId = authenticatedUserService.getAuthenticatedUser().getId();
-            List<Announcement> announcements = announcementService.findByTeacherClassRooms(teacherId);
-            return ResponseEntity.ok(announcements.stream().map(this::toResponse).toList());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        Integer teacherId = authenticatedUserService.getAuthenticatedUser().getId();
+        List<Announcement> announcements = announcementService.findByTeacherClassRooms(teacherId);
+        return ResponseEntity.ok(announcements.stream().map(this::toResponse).toList());
     }
 
     @Operation(summary = "Listar comunicados gerais para professores", description = "Retorna os avisos da escola direcionados exclusivamente ao corpo docente.")

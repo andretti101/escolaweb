@@ -194,6 +194,7 @@ public class TeacherClassSubjectController {
                 tcs.getWeeklyLessons(),
                 tcs.getMinAssessmentsPerPeriod(),
                 tcs.getMaxAssessmentsPerPeriod(),
+                tcs.isActive(),
                 tcs.getCreatedAt()
         );
     }

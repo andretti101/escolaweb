@@ -15,10 +15,16 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.core.io.ResourceLoader;
+import lombok.RequiredArgsConstructor;
+
 // Controlador MVC que resolve URLs amigáveis em português para as respectivas visualizações Thymeleaf
 @Hidden
 @Controller
+@RequiredArgsConstructor
 public class TemplateController {
+
+    private final ResourceLoader resourceLoader;
 
     // Mapeamento bidirecional entre rotas amigáveis (em português e inglês) e os caminhos de templates
     private static final Map<String, String> PORTUGUESE_ROUTES;
@@ -163,6 +169,7 @@ public class TemplateController {
 
     @GetMapping({
             "/entrar",
+            "/login",
             "/recuperar-senha",
             "/redefinir-senha",
             "/assistente-ia",
@@ -205,6 +212,11 @@ public class TemplateController {
     })
     public String handleHtml(HttpServletRequest request) {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-        return path.substring(1, path.length() - 5);
+        String template = path.substring(1, path.length() - 5);
+        var resource = resourceLoader.getResource("classpath:/templates/" + template + ".html");
+        if (!resource.exists()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return template;
     }
 }

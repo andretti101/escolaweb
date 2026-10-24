@@ -201,6 +201,7 @@ public class AttendanceController {
             @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
             @Parameter(description = "ID do ano letivo opcional") @org.springframework.web.bind.annotation.RequestParam(required = false) Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
+        authenticatedUserService.enforceTeacherStudentAccess(studentId);
         return ResponseEntity.ok(attendanceService.getStudentAttendanceReport(studentId, yearId));
     }
 
@@ -295,7 +296,18 @@ public class AttendanceController {
         java.time.LocalDate d = a.getLesson().getLessonDate();
         if (d != null) {
             var periods = cachedPeriods != null ? cachedPeriods : academicPeriodService.findAll();
+            var cr = (a.getLesson().getTeacherClassSubject() != null)
+                    ? a.getLesson().getTeacherClassSubject().getClassRoom()
+                    : null;
+            Integer yearId = (cr != null && cr.getAcademicYear() != null) ? cr.getAcademicYear().getId() : null;
+            var periodType = cr != null ? cr.getPeriodType() : null;
             for (var p : periods) {
+                if (yearId != null && p.getAcademicYear() != null && !p.getAcademicYear().getId().equals(yearId)) {
+                    continue;
+                }
+                if (periodType != null && p.getPeriodType() != null && p.getPeriodType() != periodType) {
+                    continue;
+                }
                 if (p.getStartDate() != null && p.getEndDate() != null) {
                     if (!d.isBefore(p.getStartDate()) && !d.isAfter(p.getEndDate())) {
                         pName = p.getName();

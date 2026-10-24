@@ -28,7 +28,7 @@ public interface AttendanceHistoryRepository extends JpaRepository<AttendanceHis
               AND (:classRoomId IS NULL OR c.id = :classRoomId)
               AND (:studentId IS NULL OR s.id = :studentId)
               AND (:yearId IS NULL OR c.academicYear.id = :yearId)
-              AND (:periodId IS NULL OR EXISTS (SELECT 1 FROM AcademicPeriod p WHERE p.id = :periodId AND l.lessonDate >= p.startDate AND l.lessonDate <= p.endDate))
+              AND (:periodId IS NULL OR EXISTS (SELECT 1 FROM AcademicPeriod p WHERE p.id = :periodId AND p.academicYear = c.academicYear AND p.periodType = c.periodType AND l.lessonDate >= p.startDate AND l.lessonDate <= p.endDate))
               AND h.changedAt >= :from
               AND h.changedAt < :to
             """,
@@ -44,7 +44,7 @@ public interface AttendanceHistoryRepository extends JpaRepository<AttendanceHis
               AND (:classRoomId IS NULL OR c.id = :classRoomId)
               AND (:studentId IS NULL OR s.id = :studentId)
               AND (:yearId IS NULL OR c.academicYear.id = :yearId)
-              AND (:periodId IS NULL OR EXISTS (SELECT 1 FROM AcademicPeriod p WHERE p.id = :periodId AND l.lessonDate >= p.startDate AND l.lessonDate <= p.endDate))
+              AND (:periodId IS NULL OR EXISTS (SELECT 1 FROM AcademicPeriod p WHERE p.id = :periodId AND p.academicYear = c.academicYear AND p.periodType = c.periodType AND l.lessonDate >= p.startDate AND l.lessonDate <= p.endDate))
               AND h.changedAt >= :from
               AND h.changedAt < :to
             """)

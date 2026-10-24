@@ -1,5 +1,7 @@
 package com.andretti101.escolaweb.service;
 
+import com.andretti101.escolaweb.model.entity.Announcement;
+import com.andretti101.escolaweb.model.entity.ClassRoom;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
@@ -15,6 +17,10 @@ public interface AuthenticatedUserService {
     boolean isStudent();
     void enforceTeacherOwnership(TeacherClassSubject tcs);
     void enforceStudentOwnership(Integer studentId);
+
+    default void enforceStudentClassRoomOwnership(ClassRoom classRoom) {}
+    default void enforceTeacherStudentAccess(Integer studentId) {}
+    default void enforceAnnouncementAccess(Announcement announcement) {}
 
     /** Returns the logged-in user, or {@code null} when there is no authenticated user (e.g. background jobs). */
     User findAuthenticatedUserOrNull();

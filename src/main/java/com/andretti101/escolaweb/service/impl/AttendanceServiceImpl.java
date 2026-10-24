@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +53,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                     "A frequência do aluno '" + student.getName() + "' nesta aula já foi registrada.");
         }
 
+        validateLessonYearActive(lesson);
         validateActiveEnrollment(student, lesson.getTeacherClassSubject());
 
         attendance.setLesson(lesson);
@@ -77,6 +77,8 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new IllegalArgumentException("O status da frequência é obrigatório.");
         }
 
+        validateLessonYearActive(existing.getLesson());
+
         AttendanceStatus previous = existing.getStatus();
 
         existing.setStatus(incoming.getStatus());
@@ -93,7 +95,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public void delete(Integer id) {
-        findAttendanceOrThrow(id);
+        Attendance existing = findAttendanceOrThrow(id);
+        validateLessonYearActive(existing.getLesson());
         attendanceRepository.deleteById(id);
     }
 
@@ -271,6 +274,17 @@ public class AttendanceServiceImpl implements AttendanceService {
     Attendance findAttendanceOrThrow(Integer id) {
         return attendanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Registro de frequência não encontrado."));
+    }
+
+    private void validateLessonYearActive(Lesson lesson) {
+        if (lesson != null && lesson.getTeacherClassSubject() != null
+                && lesson.getTeacherClassSubject().getClassRoom() != null
+                && lesson.getTeacherClassSubject().getClassRoom().getAcademicYear() != null
+                && !lesson.getTeacherClassSubject().getClassRoom().getAcademicYear().isActive()) {
+            throw new IllegalStateException(
+                    "O ano letivo '" + lesson.getTeacherClassSubject().getClassRoom().getAcademicYear().getYear()
+                    + "' não está ativo. Não é permitido registrar, alterar ou excluir frequências de anos letivos encerrados.");
+        }
     }
 
     private void validateActiveEnrollment(Student student, TeacherClassSubject tcs) {

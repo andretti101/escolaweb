@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 "/forgot-password.html",
                                 "/reset-password.html",
                                 "/entrar",
+                                "/login",
                                 "/recuperar-senha",
                                 "/redefinir-senha",
                                 "/assets/**",

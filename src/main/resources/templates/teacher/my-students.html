@@ -123,6 +123,7 @@
                 });
                 if (res.ok) {
                     teacherClassSubjects = await res.json();
+                    teacherClassSubjects = teacherClassSubjects.filter(t => t.active);
                     teacherClassSubjects.sort((a, b) => a.classRoomName.localeCompare(b.classRoomName));
                     const select = document.getElementById('tcsSelect');
                     select.innerHTML = '<option value="">Selecione...</option>';
@@ -190,28 +191,41 @@
                         else if (a.status === 'JUSTIFIED_ABSENCE' || a.status === 'EXCUSED') justified += val;
                     });
                     
-                    let totalGrade = 0;
-                    grades.forEach(g => {
-                        const eff = g.effectiveValue != null ? Number(g.effectiveValue) : Number(g.value || 0);
-                        totalGrade += eff;
+                    // Filter grades ignoring null grades
+                    const validGrades = grades.filter(g => (g.effectiveValue != null || g.value != null || g.recoveryValue != null));
+
+                    const groupedGrades = {};
+                    validGrades.forEach(g => {
+                        const pName = g.periodName || 'Sem Período';
+                        if (!groupedGrades[pName]) groupedGrades[pName] = [];
+                        groupedGrades[pName].push(g);
                     });
-                    let avg = grades.length > 0 ? (totalGrade / grades.length).toFixed(1) : '-';
+
+                    // Compute average per period and then overall average
+                    let avg = '-';
+                    const periodNames = Object.keys(groupedGrades);
+                    if (periodNames.length > 0) {
+                        let sumOfPeriodAvgs = 0;
+                        periodNames.forEach(pName => {
+                            const pGrades = groupedGrades[pName];
+                            let pSum = 0;
+                            pGrades.forEach(g => {
+                                const eff = g.effectiveValue != null ? Number(g.effectiveValue) : (g.recoveryValue != null ? Number(g.recoveryValue) : Number(g.value));
+                                pSum += eff;
+                            });
+                            sumOfPeriodAvgs += (pSum / pGrades.length);
+                        });
+                        avg = (sumOfPeriodAvgs / periodNames.length).toFixed(1);
+                    }
                     
                     let gradesListHtml = '';
-                    if (grades.length === 0) {
+                    if (validGrades.length === 0) {
                         gradesListHtml = '<span class="text-muted small">Sem notas</span>';
                     } else {
-                        const groupedGrades = {};
-                        grades.forEach(g => {
-                            const pName = g.periodName || 'Sem Período';
-                            if (!groupedGrades[pName]) groupedGrades[pName] = [];
-                            groupedGrades[pName].push(g);
-                        });
-                        
                         for (const pName in groupedGrades) {
                             const periodGrades = groupedGrades[pName];
                             const badgesHtml = periodGrades.map(g => {
-                                const eff = g.effectiveValue != null ? Number(g.effectiveValue) : Number(g.value || 0);
+                                const eff = g.effectiveValue != null ? Number(g.effectiveValue) : (g.recoveryValue != null ? Number(g.recoveryValue) : Number(g.value));
                                 const detailTitle = g.recoveryValue != null
                                     ? `${g.assessmentTitle} (1ª Nota: ${Number(g.value).toFixed(1)} | Rec: ${Number(g.recoveryValue).toFixed(1)})`
                                     : g.assessmentTitle;

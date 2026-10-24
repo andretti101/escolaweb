@@ -44,6 +44,7 @@ public class ReportCardController {
             @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
             @Parameter(description = "ID do ano letivo") @PathVariable Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
+        authenticatedUserService.enforceTeacherStudentAccess(studentId);
         ReportCardDTO reportCard = reportCardService.generateReportCard(studentId, yearId);
         return ResponseEntity.ok(reportCard);
     }
@@ -60,6 +61,7 @@ public class ReportCardController {
             @Parameter(description = "ID do estudante") @PathVariable Integer studentId,
             @Parameter(description = "ID do ano letivo") @PathVariable Integer yearId) {
         authenticatedUserService.enforceStudentOwnership(studentId);
+        authenticatedUserService.enforceTeacherStudentAccess(studentId);
         byte[] pdfBytes = pdfDocumentService.generateReportCardPdf(studentId, yearId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"boletim-" + studentId + ".pdf\"")
