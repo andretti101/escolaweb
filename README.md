@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 16" />
   <img src="https://img.shields.io/badge/Spring%20AI-Google%20Gemini-4285F4?style=flat-square&logo=google&logoColor=white" alt="Spring AI" />
   <img src="https://img.shields.io/badge/Docker-Supported-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
-  <img src="https://img.shields.io/badge/Tests-426%20passed-brightgreen?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/Tests-435%20passed-brightgreen?style=flat-square" alt="Tests" />
   <img src="https://img.shields.io/badge/Coverage-JaCoCo-blue?style=flat-square" alt="JaCoCo" />
   <img src="https://img.shields.io/badge/OpenAPI-3.0-85EA2D?style=flat-square&logo=swagger&logoColor=black" alt="OpenAPI 3.0" />
 </p>
@@ -161,12 +161,14 @@ As decisões de modelagem e validação do sistema foram concebidas com base na 
    - **Art. 24, Inciso V, Alínea 'e' (Recuperação Paralela Obrigatória):** Estabelece a prevalência dos aspectos qualitativos sobre os quantitativos e a obrigatoriedade de estudos de recuperação ao longo do período letivo. A regra implementada garante que a nota da recuperação paralela substitui a menor avaliação regular anterior sempre que for superior, vedando prejuízo retroativo ao aluno.
 2. **Organização Temporal Curricular Flexível (DCN e BNCC):**
    - Suporte simultâneo a regimes **Bimestrais** (4 períodos), **Trimestrais** (3 períodos) e **Semestrais** (2 períodos), permitindo parametrização curricular individual por turma no mesmo exercício letivo.
-3. **Resolução de Conflitos na Grade Horária Semanal:**
-   - Modelagem de restrições para evitar choques de alocação de docentes em salas ou turmas simultâneas no mesmo horário, tratando a distribuição da carga horária semanal como um problema clássico de restrição de horários (*timetabling*).
+3. **Resolução de Conflitos na Grade Horária Semanal (Motor CSP):**
+   - Modelagem de restrições por algoritmo de Satisfação de Restrições (CSP) com Backtracking Heurístico (Dual-MRV + Forward Checking e ordenação de candidatos), tratando a distribuição da carga horária semanal como um problema clássico de restrição (*timetabling*). Previne choques de docentes e salas e equaliza grades simultâneas de turmas regulares (5 tempos) e de período integral/estendido (6 tempos) sincronizadas com o intervalo.
 4. **Programa Nacional de Alimentação Escolar (PNAE - Lei Federal nº 11.947/2009):**
    - Controle nutricional do cardápio semanal escolar por turno (Matutino, Vespertino e Noturno), possibilitando gestão de merenda e rastreabilidade alimentar.
-5. **Segurança e Isolamento de IA com RBAC:**
-   - Integração com Google Gemini via Spring AI operando estritamente através de funções delimitadas (`@Tool`), associadas a permissões de acesso baseadas no perfil autenticado (Direção, Secretaria, Professor e Aluno).
+5. **Segurança, Imutabilidade de Auditoria e Isolamento de IA com RBAC:**
+   - Autenticação JWT (HMAC-SHA256) complementada por cookies `HttpOnly` com proteção contra XSS e rotação de Refresh Token com bloqueio pessimista concorrente.
+   - Histórico de alterações e auditoria com registros imutáveis de notas e frequências preservados conforme normas de governança escolar.
+   - Integração com Google Gemini via Spring AI operando estritamente através de funções delimitadas (`@Tool`), associadas a permissões de acesso baseadas no perfil autenticado (Direção, Secretaria, Professor e Aluno) com sanitização de consultas e isolamento por ano letivo ativo.
 
 ---
 
@@ -300,10 +302,11 @@ escolaweb/
 │   │   └── resources/
 │   │       ├── application.properties    # Configurações do framework
 │   │       ├── data.sql                  # Carga inicial determinística para desenvolvimento
+│   │       ├── db/migration/             # Migrações versionadas com Flyway (V1 a V9)
 │   │       ├── messages.properties       # Internacionalização (Inglês)
 │   │       ├── messages_pt_BR.properties # Internacionalização (Português)
-│   │       └── templates/                # Interfaces gráficas com Thymeleaf
-│   └── test/                             # 426 testes automatizados (unitários e integração)
+│   │       └── templates/                # Interfaces gráficas com Thymeleaf e Dark Mode
+│   └── test/                             # 435 testes automatizados (unitários e integração)
 ├── compose.yaml                          # Configuração de containers Docker
 ├── Dockerfile                            # Empacotamento de imagem multi-stage
 ├── pom.xml                               # Gestão de dependências e plugins Maven
