@@ -109,7 +109,7 @@
                     const classroomSelect = document.getElementById('filterClassroom');
                     if (classroomSelect) {
                         classRooms.forEach(c => {
-                            classroomSelect.insertAdjacentHTML('beforeend', '<option value="' + c.id + '">' + c.name + '</option>');
+                            classroomSelect.insertAdjacentHTML('beforeend', '<option value="' + escapeHtml(c.id) + '">' + escapeHtml(c.name) + '</option>');
                         });
                     }
                 }
@@ -141,7 +141,7 @@
                 const authorSelect = document.getElementById('filterAuthor');
                 if (authorSelect) {
                     uniqueAuthors.forEach(u => {
-                        authorSelect.insertAdjacentHTML('beforeend', '<option value="' + u.id + '">' + u.name + '</option>');
+                        authorSelect.insertAdjacentHTML('beforeend', '<option value="' + escapeHtml(u.id) + '">' + escapeHtml(u.name) + '</option>');
                     });
                 }
             } catch (e) { console.error("Erro ao carregar filtros", e); }
@@ -150,7 +150,7 @@
         async function fetchAnnouncements(page) {
             const token = localStorage.getItem("jwt_token");
             if (!token) {
-                window.location.href = '/login.html';
+                window.location.href = '/entrar';
                 return;
             }
             
@@ -179,8 +179,8 @@
                     announcements.forEach(a => {
                         if (a.classRooms) {
                             a.classRooms.forEach(c => {
-                                if (!classroomSelect.querySelector('option[value="' + c.id + '"]')) {
-                                    classroomSelect.insertAdjacentHTML('beforeend', '<option value="' + c.id + '">' + c.name + '</option>');
+                                if (!classroomSelect.querySelector('option[value="' + escapeHtml(c.id) + '"]')) {
+                                    classroomSelect.insertAdjacentHTML('beforeend', '<option value="' + escapeHtml(c.id) + '">' + escapeHtml(c.name) + '</option>');
                                 }
                             });
                         }
@@ -301,19 +301,10 @@
                     ? new Date(item.eventDate + "T00:00:00").toLocaleDateString('pt-BR') 
                     : 'Sem data';
 
-                let userIdStr = '';
-                try {
-                    const token = localStorage.getItem('jwt_token');
-                    if (token) {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        userIdStr = payload.userId;
-                    }
-                } catch (e) {
-                    console.debug('Erro ao decodificar token para obter userId:', e);
-                }
-                
-                const canEdit = item.authorId == userIdStr;
-                const editUrlPrefix = window.location.pathname.startsWith('/secretary') ? '/secretary' : '/principal';
+                const loggedInUserId = parseInt(localStorage.getItem('user_id'), 10);
+                const canEdit = !Number.isNaN(loggedInUserId) && Number(item.authorId) === loggedInUserId;
+                const currentPath = window.location.pathname || '';
+                const editUrlPrefix = (currentPath.includes('/secretary') || currentPath.includes('/secretaria')) ? '/secretary' : '/principal';
                 const editButtonHtml = canEdit ? '<a href="' + editUrlPrefix + '/edit/announcement.html?id=' + item.id + '" class="btn btn-sm btn-icon btn-outline-primary" title="Editar"><i class="bx bx-pencil"></i></a> <a href="javascript:void(0);" onclick="deleteAnnouncement(' + item.id + ')" class="btn btn-sm btn-icon btn-outline-danger ms-1" title="Excluir"><i class="bx bx-trash"></i></a>' : '';
 
                 htmlString += '<div class="col-md-6 col-lg-4 mb-4">' +

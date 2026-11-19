@@ -78,7 +78,7 @@ let menu, animate;
 
   // Accordion active class
   const accordionActiveFunction = function (e) {
-    if (e.type == 'show.bs.collapse' || e.type == 'show.bs.collapse') {
+    if (e.type == 'show.bs.collapse') {
       e.target.closest('.accordion-item').classList.add('active');
     } else {
       e.target.closest('.accordion-item').classList.remove('active');
@@ -156,8 +156,23 @@ let menu, animate;
 })();
 
 // Global Logout function
-window.logout = function() {
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem('refresh_token');
-    window.location.href = '/login.html';
+window.logout = async function() {
+    try {
+        const rt = localStorage.getItem('refresh_token');
+        await fetch('/auth/logout', {
+            method: 'POST',
+            keepalive: true,
+            ...(rt ? {
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken: rt })
+            } : {})
+        });
+    } catch (_e) {
+    } finally {
+        const themeKey = (window.EscolaTheme && window.EscolaTheme.STORAGE_KEY) || 'escolaweb-theme';
+        const savedTheme = localStorage.getItem(themeKey);
+        localStorage.clear();
+        if (savedTheme) localStorage.setItem(themeKey, savedTheme);
+        window.location.href = '/entrar';
+    }
 };

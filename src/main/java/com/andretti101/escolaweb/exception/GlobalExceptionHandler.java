@@ -176,11 +176,19 @@ public class GlobalExceptionHandler {
 
         log.warn("Authentication failed on {}: {}", request.getRequestURI(), ex.getMessage());
 
+        String message = getMessage("error.bad.credentials");
+        if (request.getRequestURI() != null
+                && request.getRequestURI().contains("/auth/refresh")
+                && ex.getMessage() != null
+                && !ex.getMessage().isBlank()) {
+            message = ex.getMessage();
+        }
+
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(ApiErrorResponse.of(
                         HttpStatus.UNAUTHORIZED,
-                        getMessage("error.bad.credentials"),
+                        message,
                         request.getRequestURI()));
     }
 
@@ -256,9 +264,9 @@ public class GlobalExceptionHandler {
     // 404 NOT FOUND
     // ═════════════════════════════
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler({EntityNotFoundException.class, com.andretti101.escolaweb.service.exception.ResourceNotFoundException.class})
     public ResponseEntity<ApiErrorResponse> handleEntityNotFound(
-            EntityNotFoundException ex, HttpServletRequest request) {
+            RuntimeException ex, HttpServletRequest request) {
 
         log.warn("Entity not found on {}: {}", request.getRequestURI(), ex.getMessage());
 
@@ -410,9 +418,9 @@ public class GlobalExceptionHandler {
     // 422 UNPROCESSABLE ENTITY
     // ═════════════════════════════
 
-    @ExceptionHandler(IllegalStateException.class)
+    @ExceptionHandler({IllegalStateException.class, com.andretti101.escolaweb.service.exception.BusinessRuleException.class})
     public ResponseEntity<ApiErrorResponse> handleIllegalState(
-            IllegalStateException ex, HttpServletRequest request) {
+            RuntimeException ex, HttpServletRequest request) {
 
         log.warn("Business rule violation on {}: {}", request.getRequestURI(), ex.getMessage());
 

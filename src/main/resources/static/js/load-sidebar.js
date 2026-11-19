@@ -339,7 +339,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(r => r.json())
                 .then(status => {
                     if (status.hasUnreadMessages && !normCurrent.includes('chat.html') && !currentPath.includes('/chat')) {
-                        addNotificationBadge(document.querySelector('[data-i18n="Chat da Turma"]'));
+                        document.querySelectorAll('[data-i18n="Chat da Turma"], [data-i18n="Sala dos Professores"], [data-i18n="Monitoramento de Chat"]')
+                            .forEach(el => addNotificationBadge(el));
                     }
                 })
                 .catch(e => console.error('Erro ao verificar chat não lido:', e));
@@ -390,21 +391,26 @@ document.addEventListener('DOMContentLoaded', () => {
             logoutBtns.forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     e.preventDefault();
+                    if (typeof window.logout === 'function') {
+                        await window.logout();
+                        return;
+                    }
                     try {
                         const rt = localStorage.getItem('refresh_token');
-                        if(rt) {
-                            await fetch('/auth/logout', {
-                                method: 'POST',
-                                headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({refreshToken: rt})
-                            });
-                        }
+                        await fetch('/auth/logout', {
+                            method: 'POST',
+                            keepalive: true,
+                            ...(rt ? {
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ refreshToken: rt })
+                            } : {})
+                        });
+                    } catch (_e) {
                     } finally {
                         // Preserva a preferência de tema (não é dado de sessão)
                         const themeKey = (window.EscolaTheme && window.EscolaTheme.STORAGE_KEY) || 'escolaweb-theme';
                         const savedTheme = localStorage.getItem(themeKey);
                         localStorage.clear();
-                        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
                         if (savedTheme) localStorage.setItem(themeKey, savedTheme);
                         window.location.href = '/entrar';
                     }

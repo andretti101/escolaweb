@@ -171,7 +171,7 @@
         const classRoomSearchContainer = document.getElementById("classRoomSearchContainer");
         const selectedClassRoomsContainer = document.getElementById("selectedClassRoomsContainer");
 
-        fetch("/api/classrooms", {
+        fetch("/api/classrooms?size=1000", {
             headers: {
                 "Authorization": "Bearer " + token,
                 "Content-Type": "application/json"
@@ -370,6 +370,11 @@ messageInput.addEventListener("input", function() {
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>`;
                     form.reset();
+                    selectedClassrooms = [];
+                    renderTags();
+                    classRoomSearch.value = '';
+                    classRoomDropdown.classList.remove('show');
+                    if (classRoomsWrapper) classRoomsWrapper.classList.remove('d-none');
                     charCounter.textContent = "0/200 caracteres";
                     charCounter.classList.remove("text-danger");
                 } else {
@@ -382,7 +387,7 @@ messageInput.addEventListener("input", function() {
                 submitBtn.disabled = false;
                 submitSpinner.classList.add("d-none");
                 alertMessage.innerHTML = `<div class="alert alert-danger alert-dismissible" role="alert">
-                    ${error.message}
+                    ${escapeHtml(error.message)}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>`;
             });

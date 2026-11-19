@@ -48,7 +48,8 @@ public class GradeHistoryController {
             @Parameter(description = "Data final (AAAA-MM-DD)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @org.springdoc.core.annotations.ParameterObject @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
         HistoryFilter filter = new HistoryFilter(teacherId, classRoomId, studentId, yearId, periodId, from, to);
-        return ResponseEntity.ok(auditHistoryService.searchGradeHistory(filter, pageable.getPageNumber(), pageable.getPageSize()));
+        Page<GradeHistoryResponseDTO> page = auditHistoryService.searchGradeHistory(filter, pageable.getPageNumber(), pageable.getPageSize());
+        return ResponseEntity.ok(com.andretti101.escolaweb.dto.response.PagedResponse.of(page.getContent(), page.getPageable(), page.getTotalElements()));
     }
 
     @Operation(summary = "Linha do tempo de uma nota", description = "Retorna o histórico cronológico de todas as modificações, valores anteriores, motivos e usuários responsáveis pela alteração da nota.")

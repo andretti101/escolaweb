@@ -349,14 +349,17 @@
             const token = localStorage.getItem("jwt_token");
             if (token) {
                 const payloadBase64 = token.split('.')[1];
-                const decodedPayload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
-                const payloadString = JSON.stringify(decodedPayload).toUpperCase();
-                
+                let base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+                while (base64.length % 4) base64 += '=';
+                const decodedPayload = JSON.parse(atob(base64));
+                const rawRole = String(decodedPayload.role || '').toUpperCase();
+                const role = rawRole.startsWith('ROLE_') ? rawRole : 'ROLE_' + rawRole;
+
                 let sidebarPath = "/components/student-sidebar.html";
-                if (payloadString.includes("TEACHER")) sidebarPath = "/components/teacher-sidebar.html";
-                else if (payloadString.includes("PRINCIPAL")) sidebarPath = "/components/principal-sidebar.html";
-                else if (payloadString.includes("SECRETARY")) sidebarPath = "/components/secretary-sidebar.html";
-                
+                if (role === "ROLE_TEACHER") sidebarPath = "/components/teacher-sidebar.html";
+                else if (role === "ROLE_PRINCIPAL") sidebarPath = "/components/principal-sidebar.html";
+                else if (role === "ROLE_SECRETARY") sidebarPath = "/components/secretary-sidebar.html";
+
                 document.getElementById('sidebar-container').setAttribute('data-sidebar', sidebarPath);
             }
         });

@@ -207,7 +207,7 @@
     function handleUnauthorized() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login.html';
+        window.location.href = '/entrar';
     }
 
     async function loadTeachers() {
@@ -222,7 +222,7 @@
         errorState.classList.add('d-none');
 
         try {
-            const response = await fetch('/api/teachers?activeOnly=false', {
+            const response = await fetch('/api/teachers?activeOnly=false&size=1000', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
 

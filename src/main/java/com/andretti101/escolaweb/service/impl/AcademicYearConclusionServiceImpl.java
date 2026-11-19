@@ -12,20 +12,25 @@ import com.andretti101.escolaweb.service.AcademicYearConclusionService;
 import com.andretti101.escolaweb.service.AcademicYearService;
 import com.andretti101.escolaweb.service.ReportCardService;
 import com.andretti101.escolaweb.service.SchoolSettingsService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AcademicYearConclusionServiceImpl implements AcademicYearConclusionService {
 
     private final AcademicYearService academicYearService;
+    private final AcademicYearRepository academicYearRepository;
     private final AcademicPeriodRepository academicPeriodRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final ReportCardService reportCardService;
@@ -49,6 +54,7 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
             return !inUse.isEmpty() && inUse.stream()
                     .allMatch(t -> academicPeriodRepository.areAllPeriodsClosedByType(activeYear, t));
         } catch (Exception e) {
+            log.debug("Não foi possível verificar prontidão para conclusão do ano letivo: {}", e.getMessage());
             return false;
         }
     }
@@ -57,7 +63,14 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
     @Transactional
     public Map<String, Object> concludeYear(YearConclusionRequestDTO request) {
 
-        AcademicYear activeYear = academicYearService.findActive();
+        AcademicYear activeYear = academicYearRepository.findActiveForUpdate()
+                .orElseThrow(() -> new EntityNotFoundException("Nenhum ano letivo ativo foi encontrado."));
+
+        if (request.nextYear() == null || request.nextYear() <= activeYear.getYear()) {
+            throw new IllegalArgumentException(
+                    "O próximo ano letivo (" + request.nextYear()
+                    + ") deve ser posterior ao ano letivo atual (" + activeYear.getYear() + ").");
+        }
 
         // 1. Todas as divisões de período (bimestres/trimestres) das turmas devem estar fechadas
         List<AcademicPeriodType> inUse = classRoomRepository.findDistinctActivePeriodTypesByYear(activeYear);
@@ -120,7 +133,18 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
             }
         }
 
-        // 4. Desativa os registros operacionais do ano encerrado (matrículas, notas, aulas)
+        // 4. Atualiza e persiste o ano encerrado e SchoolSettings ANTES das desativações em lote (clearAutomatically = true)
+        SchoolSettings settings = schoolSettingsService.findSettings();
+        activeYear.setActive(false);
+        activeYear.setMinimumGrade(settings.getMinimumGrade());
+        activeYear.setMinimumAttendance(settings.getMinimumAttendance());
+
+        settings.setMinimumGrade(request.minimumGrade());
+        settings.setMinimumAttendance(request.minimumAttendance());
+
+        academicYearRepository.saveAndFlush(activeYear);
+
+        // 5. Desativa os registros operacionais do ano encerrado (matrículas, notas, aulas)
         enrollmentRepository.deactivateAllByAcademicYear(activeYear);
         assessmentRepository.deactivateAllByAcademicYear(activeYear);
         lessonRepository.deactivateAllByAcademicYear(activeYear);
@@ -133,23 +157,18 @@ public class AcademicYearConclusionServiceImpl implements AcademicYearConclusion
         chatReadReceiptRepository.deleteAllNonGlobal();
         int archivedAnnouncements = announcementRepository.archiveAll();
 
-        activeYear.setActive(false);
-
-        // 5. Salva parâmetros institucionais no ano encerrado e inaugura o novo calendário letivo
-        SchoolSettings settings = schoolSettingsService.findSettings();
-        
-        activeYear.setMinimumGrade(settings.getMinimumGrade());
-        activeYear.setMinimumAttendance(settings.getMinimumAttendance());
-
-        settings.setMinimumGrade(request.minimumGrade());
-        settings.setMinimumAttendance(request.minimumAttendance());
-
+        // 6. Inaugura o novo calendário letivo com datas e parâmetros normativos preenchidos
         AcademicYear newYear = AcademicYear.builder()
                 .year(request.nextYear())
-                .active(true)
+                .startDate(LocalDate.of(request.nextYear(), 2, 1))
+                .endDate(LocalDate.of(request.nextYear(), 12, 15))
+                .minimumGrade(request.minimumGrade())
+                .minimumAttendance(request.minimumAttendance())
+                .active(false)
                 .build();
         AcademicYear savedNewYear = academicYearService.create(newYear);
         savedNewYear.setActive(true);
+        academicYearRepository.saveAndFlush(savedNewYear);
 
         Map<String, Object> summary = new HashMap<>();
         summary.put("concludedYear", activeYear.getYear());

@@ -52,7 +52,7 @@
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Sala de Aula /</span> Avaliações e Notas</h4>
-                            <a href="/teacher/create/assessment.html" class="btn btn-primary">
+                            <a href="/professor/cadastrar/avaliacao" class="btn btn-primary">
                                 <i class="bx bx-plus me-1"></i> Nova Avaliação
                             </a>
                         </div>
@@ -129,11 +129,20 @@
     
     <script>
         function getToken() { return localStorage.getItem('jwt_token') || ''; }
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
         async function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
             const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
             if(container) {
-                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${escapeHtml(cleanMsg)}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
                 window.scrollTo(0,0);
             } else {
                 await window.showAlertModal('Aviso', cleanMsg);
@@ -323,8 +332,8 @@
             assessments.forEach(ass => {
                 const parts = ass.date.split('-');
                 const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                const safeTitle = ass.title.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                const typeHtml = typeLabels[ass.assessmentType] || ass.assessmentType;
+                const safeTitle = escapeHtml(ass.title);
+                const typeHtml = typeLabels[ass.assessmentType] || escapeHtml(ass.assessmentType);
                 
                 const period = allPeriods.find(p => p.id === ass.periodId);
                 const periodName = period ? `${period.name}${period.periodTypeLabel ? ' (' + period.periodTypeLabel + ')' : ''}` : `ID ${ass.periodId}`;
@@ -334,66 +343,30 @@
                     <td>${formattedDate}</td>
                     <td class="fw-semibold">${safeTitle}</td>
                     <td>${typeHtml}</td>
-                    <td>${ass.classRoomName} - ${ass.subjectName}</td>
-                    <td>${periodName}</td>
+                    <td>${escapeHtml(ass.classRoomName)} - ${escapeHtml(ass.subjectName)}</td>
+                    <td>${escapeHtml(periodName)}</td>
                     <td class="text-center">
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item" href="/teacher/edit/assessment.html?id=${ass.id}">
-                                    <i class="bx bx-edit-alt me-1"></i> Editar Notas
-                                </a>
-                                <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteAssessment(${ass.id})">
-                                    <i class="bx bx-trash me-1"></i> Excluir Avaliação
-                                </a>
-                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="/professor/editar/avaliacao?id=${ass.id}">
+                                        <i class="bx bx-edit-alt me-1"></i> Editar Notas
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteAssessment(${ass.id})">
+                                        <i class="bx bx-trash me-1"></i> Excluir Avaliação
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-        }
-
-        function _showConfirmModal_old(title, message, onConfirm) {
-            let modalEl = document.getElementById('customConfirmModal');
-            if (!modalEl) {
-                const modalHtml = `
-                <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="customConfirmModalTitle"></h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p id="customConfirmModalMessage"></p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="button" class="btn btn-danger" id="customConfirmModalBtn">Excluir</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                modalEl = document.getElementById('customConfirmModal');
-            }
-            
-            document.getElementById('customConfirmModalTitle').textContent = title;
-            document.getElementById('customConfirmModalMessage').textContent = message;
-            
-            const confirmBtn = document.getElementById('customConfirmModalBtn');
-            const newBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-            
-            const modal = new bootstrap.Modal(modalEl);
-            newBtn.addEventListener('click', () => {
-                modal.hide();
-                onConfirm();
-            });
-            modal.show();
         }
 
         function deleteAssessment(id) {

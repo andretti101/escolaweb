@@ -29,7 +29,7 @@
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Avaliações /</span> Lançar Notas</h4>
-                            <a href="/teacher/assessments.html" class="btn btn-outline-secondary">
+                            <a href="/professor/avaliacoes" class="btn btn-outline-secondary">
                                 <i class="bx bx-arrow-back me-1"></i> Voltar
                             </a>
                         </div>
@@ -134,11 +134,20 @@
     
     <script>
         function getToken() { return localStorage.getItem('jwt_token') || ''; }
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
         async function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
             const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
             if(container) {
-                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+                container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${escapeHtml(cleanMsg)}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
                 window.scrollTo(0,0);
             } else {
                 await window.showAlertModal('Aviso', cleanMsg);
@@ -259,7 +268,7 @@
             const tbody = document.getElementById('studentsTableBody');
             let html = '';
             students.forEach(s => {
-                const safeName = s.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const safeName = escapeHtml(s.name);
                 html += `
                     <tr>
                         <td class="align-middle fw-semibold">${safeName}</td>
@@ -284,6 +293,33 @@
 
             if (!tcsId || !periodId || !date || !title || !type) {
                 showAlert('Por favor, preencha todos os campos obrigatórios (*) da avaliação.', 'warning');
+                return;
+            }
+
+            const validGrades = [];
+            const invalidStudents = [];
+            currentStudents.forEach(student => {
+                const inputEl = document.getElementById(`grade_${student.id}`);
+                if (!inputEl) return;
+                inputEl.classList.remove('is-invalid');
+                const rawVal = inputEl.value;
+                if (rawVal && rawVal.trim() !== '') {
+                    const gradeVal = parseFloat(rawVal.replace(',', '.'));
+                    if (isNaN(gradeVal) || gradeVal < 0 || gradeVal > 10) {
+                        inputEl.classList.add('is-invalid');
+                        invalidStudents.push(student.name || `Aluno #${student.id}`);
+                    } else {
+                        validGrades.push({ studentId: student.id, value: gradeVal });
+                    }
+                }
+            });
+
+            if (invalidStudents.length > 0) {
+                if (window.showAlertModal) {
+                    await window.showAlertModal('Nota Inválida', 'As notas preenchidas devem ser números válidos entre 0 e 10. Verifique os campos destacados.');
+                } else {
+                    showAlert('As notas preenchidas devem estar entre 0 e 10.', 'warning');
+                }
                 return;
             }
 
@@ -314,27 +350,17 @@
                 }
                 const assessment = await assRes.json();
 
-                const gradePromises = [];
-                currentStudents.forEach(student => {
-                    const gradeInput = document.getElementById(`grade_${student.id}`).value;
-                    if (gradeInput && gradeInput.trim() !== '') {
-                        const gradeVal = parseFloat(gradeInput.replace(',', '.'));
-                        if (gradeVal >= 0 && gradeVal <= 10) {
-                            const gradePayload = {
-                                studentId: student.id,
-                                assessmentId: assessment.id,
-                                value: gradeVal
-                            };
-                            gradePromises.push(
-                                fetch('/api/grades', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                                    body: JSON.stringify(gradePayload)
-                                })
-                            );
-                        }
-                    }
-                });
+                const gradePromises = validGrades.map(g =>
+                    fetch('/api/grades', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                        body: JSON.stringify({
+                            studentId: g.studentId,
+                            assessmentId: assessment.id,
+                            value: g.value
+                        })
+                    })
+                );
 
                 const results = await Promise.all(gradePromises);
                 
@@ -350,7 +376,7 @@
                     throw new Error('Algumas notas falharam: ' + errors.join(', '));
                 }
                 
-                window.location.href = '/teacher/assessments.html?success=true';
+                window.location.href = '/professor/avaliacoes?success=true';
             } catch(error) {
                 showAlert(error.message, 'danger');
                 btn.disabled = false;

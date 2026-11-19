@@ -163,7 +163,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("jwt_token");
     if (!token) {
-        window.location.href = "/login.html";
+        window.location.href = "/entrar";
         return;
     }
     
@@ -207,9 +207,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        return String(unsafe).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
     function showAlert(message, type) {
         alertContainer.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' +
-            message +
+            escapeHtml(message) +
             '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
             '</div>';
         
@@ -363,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedClassrooms.forEach((c, index) => {
             const tag = document.createElement('div');
             tag.className = 'selected-tag';
-            tag.innerHTML = '<span>' + c.label + '</span><span class="remove-tag" data-idx="' + index + '">&times;</span>';
+            tag.innerHTML = '<span>' + escapeHtml(c.label) + '</span><span class="remove-tag" data-idx="' + index + '">&times;</span>';
             tagsContainer.appendChild(tag);
         });
         

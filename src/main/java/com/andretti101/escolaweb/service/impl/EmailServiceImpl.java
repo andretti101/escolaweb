@@ -24,7 +24,7 @@ public class EmailServiceImpl implements EmailService {
     // Dispara e-mail com layout HTML responsivo contendo token seguro para recuperação de senha
     @Override
     public void sendPasswordResetEmail(String to, String userName, String token) {
-        String resetLink = baseUrl + "/reset-password.html?token=" + token;
+        String resetLink = baseUrl + "/redefinir-senha?token=" + token;
         String htmlContent = buildResetEmailHtml(userName, resetLink);
 
         try {
@@ -48,7 +48,19 @@ public class EmailServiceImpl implements EmailService {
 
     // ── Private helpers
 
+    private String escapeHtml(String value) {
+        if (value == null) return "";
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
     private String buildResetEmailHtml(String userName, String resetLink) {
+        String safeUserName = escapeHtml(userName);
+        String safeResetLink = escapeHtml(resetLink);
         return """
                 <!DOCTYPE html>
                 <html>
@@ -75,11 +87,11 @@ public class EmailServiceImpl implements EmailService {
                             <h1>EscolaWEB</h1>
                         </div>
                         <div class="body">
-                            <p>Olá, <strong>%s</strong>!</p>
+                            <p>Olá, <strong>{{USER_NAME}}</strong>!</p>
                             <p>Recebemos uma solicitação para redefinir a senha da sua conta no EscolaWEB.</p>
                             <p>Clique no botão abaixo para criar uma nova senha:</p>
                             <p style="text-align: center;">
-                                <a href="%s" class="btn">Redefinir Senha</a>
+                                <a href="{{RESET_LINK}}" class="btn">Redefinir Senha</a>
                             </p>
                             <p>Este link é válido por <strong>15 minutos</strong>.
                                Após esse período, será necessário solicitar um novo link.</p>
@@ -92,6 +104,8 @@ public class EmailServiceImpl implements EmailService {
                     </div>
                 </body>
                 </html>
-                """.formatted(userName, resetLink);
+                """
+                .replace("{{USER_NAME}}", safeUserName)
+                .replace("{{RESET_LINK}}", safeResetLink);
     }
 }

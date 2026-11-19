@@ -251,7 +251,7 @@
     function handleUnauthorized() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login.html';
+        window.location.href = '/entrar';
     }
 
 
@@ -277,7 +277,7 @@
               <div class="d-flex align-items-center">
                 <div class="avatar avatar-sm me-3">
                   <span class="avatar-initial rounded-circle ${avatarColor(student.id)}">
-                    ${getInitials(student.name)}
+                    ${escapeHtml(getInitials(student.name))}
                   </span>
                 </div>
                 <div>
@@ -289,7 +289,7 @@
             <td><code>${escapeHtml(student.registrationNumber)}</code></td>
             <td>${formatDate(student.birthDate)}</td>
             <td>
-              <div>${formatPhone(student.ownPhone)}</div>
+              <div>${escapeHtml(formatPhone(student.ownPhone))}</div>
               ${student.guardianPhone
             ? `<small class="text-muted"><i class="bx bx-user-pin me-1"></i>${escapeHtml(student.guardianPhone)}</small>`
             : ''}
@@ -313,7 +313,7 @@
                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                   <i class="bx bx-dots-vertical-rounded"></i>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end">
+                <ul class="dropdown-menu dropdown-menu-end">
                   <li><a class="dropdown-item" href="/secretary/student-performance.html?studentId=${student.id}">
                     <i class="bx bx-bar-chart-alt-2 me-1 text-info"></i> Ver Desempenho
                   </a></li>
@@ -325,7 +325,7 @@
             : `<li><a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus(${student.id}, true)"><i class="bx bx-check-circle me-1 text-success"></i> Ativar Aluno</a></li>
                        <li><hr class="dropdown-divider"></li>
                        <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteStudent(${student.id})"><i class="bx bx-trash me-1"></i> Excluir do Sistema</a></li>`}
-                </div>
+                </ul>
               </div>
             </td>
           </tr>

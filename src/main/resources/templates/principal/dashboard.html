@@ -517,12 +517,14 @@
 <script src="/js/load-sidebar.js"></script>
 
 <script>
-    function logout() {
-        localStorage.removeItem('jwt_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('user_name');
-        window.location.href = '/login.html';
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        return String(unsafe)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
@@ -546,7 +548,8 @@
         // ── Nome e avatar a partir do token ──────────────────────────────
         if (token) {
             try {
-                const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                let base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                while (base64.length % 4) base64 += '=';
                 const payload = JSON.parse(atob(base64));
                 if (payload.sub) {
                     userEmail = payload.sub;
@@ -648,12 +651,12 @@
                     ? '<span class="badge bg-label-secondary">Fechado</span>'
                     : '<span class="badge bg-label-success">Aberto / Em Andamento</span>';
                 const divisionBadge = p.periodTypeLabel
-                    ? `<span class="badge bg-label-info">${p.periodTypeLabel}</span>`
+                    ? `<span class="badge bg-label-info">${escapeHtml(p.periodTypeLabel)}</span>`
                     : '<span class="badge bg-label-secondary">—</span>';
 
                 return `
                     <tr>
-                        <td><strong>${p.name}</strong></td>
+                        <td><strong>${escapeHtml(p.name)}</strong></td>
                         <td>${divisionBadge}</td>
                         <td><small class="text-muted">${start} até ${end}</small></td>
                         <td>${statusBadge}</td>
@@ -777,13 +780,13 @@
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="avatar avatar-sm me-2">
-                                    <span class="avatar-initial rounded-circle ${color}">${initial}</span>
+                                    <span class="avatar-initial rounded-circle ${color}">${escapeHtml(initial)}</span>
                                 </div>
-                                <span class="fw-semibold">${s.name}</span>
+                                <span class="fw-semibold">${escapeHtml(s.name)}</span>
                             </div>
                         </td>
-                        <td><small class="text-muted">${s.email}</small></td>
-                        <td><span class="badge bg-label-secondary">${s.registrationNumber || 'N/A'}</span></td>
+                        <td><small class="text-muted">${escapeHtml(s.email)}</small></td>
+                        <td><span class="badge bg-label-secondary">${escapeHtml(s.registrationNumber || 'N/A')}</span></td>
                         <td><small class="text-muted">${date}</small></td>
                     </tr>
                 `;
@@ -803,11 +806,11 @@
                 return `
                     <div class="announcement-item p-3 rounded bg-light">
                         <div class="d-flex justify-content-between align-items-start mb-1">
-                            <h6 class="mb-0 fw-bold text-dark">${a.title}</h6>
+                            <h6 class="mb-0 fw-bold text-dark">${escapeHtml(a.title)}</h6>
                             <small class="text-muted">${date}</small>
                         </div>
-                        <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${a.message || a.content || ''}</p>
-                        <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${a.authorName || 'Direção'}</small>
+                        <p class="mb-1 text-muted text-truncate" style="font-size: 0.85rem;">${escapeHtml(a.message || a.content || '')}</p>
+                        <small class="text-primary fw-semibold"><i class="bx bx-user me-1"></i>${escapeHtml(a.authorName || 'Direção')}</small>
                     </div>
                 `;
             }).join('');

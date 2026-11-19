@@ -41,7 +41,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     @Override
     @Transactional(noRollbackFor = BadCredentialsException.class)
     public RefreshToken rotate(String tokenValue) {
-        RefreshToken existing = refreshTokenRepository.findByToken(tokenValue)
+        java.util.Optional<RefreshToken> lockedOpt = refreshTokenRepository.findByTokenForUpdate(tokenValue);
+        if (lockedOpt == null || lockedOpt.isEmpty()) {
+            lockedOpt = refreshTokenRepository.findByToken(tokenValue);
+        }
+        RefreshToken existing = (lockedOpt != null ? lockedOpt : java.util.Optional.<RefreshToken>empty())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Refresh token inválido ou não encontrado."));
 

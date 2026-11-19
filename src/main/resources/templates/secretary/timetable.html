@@ -246,6 +246,16 @@
         '#696cff', '#71dd37', '#03c3ec', '#3b82f6', '#ff3e1d', '#ffab00', '#20c997', '#e83e8c', '#a855f7', '#fd7e14'
     ];
 
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        return String(unsafe)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     function getSubjectColor(subjectName) {
         if (!subjectName) return '#696cff';
         let hash = 0;
@@ -259,7 +269,7 @@
     async function loadClassrooms() {
         const select = document.getElementById('selectClassroom');
         try {
-            const res = await fetch('/api/classrooms?size=100&activeOnly=true', {
+            const res = await fetch('/api/classrooms?size=1000&activeOnly=true', {
                 headers: { 'Authorization': `Bearer ${jwtToken}` }
             });
             if (!res.ok) throw new Error('Falha ao carregar turmas');
@@ -289,7 +299,7 @@
     async function loadTeachers() {
         const select = document.getElementById('selectTeacher');
         try {
-            const res = await fetch('/api/teachers?size=100&activeOnly=true', {
+            const res = await fetch('/api/teachers?size=1000&activeOnly=true', {
                 headers: { 'Authorization': `Bearer ${jwtToken}` }
             });
             if (!res.ok) throw new Error('Falha ao carregar professores');
@@ -319,7 +329,7 @@
             });
             if (!res.ok) throw new Error('Falha ao obter grade');
             const data = await res.json();
-            document.getElementById('scheduleTitle').innerHTML = `<i class="bx bx-calendar me-2 text-primary"></i>Grade Horária: ${data.classRoomName || 'Turma'}`;
+            document.getElementById('scheduleTitle').innerHTML = `<i class="bx bx-calendar me-2 text-primary"></i>Grade Horária: ${escapeHtml(data.classRoomName || 'Turma')}`;
             renderTimetableGrid(data, false);
         } catch (e) {
             console.error(e);
@@ -336,7 +346,7 @@
             });
             if (!res.ok) throw new Error('Falha ao obter grade');
             const data = await res.json();
-            document.getElementById('scheduleTitle').innerHTML = `<i class="bx bx-calendar me-2 text-primary"></i>Grade Horária do Professor: ${data.teacherName || 'Professor'}`;
+            document.getElementById('scheduleTitle').innerHTML = `<i class="bx bx-calendar me-2 text-primary"></i>Grade Horária do Professor: ${escapeHtml(data.teacherName || 'Professor')}`;
             renderTimetableGrid(data, true);
         } catch (e) {
             console.error(e);
@@ -396,8 +406,8 @@
                                 <span class="slot-order-pill" style="color: ${color}; background-color: ${color}18;">${slot.slotOrder}ª aula</span>
                                 <span class="slot-time">${startStr} – ${endStr}</span>
                             </div>
-                            <div class="fw-semibold text-dark text-truncate" style="font-size: 0.86rem; line-height: 1.3;" title="${slot.subjectName}">${slot.subjectName}</div>
-                            <div class="text-muted text-truncate" style="font-size: 0.76rem;" title="${subText}">${subText}</div>
+                            <div class="fw-semibold text-dark text-truncate" style="font-size: 0.86rem; line-height: 1.3;" title="${escapeHtml(slot.subjectName)}">${escapeHtml(slot.subjectName)}</div>
+                            <div class="text-muted text-truncate" style="font-size: 0.76rem;" title="${escapeHtml(subText)}">${escapeHtml(subText)}</div>
                         </div>
                     `;
                 });
@@ -422,6 +432,13 @@
 
         document.getElementById('selectTeacher').addEventListener('change', (e) => {
             loadTeacherSchedule(e.target.value);
+        });
+
+        window.addEventListener('timetable:updated', () => {
+            const cId = document.getElementById('selectClassroom').value;
+            const tId = document.getElementById('selectTeacher').value;
+            if (cId) loadClassroomSchedule(cId);
+            else if (tId) loadTeacherSchedule(tId);
         });
     });
 </script>

@@ -436,9 +436,11 @@
                     </td>
                     <td class="history-notes-cell">${notesText}</td>
                     <td class="text-end">
-                        <button type="button" class="btn btn-sm btn-icon btn-outline-primary" title="Ver linha do tempo da nota" onclick="window.EscolaHistory.showGradeTimeline(${h.gradeId})">
+                        ${h.gradeId != null
+                            ? `<button type="button" class="btn btn-sm btn-icon btn-outline-primary" title="Ver linha do tempo da nota" onclick="window.EscolaHistory.showGradeTimeline(${Number(h.gradeId)})">
                             <i class="bx bx-history"></i>
-                        </button>
+                        </button>`
+                            : `<span class="badge bg-label-secondary" title="O registro original desta nota foi excluído">Registro excluído</span>`}
                     </td>
                 </tr>`;
         });
@@ -545,9 +547,11 @@
                         ${authorHtml}
                     </td>
                     <td class="text-end">
-                        <button type="button" class="btn btn-sm btn-icon btn-outline-primary" title="Ver linha do tempo da frequência" onclick="window.EscolaHistory.showAttendanceTimeline(${h.attendanceId})">
+                        ${h.attendanceId != null
+                            ? `<button type="button" class="btn btn-sm btn-icon btn-outline-primary" title="Ver linha do tempo da frequência" onclick="window.EscolaHistory.showAttendanceTimeline(${Number(h.attendanceId)})">
                             <i class="bx bx-history"></i>
-                        </button>
+                        </button>`
+                            : `<span class="badge bg-label-secondary" title="O registro original desta frequência foi excluído">Registro excluído</span>`}
                     </td>
                 </tr>`;
         });
@@ -637,6 +641,7 @@
     // ── Linha do Tempo (Modal) ──
 
     async function showGradeTimeline(gradeId) {
+        if (gradeId == null) return;
         if (!timelineModal && timelineModalEl) {
             timelineModal = new bootstrap.Modal(timelineModalEl);
         }
@@ -705,6 +710,7 @@
     }
 
     async function showAttendanceTimeline(attendanceId) {
+        if (attendanceId == null) return;
         if (!timelineModal && timelineModalEl) {
             timelineModal = new bootstrap.Modal(timelineModalEl);
         }

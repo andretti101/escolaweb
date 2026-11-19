@@ -2,11 +2,17 @@ package com.andretti101.escolaweb.service.impl;
 
 import com.andretti101.escolaweb.dto.response.AttendanceHistoryResponseDTO;
 import com.andretti101.escolaweb.dto.response.GradeHistoryResponseDTO;
+import com.andretti101.escolaweb.model.entity.AcademicPeriod;
 import com.andretti101.escolaweb.model.entity.Assessment;
 import com.andretti101.escolaweb.model.entity.Attendance;
 import com.andretti101.escolaweb.model.entity.AttendanceHistory;
+import com.andretti101.escolaweb.model.entity.ClassRoom;
 import com.andretti101.escolaweb.model.entity.Grade;
 import com.andretti101.escolaweb.model.entity.GradeHistory;
+import com.andretti101.escolaweb.model.entity.Lesson;
+import com.andretti101.escolaweb.model.entity.Student;
+import com.andretti101.escolaweb.model.entity.Subject;
+import com.andretti101.escolaweb.model.entity.Teacher;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.enums.GradeKind;
 import com.andretti101.escolaweb.repository.AttendanceHistoryRepository;
@@ -118,20 +124,26 @@ public class AuditHistoryServiceImpl implements AuditHistoryService {
 
     private GradeHistoryResponseDTO toDto(GradeHistory h) {
         Grade g = h.getGrade();
-        Assessment a = g.getAssessment();
-        TeacherClassSubject tcs = a.getTeacherClassSubject();
+        Assessment a = g != null ? g.getAssessment() : null;
+        TeacherClassSubject tcs = a != null ? a.getTeacherClassSubject() : null;
+        Student student = g != null ? g.getStudent() : null;
+        ClassRoom classRoom = tcs != null ? tcs.getClassRoom() : null;
+        Subject subject = tcs != null ? tcs.getSubject() : null;
+        Teacher teacher = tcs != null ? tcs.getTeacher() : null;
+        AcademicPeriod period = a != null ? a.getPeriod() : null;
+
         return new GradeHistoryResponseDTO(
                 h.getId(),
-                g.getId(),
-                g.getStudent().getId(),
-                g.getStudent().getName(),
-                tcs.getClassRoom().getId(),
-                tcs.getClassRoom().getName(),
-                tcs.getSubject().getName(),
-                tcs.getTeacher().getId(),
-                tcs.getTeacher().getName(),
-                a.getTitle(),
-                a.getPeriod() != null ? a.getPeriod().getName() : null,
+                g != null ? g.getId() : null,
+                student != null ? student.getId() : null,
+                student != null ? student.getName() : null,
+                classRoom != null ? classRoom.getId() : null,
+                classRoom != null ? classRoom.getName() : null,
+                subject != null ? subject.getName() : null,
+                teacher != null ? teacher.getId() : null,
+                teacher != null ? teacher.getName() : null,
+                a != null ? a.getTitle() : null,
+                period != null ? period.getName() : null,
                 h.getGradeKind() != null ? h.getGradeKind() : GradeKind.ORIGINAL,
                 h.getPreviousGrade(),
                 h.getNewGrade(),
@@ -143,18 +155,24 @@ public class AuditHistoryServiceImpl implements AuditHistoryService {
 
     private AttendanceHistoryResponseDTO toDto(AttendanceHistory h) {
         Attendance att = h.getAttendance();
-        TeacherClassSubject tcs = att.getLesson().getTeacherClassSubject();
+        Student student = att != null ? att.getStudent() : null;
+        Lesson lesson = att != null ? att.getLesson() : null;
+        TeacherClassSubject tcs = lesson != null ? lesson.getTeacherClassSubject() : null;
+        ClassRoom classRoom = tcs != null ? tcs.getClassRoom() : null;
+        Subject subject = tcs != null ? tcs.getSubject() : null;
+        Teacher teacher = tcs != null ? tcs.getTeacher() : null;
+
         return new AttendanceHistoryResponseDTO(
                 h.getId(),
-                att.getId(),
-                att.getStudent().getId(),
-                att.getStudent().getName(),
-                tcs.getClassRoom().getId(),
-                tcs.getClassRoom().getName(),
-                tcs.getSubject().getName(),
-                tcs.getTeacher().getId(),
-                tcs.getTeacher().getName(),
-                att.getLesson().getLessonDate(),
+                att != null ? att.getId() : null,
+                student != null ? student.getId() : null,
+                student != null ? student.getName() : null,
+                classRoom != null ? classRoom.getId() : null,
+                classRoom != null ? classRoom.getName() : null,
+                subject != null ? subject.getName() : null,
+                teacher != null ? teacher.getId() : null,
+                teacher != null ? teacher.getName() : null,
+                lesson != null ? lesson.getLessonDate() : null,
                 h.getPreviousStatus(),
                 h.getNewStatus(),
                 h.getChangedBy() != null ? h.getChangedBy().getName() : null,

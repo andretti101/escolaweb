@@ -383,7 +383,7 @@ public class PeriodPerClassIntegrationTest {
     void testConclusionAllowedWhenUnusedDivisionIsOpen() {
         AcademicYear currentActive = academicYearRepository.findByActiveTrue().orElseThrow();
         currentActive.setActive(false);
-        academicYearRepository.save(currentActive);
+        academicYearRepository.saveAndFlush(currentActive);
 
         AcademicYear testYear = academicYearRepository.save(
                 AcademicYear.builder()

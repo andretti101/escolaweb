@@ -118,6 +118,10 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = optionalUser.get();
+        if (!user.isActive()) {
+            log.info("Password reset requested for inactive user: {}", dto.email());
+            return;
+        }
 
         // Remove any existing reset tokens for this user
         passwordResetTokenRepository.deleteByUser(user);

@@ -34,6 +34,25 @@ public class TimetableServiceImpl implements TimetableService {
     private final AcademicYearRepository academicYearRepository;
     private final AuthenticatedUserService authenticatedUserService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+
+    private void notifyTimetableUpdated(String action, Integer classRoomId) {
+        if (messagingTemplate != null) {
+            try {
+                Map<String, Object> payload = new LinkedHashMap<>();
+                payload.put("type", "TIMETABLE_UPDATED");
+                payload.put("action", action);
+                if (classRoomId != null) {
+                    payload.put("classRoomId", classRoomId);
+                }
+                messagingTemplate.convertAndSend("/topic/timetable", payload);
+            } catch (Exception e) {
+                log.warn("Falha ao publicar atualização de grade horária via WebSocket: {}", e.getMessage());
+            }
+        }
+    }
+
     // Adiciona um horário na grade checando conflito de professor ocupado e sala ocupada
     @Override
     @Transactional
@@ -59,6 +78,7 @@ public class TimetableServiceImpl implements TimetableService {
         slot = timetableSlotRepository.save(slot);
         log.info("Timetable slot created: id={}, classroom={}, teacher={}, day={}, start={}, end={}",
                 slot.getId(), classRoom.getName(), tcs.getTeacher().getName(), dto.dayOfWeek(), dto.startTime(), dto.endTime());
+        notifyTimetableUpdated("SLOT_CREATED", classRoom.getId());
         return TimetableSlotResponseDTO.fromEntity(slot);
     }
 
@@ -86,6 +106,7 @@ public class TimetableServiceImpl implements TimetableService {
         slot = timetableSlotRepository.save(slot);
         log.info("Timetable slot updated: id={}, classroom={}, teacher={}, day={}, start={}, end={}",
                 slot.getId(), classRoom.getName(), tcs.getTeacher().getName(), dto.dayOfWeek(), dto.startTime(), dto.endTime());
+        notifyTimetableUpdated("SLOT_UPDATED", classRoom.getId());
         return TimetableSlotResponseDTO.fromEntity(slot);
     }
 
@@ -94,8 +115,14 @@ public class TimetableServiceImpl implements TimetableService {
     public void removeSlot(Integer slotId) {
         TimetableSlot slot = timetableSlotRepository.findById(slotId)
                 .orElseThrow(() -> new EntityNotFoundException("Horário de aula não encontrado com o ID: " + slotId));
+        if (slot.getClassRoom() != null && slot.getClassRoom().getAcademicYear() != null
+                && !slot.getClassRoom().getAcademicYear().isActive()) {
+            throw new IllegalStateException("Não é possível remover horários de um ano letivo encerrado.");
+        }
+        Integer crId = slot.getClassRoom() != null ? slot.getClassRoom().getId() : null;
         timetableSlotRepository.delete(slot);
         log.info("Timetable slot removed: id={}", slotId);
+        notifyTimetableUpdated("SLOT_REMOVED", crId);
     }
 
     @Override
@@ -188,6 +215,9 @@ public class TimetableServiceImpl implements TimetableService {
         if (!classRoom.isActive()) {
             throw new IllegalArgumentException("Não é possível gerenciar horários de uma turma inativa.");
         }
+        if (classRoom.getAcademicYear() != null && !classRoom.getAcademicYear().isActive()) {
+            throw new IllegalStateException("Não é possível gerenciar horários de um ano letivo encerrado.");
+        }
         if (!tcs.isActive()) {
             throw new IllegalArgumentException("A vinculação de professor e matéria informada está inativa.");
         }
@@ -273,6 +303,22 @@ public class TimetableServiceImpl implements TimetableService {
 
     private static final int SHIFT_BREAK_MINUTES = 10;
     private static final int LESSONS_BEFORE_BREAK = 3;
+    private static final int MAX_WEEKLY_LESSONS_PER_SUBJECT = 4;
+    private static final int MAX_SOLVER_STEPS = 150000;
+    private static final long MAX_SOLVER_TIME_MS = 9000L;
+    private static final int DIFFERENT_DAY_BONUS = 1000;
+    private static final int ADJACENT_LESSON_BONUS = 600;
+    private static final int SAME_SHIFT_NON_ADJACENT_BONUS = 100;
+    private static final int CROSS_SHIFT_SAME_DAY_PENALTY = -400;
+    private static final int GROUP_REMAINING_WEIGHT = 50;
+    private static final int TEACHER_CONTENTION_WEIGHT = 5;
+
+    private boolean isSameShiftPeriod(Shift shift, int orderA, int orderB) {
+        if (shift == Shift.FULL_TIME) {
+            return (orderA <= 5) == (orderB <= 5);
+        }
+        return true;
+    }
 
     @Override
     @Transactional
@@ -437,7 +483,7 @@ public class TimetableServiceImpl implements TimetableService {
                     // Priorizar disciplinas com < 4 aulas/semana, distribuindo +1 aula por disciplina antes de repetir
                     for (TeacherClassSubject tcs : tcsList) {
                         int curWeekly = effectiveWeeklyByTcs.get(tcs.getId());
-                        if (curWeekly >= 4) {
+                        if (curWeekly >= MAX_WEEKLY_LESSONS_PER_SUBJECT) {
                             continue;
                         }
                         int added = addedByTcs.getOrDefault(tcs.getId(), 0);
@@ -449,20 +495,6 @@ public class TimetableServiceImpl implements TimetableService {
                             bestCurWeekly = curWeekly;
                             minTeacherLoad = tLoad;
                             bestTcs = tcs;
-                        }
-                    }
-
-                    // Fallback caso todas as disciplinas já tenham atingido 4 aulas/semana
-                    if (bestTcs == null) {
-                        int minWeekly = Integer.MAX_VALUE;
-                        for (TeacherClassSubject tcs : tcsList) {
-                            int curWeekly = effectiveWeeklyByTcs.get(tcs.getId());
-                            int tLoad = teacherLessonCount.getOrDefault(tcs.getTeacher().getId(), 0) + curWeekly;
-                            if (curWeekly < minWeekly || (curWeekly == minWeekly && tLoad < minTeacherLoad)) {
-                                minWeekly = curWeekly;
-                                minTeacherLoad = tLoad;
-                                bestTcs = tcs;
-                            }
                         }
                     }
 
@@ -510,12 +542,17 @@ public class TimetableServiceImpl implements TimetableService {
 
         List<Integer> targetClassroomIds = targetClassrooms.stream().map(ClassRoom::getId).toList();
 
-        // Carregar horários já existentes de outras turmas no mesmo ano letivo para evitar choques com os professores
+        // Carregar horários já existentes de outras turmas ativas no mesmo ano letivo para evitar choques com os professores
         if (!targetClassroomIds.isEmpty()) {
             List<TimetableSlot> existingOtherSlots = timetableSlotRepository
                     .findByAcademicYearIdAndClassRoomIdNotIn(academicYear.getId(), targetClassroomIds);
             for (TimetableSlot otherSlot : existingOtherSlots) {
-                if (otherSlot.getTeacherClassSubject() != null && otherSlot.getTeacherClassSubject().getTeacher() != null) {
+                if (otherSlot.getClassRoom() != null && !otherSlot.getClassRoom().isActive()) {
+                    continue;
+                }
+                if (otherSlot.getTeacherClassSubject() != null
+                        && otherSlot.getTeacherClassSubject().isActive()
+                        && otherSlot.getTeacherClassSubject().getTeacher() != null) {
                     Integer teacherId = otherSlot.getTeacherClassSubject().getTeacher().getId();
                     teacherIntervals.computeIfAbsent(teacherId, k -> new ArrayList<>())
                             .add(new TimeInterval(otherSlot.getDayOfWeek(), otherSlot.getStartTime(), otherSlot.getEndTime(), otherSlot.getClassRoom().getId()));
@@ -574,6 +611,7 @@ public class TimetableServiceImpl implements TimetableService {
 
         log.info("Timetable auto-generated: {} slots saved for {} classrooms (search steps: {})",
                 slotsToSave.size(), targetClassrooms.size(), stepCounter[0]);
+        notifyTimetableUpdated("TIMETABLE_GENERATED", null);
 
         return new TimetableGenerationResponseDTO(
                 slotsToSave.size(),
@@ -602,13 +640,14 @@ public class TimetableServiceImpl implements TimetableService {
         }
 
         stepCounter[0]++;
-        if (stepCounter[0] > 150000 || (System.currentTimeMillis() - startTimeMillis) > 9000) {
+        if (stepCounter[0] > MAX_SOLVER_STEPS || (System.currentTimeMillis() - startTimeMillis) > MAX_SOLVER_TIME_MS) {
             return false;
         }
 
-        // 1. Calcular demanda restante por (turma, professor) e por turma
+        // 1. Calcular demanda restante por (turma, professor), por professor global e por turma
         Map<Long, Integer> classTeacherRem = new HashMap<>();
         Map<Integer, Integer> classTotalRem = new HashMap<>();
+        Map<Integer, Integer> teacherGlobalRem = new HashMap<>();
         for (int i = 0; i < groups.size(); i++) {
             int rem = remainingByGroup[i];
             if (rem <= 0) {
@@ -620,6 +659,7 @@ public class TimetableServiceImpl implements TimetableService {
             long ctKey = (((long) crId) << 32) | (tId & 0xFFFFFFFFL);
             classTeacherRem.put(ctKey, classTeacherRem.getOrDefault(ctKey, 0) + rem);
             classTotalRem.put(crId, classTotalRem.getOrDefault(crId, 0) + rem);
+            teacherGlobalRem.put(tId, teacherGlobalRem.getOrDefault(tId, 0) + rem);
         }
 
         // 2. Forward Checking e MRV por (Turma, Professor) / Grupo
@@ -628,6 +668,7 @@ public class TimetableServiceImpl implements TimetableService {
         int bestTeacherLoad = -1;
         int bestRemaining = -1;
         Map<Long, Integer> classTeacherValidCache = new HashMap<>();
+        Map<Integer, Set<String>> teacherAvailableTimeWindows = new HashMap<>();
 
         for (int i = 0; i < groups.size(); i++) {
             int rem = remainingByGroup[i];
@@ -639,8 +680,32 @@ public class TimetableServiceImpl implements TimetableService {
             Integer tId = g.teacher().getId();
             long ctKey = (((long) crId) << 32) | (tId & 0xFFFFFFFFL);
 
-            int validCount = classTeacherValidCache.computeIfAbsent(ctKey,
-                    k -> countConflictFreeSlots(g, classroomSlots.get(g.classRoom()), assignedSlots, teacherIntervals));
+            int validCount = classTeacherValidCache.computeIfAbsent(ctKey, k -> {
+                List<SlotDefinition> crSlots = classroomSlots.get(g.classRoom());
+                Set<String> tWindows = teacherAvailableTimeWindows.computeIfAbsent(tId, _k -> new HashSet<>());
+                List<TimeInterval> tIntervals = teacherIntervals.getOrDefault(tId, List.of());
+                int c = 0;
+                for (SlotDefinition slot : crSlots) {
+                    ClassRoomSlotKey slotKey = new ClassRoomSlotKey(crId, slot.dayOfWeek(), slot.slotOrder());
+                    if (assignedSlots.containsKey(slotKey)) {
+                        continue;
+                    }
+                    boolean teacherConflict = false;
+                    for (TimeInterval ti : tIntervals) {
+                        if (ti.dayOfWeek() == slot.dayOfWeek()
+                                && slot.startTime().isBefore(ti.endTime())
+                                && ti.startTime().isBefore(slot.endTime())) {
+                            teacherConflict = true;
+                            break;
+                        }
+                    }
+                    if (!teacherConflict) {
+                        c++;
+                        tWindows.add(slot.dayOfWeek().name() + ":" + slot.startTime() + "-" + slot.endTime());
+                    }
+                }
+                return c;
+            });
             int combinedRem = classTeacherRem.get(ctKey);
 
             // Se o professor não possui horários livres suficientes na turma para todas as suas disciplinas nela, podar imediatamente
@@ -658,6 +723,14 @@ public class TimetableServiceImpl implements TimetableService {
                 bestTeacherLoad = tLoad;
                 bestRemaining = rem;
                 bestGroupIdx = i;
+            }
+        }
+
+        // Forward Checking global: garante que cada professor possui janelas de horário distintas suficientes para toda a sua demanda restante no lote
+        for (Map.Entry<Integer, Integer> tEntry : teacherGlobalRem.entrySet()) {
+            Set<String> windows = teacherAvailableTimeWindows.getOrDefault(tEntry.getKey(), Set.of());
+            if (windows.size() < tEntry.getValue()) {
+                return false;
             }
         }
 
@@ -929,15 +1002,16 @@ public class TimetableServiceImpl implements TimetableService {
                 continue;
             }
 
-            int score = rem * 50 + teacherLessonCount.getOrDefault(g.teacher().getId(), 0) * 5;
+            int score = rem * GROUP_REMAINING_WEIGHT + teacherLessonCount.getOrDefault(g.teacher().getId(), 0) * TEACHER_CONTENTION_WEIGHT;
             if (currentDaySubjectCount == 0) {
-                score += 1000;
+                score += DIFFERENT_DAY_BONUS;
             } else if (currentDaySubjectCount == 1) {
                 List<Integer> existingOrders = daySubjectSlotOrders.getOrDefault(dsKey, List.of());
                 boolean adjacentSameShift = false;
                 boolean sameShift = false;
+                Shift shift = g.classRoom().getShift();
                 for (Integer exOrder : existingOrders) {
-                    if ((exOrder <= 5) == (slot.slotOrder() <= 5)) {
+                    if (isSameShiftPeriod(shift, exOrder, slot.slotOrder())) {
                         sameShift = true;
                         if (Math.abs(exOrder - slot.slotOrder()) == 1) {
                             adjacentSameShift = true;
@@ -946,11 +1020,11 @@ public class TimetableServiceImpl implements TimetableService {
                     }
                 }
                 if (adjacentSameShift) {
-                    score += 600;
+                    score += ADJACENT_LESSON_BONUS;
                 } else if (sameShift) {
-                    score += 100;
+                    score += SAME_SHIFT_NON_ADJACENT_BONUS;
                 } else {
-                    score -= 400;
+                    score += CROSS_SHIFT_SAME_DAY_PENALTY;
                 }
             }
 
@@ -1037,13 +1111,14 @@ public class TimetableServiceImpl implements TimetableService {
             int score = 0;
             if (currentDaySubjectCount == 0) {
                 // Priorizar distribuir a matéria em dias diferentes da semana
-                score += 1000;
+                score += DIFFERENT_DAY_BONUS;
             } else if (currentDaySubjectCount == 1) {
                 List<Integer> existingOrders = daySubjectSlotOrders.getOrDefault(dsKey, List.of());
                 boolean adjacentSameShift = false;
                 boolean sameShift = false;
+                Shift shift = group.classRoom().getShift();
                 for (Integer exOrder : existingOrders) {
-                    if ((exOrder <= 5) == (slot.slotOrder() <= 5)) {
+                    if (isSameShiftPeriod(shift, exOrder, slot.slotOrder())) {
                         sameShift = true;
                         if (Math.abs(exOrder - slot.slotOrder()) == 1) {
                             adjacentSameShift = true;
@@ -1052,11 +1127,11 @@ public class TimetableServiceImpl implements TimetableService {
                     }
                 }
                 if (adjacentSameShift) {
-                    score += 600;
+                    score += ADJACENT_LESSON_BONUS;
                 } else if (sameShift) {
-                    score += 100;
+                    score += SAME_SHIFT_NON_ADJACENT_BONUS;
                 } else {
-                    score -= 400;
+                    score += CROSS_SHIFT_SAME_DAY_PENALTY;
                 }
             }
 
@@ -1082,11 +1157,11 @@ public class TimetableServiceImpl implements TimetableService {
         List<SlotTime> result = new ArrayList<>();
         int baseLessons = (!isNight && end != null && java.time.Duration.between(start, end).toMinutes() >= 260) ? 6 : 5;
 
-        if (end == null) {
+        if (end == null || explicitDuration != null) {
             int dur = explicitDuration != null ? explicitDuration : 45;
             java.time.LocalTime cur = start;
             for (int i = 1; i <= numLessons; i++) {
-                if (i == 4 && breakMinutes > 0) {
+                if (i == (LESSONS_BEFORE_BREAK + 1) && breakMinutes > 0) {
                     cur = cur.plusMinutes(breakMinutes);
                 }
                 java.time.LocalTime next = cur.plusMinutes(dur);
@@ -1112,17 +1187,13 @@ public class TimetableServiceImpl implements TimetableService {
         }
 
         // Calcula a 4ª aula ajustada para absorver a diferença com o horário final
-        // netMinutes = (baseLessons - 1) * roundedDuration + fourthDuration
         int fourthDuration = netMinutes - ((baseLessons - 1) * roundedDuration);
 
-        // Se a 4ª aula ficou menor que 30 min ou não for múltiplo de 5, busca múltiplos de 5 redondos
+        // Se a 4ª aula ficou menor que 20 min ou não for múltiplo de 5, busca múltiplos de 5 redondos
         if (fourthDuration < 20 || fourthDuration > 60 || fourthDuration % 5 != 0) {
-            // Se não der exato com baseLessons, ajusta mantendo todos os horários terminando em :x0 ou :x5
-            // Prioriza duração redonda padrão de 45 ou 40 ou 50 min
-            int bestStandard = 45;
-            for (int candidate : new int[]{45, 40, 50, 35, 30}) {
+            for (int candidate : new int[]{45, 40, 50, 35, 30, 55, 60}) {
                 int rem = netMinutes - ((baseLessons - 1) * candidate);
-                if (rem >= 25 && rem <= 60 && rem % 5 == 0) {
+                if (rem >= 20 && rem <= 65 && rem % 5 == 0) {
                     roundedDuration = candidate;
                     fourthDuration = rem;
                     break;
@@ -1130,12 +1201,17 @@ public class TimetableServiceImpl implements TimetableService {
             }
         }
 
+        if (fourthDuration < 20) {
+            roundedDuration = Math.max(15, netMinutes / baseLessons);
+            fourthDuration = Math.max(15, netMinutes - ((baseLessons - 1) * roundedDuration));
+        }
+
         java.time.LocalTime cur = start;
         for (int i = 1; i <= Math.min(numLessons, baseLessons); i++) {
-            if (i == 4 && breakMinutes > 0) {
+            if (i == (LESSONS_BEFORE_BREAK + 1) && breakMinutes > 0) {
                 cur = cur.plusMinutes(breakMinutes);
             }
-            int dur = (i == 4) ? fourthDuration : roundedDuration;
+            int dur = (i == (LESSONS_BEFORE_BREAK + 1)) ? fourthDuration : roundedDuration;
             java.time.LocalTime next = cur.plusMinutes(dur);
             result.add(new SlotTime(cur, next));
             cur = next;

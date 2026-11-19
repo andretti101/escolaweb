@@ -54,3 +54,6 @@ node_modules/
 
 # AGENTS & TEMPORARY WORKSPACES
 .agents/
+Handoff.md
+scripts/
+

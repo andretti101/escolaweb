@@ -111,8 +111,8 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 } else {
                     throw new IllegalArgumentException("Acesso negado: Perfil não autorizado para o chat da turma.");
                 }
-            } else if (destination.equals("/topic/global/notifications") || destination.startsWith("/topic/global/")) {
-                // Notificações globais da instituição: permitido a todos os usuários autenticados
+            } else if (destination.equals("/topic/global/notifications") || destination.startsWith("/topic/global/") || destination.equals("/topic/timetable")) {
+                // Notificações globais da instituição e atualização da grade horária: permitido a todos os usuários autenticados
                 return message;
             } else if (destination.startsWith("/user/")) {
                 // Filas privadas por sessão do próprio usuário (ex: /user/queue/errors, /user/queue/ai/reply)

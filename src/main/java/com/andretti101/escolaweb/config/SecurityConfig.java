@@ -61,6 +61,8 @@ public class SecurityConfig {
                                 "/login",
                                 "/recuperar-senha",
                                 "/redefinir-senha",
+                                "/error",
+                                "/erro",
                                 "/assets/**",
                                 "/fonts/**",
                                 "/js/**",

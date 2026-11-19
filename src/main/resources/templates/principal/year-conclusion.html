@@ -280,9 +280,10 @@
         return localStorage.getItem('jwt_token') || '';
     }
 
+    function escapeHtml(unsafe) { if (unsafe === null || unsafe === undefined) return ''; return String(unsafe).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
     function showAlert(message, type) {
         const area = document.getElementById('alertArea');
-        area.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show">${message}
+        area.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show">${escapeHtml(message)}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
     }
 
@@ -314,6 +315,7 @@
 
             // Buscar turmas ativas do ano para identificar as divisões em uso
             let closedPeriodsText = '—';
+            let usedTypes = [];
             try {
                 const classRoomsRes = await fetch(`/api/classrooms?academicYearId=${activeYear.id}&activeOnly=true&size=1000`, {
                     headers: {'Authorization': `Bearer ${getToken()}`}
@@ -321,7 +323,7 @@
                 if (classRoomsRes.ok) {
                     const classRoomsData = await classRoomsRes.json();
                     const classRooms = Array.isArray(classRoomsData) ? classRoomsData : (classRoomsData.content || []);
-                    const usedTypes = [...new Set(classRooms.map(c => c.periodType).filter(Boolean))];
+                    usedTypes = [...new Set(classRooms.map(c => c.periodType).filter(Boolean))];
                     if (usedTypes.length === 0) {
                         closedPeriodsText = 'Sem turmas ativas';
                     } else {
@@ -363,8 +365,8 @@
             } else {
                 document.getElementById('statusBadge').innerHTML =
                     '<span class="badge bg-label-warning fs-6">PENDENTE</span>';
-                document.getElementById('statusDescription').textContent =
-                    'Ainda existem períodos abertos. Feche todos os períodos antes de concluir o ano.';
+                // Preenche lista de períodos abertos abaixo
+                { const openPeriods = yearPeriods.filter(p => !p.closed && (usedTypes.length === 0 || usedTypes.includes(p.periodType))); const descEl = document.getElementById('statusDescription'); if (openPeriods.length > 0) { descEl.innerHTML = 'Ainda existem períodos abertos. Feche todos os períodos antes de concluir o ano:<div class="mt-2">' + openPeriods.map(p => `<span class="badge bg-label-warning me-1 mb-1">${escapeHtml(p.name)}${p.periodTypeLabel ? ' (' + escapeHtml(p.periodTypeLabel) + ')' : ''}</span>`).join('') + '</div>'; } else { descEl.textContent = conclusionStatus.message || 'Ainda existem períodos abertos. Feche todos os períodos antes de concluir o ano.'; } }
                 document.getElementById('btnStartConclusion').disabled = true;
             }
         } catch (error) {
@@ -451,60 +453,15 @@
         document.getElementById('sectionConfig').style.display = 'none';
         document.getElementById('sectionResult').style.display = 'block';
 
-        document.getElementById('resultApproved').textContent = result.approvedStudents || 0;
-        document.getElementById('resultFailed').textContent = result.failedStudents || 0;
-        document.getElementById('resultTotal').textContent = result.totalStudentsProcessed || 0;
-        document.getElementById('detailOldYear').textContent = result.concludedYear || '—';
-        document.getElementById('detailNewYear').textContent = result.newYear || '—';
-        document.getElementById('detailMessages').textContent = result.archivedChatMessages || 0;
-        document.getElementById('detailAnnouncements').textContent = result.archivedAnnouncements || 0;
-        document.getElementById('detailMinGrade').textContent = result.newMinimumGrade || '—';
-        document.getElementById('detailMinAttendance').textContent = (result.newMinimumAttendance || '—') + '%';
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // MODAL DE CONFIRMAÇÃO
-    // ══════════════════════════════════════════════════════════════
-
-    function _showConfirmModal_old(title, message, onConfirm) {
-        let modalEl = document.getElementById('customConfirmModal');
-        if (!modalEl) {
-            const html = `
-            <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="customConfirmModalTitle"></h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p id="customConfirmModalMessage" style="white-space: pre-wrap;"></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-danger" id="customConfirmModalBtn">Confirmar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', html);
-            modalEl = document.getElementById('customConfirmModal');
-        }
-        document.getElementById('customConfirmModalTitle').textContent = title;
-        document.getElementById('customConfirmModalMessage').textContent = message;
-
-        const btn = document.getElementById('customConfirmModalBtn');
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-
-        newBtn.addEventListener('click', () => {
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
-            onConfirm();
-        });
-
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
+        document.getElementById('resultApproved').textContent = result.approvedStudents ?? 0;
+        document.getElementById('resultFailed').textContent = result.failedStudents ?? 0;
+        document.getElementById('resultTotal').textContent = result.totalStudentsProcessed ?? 0;
+        document.getElementById('detailOldYear').textContent = result.concludedYear ?? '—';
+        document.getElementById('detailNewYear').textContent = result.newYear ?? '—';
+        document.getElementById('detailMessages').textContent = result.archivedChatMessages ?? 0;
+        document.getElementById('detailAnnouncements').textContent = result.archivedAnnouncements ?? 0;
+        document.getElementById('detailMinGrade').textContent = result.newMinimumGrade ?? '—';
+        document.getElementById('detailMinAttendance').textContent = (result.newMinimumAttendance ?? '—') + '%';
     }
 
     document.addEventListener('DOMContentLoaded', loadStatus);

@@ -1,15 +1,15 @@
 package com.andretti101.escolaweb.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AiAgentService {
 
     private final ChatClient.Builder chatClientBuilder;
@@ -163,7 +163,7 @@ public class AiAgentService {
                     .call()
                     .content();
         } catch (Exception e) {
-            System.err.println("Erro na IA principal: " + e.getMessage() + ". Tentando modelo de fallback...");
+            log.warn("Erro na IA principal: {}. Tentando modelo de fallback...", e.getMessage());
             try {
                 // Fallback para um modelo alternativo em caso de falha (ex: 503 High Demand)
                 return chatClient.prompt()
@@ -176,7 +176,7 @@ public class AiAgentService {
                         .call()
                         .content();
             } catch (Exception fallbackException) {
-                System.err.println("Erro no modelo de fallback: " + fallbackException.getMessage());
+                log.error("Erro no modelo de fallback: {}", fallbackException.getMessage(), fallbackException);
                 return "Desculpe, a inteligência artificial está com alta demanda no momento. Por favor, tente novamente em alguns instantes.";
             }
         }

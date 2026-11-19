@@ -145,7 +145,7 @@
     function handleUnauthorized() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login.html';
+        window.location.href = '/entrar';
     }
 
     async function loadYears() {
@@ -227,87 +227,19 @@
                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-end">
+                                <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="/principal/edit/academic-year.html?id=${y.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
                                     ${!y.active ? `
                                         <li><a class="dropdown-item" href="javascript:void(0);" onclick="activateYear(${y.id})"><i class="bx bx-check-circle me-1 text-success"></i> Definir como Ativo</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteYear(${y.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
                                     ` : ''}
-                                </div>
+                                </ul>
                             </div>
                         </td>
                     </tr>
                 `;
         }).join('');
-    }
-
-    function _showConfirmModal_old(title, message, onConfirm) {
-        let modalEl = document.getElementById('customConfirmModal');
-        if (!modalEl) {
-            const html = `
-            <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="customConfirmModalTitle"></h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p id="customConfirmModalMessage"></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-primary" id="customConfirmModalBtn">Confirmar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', html);
-            modalEl = document.getElementById('customConfirmModal');
-        }
-        document.getElementById('customConfirmModalTitle').textContent = title;
-        document.getElementById('customConfirmModalMessage').textContent = message;
-        
-        const confirmBtn = document.getElementById('customConfirmModalBtn');
-        const newBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-        
-        const modal = new bootstrap.Modal(modalEl);
-        newBtn.addEventListener('click', () => {
-            modal.hide();
-            onConfirm();
-        });
-        modal.show();
-    }
-
-    function _showAlertModal_old(title, message) {
-        let modalEl = document.getElementById('customAlertModal');
-        if (!modalEl) {
-            const html = `
-            <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="customAlertModalTitle"></h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p id="customAlertModalMessage"></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', html);
-            modalEl = document.getElementById('customAlertModal');
-        }
-        document.getElementById('customAlertModalTitle').textContent = title;
-        document.getElementById('customAlertModalMessage').textContent = message;
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
     }
 
     function activateYear(id) {

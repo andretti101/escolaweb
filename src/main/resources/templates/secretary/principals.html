@@ -213,7 +213,7 @@
     function handleUnauthorized() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login.html';
+        window.location.href = '/entrar';
     }
 
     async function loadPrincipals() {
@@ -228,7 +228,7 @@
         errorState.classList.add('d-none');
 
         try {
-            const response = await fetch('/api/principals?activeOnly=false', {
+            const response = await fetch('/api/principals?activeOnly=false&size=1000', {
                 headers: {'Authorization': `Bearer ${getToken()}`}
             });
 
@@ -326,10 +326,10 @@
                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-end">
+                                <ul class="dropdown-menu dropdown-menu-end">
                                     ${p.active ? `<li><a class="dropdown-item" href="/secretary/edit/principal.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar Diretor</a></li>` : ''}
                                     ${toggleAction}
-                                </div>
+                                </ul>
                             </div>
                         </td>
                     </tr>

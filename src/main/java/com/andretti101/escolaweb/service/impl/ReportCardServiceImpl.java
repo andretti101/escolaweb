@@ -58,14 +58,18 @@ public class ReportCardServiceImpl implements ReportCardService {
         BigDecimal minimumAttendance = year.getMinimumAttendance() != null ? year.getMinimumAttendance() : settings.getMinimumAttendance();
         
         List<ReportCardDTO> results = new ArrayList<>();
+        Map<Integer, List<TeacherClassSubject>> tcsByClassRoomId = new java.util.HashMap<>();
+        Map<AcademicPeriodType, List<AcademicPeriod>> periodsByType = new java.util.HashMap<>();
         
         for (Enrollment enrollment : enrollments) {
             Student student = enrollment.getStudent();
             ClassRoom classRoom = enrollment.getClassRoom();
             
-            List<TeacherClassSubject> tcsList = teacherClassSubjectRepository.findByClassRoom(classRoom);
+            List<TeacherClassSubject> tcsList = tcsByClassRoomId.computeIfAbsent(
+                    classRoom.getId(), _id -> teacherClassSubjectRepository.findByClassRoom(classRoom));
             AcademicPeriodType periodType = classRoom.getPeriodType();
-            List<AcademicPeriod> periods = academicPeriodRepository.findByAcademicYearAndPeriodTypeOrderByIdAsc(year, periodType);
+            List<AcademicPeriod> periods = periodsByType.computeIfAbsent(
+                    periodType, pt -> academicPeriodRepository.findByAcademicYearAndPeriodTypeOrderByIdAsc(year, pt));
             
             int totalPeriods = !periods.isEmpty() ? periods.size() : (periodType != null ? periodType.getPeriodsCount() : 3);
             BigDecimal targetScore = minimumGrade.multiply(BigDecimal.valueOf(totalPeriods));
@@ -73,57 +77,14 @@ public class ReportCardServiceImpl implements ReportCardService {
             List<com.andretti101.escolaweb.model.entity.Grade> studentGrades = gradesByStudent.getOrDefault(student.getId(), new java.util.ArrayList<>());
             List<com.andretti101.escolaweb.model.entity.Attendance> studentAttendances = attendancesByStudent.getOrDefault(student.getId(), new java.util.ArrayList<>());
             
+            Map<Integer, List<Grade>> gradesByTcsId = studentGrades.stream()
+                    .filter(g -> g.getAssessment() != null && g.getAssessment().getTeacherClassSubject() != null)
+                    .collect(Collectors.groupingBy(g -> g.getAssessment().getTeacherClassSubject().getId()));
+            
             List<ReportCardDTO.SubjectSituationDTO> subjectSituations = new java.util.ArrayList<>();
             for (com.andretti101.escolaweb.model.entity.TeacherClassSubject tcs : tcsList) {
-                List<com.andretti101.escolaweb.model.entity.Grade> tcsGrades = studentGrades.stream()
-                        .filter(g -> g.getAssessment().getTeacherClassSubject().getId().equals(tcs.getId()))
-                        .collect(Collectors.toList());
-                        
-                List<ReportCardDTO.PeriodGradeDTO> periodGrades = new java.util.ArrayList<>();
-                java.math.BigDecimal closedPeriodSum = java.math.BigDecimal.ZERO;
-                int closedPeriodsWithGrades = 0;
-                
-                for (com.andretti101.escolaweb.model.entity.AcademicPeriod period : periods) {
-                    List<com.andretti101.escolaweb.model.entity.Grade> gradesInPeriod = tcsGrades.stream()
-                            .filter(g -> g.getEffectiveValue() != null
-                                    && g.getAssessment() != null
-                                    && g.getAssessment().getPeriod() != null
-                                    && g.getAssessment().getPeriod().getId().equals(period.getId()))
-                            .collect(Collectors.toList());
-                    
-                    java.math.BigDecimal periodAverage = null;
-                    if (!gradesInPeriod.isEmpty()) {
-                        java.math.BigDecimal sum = gradesInPeriod.stream()
-                                .map(com.andretti101.escolaweb.model.entity.Grade::getEffectiveValue)
-                                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-                        periodAverage = sum.divide(java.math.BigDecimal.valueOf(gradesInPeriod.size()), 2, java.math.RoundingMode.HALF_UP);
-                    }
-                    if (period.isClosed() && periodAverage != null) {
-                        closedPeriodSum = closedPeriodSum.add(periodAverage);
-                        closedPeriodsWithGrades++;
-                    }
-                    periodGrades.add(new ReportCardDTO.PeriodGradeDTO(
-                            period.getId(), period.getName(), period.isClosed(), periodAverage));
-                }
-                
-                int remainingPeriods = !periods.isEmpty() ? (int) periods.stream().filter(p -> !p.isClosed()).count() : totalPeriods;
-                java.math.BigDecimal maxPossibleScore = closedPeriodSum.add(java.math.BigDecimal.TEN.multiply(java.math.BigDecimal.valueOf(remainingPeriods)));
-                
-                com.andretti101.escolaweb.model.enums.StudentSituation situation;
-                if (remainingPeriods == 0) {
-                    situation = closedPeriodSum.compareTo(targetScore) >= 0
-                            ? com.andretti101.escolaweb.model.enums.StudentSituation.APPROVED
-                            : com.andretti101.escolaweb.model.enums.StudentSituation.FAILED;
-                } else if (closedPeriodSum.compareTo(targetScore) >= 0) {
-                    situation = com.andretti101.escolaweb.model.enums.StudentSituation.APPROVED;
-                } else if (maxPossibleScore.compareTo(targetScore) < 0) {
-                    situation = com.andretti101.escolaweb.model.enums.StudentSituation.FAILED;
-                } else {
-                    situation = com.andretti101.escolaweb.model.enums.StudentSituation.PENDING;
-                }
-                
-                subjectSituations.add(new ReportCardDTO.SubjectSituationDTO(
-                        tcs.getId(), tcs.getSubject().getName(), periodGrades, closedPeriodSum, targetScore, maxPossibleScore, situation));
+                List<Grade> tcsGrades = gradesByTcsId.getOrDefault(tcs.getId(), List.of());
+                subjectSituations.add(buildSubjectSituation(tcs, tcsGrades, periods, totalPeriods, targetScore));
             }
             
             ReportCardDTO.FrequencySituationDTO frequency;
@@ -196,15 +157,31 @@ public class ReportCardServiceImpl implements ReportCardService {
 
         List<TeacherClassSubject> tcsList = teacherClassSubjectRepository.findByClassRoom(classRoom);
 
+        List<Grade> bulkStudentGrades = gradeRepository.findByStudentsAndYear(List.of(student), year);
+        Map<Integer, List<Grade>> gradesByTcsId = bulkStudentGrades != null
+                ? bulkStudentGrades.stream()
+                        .filter(g -> g.getAssessment() != null && g.getAssessment().getTeacherClassSubject() != null)
+                        .collect(Collectors.groupingBy(g -> g.getAssessment().getTeacherClassSubject().getId()))
+                : Map.of();
+
         List<ReportCardDTO.SubjectSituationDTO> subjects = new ArrayList<>();
         for (TeacherClassSubject tcs : tcsList) {
-            ReportCardDTO.SubjectSituationDTO subjectSituation = calculateSubjectSituation(
-                    student, tcs, allPeriods, totalPeriods, targetScore);
+            List<Grade> tcsGrades = gradesByTcsId.get(tcs.getId());
+            if (tcsGrades == null) {
+                tcsGrades = (bulkStudentGrades == null || bulkStudentGrades.isEmpty())
+                        ? gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs)
+                        : List.of();
+            }
+            ReportCardDTO.SubjectSituationDTO subjectSituation = buildSubjectSituation(
+                    tcs, tcsGrades != null ? tcsGrades : List.of(), allPeriods, totalPeriods, targetScore);
             subjects.add(subjectSituation);
         }
 
+        List<Attendance> bulkAttendances = attendanceRepository != null
+                ? attendanceRepository.findByStudentsAndYear(List.of(student), year)
+                : List.of();
         ReportCardDTO.FrequencySituationDTO frequencySituation = calculateFrequencySituation(
-                student, tcsList, minimumAttendance);
+                student, tcsList, minimumAttendance, bulkAttendances);
 
         StudentSituation generalSituation = calculateGeneralSituation(subjects, frequencySituation);
 
@@ -226,14 +203,12 @@ public class ReportCardServiceImpl implements ReportCardService {
         );
     }
 
-    private ReportCardDTO.SubjectSituationDTO calculateSubjectSituation(
-            Student student,
+    private ReportCardDTO.SubjectSituationDTO buildSubjectSituation(
             TeacherClassSubject tcs,
+            List<Grade> allGrades,
             List<AcademicPeriod> allPeriods,
             int totalPeriods,
             BigDecimal targetScore) {
-
-        List<Grade> allGrades = gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs);
 
         Map<Integer, List<Grade>> gradesByPeriodId = allGrades.stream()
                 .filter(g -> g.getEffectiveValue() != null && g.getAssessment() != null && g.getAssessment().getPeriod() != null)
@@ -241,21 +216,23 @@ public class ReportCardServiceImpl implements ReportCardService {
 
         List<ReportCardDTO.PeriodGradeDTO> periodGrades = new ArrayList<>();
         BigDecimal closedPeriodSum = BigDecimal.ZERO;
-        int closedPeriodsWithGrades = 0;
+        BigDecimal gradedPeriodSum = BigDecimal.ZERO;
+        int gradedPeriodsCount = 0;
 
         for (AcademicPeriod period : allPeriods) {
             List<Grade> periodGradesList = gradesByPeriodId.getOrDefault(period.getId(), List.of());
-                        BigDecimal periodAverage = null;
+            BigDecimal periodAverage = null;
 
             if (!periodGradesList.isEmpty()) {
                 BigDecimal sum = periodGradesList.stream()
                         .map(Grade::getEffectiveValue)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 periodAverage = sum.divide(BigDecimal.valueOf(periodGradesList.size()), 2, RoundingMode.HALF_UP);
-                
+                gradedPeriodSum = gradedPeriodSum.add(periodAverage);
+                gradedPeriodsCount++;
+
                 if (period.isClosed()) {
                     closedPeriodSum = closedPeriodSum.add(periodAverage);
-                    closedPeriodsWithGrades++;
                 }
             }
 
@@ -284,6 +261,13 @@ public class ReportCardServiceImpl implements ReportCardService {
             situation = StudentSituation.PENDING;
         }
 
+        BigDecimal finalAverage = null;
+        if (remainingPeriods == 0 && totalPeriods > 0) {
+            finalAverage = closedPeriodSum.divide(BigDecimal.valueOf(totalPeriods), 2, RoundingMode.HALF_UP);
+        } else if (gradedPeriodsCount > 0) {
+            finalAverage = gradedPeriodSum.divide(BigDecimal.valueOf(gradedPeriodsCount), 2, RoundingMode.HALF_UP);
+        }
+
         return new ReportCardDTO.SubjectSituationDTO(
                 tcs.getId(),
                 tcs.getSubject().getName(),
@@ -291,14 +275,16 @@ public class ReportCardServiceImpl implements ReportCardService {
                 closedPeriodSum,
                 targetScore,
                 maxPossibleScore,
-                situation
+                situation,
+                finalAverage
         );
     }
 
     private ReportCardDTO.FrequencySituationDTO calculateFrequencySituation(
             Student student,
             List<TeacherClassSubject> tcsList,
-            BigDecimal minimumAttendance) {
+            BigDecimal minimumAttendance,
+            List<Attendance> preloadedAttendances) {
 
         if (tcsList.isEmpty()) {
             return new ReportCardDTO.FrequencySituationDTO(
@@ -306,9 +292,9 @@ public class ReportCardServiceImpl implements ReportCardService {
         }
 
         Set<Integer> tcsIds = tcsList.stream().map(TeacherClassSubject::getId).collect(Collectors.toSet());
-        List<Attendance> studentAttendances = attendanceRepository != null
-                ? attendanceRepository.findByStudent(student)
-                : List.of();
+        List<Attendance> studentAttendances = (preloadedAttendances != null && !preloadedAttendances.isEmpty())
+                ? preloadedAttendances
+                : (attendanceRepository != null ? attendanceRepository.findByStudent(student) : List.of());
 
         List<Attendance> classAttendances = studentAttendances != null
                 ? studentAttendances.stream()

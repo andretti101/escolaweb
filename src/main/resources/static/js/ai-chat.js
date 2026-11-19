@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Valida autenticação antes de inicializar o socket do chat
     const token = localStorage.getItem("jwt_token");
     if (!token) {
-        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
         window.location.href = "/entrar";
         return;
     }
@@ -190,14 +189,58 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             Array.from(node.childNodes).forEach(applyMarkdownToTextNodes);
         } else if (node.nodeType === Node.TEXT_NODE) {
-            let originalText = node.nodeValue;
-            let newText = originalText
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>');
-                
-            if (newText !== originalText) {
-                let wrapper = document.createElement('span');
-                wrapper.innerHTML = newText;
+            const originalText = node.nodeValue;
+            if (!originalText) return;
+
+            const escaped = originalText
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            let hasMarkdown = false;
+            const formatInline = (text) => {
+                return text
+                    .replace(/\*\*([^*]+)\*\*/g, (_m, p1) => {
+                        hasMarkdown = true;
+                        return `<strong>${p1}</strong>`;
+                    })
+                    .replace(/\*([^*]+)\*/g, (_m, p1) => {
+                        hasMarkdown = true;
+                        return `<em>${p1}</em>`;
+                    });
+            };
+
+            const lines = escaped.split(/\r?\n/);
+            const segments = lines.map(line => {
+                const headingMatch = line.match(/^#{1,4}\s+(.+)$/);
+                if (headingMatch) {
+                    hasMarkdown = true;
+                    return { html: `<h6 class="fw-bold mt-2 mb-1">${formatInline(headingMatch[1])}</h6>`, isBlock: true };
+                }
+                const listMatch = line.match(/^\s*[\*\-]\s+(.+)$/);
+                if (listMatch) {
+                    hasMarkdown = true;
+                    return { html: `<div class="ai-list-item ps-2">• ${formatInline(listMatch[1])}</div>`, isBlock: true };
+                }
+                return { html: formatInline(line), isBlock: false };
+            });
+
+            if (hasMarkdown) {
+                let newHtml = '';
+                for (let i = 0; i < segments.length; i++) {
+                    const curr = segments[i];
+                    if (i > 0) {
+                        const prev = segments[i - 1];
+                        if (!prev.isBlock && !curr.isBlock) {
+                            newHtml += '\n';
+                        }
+                    }
+                    newHtml += curr.html;
+                }
+                const wrapper = document.createElement('span');
+                wrapper.innerHTML = newHtml;
                 while (wrapper.firstChild) {
                     node.parentNode.insertBefore(wrapper.firstChild, node);
                 }

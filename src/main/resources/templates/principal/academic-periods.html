@@ -72,11 +72,11 @@
                             <div class="d-flex align-items-center gap-2">
                                 <span class="fw-semibold text-muted small">Status:</span>
                                 <div class="btn-group" role="group">
-                                    <input type="radio" class="btn-check" name="statusFilter" id="filterOpen" value="open" checked/>
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterOpen" value="open"/>
                                     <label class="btn btn-outline-success btn-sm" for="filterOpen">Abertos</label>
                                     <input type="radio" class="btn-check" name="statusFilter" id="filterClosed" value="closed"/>
                                     <label class="btn btn-outline-danger btn-sm" for="filterClosed">Fechados</label>
-                                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all"/>
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all" checked/>
                                     <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
                                 </div>
                             </div>
@@ -174,7 +174,7 @@
 
 <script>
     let allDivisions = [];
-    let statusFilter = 'open';
+    let statusFilter = 'all';
     let searchTerm = '';
     let selectedYearId = null;
     let selectedYearText = '';
@@ -202,7 +202,7 @@
     function handleUnauthorized() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login.html';
+        window.location.href = '/entrar';
     }
 
     async function loadYearFilter() {
@@ -397,14 +397,14 @@
                                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                                     <i class="bx bx-dots-vertical-rounded"></i>
                                                 </button>
-                                                <div class="dropdown-menu dropdown-menu-end">
+                                                <ul class="dropdown-menu dropdown-menu-end">
                                                     ${!p.closed ? `
                                                         <li><a class="dropdown-item" href="/principal/edit/academic-period.html?id=${p.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar Datas</a></li>
                                                         ${isCurrentOpen ? `<li><a class="dropdown-item text-warning" href="javascript:void(0);" onclick="closePeriod(${p.id})"><i class="bx bx-lock-alt me-1"></i> Fechar Período</a></li>` : ''}
                                                         <li><hr class="dropdown-divider"></li>
                                                         <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deletePeriod(${p.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
                                                     ` : '<li><span class="dropdown-item text-muted"><i class="bx bx-lock-alt me-1"></i> Período fechado</span></li>'}
-                                                </div>
+                                                </ul>
                                             </div>
                                         </td>
                                     </tr>

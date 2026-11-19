@@ -32,6 +32,9 @@ public class AcademicYearController {
     private final AcademicYearService academicYearService;
     private final AcademicYearConclusionService conclusionService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.andretti101.escolaweb.service.SchoolSettingsService schoolSettingsService;
+
     // Registra um novo ano letivo no sistema com validação de datas e regras de vigência
     @Operation(summary = "Criar ano letivo", description = "Cadastra um novo ano letivo definindo o ano civil, data de início e término. Apenas para o perfil Direção (PRINCIPAL).")
     @ApiResponses({
@@ -157,12 +160,27 @@ public class AcademicYearController {
     }
 
     private AcademicYearResponseDTO toResponse(AcademicYear y) {
+        java.math.BigDecimal minGrade = y.getMinimumGrade();
+        java.math.BigDecimal minAttendance = y.getMinimumAttendance();
+        if ((minGrade == null || minAttendance == null) && schoolSettingsService != null) {
+            try {
+                com.andretti101.escolaweb.model.entity.SchoolSettings settings = schoolSettingsService.findSettings();
+                if (settings != null) {
+                    if (minGrade == null) minGrade = settings.getMinimumGrade();
+                    if (minAttendance == null) minAttendance = settings.getMinimumAttendance();
+                }
+            } catch (Exception ignored) {}
+        }
+        if (minGrade == null) minGrade = new java.math.BigDecimal("6.00");
+        if (minAttendance == null) minAttendance = new java.math.BigDecimal("75.00");
         return new AcademicYearResponseDTO(
                 y.getId(),
                 y.getYear(),
                 y.getStartDate(),
                 y.getEndDate(),
                 y.isActive(),
-                y.getCreatedAt());
+                y.getCreatedAt(),
+                minGrade,
+                minAttendance);
     }
 }

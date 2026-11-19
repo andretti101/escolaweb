@@ -1,11 +1,13 @@
 package com.andretti101.escolaweb.service.impl;
 
+import com.andretti101.escolaweb.model.entity.AcademicPeriod;
 import com.andretti101.escolaweb.model.entity.Attendance;
 import com.andretti101.escolaweb.model.entity.AttendanceHistory;
 import com.andretti101.escolaweb.model.entity.Lesson;
 import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.enums.AttendanceStatus;
+import com.andretti101.escolaweb.repository.AcademicPeriodRepository;
 import com.andretti101.escolaweb.repository.AttendanceHistoryRepository;
 import com.andretti101.escolaweb.repository.AttendanceRepository;
 import com.andretti101.escolaweb.repository.EnrollmentRepository;
@@ -16,11 +18,13 @@ import com.andretti101.escolaweb.service.StudentService;
 import com.andretti101.escolaweb.service.TeacherClassSubjectService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +32,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService {
 
+    public record AttendanceChangedEvent(Integer studentId, Integer teacherClassSubjectId) {
+    }
+
     private final AttendanceRepository attendanceRepository;
     private final AttendanceHistoryRepository attendanceHistoryRepository;
+    private final AcademicPeriodRepository academicPeriodRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final com.andretti101.escolaweb.service.AuthenticatedUserService authenticatedUserService;
     private final EnrollmentRepository enrollmentRepository;
     private final LessonRepository lessonRepository;
@@ -54,6 +63,8 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         validateLessonYearActive(lesson);
+        validateLessonDateNotFuture(lesson);
+        validateLessonPeriodOpen(lesson);
         validateActiveEnrollment(student, lesson.getTeacherClassSubject());
 
         attendance.setLesson(lesson);
@@ -64,6 +75,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         recordHistory(saved, null, saved.getStatus());
 
         dispatchAttendanceNotification(saved, "Frequência Registrada");
+        publishAttendanceChanged(student.getId(), lesson.getTeacherClassSubject() != null ? lesson.getTeacherClassSubject().getId() : null);
 
         return saved;
     }
@@ -78,6 +90,8 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         validateLessonYearActive(existing.getLesson());
+        validateLessonDateNotFuture(existing.getLesson());
+        validateLessonPeriodOpen(existing.getLesson());
 
         AttendanceStatus previous = existing.getStatus();
 
@@ -87,6 +101,11 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (previous != incoming.getStatus()) {
             recordHistory(existing, previous, existing.getStatus());
             dispatchAttendanceNotification(existing, "Frequência Atualizada");
+            Integer studentId = existing.getStudent() != null ? existing.getStudent().getId() : null;
+            Integer tcsId = (existing.getLesson() != null && existing.getLesson().getTeacherClassSubject() != null)
+                    ? existing.getLesson().getTeacherClassSubject().getId()
+                    : null;
+            publishAttendanceChanged(studentId, tcsId);
         }
 
         return existing;
@@ -97,7 +116,16 @@ public class AttendanceServiceImpl implements AttendanceService {
     public void delete(Integer id) {
         Attendance existing = findAttendanceOrThrow(id);
         validateLessonYearActive(existing.getLesson());
+        validateLessonPeriodOpen(existing.getLesson());
+
+        Integer studentId = existing.getStudent() != null ? existing.getStudent().getId() : null;
+        Integer tcsId = (existing.getLesson() != null && existing.getLesson().getTeacherClassSubject() != null)
+                ? existing.getLesson().getTeacherClassSubject().getId()
+                : null;
         attendanceRepository.deleteById(id);
+        attendanceRepository.flush();
+
+        publishAttendanceChanged(studentId, tcsId);
     }
 
     @Override
@@ -150,8 +178,18 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         List<Attendance> attendances = attendanceRepository.findByStudent(student).stream()
-                .filter(a -> a.getLesson().getTeacherClassSubject().getId().equals(teacherClassSubjectId))
+                .filter(a -> a.getLesson() != null
+                        && a.getLesson().getTeacherClassSubject() != null
+                        && teacherClassSubjectId.equals(a.getLesson().getTeacherClassSubject().getId()))
                 .toList();
+
+        if (attendances.isEmpty()) {
+            return BigDecimal.valueOf(100);
+        }
+
+        int totalLessonUnits = lessons.stream()
+                .mapToInt(l -> l.getLessonCount() != null ? l.getLessonCount().getValue() : 1)
+                .sum();
 
         int presencaValida = 0;
         int faltasNaoJustificadas = 0;
@@ -165,12 +203,14 @@ public class AttendanceServiceImpl implements AttendanceService {
             }
         }
 
-        int totalAulas = presencaValida + faltasNaoJustificadas;
+        int totalAulas = Math.max(totalLessonUnits, presencaValida + faltasNaoJustificadas);
         if (totalAulas == 0) {
             return BigDecimal.valueOf(100);
         }
 
-        return BigDecimal.valueOf(presencaValida)
+        int effectivePresences = Math.max(0, totalAulas - faltasNaoJustificadas);
+
+        return BigDecimal.valueOf(effectivePresences)
                 .divide(BigDecimal.valueOf(totalAulas), 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
@@ -266,9 +306,15 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .attendance(attendance)
                 .previousStatus(previous != null ? previous.name() : null)
                 .newStatus(current != null ? current.name() : null)
-                .changedBy(authenticatedUserService.findAuthenticatedUserOrNull())
+                .changedBy(authenticatedUserService != null ? authenticatedUserService.findAuthenticatedUserOrNull() : null)
                 .build();
         attendanceHistoryRepository.save(history);
+    }
+
+    private void publishAttendanceChanged(Integer studentId, Integer teacherClassSubjectId) {
+        if (applicationEventPublisher != null && studentId != null && teacherClassSubjectId != null) {
+            applicationEventPublisher.publishEvent(new AttendanceChangedEvent(studentId, teacherClassSubjectId));
+        }
     }
 
     Attendance findAttendanceOrThrow(Integer id) {
@@ -284,6 +330,54 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new IllegalStateException(
                     "O ano letivo '" + lesson.getTeacherClassSubject().getClassRoom().getAcademicYear().getYear()
                     + "' não está ativo. Não é permitido registrar, alterar ou excluir frequências de anos letivos encerrados.");
+        }
+    }
+
+    private void validateLessonDateNotFuture(Lesson lesson) {
+        if (lesson != null && lesson.getLessonDate() != null && lesson.getLessonDate().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Não é permitido registrar ou alterar frequências para aulas em datas futuras.");
+        }
+    }
+
+    private void validateLessonPeriodOpen(Lesson lesson) {
+        if (academicPeriodRepository == null || lesson == null || lesson.getLessonDate() == null) {
+            return;
+        }
+        TeacherClassSubject tcs = lesson.getTeacherClassSubject();
+        if (tcs == null || tcs.getClassRoom() == null
+                || tcs.getClassRoom().getAcademicYear() == null
+                || tcs.getClassRoom().getPeriodType() == null) {
+            return;
+        }
+        LocalDate lessonDate = lesson.getLessonDate();
+        List<AcademicPeriod> periods = academicPeriodRepository.findByAcademicYearAndPeriodTypeOrderByIdAsc(
+                tcs.getClassRoom().getAcademicYear(),
+                tcs.getClassRoom().getPeriodType());
+        if (periods == null || periods.isEmpty()) {
+            return;
+        }
+        List<AcademicPeriod> matching = periods.stream()
+                .filter(p -> p.getStartDate() != null && p.getEndDate() != null
+                        && !lessonDate.isBefore(p.getStartDate())
+                        && !lessonDate.isAfter(p.getEndDate()))
+                .toList();
+        if (matching.isEmpty()) {
+            boolean hasConfiguredDates = periods.stream()
+                    .anyMatch(p -> p.getStartDate() != null && p.getEndDate() != null);
+            if (hasConfiguredDates) {
+                throw new IllegalArgumentException(
+                        "A data da aula não pertence a nenhum período letivo configurado para esta turma.");
+            }
+            if (periods.stream().allMatch(AcademicPeriod::isClosed)) {
+                throw new IllegalStateException(
+                        "Todos os períodos letivos desta turma estão fechados. Não é permitido registrar, alterar ou excluir frequências.");
+            }
+            return;
+        }
+        if (matching.stream().noneMatch(p -> !p.isClosed())) {
+            throw new IllegalStateException(
+                    "O período letivo '" + matching.get(0).getName()
+                    + "' está fechado. Não é permitido registrar, alterar ou excluir frequências neste período.");
         }
     }
 

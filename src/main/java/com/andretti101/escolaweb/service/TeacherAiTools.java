@@ -64,6 +64,19 @@ public class TeacherAiTools {
                         .filter(tcs -> tcs.isActive() && (tcs.getClassRoom() == null || tcs.getClassRoom().getAcademicYear() == null || tcs.getClassRoom().getAcademicYear().isActive()))
                         .toList();
             }
+            BigDecimal minimumGradeThreshold = new BigDecimal("6.0");
+            if (yearService != null) {
+                AcademicYear activeYear = yearService.findActive();
+                if (activeYear != null && activeYear.getMinimumGrade() != null) {
+                    minimumGradeThreshold = activeYear.getMinimumGrade();
+                } else if (schoolSettingsService != null) {
+                    SchoolSettings settings = schoolSettingsService.findSettings();
+                    if (settings != null && settings.getMinimumGrade() != null) {
+                        minimumGradeThreshold = settings.getMinimumGrade();
+                    }
+                }
+            }
+            final BigDecimal minGrade = minimumGradeThreshold;
             StringBuilder sb = new StringBuilder();
             if (classes != null) {
                 for (var tcs : classes) {
@@ -73,7 +86,7 @@ public class TeacherAiTools {
                     for (var a : assessments) {
                         var grades = gradeRepository.findByAssessment(a);
                         var badGrades = grades.stream()
-                            .filter(g -> g.getEffectiveValue() != null && g.getEffectiveValue().compareTo(new BigDecimal("6.0")) < 0)
+                            .filter(g -> g.getEffectiveValue() != null && g.getEffectiveValue().compareTo(minGrade) < 0)
                             .collect(Collectors.toList());
                         if (!badGrades.isEmpty()) {
                             sb.append("  Avaliação: ").append(a.getTitle()).append(" - Alunos com nota baixa:\n");

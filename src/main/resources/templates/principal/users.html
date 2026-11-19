@@ -210,7 +210,9 @@
                                     <option value="ALL">Todas as Situações</option>
                                     <option value="APPROVED">Somente Aprovados</option>
                                     <option value="PENDING">Somente Pendentes</option>
+                                    <option value="STUDYING">Cursando</option>
                                     <option value="FAILED">Somente Reprovados</option>
+                                    <option value="UNENROLLED">Sem Matrícula</option>
                                 </select>
 
                                 <!-- Filtro de Status -->
@@ -397,12 +399,15 @@
             selectedSituation = 'ALL';
         } else {
             selectedSituation = situation;
-            // Se clicou no filtro de situação, seleciona Alunos
-            setRoleFilter('STUDENT');
         }
         document.getElementById('situationFilter').value = selectedSituation;
         updateSituationCardStyles();
-        renderTables();
+        if (selectedSituation !== 'ALL') {
+            // Se clicou no filtro de situação, seleciona Alunos
+            setRoleFilter('STUDENT');
+        } else {
+            loadUsers(0);
+        }
     }
 
     function updateSituationCardStyles() {
@@ -449,6 +454,8 @@
         try {
             const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'active';
             const roleVal = document.getElementById('roleFilter')?.value || 'ALL';
+            const sitVal = document.getElementById('situationFilter')?.value || 'ALL';
+            const searchVal = (document.getElementById('searchInput')?.value || '').trim();
 
             let url = `/api/users?page=${currentPage}&size=${pageSize}`;
             if (statusVal === 'active') url += '&active=true';
@@ -458,6 +465,8 @@
             else if (roleVal === 'STAFF') url += '&role=STAFF';
             else if (roleVal === 'PRINCIPAL') url += '&role=PRINCIPAL';
             else if (roleVal === 'SECRETARY') url += '&role=SECRETARY';
+            if (searchVal) url += `&search=${encodeURIComponent(searchVal)}`;
+            if (sitVal && sitVal !== 'ALL') url += `&situation=${encodeURIComponent(sitVal)}`;
 
             const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${jwtToken || ''}` }
@@ -545,7 +554,6 @@
     }
 
     function renderTables() {
-        const search = (document.getElementById('searchInput').value || '').toLowerCase().trim();
         const roleVal = document.getElementById('roleFilter').value;
         const sitVal = document.getElementById('situationFilter').value;
         selectedSituation = sitVal;
@@ -559,61 +567,17 @@
             return true;
         });
 
-        // 1. Filtrar Gestores (Direção & Secretaria)
+        // 1. Gestores (Direção & Secretaria)
         const staffSection = document.getElementById('sectionStaff');
-        const staffUsers = baseUsers.filter(u => {
-            if (u.role !== 'PRINCIPAL' && u.role !== 'SECRETARY') return false;
-            if (search) {
-                const nameMatch = (u.name || '').toLowerCase().includes(search);
-                const emailMatch = (u.email || '').toLowerCase().includes(search);
-                const roleMatch = (u.role === 'PRINCIPAL' ? 'direção diretor' : 'secretaria secretário').includes(search);
-                if (!nameMatch && !emailMatch && !roleMatch) return false;
-            }
-            return true;
-        });
+        const staffUsers = baseUsers.filter(u => u.role === 'PRINCIPAL' || u.role === 'SECRETARY');
 
-        // 2. Filtrar Professores
+        // 2. Professores
         const teachersSection = document.getElementById('sectionTeachers');
-        const teacherUsers = baseUsers.filter(u => {
-            if (u.role !== 'TEACHER') return false;
-            if (search) {
-                const nameMatch = (u.name || '').toLowerCase().includes(search);
-                const emailMatch = (u.email || '').toLowerCase().includes(search);
-                const subjMatch = (u.subjects || []).some(s => s.toLowerCase().includes(search));
-                const classMatch = (u.classrooms || []).some(c => c.toLowerCase().includes(search));
-                if (!nameMatch && !emailMatch && !subjMatch && !classMatch) return false;
-            }
-            return true;
-        });
+        const teacherUsers = baseUsers.filter(u => u.role === 'TEACHER');
 
-        // 3. Filtrar Alunos
+        // 3. Alunos
         const studentsSection = document.getElementById('sectionStudents');
-        const studentUsers = baseUsers.filter(u => {
-            if (u.role !== 'STUDENT') return false;
-
-            // Filtro de Situação Acadêmica
-            if (sitVal !== 'ALL') {
-                const sitKey = (u.generalSituation && typeof u.generalSituation === 'object') ? u.generalSituation.name : (u.generalSituation || 'PENDING');
-                if (sitKey !== sitVal) return false;
-            }
-
-            if (search) {
-                const nameMatch = (u.name || '').toLowerCase().includes(search);
-                const emailMatch = (u.email || '').toLowerCase().includes(search);
-                const regMatch = (u.enrollmentNumber || '').toLowerCase().includes(search);
-                const classMatch = (u.className || '').toLowerCase().includes(search);
-                const phoneMatch = (u.ownPhone || '').toLowerCase().includes(search);
-                const guardianMatch = (u.guardianPhone || '').toLowerCase().includes(search);
-                const birthMatch = (u.birthDate || '').toLowerCase().includes(search);
-
-                const sitKey = (u.generalSituation && typeof u.generalSituation === 'object') ? u.generalSituation.name : (u.generalSituation || 'PENDING');
-                const sitMap = { 'APPROVED': 'aprovado', 'FAILED': 'reprovado', 'PENDING': 'pendente' };
-                const sitMatch = (sitMap[sitKey] || '').includes(search);
-
-                if (!nameMatch && !emailMatch && !regMatch && !classMatch && !phoneMatch && !guardianMatch && !birthMatch && !sitMatch) return false;
-            }
-            return true;
-        });
+        const studentUsers = baseUsers.filter(u => u.role === 'STUDENT');
 
         // Visibilidade das Seções baseada no Papel Selecionado
         if (roleVal === 'ALL') {
@@ -659,7 +623,7 @@
                     <tr class="${u.active ? '' : 'inactive-row'}">
                         <td>
                             <div class="d-flex align-items-center">
-                                <span class="user-initials bg-label-warning me-3">${initial}</span>
+                                <span class="user-initials bg-label-warning me-3">${escapeHtml(initial)}</span>
                                 <div>
                                     <span class="fw-semibold d-block text-dark">${escapeHtml(u.name)}</span>
                                     <small class="text-muted">${escapeHtml(u.email)}</small>
@@ -696,7 +660,7 @@
                     <tr class="${u.active ? '' : 'inactive-row'}">
                         <td>
                             <div class="d-flex align-items-center">
-                                <span class="user-initials bg-label-success me-3">${initial}</span>
+                                <span class="user-initials bg-label-success me-3">${escapeHtml(initial)}</span>
                                 <div>
                                     <span class="fw-semibold d-block text-dark">${escapeHtml(u.name)}</span>
                                     <small class="text-muted">${escapeHtml(u.email)}</small>
@@ -732,7 +696,9 @@
                 const sitMap = {
                     'APPROVED': { text: 'Aprovado', badge: 'bg-label-success' },
                     'FAILED': { text: 'Reprovado', badge: 'bg-label-danger' },
-                    'PENDING': { text: 'Pendente', badge: 'bg-label-warning' }
+                    'PENDING': { text: 'Pendente', badge: 'bg-label-warning' },
+                    'STUDYING': { text: 'Cursando', badge: 'bg-label-info' },
+                    'UNENROLLED': { text: 'Sem Matrícula', badge: 'bg-label-secondary' }
                 };
                 const sitKey = (u.generalSituation && typeof u.generalSituation === 'object') ? u.generalSituation.name : (u.generalSituation || 'PENDING');
                 const sitObj = sitMap[sitKey] || (u.active ? { text: 'Pendente', badge: 'bg-label-warning' } : { text: 'Inativo', badge: 'bg-label-secondary' });
@@ -759,7 +725,7 @@
                     <tr class="${u.active ? '' : 'inactive-row'}">
                         <td>
                             <div class="d-flex align-items-center">
-                                <span class="user-initials bg-label-primary me-3">${initial}</span>
+                                <span class="user-initials bg-label-primary me-3">${escapeHtml(initial)}</span>
                                 <div>
                                     <span class="fw-semibold d-block text-dark">${escapeHtml(u.name)}</span>
                                     <small class="text-muted">${escapeHtml(u.email)}</small>
@@ -783,17 +749,23 @@
         }
     }
 
-    document.getElementById('searchInput').addEventListener('input', renderTables);
+    let searchDebounceTimer;
+    document.getElementById('searchInput').addEventListener('input', () => {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            loadUsers(0);
+        }, 300);
+    });
     document.getElementById('roleFilter').addEventListener('change', (e) => {
         setRoleFilter(e.target.value);
     });
     document.getElementById('situationFilter').addEventListener('change', (e) => {
         selectedSituation = e.target.value;
+        updateSituationCardStyles();
         if (selectedSituation !== 'ALL') {
             setRoleFilter('STUDENT');
         } else {
-            updateSituationCardStyles();
-            renderTables();
+            loadUsers(0);
         }
     });
     document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
@@ -803,8 +775,15 @@
         });
     });
 
+    const initialRoleParam = new URLSearchParams(window.location.search).get('role');
+    const validInitialRoles = ['ALL', 'STAFF', 'TEACHER', 'STUDENT'];
+
     loadStats();
-    loadUsers(0);
+    if (initialRoleParam && validInitialRoles.includes(initialRoleParam.toUpperCase())) {
+        setRoleFilter(initialRoleParam.toUpperCase());
+    } else {
+        loadUsers(0);
+    }
 </script>
 <script src="/js/load-sidebar.js"></script>
 </body>

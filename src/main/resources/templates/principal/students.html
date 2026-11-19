@@ -243,7 +243,7 @@
     function handleUnauthorized() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login.html';
+        window.location.href = '/entrar';
     }
 
     function renderTable(students) {
@@ -267,7 +267,7 @@
               <div class="d-flex align-items-center">
                 <div class="avatar avatar-sm me-3">
                   <span class="avatar-initial rounded-circle ${avatarColor(student.id)}">
-                    ${getInitials(student.name)}
+                    ${escapeHtml(getInitials(student.name))}
                   </span>
                 </div>
                 <div>
@@ -279,7 +279,7 @@
             <td><code>${escapeHtml(student.registrationNumber)}</code></td>
             <td>${formatDate(student.birthDate)}</td>
             <td>
-              <div>${formatPhone(student.ownPhone)}</div>
+              <div>${escapeHtml(formatPhone(student.ownPhone))}</div>
               ${student.guardianPhone
             ? `<small class="text-muted"><i class="bx bx-user-pin me-1"></i>${escapeHtml(student.guardianPhone)}</small>`
             : ''}

@@ -152,15 +152,28 @@
                 window.URL.revokeObjectURL(url);
             } catch (err) {
                 console.error(err);
-                alert('Erro ao gerar o boletim em PDF. Tente novamente mais tarde.');
+                if (window.showAlertModal) {
+                    await window.showAlertModal('Erro ao Gerar PDF', 'Erro ao gerar o boletim em PDF. Tente novamente mais tarde.');
+                }
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }
         }
 
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         async function loadReportCard() {
             if (!studentId) return;
+            const pdfBtn = document.getElementById('btnDownloadPdf');
 
             try {
                 let activeYear = null;
@@ -174,12 +187,14 @@
 
                 if (activeYear) {
                     currentYearId = activeYear.id;
-                    const pdfBtn = document.getElementById('btnDownloadPdf');
-                    if (pdfBtn) pdfBtn.classList.remove('d-none');
 
                     const rcRes = await fetch(`/api/report-cards/student/${studentId}/year/${activeYear.id}`, { headers: {'Authorization': 'Bearer ' + jwtToken} });
                     if (rcRes.ok) {
                         const rc = await rcRes.json();
+                        if (pdfBtn) {
+                            if (rc.subjects && rc.subjects.length > 0) pdfBtn.classList.remove('d-none');
+                            else pdfBtn.classList.add('d-none');
+                        }
                         if (rc.periodTypeLabel || rc.periodType) {
                             const badge = document.getElementById('divisionBadge');
                             badge.textContent = 'Divisão: ' + (rc.periodTypeLabel || rc.periodType);
@@ -187,13 +202,13 @@
                         }
                         const periodNames = new Set();
                         rc.subjects.forEach(s => s.periodGrades.forEach(pg => periodNames.add(pg.periodName)));
-                        const sortedPeriods = Array.from(periodNames).sort();
+                        const sortedPeriods = Array.from(periodNames);
                         
                         const thead = document.getElementById('reportHead');
                         thead.innerHTML = `
                             <tr class="table-primary">
                                 <th>Disciplina</th>
-                                ${sortedPeriods.map(p => `<th>${p}</th>`).join('')}
+                                ${sortedPeriods.map(p => `<th>${escapeHtml(p)}</th>`).join('')}
                                 <th>Média Final</th>
                                 <th>Faltas</th>
                                 <th>Situação</th>
@@ -204,22 +219,27 @@
                         let html = '';
 
                         rc.subjects.forEach(s => {
-                            let rowHtml = `<td><strong>${s.subjectName}</strong></td>`;
+                            let rowHtml = `<td><strong>${escapeHtml(s.subjectName)}</strong></td>`;
                             sortedPeriods.forEach(p => {
                                 const pg = s.periodGrades.find(x => x.periodName === p);
                                 if(pg && pg.average != null) {
-                                    rowHtml += `<td>${pg.average.toFixed(1)}</td>`;
+                                    rowHtml += `<td>${Number(pg.average).toFixed(2)}</td>`;
                                 } else {
                                     rowHtml += `<td class="text-muted">-</td>`;
                                 }
                             });
 
                             let finalAvgHtml = `<span class="text-muted">-</span>`;
-                            let gradesCount = s.periodGrades.filter(pg => pg.average != null).length;
-                            if (gradesCount === rc.totalPeriods || s.situation === 'APPROVED' || s.situation === 'FAILED') {
-                                let sumAverages = s.periodGrades.reduce((acc, pg) => acc + (pg.average || 0), 0);
-                                let finalAvg = sumAverages / rc.totalPeriods;
-                                finalAvgHtml = `<strong>${finalAvg.toFixed(1)}</strong>`;
+                            if (s.finalAverage != null) {
+                                finalAvgHtml = `<strong>${Number(s.finalAverage).toFixed(2)}</strong>`;
+                            } else {
+                                let gradesCount = s.periodGrades.filter(pg => pg.average != null).length;
+                                if (gradesCount > 0 && (gradesCount === rc.totalPeriods || s.situation === 'APPROVED' || s.situation === 'FAILED')) {
+                                    let sumAverages = s.periodGrades.reduce((acc, pg) => acc + (pg.average || 0), 0);
+                                    let denom = rc.totalPeriods || gradesCount;
+                                    let finalAvg = sumAverages / denom;
+                                    finalAvgHtml = `<strong>${Number(finalAvg).toFixed(2)}</strong>`;
+                                }
                             }
 
                             let situationHtml = '<span class="badge bg-label-warning">Pendente</span>';
@@ -268,13 +288,16 @@
                             }
                         }
                     } else {
+                        if (pdfBtn) pdfBtn.classList.add('d-none');
                         throw new Error('Falha ao obter boletim');
                     }
                 } else {
+                    if (pdfBtn) pdfBtn.classList.add('d-none');
                     document.getElementById('reportHead').innerHTML = '<tr><td class="text-warning">Nenhum ano letivo ativo</td></tr>';
                     document.getElementById('reportBody').innerHTML = '';
                 }
             } catch (e) {
+                if (pdfBtn) pdfBtn.classList.add('d-none');
                 console.error(e);
                 document.getElementById('reportHead').innerHTML = '<tr><td class="text-danger">Erro de conexão</td></tr>';
                 document.getElementById('reportBody').innerHTML = '';

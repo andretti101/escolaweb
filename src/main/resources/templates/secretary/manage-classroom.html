@@ -487,7 +487,7 @@
 <script>
     const jwtToken = localStorage.getItem('jwt_token');
     const urlParams = new URLSearchParams(window.location.search);
-    const classRoomId = urlParams.get('id');
+    const classRoomId = urlParams.get('id') || urlParams.get('classroomId');
 
     // ── State
     let allStudents = [];
@@ -510,7 +510,7 @@
     async function showAlert(message, type) {
         const container = document.getElementById('alertContainer');
         const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
-        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${escapeHtml(cleanMsg)}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
         setTimeout(() => {
             container.innerHTML = '';
         }, 5000);
@@ -567,7 +567,7 @@
 
     async function loadGlobalClassrooms() {
         try {
-            const res = await fetch(`/api/classrooms`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            const res = await fetch(`/api/classrooms?size=1000`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
             if (res.ok) {
                 const rawClassrooms = await res.json();
                 const classrooms = Array.isArray(rawClassrooms) ? rawClassrooms : (rawClassrooms.content || []);
@@ -575,16 +575,18 @@
                 classrooms.forEach(c => {
                     const opt = document.createElement('option');
                     opt.value = c.id;
-                    opt.textContent = `${c.name} (${c.academicYear.year || c.academicYear})`;
+                    const yearVal = c.academicYear?.year ?? c.academicYear ?? '-';
+                    opt.textContent = `${c.name} (${yearVal})`;
                     select.appendChild(opt);
                 });
                 if (classRoomId) select.value = classRoomId;
                 
                 select.addEventListener('change', (e) => {
+                    const baseManageUrl = '/secretaria/gerenciar-turma';
                     if (e.target.value) {
-                        window.location.href = `/secretary/manage-classroom.html?id=${e.target.value}`;
+                        window.location.href = `${baseManageUrl}?id=${e.target.value}`;
                     } else {
-                        window.location.href = `/secretary/manage-classroom.html`;
+                        window.location.href = baseManageUrl;
                     }
                 });
             }
@@ -605,7 +607,7 @@
             if (res.ok) {
                 const c = await res.json();
                 currentClassroom = c;
-                document.getElementById('classroomNameTitle').textContent = `Gerenciar Turma: ${escapeHtml(c.name)}`;
+                document.getElementById('classroomNameTitle').textContent = `Gerenciar Turma: ${c.name || ''}`;
 
                 const divBadge = document.getElementById('classroomDivisionHeaderBadge');
                 const divText = document.getElementById('divisionNameText');
@@ -648,7 +650,7 @@
 
     async function loadStudents() {
         try {
-            const res = await fetch(`/api/students?unenrolledOnly=true`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
+            const res = await fetch(`/api/students?unenrolledOnly=true&size=1000`, {headers: {'Authorization': `Bearer ${jwtToken || ''}`}});
             if (res.ok) {
                 const raw = await res.json();
                 const list = Array.isArray(raw) ? raw : (raw.content || []);
@@ -729,16 +731,16 @@
                 <td>${e.enrollmentDate ? e.enrollmentDate : '-'}</td>
                 <td><span class="badge ${e.active ? 'bg-label-success' : 'bg-label-secondary'}">${e.active ? 'Ativa' : 'Inativa'}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-icon text-info" onclick="downloadEnrollmentCertificatePdf(${e.id}, '${escapeHtml(e.studentName || '')}')" title="Baixar Declaração de Matrícula">
+                    <button type="button" class="btn btn-sm btn-icon text-info btn-download-cert" data-enrollment-id="${e.id}" data-student-name="${escapeHtml(e.studentName || '')}" title="Baixar Declaração de Matrícula">
                         <i class="bx bx-file"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon text-primary" onclick="openTransferModal(${e.id}, '${escapeHtml(e.studentName || '')}')" title="Transferir de Turma">
+                    <button type="button" class="btn btn-sm btn-icon text-primary btn-transfer-student" data-enrollment-id="${e.id}" data-student-name="${escapeHtml(e.studentName || '')}" title="Transferir de Turma">
                         <i class="bx bx-transfer"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon ${e.active ? 'text-warning' : 'text-success'}" onclick="toggleEnrollment(${e.id}, ${!e.active})" title="${e.active ? 'Desativar' : 'Ativar'}">
+                    <button type="button" class="btn btn-sm btn-icon ${e.active ? 'text-warning' : 'text-success'}" onclick="toggleEnrollment(${e.id}, ${!e.active})" title="${e.active ? 'Desativar' : 'Ativar'}">
                         <i class="bx ${e.active ? 'bx-block' : 'bx-check'}"></i>
                     </button>
-                    <button class="btn btn-sm btn-icon text-danger" onclick="deleteEnrollment(${e.id})" title="Excluir Definitivamente">
+                    <button type="button" class="btn btn-sm btn-icon text-danger" onclick="deleteEnrollment(${e.id})" title="Excluir Definitivamente">
                         <i class="bx bx-trash"></i>
                     </button>
                 </td>
@@ -758,10 +760,10 @@
                 badge.style.display = window._tcsData.length > 0 ? '' : 'none';
                 renderTCSTable(document.getElementById('tcsTableSearch')?.value || '');
             } else {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erro ao carregar grade.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erro ao carregar grade.</td></tr>';
             }
         } catch (e) {
-            document.getElementById('tcsTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Falha de conexão.</td></tr>';
+            document.getElementById('tcsTableBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger">Falha de conexão.</td></tr>';
         }
     }
 
@@ -1499,7 +1501,7 @@
                 const err = await res.json().catch(() => ({}));
                 const msg = window.extractErrorMessage ? window.extractErrorMessage(err, "Erro ao atualizar vínculo.") : (err.message || "Erro ao atualizar vínculo.");
                 const alertC = document.getElementById('editTcsAlertContainer');
-                if (alertC) alertC.innerHTML = `<div class="alert alert-danger mb-3">${msg}</div>`;
+                if (alertC) alertC.innerHTML = `<div class="alert alert-danger mb-3">${escapeHtml(msg)}</div>`;
             }
         } catch (e) {
             const alertC = document.getElementById('editTcsAlertContainer');
@@ -1615,6 +1617,25 @@
     // ══════════════════════════════════════════════════════════
 
     async function init() {
+        const enrollmentsTbody = document.getElementById('enrollmentsTableBody');
+        if (enrollmentsTbody && !enrollmentsTbody.dataset.delegated) {
+            enrollmentsTbody.dataset.delegated = 'true';
+            enrollmentsTbody.addEventListener('click', (ev) => {
+                const certBtn = ev.target.closest('.btn-download-cert');
+                if (certBtn) {
+                    const id = parseInt(certBtn.dataset.enrollmentId, 10);
+                    const name = certBtn.dataset.studentName || '';
+                    window.downloadEnrollmentCertificatePdf(id, name);
+                    return;
+                }
+                const transferBtn = ev.target.closest('.btn-transfer-student');
+                if (transferBtn) {
+                    const id = parseInt(transferBtn.dataset.enrollmentId, 10);
+                    const name = transferBtn.dataset.studentName || '';
+                    window.openTransferModal(id, name);
+                }
+            });
+        }
         await loadGlobalClassrooms();
         if (classRoomId) {
             await loadClassroomDetails();

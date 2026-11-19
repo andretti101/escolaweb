@@ -264,7 +264,7 @@
 
     function showAlert(message, type) {
         const container = document.getElementById('alertContainer');
-        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${escapeHtml(message)}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
         setTimeout(() => {
             container.innerHTML = '';
         }, 5000);
@@ -272,7 +272,7 @@
 
     async function loadYears() {
         try {
-            const res = await fetch('/api/academic-years', {
+            const res = await fetch('/api/academic-years?size=1000', {
                 headers: {'Authorization': `Bearer ${jwtToken || ''}`}
             });
             if (res.ok) {
@@ -293,7 +293,7 @@
 
     async function loadClassrooms() {
         try {
-            const response = await fetch('/api/classrooms?activeOnly=false', {
+            const response = await fetch('/api/classrooms?activeOnly=false&size=1000', {
                 headers: {'Authorization': `Bearer ${jwtToken || ''}`}
             });
             if (response.ok) {
@@ -343,20 +343,20 @@
 
             let editBtn = '';
             if (c.active) {
-                editBtn = `<a class="dropdown-item" href="/secretary/edit/classroom.html?id=${c.id}"><i class="bx bx-edit-alt me-1"></i> Editar Dados</a>`;
+                editBtn = `<li><a class="dropdown-item" href="/secretaria/editar/turma?id=${c.id}"><i class="bx bx-edit-alt me-1"></i> Editar Dados</a></li>`;
             }
 
             return `
                 <tr class="${c.active ? '' : 'inactive-row'}" style="cursor: pointer;" onclick="if (!event.target.closest('button, a, .dropdown')) openDrawer(${c.id})">
                     <td><strong>${escapeHtml(c.name)}</strong></td>
                     <td>${escapeHtml(schoolGradeLabel)}</td>
-                    <td>${academicYearText}</td>
+                    <td>${escapeHtml(academicYearText)}</td>
                     <td>${periodTypeBadge}</td>
-                    <td><span class="badge bg-label-info">${shiftLabel}</span></td>
+                    <td><span class="badge bg-label-info">${escapeHtml(shiftLabel)}</span></td>
                     <td><span class="badge ${badgeClass}">${badgeText}</span></td>
                     <td class="text-center">
                         <div class="d-inline-flex align-items-center gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary"
+                            <button type="button" class="btn btn-sm btn-outline-primary text-nowrap"
                                     onclick="openDrawer(${c.id})" title="Ver Alunos e Grade Curricular">
                                 <i class="bx bx-sidebar me-1"></i> Alunos & Grade
                             </button>
@@ -365,19 +365,25 @@
                                         data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-label="Mais opções">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-end">
-                                    <a class="dropdown-item" href="/secretaria/gerenciar-turma?classroomId=${c.id}">
-                                        <i class="bx bx-cog me-1"></i> Gerenciar Turma
-                                    </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="/secretaria/gerenciar-turma?id=${c.id}">
+                                            <i class="bx bx-cog me-1"></i> Gerenciar Turma
+                                        </a>
+                                    </li>
                                     ${editBtn}
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item ${actionColor}" href="javascript:void(0);" onclick="toggleStatus(${c.id}, ${!c.active})">
-                                        <i class="bx ${actionIcon} me-1"></i> ${actionText}
-                                    </a>
-                                    <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="confirmDelete(${c.id})">
-                                        <i class="bx bx-trash me-1"></i> Excluir
-                                    </a>
-                                </div>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item ${actionColor}" href="javascript:void(0);" onclick="toggleStatus(${c.id}, ${!c.active})">
+                                            <i class="bx ${actionIcon} me-1"></i> ${actionText}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="confirmDelete(${c.id})">
+                                            <i class="bx bx-trash me-1"></i> Excluir
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </td>
@@ -396,7 +402,7 @@
 
         document.getElementById('drawerClassroomName').textContent = className;
         document.getElementById('drawerClassroomSubtitle').textContent = classSubtitle;
-        document.getElementById('drawerManageLink').href = `/secretaria/gerenciar-turma?classroomId=${classroomId}`;
+        document.getElementById('drawerManageLink').href = `/secretaria/gerenciar-turma?id=${classroomId}`;
 
         // Reset counters & states
         document.getElementById('drawerStudentCount').textContent = '...';

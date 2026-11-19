@@ -417,15 +417,15 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-sm me-2">
                             <span class="avatar-initial rounded-circle bg-label-${getSituationColor(e.generalSituation)}">
-                                ${getInitials(e.studentName)}
+                                ${escapeHtml(getInitials(e.studentName))}
                             </span>
                         </div>
-                        <strong>${e.studentName || '—'}</strong>
+                        <strong>${escapeHtml(e.studentName || '—')}</strong>
                     </div>
                 </td>
-                <td><code>${e.studentRegistrationNumber || '—'}</code></td>
-                <td>${e.classRoomName || '—'}</td>
-                <td>${gradeText}</td>
+                <td><code>${escapeHtml(e.studentRegistrationNumber || '—')}</code></td>
+                <td>${escapeHtml(e.classRoomName || '—')}</td>
+                <td>${escapeHtml(gradeText)}</td>
                 <td><span class="badge bg-label-primary">${escapeHtml(periodLabel)}</span></td>
                 <td class="text-center">
                     <span class="badge bg-label-${getSituationColor(e.generalSituation)} rounded-pill">

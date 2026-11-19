@@ -35,6 +35,25 @@ public class StudentAiTools {
         }
     }
 
+    private boolean isFromActiveAcademicYear(ClassRoom classRoom) {
+        return classRoom == null || classRoom.getAcademicYear() == null || classRoom.getAcademicYear().isActive();
+    }
+
+    private java.util.Optional<Enrollment> findActiveEnrollmentInCurrentYear(Integer studentId) {
+        var enrollments = enrollmentService.findByStudent(studentId);
+        if (enrollments == null || enrollments.isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        var activeCurrentYear = enrollments.stream()
+                .filter(Enrollment::isActive)
+                .filter(e -> isFromActiveAcademicYear(e.getClassRoom()))
+                .findFirst();
+        if (activeCurrentYear.isPresent()) {
+            return activeCurrentYear;
+        }
+        return enrollments.stream().filter(Enrollment::isActive).findFirst();
+    }
+
     @Tool(description = "Obtém as notas do aluno logado nas avaliações")
     public String getStudentGrades() {
         return transactionTemplate.execute(status -> {
@@ -44,6 +63,9 @@ public class StudentAiTools {
             }
             var grades = gradeService.findByStudent(student.getId());
             String info = grades.stream()
+                    .filter(g -> g.getAssessment() != null
+                            && g.getAssessment().getTeacherClassSubject() != null
+                            && isFromActiveAcademicYear(g.getAssessment().getTeacherClassSubject().getClassRoom()))
                     .map(g -> "Matéria: " + g.getAssessment().getTeacherClassSubject().getSubject().getName()
                             + " - Avaliação: " + g.getAssessment().getTitle()
                             + ", Nota: " + g.getEffectiveValue()
@@ -62,6 +84,9 @@ public class StudentAiTools {
             }
             var attendances = attendanceService.findByStudent(student.getId());
             String info = attendances.stream()
+                    .filter(a -> a.getLesson() != null
+                            && a.getLesson().getTeacherClassSubject() != null
+                            && isFromActiveAcademicYear(a.getLesson().getTeacherClassSubject().getClassRoom()))
                     .map(a -> "Matéria: " + a.getLesson().getTeacherClassSubject().getSubject().getName() + " - Data: " + a.getLesson().getLessonDate() + ", Status: " + a.getStatus())
                     .collect(Collectors.joining("; "));
             return info.isEmpty() ? "Nenhuma frequência registrada." : info;
@@ -125,8 +150,7 @@ public class StudentAiTools {
             if (student == null) {
                 return "Esta funcionalidade de consulta de colegas de turma está disponível quando acessada pelo perfil de um estudante.";
             }
-            var enrollments = enrollmentService.findByStudent(student.getId());
-            var active = enrollments.stream().filter(Enrollment::isActive).findFirst();
+            var active = findActiveEnrollmentInCurrentYear(student.getId());
             if (active.isEmpty()) return "Aluno não possui matrícula ativa.";
             
             Integer classRoomId = active.get().getClassRoom().getId();
@@ -152,8 +176,7 @@ public class StudentAiTools {
             if (student == null) {
                 return "Esta funcionalidade de detalhes da matrícula está disponível quando acessada pelo perfil de um estudante.";
             }
-            var enrollments = enrollmentService.findByStudent(student.getId());
-            var active = enrollments.stream().filter(Enrollment::isActive).findFirst();
+            var active = findActiveEnrollmentInCurrentYear(student.getId());
             if (active.isEmpty()) return "Aluno não possui matrícula ativa.";
             
             var classRoom = active.get().getClassRoom();
@@ -169,8 +192,7 @@ public class StudentAiTools {
             if (student == null) {
                 return "Esta funcionalidade de lista de professores está disponível quando acessada pelo perfil de um estudante.";
             }
-            var enrollments = enrollmentService.findByStudent(student.getId());
-            var active = enrollments.stream().filter(Enrollment::isActive).findFirst();
+            var active = findActiveEnrollmentInCurrentYear(student.getId());
             if (active.isEmpty()) return "Aluno não possui matrícula ativa.";
             
             Integer classRoomId = active.get().getClassRoom().getId();
@@ -178,6 +200,7 @@ public class StudentAiTools {
             if (teachers == null || teachers.isEmpty()) return "Nenhum professor cadastrado para a sua turma.";
             
             return teachers.stream()
+                    .filter(TeacherClassSubject::isActive)
                     .map(tcs -> "Professor(a): " + tcs.getTeacher().getName() + " - Matéria: " + tcs.getSubject().getName())
                     .collect(Collectors.joining("; "));
         });
@@ -211,8 +234,14 @@ public class StudentAiTools {
             ReportCardDTO report = reportCardService.generateReportCard(student.getId(), year.getId());
             if (report.subjects().isEmpty()) return "Sem dados de matérias suficientes.";
             
-            var bestGrade = report.subjects().stream().max(Comparator.comparing(ReportCardDTO.SubjectSituationDTO::totalScore)).get();
-            var worstGrade = report.subjects().stream().min(Comparator.comparing(ReportCardDTO.SubjectSituationDTO::totalScore)).get();
+            Comparator<ReportCardDTO.SubjectSituationDTO> subjectComparator = Comparator.comparing(sub -> {
+                if (sub.finalAverage() != null) {
+                    return sub.finalAverage();
+                }
+                return sub.totalScore() != null ? sub.totalScore() : BigDecimal.ZERO;
+            });
+            var bestGrade = report.subjects().stream().max(subjectComparator).get();
+            var worstGrade = report.subjects().stream().min(subjectComparator).get();
             
             String attendanceInfo = "";
             try {
@@ -225,8 +254,14 @@ public class StudentAiTools {
                 }
             } catch (Exception e) {}
             
-            return "Melhor matéria em notas: " + bestGrade.subjectName() + " (" + bestGrade.totalScore() + " pontos)\n" +
-                   "Pior matéria em notas: " + worstGrade.subjectName() + " (" + worstGrade.totalScore() + " pontos)" + attendanceInfo;
+            String bestDisplay = bestGrade.finalAverage() != null && (bestGrade.totalScore() == null || bestGrade.totalScore().compareTo(BigDecimal.ZERO) == 0)
+                    ? bestGrade.finalAverage() + " média"
+                    : bestGrade.totalScore() + " pontos";
+            String worstDisplay = worstGrade.finalAverage() != null && (worstGrade.totalScore() == null || worstGrade.totalScore().compareTo(BigDecimal.ZERO) == 0)
+                    ? worstGrade.finalAverage() + " média"
+                    : worstGrade.totalScore() + " pontos";
+            return "Melhor matéria em notas: " + bestGrade.subjectName() + " (" + bestDisplay + ")\n" +
+                   "Pior matéria em notas: " + worstGrade.subjectName() + " (" + worstDisplay + ")" + attendanceInfo;
         });
     }
 

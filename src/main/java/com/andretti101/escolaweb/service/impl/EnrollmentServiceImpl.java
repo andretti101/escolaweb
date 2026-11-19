@@ -3,6 +3,7 @@ package com.andretti101.escolaweb.service.impl;
 import com.andretti101.escolaweb.model.entity.ClassRoom;
 import com.andretti101.escolaweb.model.entity.Enrollment;
 import com.andretti101.escolaweb.model.entity.Student;
+import com.andretti101.escolaweb.model.enums.AcademicPeriodType;
 import com.andretti101.escolaweb.repository.AttendanceRepository;
 import com.andretti101.escolaweb.repository.EnrollmentRepository;
 import com.andretti101.escolaweb.repository.GradeRepository;
@@ -145,6 +146,29 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Transactional
     public Enrollment activate(Integer id) {
         Enrollment enrollment = findEnrollmentOrThrow(id);
+        if (enrollment.isActive()) {
+            return enrollment;
+        }
+        Student student = enrollment.getStudent();
+        ClassRoom classRoom = enrollment.getClassRoom();
+
+        if (student != null && !student.isActive()) {
+            throw new IllegalStateException("Não é possível reativar a matrícula de um aluno inativo.");
+        }
+        if (classRoom != null && !classRoom.isActive()) {
+            throw new IllegalStateException("Não é possível reativar uma matrícula em uma turma inativa.");
+        }
+        if (classRoom != null && classRoom.getAcademicYear() != null && !classRoom.getAcademicYear().isActive()) {
+            throw new IllegalStateException(
+                    "Não é possível reativar uma matrícula pertencente ao ano letivo encerrado '"
+                    + classRoom.getAcademicYear().getYear() + "'.");
+        }
+        if (student != null && classRoom != null && classRoom.getAcademicYear() != null
+                && enrollmentRepository.existsByStudentAndClassRoom_AcademicYearAndActiveTrue(
+                        student, classRoom.getAcademicYear())) {
+            throw new IllegalStateException("O aluno já possui uma matrícula ativa para este ano letivo.");
+        }
+
         enrollment.setActive(true);
         return enrollment;
     }
@@ -161,20 +185,44 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Transactional
     public Enrollment transferClassroom(Integer enrollmentId, Integer newClassRoomId) {
         Enrollment enrollment = findEnrollmentOrThrow(enrollmentId);
+        if (!enrollment.isActive()) {
+            throw new IllegalStateException("Não é possível transferir uma matrícula inativa.");
+        }
+
+        ClassRoom currentClassRoom = enrollment.getClassRoom();
         ClassRoom newClassRoom = classRoomService.findById(newClassRoomId);
 
         if (!newClassRoom.isActive()) {
             throw new IllegalStateException("Não é possível transferir o aluno para uma turma inativa.");
         }
-        
-        if (enrollment.getClassRoom().getId().equals(newClassRoom.getId())) {
+
+        if (currentClassRoom.getId().equals(newClassRoom.getId())) {
             throw new IllegalStateException("O aluno já está matriculado nesta turma.");
         }
-        
-        if (!enrollment.getClassRoom().getAcademicYear().getId().equals(newClassRoom.getAcademicYear().getId())) {
-             throw new IllegalStateException("A transferência só é permitida entre turmas do mesmo ano letivo.");
+
+        if (currentClassRoom.getAcademicYear() != null && !currentClassRoom.getAcademicYear().isActive()) {
+            throw new IllegalStateException(
+                    "Não é possível transferir matrícula do ano letivo encerrado '"
+                    + currentClassRoom.getAcademicYear().getYear() + "'.");
         }
-        
+
+        if (currentClassRoom.getAcademicYear() != null && newClassRoom.getAcademicYear() != null
+                && !currentClassRoom.getAcademicYear().getId().equals(newClassRoom.getAcademicYear().getId())) {
+            throw new IllegalStateException("A transferência só é permitida entre turmas do mesmo ano letivo.");
+        }
+
+        AcademicPeriodType oldPeriodType = currentClassRoom.getPeriodType();
+        AcademicPeriodType newPeriodType = newClassRoom.getPeriodType();
+        if (oldPeriodType != null && newPeriodType != null && oldPeriodType != newPeriodType) {
+            throw new IllegalStateException(
+                    "Não é permitido transferir o aluno entre turmas com regimes de período letivo diferentes ("
+                    + oldPeriodType.getLabel() + " vs " + newPeriodType.getLabel() + ").");
+        }
+
+        if (enrollmentRepository.existsByStudentAndClassRoom(enrollment.getStudent(), newClassRoom)) {
+            throw new IllegalStateException("O aluno já possui registro de matrícula na turma de destino.");
+        }
+
         enrollment.setClassRoom(newClassRoom);
         return enrollment;
     }

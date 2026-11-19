@@ -43,17 +43,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const userName = localStorage.getItem("user_name");
 
     if (!token) {
-        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
         window.location.href = "/entrar";
         return;
     }
 
-    const payloadBase64 = token.split('.')[1];
-    const decodedPayload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
-    
-    const payloadString = JSON.stringify(decodedPayload).toUpperCase();
-    const isStudent = payloadString.includes("STUDENT");
-    const isSecretary = payloadString.includes("SECRETARY") || payloadString.includes("PRINCIPAL");
+    function decodeJwtPayload(jwtStr) {
+        const payloadBase64 = jwtStr.split('.')[1];
+        let base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) base64 += '=';
+        return JSON.parse(atob(base64));
+    }
+
+    const decodedPayload = decodeJwtPayload(token);
+    const rawRole = String(decodedPayload.role || '').toUpperCase();
+    const role = rawRole.startsWith('ROLE_') ? rawRole : 'ROLE_' + rawRole;
+    const isStudent = role === 'ROLE_STUDENT';
+    const isSecretary = role === 'ROLE_SECRETARY' || role === 'ROLE_PRINCIPAL';
     const isAdmin = isSecretary;
 
     let stompClient = null;
@@ -78,9 +83,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (btnSend) btnSend.innerHTML = "<i class='bx bxs-send'></i>";
     }
 
-    const isTeacher = payloadString.includes("TEACHER");
+    const isTeacher = role === 'ROLE_TEACHER';
 
-    let isGlobalTeacherView = window.location.pathname.includes('/teacher/chat.html');
+    const currentPath = window.location.pathname || '';
+    let isGlobalTeacherView = currentPath.includes('/professor/chat') || currentPath.includes('/teacher/chat');
 
     if (isStudent) {
         fetch('/api/enrollments/student/' + userId, { headers: { 'Authorization': 'Bearer ' + token } })

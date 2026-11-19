@@ -980,6 +980,11 @@ class StudentAndTeacherUpdateIntegrationTest {
     @WithMockUser(roles = "SECRETARY")
     @DisplayName("PATCH /api/teachers/{id} removing active teaching subject returns 422")
     void patchTeacher_removingActiveTeachingSubject_returns422() throws Exception {
+        academicYearRepository.findByActiveTrue().ifPresent(ay -> {
+            ay.setActive(false);
+            academicYearRepository.saveAndFlush(ay);
+        });
+
         com.andretti101.escolaweb.model.entity.AcademicYear year = academicYearRepository.save(
                 com.andretti101.escolaweb.model.entity.AcademicYear.builder()
                         .year(2095)

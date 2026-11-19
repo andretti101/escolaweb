@@ -215,11 +215,19 @@
                 if(selectedType === 'PRESENT') badgeClass = 'bg-success';
 
                 list.innerHTML = subjects.map(subj => `
-                    <button type="button" class="btn btn-outline-primary btn-lg w-100 d-flex justify-content-between align-items-center" onclick="showAttendanceForSubject('${escapeHtml(subj)}')">
+                    <button type="button" class="btn btn-outline-primary btn-lg w-100 d-flex justify-content-between align-items-center" data-subject="${escapeHtml(subj)}">
                         ${escapeHtml(subj)}
                         <span class="badge ${badgeClass} rounded-pill fs-6">${counts[subj]}</span>
                     </button>
                 `).join('');
+            }
+
+            if (!list.dataset.delegated) {
+                list.dataset.delegated = 'true';
+                list.addEventListener('click', (ev) => {
+                    const btn = ev.target.closest('button[data-subject]');
+                    if (btn) showAttendanceForSubject(btn.dataset.subject);
+                });
             }
 
             container.classList.remove('d-none');

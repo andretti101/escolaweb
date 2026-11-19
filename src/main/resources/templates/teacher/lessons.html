@@ -46,7 +46,7 @@
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Diário de Classe /</span> Aulas Registradas</h4>
-                            <a href="/teacher/create/lesson.html" class="btn btn-primary">
+                            <a href="/professor/cadastrar/aula" class="btn btn-primary">
                                 <i class="bx bx-plus me-1"></i> Registrar Aula
                             </a>
                         </div>
@@ -89,7 +89,7 @@
                                 <div id="emptyState" class="text-center py-5 d-none">
                                     <i class="bx bx-book-open fs-1 text-muted"></i>
                                     <p class="mt-2 text-muted mb-0">Nenhuma aula encontrada.</p>
-                                    <a href="/teacher/create/lesson.html" class="btn btn-primary btn-sm mt-3"><i class="bx bx-plus me-1"></i> Registrar Primeira Aula</a>
+                                    <a href="/professor/cadastrar/aula" class="btn btn-primary btn-sm mt-3"><i class="bx bx-plus me-1"></i> Registrar Primeira Aula</a>
                                 </div>
                                 <div id="errorState" class="text-center py-5 d-none">
                                     <i class="bx bx-error-circle fs-1 text-danger"></i>
@@ -164,7 +164,7 @@
         function handleUnauthorized() {
             localStorage.removeItem('jwt_token');
             localStorage.removeItem('refresh_token');
-            window.location.href = '/login.html';
+            window.location.href = '/entrar';
         }
 
         function updatePeriodDropdown() {
@@ -271,6 +271,7 @@
                     headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
                 if (response.status === 401 || response.status === 403) return handleUnauthorized();
+                if (!response.ok) throw new Error('Falha ao carregar aulas');
                 const data = await response.json();
                 allLessons = Array.isArray(data) ? data : (data.content || []);
                 
@@ -351,84 +352,16 @@
                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="/teacher/edit/lesson.html?id=${l.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="/professor/editar/aula?id=${l.id}"><i class="bx bx-edit-alt me-1 text-primary"></i> Editar</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteLesson(${l.id})"><i class="bx bx-trash me-1"></i> Excluir</a></li>
-                                </div>
+                                </ul>
                             </div>
                         </td>
                     </tr>
                 `;
             }).join('');
-        }
-
-        function _showConfirmModal_old(title, message, onConfirm) {
-            let modalEl = document.getElementById('customConfirmModal');
-            if (!modalEl) {
-                const html = `
-                <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="customConfirmModalTitle"></h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p id="customConfirmModalMessage" style="white-space: pre-wrap;"></p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="button" class="btn btn-danger" id="customConfirmModalBtn">Excluir</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                document.body.insertAdjacentHTML('beforeend', html);
-                modalEl = document.getElementById('customConfirmModal');
-            }
-            document.getElementById('customConfirmModalTitle').textContent = title;
-            document.getElementById('customConfirmModalMessage').textContent = message;
-            
-            const confirmBtn = document.getElementById('customConfirmModalBtn');
-            const newBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-            
-            const modal = new bootstrap.Modal(modalEl);
-            newBtn.addEventListener('click', () => {
-                modal.hide();
-                onConfirm();
-            });
-            modal.show();
-        }
-
-        function _showAlertModal_old(title, message) {
-            let modalEl = document.getElementById('customAlertModal');
-            if (!modalEl) {
-                const html = `
-                <div class="modal fade" id="customAlertModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="customAlertModalTitle"></h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p id="customAlertModalMessage" style="white-space: pre-wrap;"></p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                document.body.insertAdjacentHTML('beforeend', html);
-                modalEl = document.getElementById('customAlertModal');
-            }
-            document.getElementById('customAlertModalTitle').textContent = title;
-            document.getElementById('customAlertModalMessage').textContent = message;
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
         }
 
         function deleteLesson(id) {

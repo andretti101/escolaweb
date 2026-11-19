@@ -64,6 +64,13 @@
             opacity: 1;
             pointer-events: auto;
         }
+        @media (hover: none) {
+            .timetable-card .card-actions,
+            .slot-card .card-actions {
+                opacity: 1;
+                pointer-events: auto;
+            }
+        }
         .slot-order-pill {
             font-size: 0.7rem;
             font-weight: 700;
@@ -164,10 +171,25 @@
             color: #cbcbe2 !important;
         }
         html.dark-style #sixthLessonClassroomsContainer,
+        html.dark-style #specificClassroomsContainer,
         html.dark-style #modalClassroomName {
             background-color: #232333 !important;
             border-color: #444564 !important;
             color: #cbcbe2 !important;
+        }
+        html.dark-style #autoGenerateModal .bg-light,
+        html.dark-style #autoGenerateModal .bg-white {
+            background-color: #323249 !important;
+            border-color: #444564 !important;
+            color: #cbcbe2 !important;
+        }
+        html.dark-style #autoGenerateModal .text-dark {
+            color: #cbcbe2 !important;
+        }
+        html.dark-style #allClassroomsSummary .badge.bg-white {
+            background-color: #323249 !important;
+            color: #a5a7ff !important;
+            border-color: #444564 !important;
         }
         html.dark-style .layout-menu-toggle a.bg-white {
             background-color: #2b2c40 !important;
@@ -200,10 +222,10 @@
                             <p class="text-muted mb-0 small">Gestão exclusiva da Direção para organização do quadro semanal de aulas e prevenção de conflitos.</p>
                         </div>
                         <div class="d-flex gap-2">
-                            <button id="btnOpenAutoGenerateModal" class="btn btn-outline-primary">
+                            <button id="btnOpenAutoGenerateModal" class="btn btn-outline-primary text-nowrap">
                                 <i class="bx bx-magic-wand me-1"></i> Geração Automática
                             </button>
-                            <button id="btnOpenAddSlotModal" class="btn btn-primary" disabled>
+                            <button id="btnOpenAddSlotModal" class="btn btn-primary text-nowrap" disabled>
                                 <i class="bx bx-plus me-1"></i> Adicionar Horário
                             </button>
                         </div>
@@ -276,6 +298,7 @@
             <form id="formAutoGenerate">
                 <div class="modal-body">
                     <div id="autoModalAlertContainer"></div>
+                    <div id="autoOverwriteWarning" class="alert alert-warning d-none mb-3" role="alert"></div>
 
                     <!-- Escopo da Geração (Todas as Turmas) -->
                     <div class="card mb-3 border-primary bg-label-primary shadow-none">
@@ -563,7 +586,7 @@
         if (!c) return;
         c.innerHTML = `
             <div class="alert alert-${type} alert-dismissible fade show mb-3" role="alert">
-                ${msg}
+                ${escapeHtml(msg)}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         `;
@@ -577,7 +600,7 @@
     async function loadClassrooms() {
         const select = document.getElementById('selectClassroom');
         try {
-            const res = await fetch('/api/classrooms?size=100&activeOnly=true', {
+            const res = await fetch('/api/classrooms?size=1000&activeOnly=true', {
                 headers: { 'Authorization': `Bearer ${jwtToken}` }
             });
             if (!res.ok) throw new Error('Falha ao carregar turmas');
@@ -910,6 +933,29 @@
         // ── Geração Automática da Grade Horária
         autoModalInstance = new bootstrap.Modal(document.getElementById('autoGenerateModal'));
 
+        let classroomSlotCounts = {};
+
+        function updateAutoOverwriteWarning() {
+            const warningEl = document.getElementById('autoOverwriteWarning');
+            if (!warningEl) return;
+
+            const isAll = chkAllClassrooms ? chkAllClassrooms.checked : true;
+            const targetIds = isAll
+                ? classroomsList.map(c => c.id)
+                : Array.from(document.querySelectorAll('.target-classroom-chk:checked')).map(chk => parseInt(chk.value, 10));
+
+            const affected = classroomsList.filter(c => targetIds.includes(c.id) && (classroomSlotCounts[c.id] || 0) > 0);
+            if (affected.length === 0) {
+                warningEl.classList.add('d-none');
+                warningEl.innerHTML = '';
+                return;
+            }
+
+            const names = affected.map(c => `<strong>${escapeHtml(c.name)}</strong> (${classroomSlotCounts[c.id]} aulas)`).join(', ');
+            warningEl.innerHTML = `<i class="bx bx-error me-1"></i><strong>Atenção:</strong> A geração automática irá <strong>sobrescrever</strong> os horários já cadastrados para: ${names}.`;
+            warningEl.classList.remove('d-none');
+        }
+
         const chkAllClassrooms = document.getElementById('chkGenerateAllClassrooms');
         chkAllClassrooms?.addEventListener('change', (e) => {
             const specificContainer = document.getElementById('specificClassroomsContainer');
@@ -921,10 +967,12 @@
                 specificContainer?.classList.remove('d-none');
                 if (btnText) btnText.textContent = 'Gerar Grade para Turmas Selecionadas';
             }
+            updateAutoOverwriteWarning();
         });
 
-        document.getElementById('btnOpenAutoGenerateModal')?.addEventListener('click', () => {
+        document.getElementById('btnOpenAutoGenerateModal')?.addEventListener('click', async () => {
             clearAlert('autoModalAlertContainer');
+            classroomSlotCounts = {};
 
             // Reset switch para Todas as Turmas
             if (chkAllClassrooms) {
@@ -943,7 +991,7 @@
                     summaryEl.innerHTML = '<div class="d-flex flex-wrap gap-1 align-items-center mt-1">' +
                         classroomsList.map(c => `
                             <span class="badge bg-white text-primary border">
-                                ${escapeHtml(c.name)} <span class="text-muted">(${c.schoolGradeLabel || c.schoolGrade || ''} - ${SHIFT_MAP[c.shift] || c.shift})</span>
+                                ${escapeHtml(c.name)} <span class="text-muted">(${escapeHtml(c.schoolGradeLabel || c.schoolGrade || '')} - ${escapeHtml(SHIFT_MAP[c.shift] || c.shift || '')})</span>
                             </span>
                         `).join('') + '</div>';
                 }
@@ -959,10 +1007,13 @@
                         <div class="form-check mb-1">
                             <input class="form-check-input target-classroom-chk" type="checkbox" value="${c.id}" id="chkTarget_${c.id}" checked />
                             <label class="form-check-label" for="chkTarget_${c.id}">
-                                <strong>${escapeHtml(c.name)}</strong> (${c.schoolGradeLabel || c.schoolGrade || ''} - ${SHIFT_MAP[c.shift] || c.shift})
+                                <strong>${escapeHtml(c.name)}</strong> (${escapeHtml(c.schoolGradeLabel || c.schoolGrade || '')} - ${escapeHtml(SHIFT_MAP[c.shift] || c.shift || '')})
                             </label>
                         </div>
                     `).join('');
+                    targetContainer.querySelectorAll('.target-classroom-chk').forEach(chk => {
+                        chk.addEventListener('change', updateAutoOverwriteWarning);
+                    });
                 }
             }
 
@@ -975,15 +1026,35 @@
             } else {
                 sixthContainer.innerHTML = eligible.map(c => `
                     <div class="form-check mb-1">
-                        <input class="form-check-input sixth-lesson-chk" type="checkbox" value="${c.id}" id="chkSixth_${c.id}" />
+                        <input class="form-check-input sixth-lesson-chk" type="checkbox" value="${c.id}" id="chkSixth_${c.id}" ${c.hasSixthLesson === true ? 'checked' : ''} />
                         <label class="form-check-label" for="chkSixth_${c.id}">
-                            <strong>${escapeHtml(c.name)}</strong> (${c.schoolGradeLabel || c.schoolGrade || ''} - ${SHIFT_MAP[c.shift] || c.shift})
+                            <strong>${escapeHtml(c.name)}</strong> (${escapeHtml(c.schoolGradeLabel || c.schoolGrade || '')} - ${escapeHtml(SHIFT_MAP[c.shift] || c.shift || '')})
                         </label>
                     </div>
                 `).join('');
             }
 
             autoModalInstance.show();
+
+            // Consulta paralela das grades atuais para pré-marcar 6ª aula e exibir aviso de sobrescrita
+            if (classroomsList.length > 0) {
+                await Promise.all(classroomsList.map(async (c) => {
+                    try {
+                        const r = await fetch(`/api/timetable/classroom/${c.id}`, {
+                            headers: { 'Authorization': `Bearer ${jwtToken}` }
+                        });
+                        if (!r.ok) return;
+                        const schedule = await r.json();
+                        const slots = schedule?.slots || [];
+                        classroomSlotCounts[c.id] = slots.length;
+                        if (c.hasSixthLesson === true || slots.some(s => Number(s.slotOrder) >= 6)) {
+                            const chkSixth = document.getElementById(`chkSixth_${c.id}`);
+                            if (chkSixth) chkSixth.checked = true;
+                        }
+                    } catch (_e) {}
+                }));
+                updateAutoOverwriteWarning();
+            }
         });
 
         document.getElementById('formAutoGenerate')?.addEventListener('submit', async (e) => {

@@ -26,6 +26,8 @@ public class AcademicYearConclusionServiceImplTest {
     @Mock
     private AcademicYearService academicYearService;
     @Mock
+    private AcademicYearRepository academicYearRepository;
+    @Mock
     private AcademicPeriodRepository academicPeriodRepository;
     @Mock
     private EnrollmentRepository enrollmentRepository;
@@ -68,7 +70,7 @@ public class AcademicYearConclusionServiceImplTest {
         Enrollment e2 = Enrollment.builder().id(2).student(s2).classRoom(cr).active(true).generalSituation(StudentSituation.PENDING).build();
         Enrollment e3 = Enrollment.builder().id(3).student(s3).classRoom(cr).active(true).generalSituation(StudentSituation.PENDING).build();
 
-        when(academicYearService.findActive()).thenReturn(activeYear);
+        when(academicYearRepository.findActiveForUpdate()).thenReturn(java.util.Optional.of(activeYear));
         when(classRoomRepository.findDistinctActivePeriodTypesByYear(activeYear)).thenReturn(List.of(AcademicPeriodType.TRIMESTER));
         when(academicPeriodRepository.areAllPeriodsClosedByType(activeYear, AcademicPeriodType.TRIMESTER)).thenReturn(true);
         when(enrollmentRepository.findByClassRoom_AcademicYearAndActiveTrue(activeYear)).thenReturn(List.of(e1, e2, e3));

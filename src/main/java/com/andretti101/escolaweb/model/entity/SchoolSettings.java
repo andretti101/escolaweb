@@ -54,7 +54,7 @@ public class SchoolSettings implements Serializable {
     @DecimalMin(value = "0.0", message = "A frequência mínima deve ser de pelo menos 0.")
     @DecimalMax(value = "100.0", message = "A frequência mínima deve ser no máximo 100.")
     @Column(name = "minimum_attendance", precision = 5, scale = 2)
-    private BigDecimal minimumAttendance = new BigDecimal("70.00");
+    private BigDecimal minimumAttendance = new BigDecimal("75.00");
 
     @Builder.Default
     @DecimalMin(value = "0.0", message = "A média mínima deve ser de pelo menos 0.")

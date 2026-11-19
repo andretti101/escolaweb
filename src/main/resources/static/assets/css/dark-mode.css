@@ -227,6 +227,10 @@ html.dark-style .form-select:disabled {
 }
 html.dark-style .form-control.bg-light { background-color: rgba(219, 219, 235, 0.06) !important; }
 html.dark-style .form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-repeat: no-repeat;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a3a4cc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 }
 html.dark-style .form-select[multiple],
@@ -593,6 +597,16 @@ html.dark-style .bg-label-gray      { background-color: rgba(219, 219, 235, 0.08
 
 html.dark-style .badge.bg-light { color: var(--ew-heading) !important; }
 html.dark-style .badge.bg-white { background-color: rgba(255, 255, 255, 0.92) !important; }
+html.dark-style .badge.bg-white.text-primary {
+    background-color: var(--ew-surface-2) !important;
+    color: #a5a7ff !important;
+    border-color: var(--ew-border) !important;
+}
+html.dark-style .badge.bg-white.text-dark {
+    background-color: var(--ew-surface-2) !important;
+    color: var(--ew-heading) !important;
+    border-color: var(--ew-border) !important;
+}
 
 /* ---------------------------------------------------------------- Alertas */
 html.dark-style .alert-primary   { background-color: rgba(105, 108, 255, 0.16); border-color: rgba(105, 108, 255, 0.3); color: #a5a7ff; }
@@ -737,7 +751,27 @@ html.dark-style .counter-card.active {
 html.dark-style #processingOverlay,
 html.dark-style .processing-overlay { background: rgba(35, 35, 51, 0.92) !important; }
 
-/* --- Grade Horária (Timetable) --- */
+/* --- Grade Horária (Timetable) & Modais / Linhas Inativas --- */
+html.dark-style .inactive-row,
+html.dark-style tr.inactive-row > td {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    color: #707186;
+}
+html.dark-style #specificClassroomsContainer,
+html.dark-style #sixthLessonClassroomsContainer {
+    background-color: var(--ew-surface-2) !important;
+    border-color: var(--ew-border) !important;
+    color: var(--ew-text) !important;
+}
+html.dark-style .modal .bg-light,
+html.dark-style .modal .bg-white {
+    background-color: var(--ew-surface-2) !important;
+    border-color: var(--ew-border) !important;
+    color: var(--ew-text) !important;
+}
+html.dark-style .modal .text-dark {
+    color: var(--ew-heading) !important;
+}
 html.dark-style .timetable-day-col {
     background-color: #232333 !important;
     border-color: var(--ew-border) !important;
@@ -747,21 +781,25 @@ html.dark-style .day-header {
     color: var(--ew-heading) !important;
     border: 1px solid var(--ew-border) !important;
 }
-html.dark-style .timetable-card {
+html.dark-style .timetable-card,
+html.dark-style .slot-card {
     background-color: var(--ew-surface) !important;
     border-top: 1px solid var(--ew-border) !important;
     border-right: 1px solid var(--ew-border) !important;
     border-bottom: 1px solid var(--ew-border) !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
 }
-html.dark-style .timetable-card:hover {
+html.dark-style .timetable-card:hover,
+html.dark-style .slot-card:hover {
     background-color: var(--ew-surface-2) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
 }
-html.dark-style .timetable-card .text-dark {
+html.dark-style .timetable-card .text-dark,
+html.dark-style .slot-card .text-dark {
     color: var(--ew-heading) !important;
 }
-html.dark-style .timetable-card .text-muted {
+html.dark-style .timetable-card .text-muted,
+html.dark-style .slot-card .text-muted {
     color: var(--ew-muted) !important;
 }
 html.dark-style .timetable-day-col .text-muted {

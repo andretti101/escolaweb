@@ -4,6 +4,7 @@ import com.andretti101.escolaweb.model.entity.AcademicPeriod;
 import com.andretti101.escolaweb.model.entity.Assessment;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.repository.AssessmentRepository;
+import com.andretti101.escolaweb.repository.GradeHistoryRepository;
 import com.andretti101.escolaweb.repository.GradeRepository;
 import com.andretti101.escolaweb.service.AcademicPeriodService;
 import com.andretti101.escolaweb.service.AssessmentService;
@@ -21,6 +22,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 
     private final AssessmentRepository assessmentRepository;
     private final GradeRepository gradeRepository;
+    private final GradeHistoryRepository gradeHistoryRepository;
     private final TeacherClassSubjectService teacherClassSubjectService;
     private final AcademicPeriodService academicPeriodService;
 
@@ -31,7 +33,8 @@ public class AssessmentServiceImpl implements AssessmentService {
         TeacherClassSubject tcs = resolveTcs(assessment.getTeacherClassSubject());
         AcademicPeriod period = resolvePeriod(assessment.getPeriod());
 
-        // Validações de coerência: ano letivo coincidente, tipo de período compatível, período aberto e data válida
+        // Validações de coerência: atribuição/turma/ano ativos, ano letivo coincidente, tipo de período compatível, período aberto e data válida
+        validateTcsAndHierarchyActive(tcs);
         validateCrossAcademicYear(tcs, period);
         validatePeriodType(tcs, period);
         validatePeriodOpen(period);
@@ -51,11 +54,13 @@ public class AssessmentServiceImpl implements AssessmentService {
     public Assessment update(Integer id, Assessment incoming) {
         Assessment existing = findAssessmentOrThrow(id);
 
+        validateTcsAndHierarchyActive(existing.getTeacherClassSubject());
         validatePeriodOpen(existing.getPeriod());
 
         TeacherClassSubject tcs = resolveTcs(incoming.getTeacherClassSubject());
         AcademicPeriod period = resolvePeriod(incoming.getPeriod());
 
+        validateTcsAndHierarchyActive(tcs);
         validateCrossAcademicYear(tcs, period);
         validatePeriodType(tcs, period);
         validatePeriodOpen(period);
@@ -83,7 +88,12 @@ public class AssessmentServiceImpl implements AssessmentService {
     public void delete(Integer id) {
         Assessment assessment = findAssessmentOrThrow(id);
 
+        validateTcsAndHierarchyActive(assessment.getTeacherClassSubject());
         validatePeriodOpen(assessment.getPeriod());
+
+        if (gradeHistoryRepository != null) {
+            gradeHistoryRepository.unlinkByAssessmentId(id);
+        }
 
         assessmentRepository.deleteById(id);
     }
@@ -159,6 +169,24 @@ public class AssessmentServiceImpl implements AssessmentService {
             throw new IllegalArgumentException("Selecione o período acadêmico para a avaliação.");
         }
         return academicPeriodService.findById(ref.getId());
+    }
+
+    private void validateTcsAndHierarchyActive(TeacherClassSubject tcs) {
+        if (tcs == null) {
+            return;
+        }
+        if (!tcs.isActive()) {
+            throw new IllegalStateException("Não é possível criar, alterar ou excluir avaliações em uma atribuição inativa.");
+        }
+        if (tcs.getClassRoom() != null && !tcs.getClassRoom().isActive()) {
+            throw new IllegalStateException("Não é possível criar, alterar ou excluir avaliações em uma turma inativa.");
+        }
+        if (tcs.getClassRoom() != null && tcs.getClassRoom().getAcademicYear() != null
+                && !tcs.getClassRoom().getAcademicYear().isActive()) {
+            throw new IllegalStateException(
+                    "O ano letivo '" + tcs.getClassRoom().getAcademicYear().getYear()
+                    + "' não está ativo. Não é permitido criar, alterar ou excluir avaliações de anos letivos encerrados.");
+        }
     }
 
     private void validatePeriodOpen(AcademicPeriod period) {

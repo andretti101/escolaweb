@@ -9,6 +9,8 @@ import com.andretti101.escolaweb.dto.response.AuthResponseDTO;
 import com.andretti101.escolaweb.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.Duration;
 import java.util.Map;
 
 @Tag(name = "Autenticação", description = "Endpoints para login, renovação de token, logout e recuperação de senha")
@@ -32,6 +35,15 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+
+    private ResponseCookie buildJwtCookie(String token, long maxAgeMillis) {
+        return ResponseCookie.from("jwt_token", token != null ? token : "")
+                .httpOnly(true)
+                .path("/")
+                .sameSite("Strict")
+                .maxAge(Duration.ofMillis(Math.max(0L, maxAgeMillis)))
+                .build();
+    }
 
     @Operation(summary = "Autenticar usuário", description = "Valida as credenciais (e-mail e senha) e retorna os tokens JWT de acesso e refresh, além dos dados do usuário.")
     @SecurityRequirements
@@ -43,7 +55,11 @@ public class AuthController {
     // Autentica o usuário com e-mail e senha, retornando access token JWT e refresh token
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
-        return ResponseEntity.ok(authService.login(dto));
+        AuthResponseDTO response = authService.login(dto);
+        long maxAge = response.accessTokenExpiresIn() > 0 ? response.accessTokenExpiresIn() : 86_400_000L;
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, buildJwtCookie(response.accessToken(), maxAge).toString())
+                .body(response);
     }
 
     @Operation(summary = "Renovar token de acesso", description = "Gera um novo token JWT de acesso e um novo refresh token a partir de um refresh token válido.")
@@ -56,7 +72,11 @@ public class AuthController {
     // Renova a sessão emitindo novo par de tokens a partir do refresh token válido
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponseDTO> refresh(@Valid @RequestBody RefreshTokenRequestDTO dto) {
-        return ResponseEntity.ok(authService.refresh(dto));
+        AuthResponseDTO response = authService.refresh(dto);
+        long maxAge = response.accessTokenExpiresIn() > 0 ? response.accessTokenExpiresIn() : 86_400_000L;
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, buildJwtCookie(response.accessToken(), maxAge).toString())
+                .body(response);
     }
 
     @Operation(summary = "Encerrar sessão (Logout)", description = "Revoga o refresh token informado, invalidando a sessão do usuário.")
@@ -65,9 +85,13 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Dados do token inválidos")
     })
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequestDTO dto) {
-        authService.logout(dto);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> logout(@Valid @RequestBody(required = false) RefreshTokenRequestDTO dto) {
+        if (dto != null && dto.refreshToken() != null && !dto.refreshToken().isBlank()) {
+            authService.logout(dto);
+        }
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, buildJwtCookie("", 0L).toString())
+                .build();
     }
 
     @Operation(summary = "Alterar senha do usuário autenticado", description = "Permite que qualquer usuário logado altere sua própria senha informando a senha atual e a nova senha.")

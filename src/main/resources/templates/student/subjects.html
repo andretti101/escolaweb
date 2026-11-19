@@ -155,7 +155,7 @@
 
         async function init() {
             if (!jwtToken || !studentId) {
-                window.location.href = '/login.html';
+                window.location.href = '/entrar';
                 return;
             }
 
@@ -178,7 +178,7 @@
                     return;
                 }
                 
-                document.getElementById('classroomTitle').textContent = `Turma: ${escapeHtml(activeEnrollment.classRoomName)}`;
+                document.getElementById('classroomTitle').textContent = `Turma: ${activeEnrollment.classRoomName || ''}`;
                 
                 // 2. Get subjects for classroom
                 const subjectsRes = await fetch(`/api/teacher-class-subjects/classroom/${activeEnrollment.classRoomId}`, {

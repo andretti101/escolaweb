@@ -137,10 +137,15 @@
 
         function getToken() { return localStorage.getItem('jwt_token') || ''; }
 
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
         function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
             const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
-            container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+            container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${escapeHtml(cleanMsg)}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
             window.scrollTo(0,0);
         }
 
@@ -202,7 +207,7 @@
             const tbody = document.getElementById('studentsTableBody');
             let html = '';
             students.forEach(s => {
-                const safeName = s.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const safeName = escapeHtml(s.name);
                 html += `
                     <tr>
                         <td class="align-middle fw-semibold">${safeName}</td>

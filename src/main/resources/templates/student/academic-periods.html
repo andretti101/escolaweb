@@ -70,7 +70,7 @@
                                 </li>
                                 <li><div class="dropdown-divider"></div></li>
                                 <li>
-                                    <a class="dropdown-item" id="btnLogout" href="javascript:void(0);" onclick="handleLogout()">
+                                    <a class="dropdown-item" id="btnLogout" href="javascript:void(0);">
                                         <i class="bx bx-power-off me-2"></i>
                                         <span class="align-middle">Sair</span>
                                     </a>
@@ -187,12 +187,7 @@
     function handleUnauthorized() {
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login.html';
-    }
-
-    function handleLogout() {
-        localStorage.clear();
-        window.location.href = '/login.html';
+        window.location.href = '/entrar';
     }
 
     async function loadYearFilter() {

@@ -94,23 +94,27 @@ public class PdfDocumentServiceImpl implements PdfDocumentService {
                         .findFirst()
                         .orElse(null);
                 if (pg != null && pg.average() != null) {
-                    gradesList.add(String.format(PT_BR, "%.1f", pg.average()));
+                    gradesList.add(String.format(PT_BR, "%.2f", pg.average()));
                 } else {
                     gradesList.add("-");
                 }
             }
 
             String finalAvgStr = "-";
-            int gradesCount = (int) s.periodGrades().stream().filter(pg -> pg.average() != null).count();
-            if (reportCard.totalPeriods() > 0 && gradesCount > 0 && (gradesCount == reportCard.totalPeriods()
-                    || s.situation() == StudentSituation.APPROVED
-                    || s.situation() == StudentSituation.FAILED)) {
-                BigDecimal sum = s.periodGrades().stream()
-                        .filter(pg -> pg.average() != null)
-                        .map(ReportCardDTO.PeriodGradeDTO::average)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-                BigDecimal finalAvg = sum.divide(BigDecimal.valueOf(reportCard.totalPeriods()), 1, RoundingMode.HALF_UP);
-                finalAvgStr = String.format(PT_BR, "%.1f", finalAvg);
+            if (s.finalAverage() != null) {
+                finalAvgStr = String.format(PT_BR, "%.2f", s.finalAverage());
+            } else {
+                int gradesCount = (int) s.periodGrades().stream().filter(pg -> pg.average() != null).count();
+                if (reportCard.totalPeriods() > 0 && gradesCount > 0 && (gradesCount == reportCard.totalPeriods()
+                        || s.situation() == StudentSituation.APPROVED
+                        || s.situation() == StudentSituation.FAILED)) {
+                    BigDecimal sum = s.periodGrades().stream()
+                            .filter(pg -> pg.average() != null)
+                            .map(ReportCardDTO.PeriodGradeDTO::average)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal finalAvg = sum.divide(BigDecimal.valueOf(reportCard.totalPeriods()), 2, RoundingMode.HALF_UP);
+                    finalAvgStr = String.format(PT_BR, "%.2f", finalAvg);
+                }
             }
 
             int absences = (attendanceReport != null && attendanceReport.absencesPerSubject() != null)
@@ -160,7 +164,7 @@ public class PdfDocumentServiceImpl implements PdfDocumentService {
                 : "100.00%";
         String minFreqStr = reportCard.frequency() != null
                 ? String.format(PT_BR, "%.2f%%", reportCard.frequency().minimumAttendance())
-                : "70.00%";
+                : "75.00%";
         String freqSitLabel = (reportCard.frequency() != null && reportCard.frequency().situation() == StudentSituation.APPROVED)
                 ? "APROVADO"
                 : (reportCard.frequency() != null && reportCard.frequency().situation() == StudentSituation.FAILED ? "REPROVADO" : "PENDENTE");

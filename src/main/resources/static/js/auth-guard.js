@@ -8,15 +8,27 @@ const refreshToken = localStorage.getItem("refresh_token");
 
 function clearTokensAndRedirect() {
     document.documentElement.style.display = 'none';
-    localStorage.removeItem("jwt_token");
-    localStorage.removeItem("refresh_token");
-    document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
-    window.location.href = "/entrar";
+    const rt = localStorage.getItem("refresh_token");
+    fetch('/auth/logout', {
+        method: 'POST',
+        keepalive: true,
+        ...(rt ? {
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: rt })
+        } : {})
+    }).catch(() => {}).finally(() => {
+        const themeKey = (window.EscolaTheme && window.EscolaTheme.STORAGE_KEY) || 'escolaweb-theme';
+        const savedTheme = localStorage.getItem(themeKey);
+        localStorage.clear();
+        if (savedTheme) localStorage.setItem(themeKey, savedTheme);
+        window.location.href = "/entrar";
+    });
 }
 
 function decodeJwtPayload(jwtStr) {
     const payloadBase64 = jwtStr.split('.')[1];
-    const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+    let base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) base64 += '=';
     return JSON.parse(atob(base64));
 }
 
@@ -44,7 +56,6 @@ if (!token) {
                             if (data.refreshToken) {
                                 localStorage.setItem("refresh_token", data.refreshToken);
                             }
-                            document.cookie = `jwt_token=${encodeURIComponent(data.accessToken)}; path=/; SameSite=Strict`;
                             decodedPayload = decodeJwtPayload(token);
                             renewed = true;
                         }
@@ -74,9 +85,9 @@ if (!token) {
                 handleUnauthorized("Acesso Negado! Área restrita.");
             } else if (isPrincipalPath && role !== "ROLE_PRINCIPAL") {
                 handleUnauthorized("Acesso Negado! Área exclusiva da Direção.");
-            } else if (isStudentPath && role !== "ROLE_STUDENT") {
+            } else if (isStudentPath && role !== "ROLE_STUDENT" && role !== "ROLE_PRINCIPAL") {
                 handleUnauthorized("Acesso Negado! Área exclusiva do Aluno.");
-            } else if (isTeacherPath && role !== "ROLE_TEACHER") {
+            } else if (isTeacherPath && role !== "ROLE_TEACHER" && role !== "ROLE_PRINCIPAL") {
                 handleUnauthorized("Acesso Negado! Área exclusiva do Professor.");
             }
             // Se nenhuma condição disparou, o usuário está autorizado e a página carrega normalmente.
@@ -86,7 +97,8 @@ if (!token) {
             document.documentElement.style.display = 'none';
             document.addEventListener("DOMContentLoaded", async () => {
                 document.documentElement.style.display = '';
-                document.body.style.display = 'none';
+                const lw = document.querySelector('.layout-wrapper');
+                if (lw) lw.style.visibility = 'hidden';
                 if (window.showAlertModal) {
                     await window.showAlertModal("Acesso Negado", msg);
                 }

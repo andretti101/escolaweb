@@ -186,6 +186,13 @@ body {
   z-index: 1050 !important;
 }
 
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-repeat: no-repeat;
+}
+
 /* --------------------------------------------------------------------------
    3. LARGE SCREEN / DESKTOP FALLBACKS & SIZING
    -------------------------------------------------------------------------- */
@@ -960,6 +967,13 @@ body {
   .form-control,
   .form-select {
     min-height: 44px !important;
+  }
+
+  .form-select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-repeat: no-repeat !important;
   }
 
   .input-group .form-control {

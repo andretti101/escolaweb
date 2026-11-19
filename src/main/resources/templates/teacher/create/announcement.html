@@ -66,7 +66,7 @@
                     <div class="card mb-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Criar Novo Aviso</h5>
-                            <a href="/teacher/my-announcements.html" class="btn btn-sm btn-outline-secondary">
+                            <a href="/professor/meus-avisos" class="btn btn-sm btn-outline-secondary">
                                 <i class="bx bx-arrow-back"></i> Voltar
                             </a>
                         </div>
@@ -153,7 +153,7 @@
         const authUserId = localStorage.getItem("user_id");
 
         Promise.all([
-            fetch("/api/classrooms", { headers: { "Authorization": "Bearer " + token } }).then(r => r.json()),
+            fetch("/api/classrooms?size=1000", { headers: { "Authorization": "Bearer " + token } }).then(r => r.json()),
             fetch("/api/teacher-class-subjects/teacher/" + authUserId, { headers: { "Authorization": "Bearer " + token } }).then(r => r.json())
         ])
         .then(([classroomsData, tcsData]) => {
@@ -352,6 +352,10 @@ messageInput.addEventListener("input", function() {
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>`;
                     form.reset();
+                    selectedClassrooms = [];
+                    renderTags();
+                    classRoomSearch.value = '';
+                    classRoomDropdown.classList.remove('show');
                     charCounter.textContent = "0/200 caracteres";
                     charCounter.classList.remove("text-danger");
                 } else {
@@ -364,7 +368,7 @@ messageInput.addEventListener("input", function() {
                 submitBtn.disabled = false;
                 submitSpinner.classList.add("d-none");
                 alertMessage.innerHTML = `<div class="alert alert-danger alert-dismissible" role="alert">
-                    ${error.message}
+                    ${escapeHtml(error.message)}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>`;
             });

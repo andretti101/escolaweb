@@ -233,7 +233,7 @@
 
     function showAlert(message, type) {
         const container = document.getElementById('alertContainer');
-        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${escapeHtml(message)}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
         setTimeout(() => {
             container.innerHTML = '';
         }, 5000);
@@ -241,7 +241,7 @@
 
     async function loadYears() {
         try {
-            const res = await fetch('/api/academic-years', {
+            const res = await fetch('/api/academic-years?size=1000', {
                 headers: {'Authorization': `Bearer ${jwtToken || ''}`}
             });
             if (res.ok) {
@@ -262,7 +262,7 @@
 
     async function loadClassrooms() {
         try {
-            const response = await fetch('/api/classrooms?activeOnly=false', {
+            const response = await fetch('/api/classrooms?activeOnly=false&size=1000', {
                 headers: {'Authorization': `Bearer ${jwtToken || ''}`}
             });
             if (response.ok) {
@@ -311,12 +311,12 @@
                 <tr class="${c.active ? '' : 'inactive-row'}" style="cursor: pointer;" onclick="if (!event.target.closest('button, a, .dropdown')) openDrawer(${c.id})">
                     <td><strong>${escapeHtml(c.name)}</strong></td>
                     <td>${escapeHtml(schoolGradeLabel)}</td>
-                    <td>${academicYearText}</td>
+                    <td>${escapeHtml(academicYearText)}</td>
                     <td>${periodTypeBadge}</td>
-                    <td><span class="badge bg-label-info">${shiftLabel}</span></td>
+                    <td><span class="badge bg-label-info">${escapeHtml(shiftLabel)}</span></td>
                     <td><span class="badge ${badgeClass}">${badgeText}</span></td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-primary"
+                        <button type="button" class="btn btn-sm btn-outline-primary text-nowrap"
                                 onclick="openDrawer(${c.id})">
                             <i class="bx bx-sidebar me-1"></i> Alunos & Grade
                         </button>

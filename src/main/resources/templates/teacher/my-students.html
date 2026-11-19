@@ -124,7 +124,7 @@
                 if (res.ok) {
                     teacherClassSubjects = await res.json();
                     teacherClassSubjects = teacherClassSubjects.filter(t => t.active);
-                    teacherClassSubjects.sort((a, b) => a.classRoomName.localeCompare(b.classRoomName));
+                    teacherClassSubjects.sort((a, b) => (a.classRoomName || '').localeCompare(b.classRoomName || ''));
                     const select = document.getElementById('tcsSelect');
                     select.innerHTML = '<option value="">Selecione...</option>';
                     teacherClassSubjects.forEach(tcs => {
@@ -161,7 +161,7 @@
                 });
                 let enrollments = await enrollmentsRes.json();
                 enrollments = enrollments.filter(e => e.active);
-                enrollments.sort((a, b) => a.studentName.localeCompare(b.studentName));
+                enrollments.sort((a, b) => (a.studentName || '').localeCompare(b.studentName || ''));
                 
                 if (enrollments.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Nenhum aluno ativo nesta turma.</td></tr>';
@@ -215,7 +215,7 @@
                             });
                             sumOfPeriodAvgs += (pSum / pGrades.length);
                         });
-                        avg = (sumOfPeriodAvgs / periodNames.length).toFixed(1);
+                        avg = (sumOfPeriodAvgs / periodNames.length).toFixed(2);
                     }
                     
                     let gradesListHtml = '';
@@ -226,10 +226,15 @@
                             const periodGrades = groupedGrades[pName];
                             const badgesHtml = periodGrades.map(g => {
                                 const eff = g.effectiveValue != null ? Number(g.effectiveValue) : (g.recoveryValue != null ? Number(g.recoveryValue) : Number(g.value));
+                                const firstGradeLabel = g.value != null
+                                    ? Number(g.value).toFixed(2)
+                                    : (g.effectiveValue != null
+                                        ? Number(g.effectiveValue).toFixed(2)
+                                        : (g.recoveryValue != null ? Number(g.recoveryValue).toFixed(2) : '-'));
                                 const detailTitle = g.recoveryValue != null
-                                    ? `${g.assessmentTitle} (1ª Nota: ${Number(g.value).toFixed(1)} | Rec: ${Number(g.recoveryValue).toFixed(1)})`
+                                    ? `${g.assessmentTitle} (1ª Nota: ${firstGradeLabel} | Rec: ${Number(g.recoveryValue).toFixed(2)})`
                                     : g.assessmentTitle;
-                                return `<span class="badge bg-label-primary me-1 mb-1" title="${escapeHtml(detailTitle)}">${eff.toFixed(1)}</span>`;
+                                return `<span class="badge bg-label-primary me-1 mb-1" title="${escapeHtml(detailTitle)}">${eff.toFixed(2)}</span>`;
                             }).join('');
                             gradesListHtml += `<div class="d-inline-block me-4 mb-2"><span class="d-block small fw-bold text-muted mb-1" style="font-size: 0.75rem;">${escapeHtml(pName)}</span>${badgesHtml}</div>`;
                         }

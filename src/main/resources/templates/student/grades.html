@@ -147,6 +147,7 @@
         const studentId = localStorage.getItem('user_id');
         let allGrades = [];
         let selectedPeriod = null;
+        let minGrade = 6.0;
 
         function escapeHtml(unsafe) {
             if (!unsafe) return '';
@@ -158,7 +159,10 @@
             try {
                 let activeYear = null;
                 const yrRes = await fetch('/api/academic-years/active', { headers: {'Authorization': 'Bearer ' + jwtToken} });
-                if (yrRes.ok) activeYear = await yrRes.json();
+                if (yrRes.ok) {
+                    activeYear = await yrRes.json();
+                    if (activeYear?.minimumGrade != null) minGrade = Number(activeYear.minimumGrade);
+                }
                 const queryYear = activeYear ? '?yearId=' + activeYear.id : '';
 
                 const res = await fetch(`/api/grades/student/${studentId}` + queryYear, { headers: {'Authorization': `Bearer ${jwtToken}`} });
@@ -192,7 +196,7 @@
 
         function buildPeriodDropdown() {
             const select = document.getElementById('periodSelect');
-            const periods = [...new Set(allGrades.filter(g => g.periodName).map(g => g.periodName))].sort();
+            const periods = [...new Set(allGrades.filter(g => g.periodName).map(g => g.periodName))];
             
             if (periods.length === 0) {
                 select.innerHTML = '<option value="">Nenhuma nota encontrada</option>';
@@ -224,10 +228,18 @@
             const subjects = [...new Set(gradesInPeriod.map(g => g.subjectName))].sort();
 
             list.innerHTML = subjects.map(subj => `
-                <button type="button" class="btn btn-outline-primary btn-lg w-100" onclick="showGradesForSubject('${escapeHtml(subj)}')">
+                <button type="button" class="btn btn-outline-primary btn-lg w-100" data-subject="${escapeHtml(subj)}">
                     ${escapeHtml(subj)}
                 </button>
             `).join('');
+
+            if (!list.dataset.delegated) {
+                list.dataset.delegated = 'true';
+                list.addEventListener('click', (ev) => {
+                    const btn = ev.target.closest('button[data-subject]');
+                    if (btn) showGradesForSubject(btn.dataset.subject);
+                });
+            }
 
             container.classList.remove('d-none');
         }
@@ -255,15 +267,15 @@
                     const eff = g.effectiveValue != null ? Number(g.effectiveValue) : (orig !== null && rec !== null ? Math.max(orig, rec) : (orig ?? rec));
                     const recWins = orig !== null && rec !== null && rec > orig;
                     const origWins = orig !== null && (rec === null || orig >= rec);
-                    const effBadgeClass = eff != null && eff >= 6.0 ? 'bg-label-success' : 'bg-label-danger';
+                    const effBadgeClass = eff != null && eff >= minGrade ? 'bg-label-success' : 'bg-label-danger';
                     return `
                         <tr>
                             <td><strong>${escapeHtml(g.assessmentTitle)}</strong></td>
                             <td><span class="badge bg-label-info">${escapeHtml(typeMap[g.assessmentType] || g.assessmentType)}</span></td>
                             <td>${new Date(g.createdAt).toLocaleDateString('pt-BR')}</td>
-                            <td class="text-center">${orig !== null ? (origWins ? `<strong>${orig.toFixed(1)}</strong>` : `<span class="text-muted">${orig.toFixed(1)}</span>`) : '-'}</td>
-                            <td class="text-center">${rec !== null ? (recWins ? `<strong class="text-success">${rec.toFixed(1)}</strong>` : `<span class="text-muted">${rec.toFixed(1)}</span>`) : '<span class="text-muted">Pendente</span>'}</td>
-                            <td class="text-center">${eff !== null ? `<span class="badge ${effBadgeClass} fs-6">${eff.toFixed(1)}</span>` : '-'}</td>
+                            <td class="text-center">${orig !== null ? (origWins ? `<strong>${orig.toFixed(2)}</strong>` : `<span class="text-muted">${orig.toFixed(2)}</span>`) : '-'}</td>
+                            <td class="text-center">${rec !== null ? (recWins ? `<strong class="text-success">${rec.toFixed(2)}</strong>` : `<span class="text-muted">${rec.toFixed(2)}</span>`) : '<span class="text-muted">Pendente</span>'}</td>
+                            <td class="text-center">${eff !== null ? `<span class="badge ${effBadgeClass} fs-6">${eff.toFixed(2)}</span>` : '-'}</td>
                         </tr>
                     `;
                 }).join('');

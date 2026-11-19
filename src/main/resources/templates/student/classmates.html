@@ -165,7 +165,7 @@
 
         async function init() {
             if (!jwtToken || !studentId) {
-                window.location.href = '/login.html';
+                window.location.href = '/entrar';
                 return;
             }
 
@@ -188,7 +188,7 @@
                     return;
                 }
                 
-                document.getElementById('classroomTitle').textContent = `Turma: ${escapeHtml(activeEnrollment.classRoomName)}`;
+                document.getElementById('classroomTitle').textContent = `Turma: ${activeEnrollment.classRoomName || ''}`;
                 
                 // 2. Get classmates
                 const classmatesRes = await fetch(`/api/enrollments/classroom/${activeEnrollment.classRoomId}`, {

@@ -1,5 +1,6 @@
 package com.andretti101.escolaweb.service.impl;
 
+import com.andretti101.escolaweb.model.entity.AcademicPeriod;
 import com.andretti101.escolaweb.model.entity.Assessment;
 import com.andretti101.escolaweb.model.entity.Grade;
 import com.andretti101.escolaweb.model.entity.GradeHistory;
@@ -8,6 +9,7 @@ import com.andretti101.escolaweb.model.entity.Student;
 import com.andretti101.escolaweb.model.entity.TeacherClassSubject;
 import com.andretti101.escolaweb.model.enums.GradeKind;
 import com.andretti101.escolaweb.model.enums.StudentSituation;
+import com.andretti101.escolaweb.repository.AcademicPeriodRepository;
 import com.andretti101.escolaweb.repository.EnrollmentRepository;
 import com.andretti101.escolaweb.repository.GradeHistoryRepository;
 import com.andretti101.escolaweb.repository.GradeRepository;
@@ -19,6 +21,7 @@ import com.andretti101.escolaweb.service.StudentService;
 import com.andretti101.escolaweb.service.TeacherClassSubjectService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,7 @@ public class GradeServiceImpl implements GradeService {
 
     private final GradeRepository gradeRepository;
     private final GradeHistoryRepository gradeHistoryRepository;
+    private final AcademicPeriodRepository academicPeriodRepository;
     private final com.andretti101.escolaweb.service.AuthenticatedUserService authenticatedUserService;
     private final EnrollmentRepository enrollmentRepository;
     private final StudentService studentService;
@@ -167,10 +171,27 @@ public class GradeServiceImpl implements GradeService {
     public void delete(Integer id) {
         Grade existing = findGradeOrThrow(id);
         validatePeriodOpen(existing.getAssessment());
+
+        Integer studentId = existing.getStudent() != null ? existing.getStudent().getId() : null;
+        Integer tcsId = (existing.getAssessment() != null && existing.getAssessment().getTeacherClassSubject() != null)
+                ? existing.getAssessment().getTeacherClassSubject().getId()
+                : null;
+
         gradeRepository.deleteById(id);
-        if (existing.getAssessment() != null && existing.getAssessment().getTeacherClassSubject() != null && existing.getStudent() != null) {
-            updateStudentSituation(existing);
+        gradeRepository.flush();
+
+        if (studentId != null && tcsId != null) {
+            updateStudentSituation(studentId, tcsId);
         }
+    }
+
+    @EventListener
+    @Transactional
+    public void onAttendanceChanged(AttendanceServiceImpl.AttendanceChangedEvent event) {
+        if (event == null || event.studentId() == null || event.teacherClassSubjectId() == null) {
+            return;
+        }
+        updateStudentSituation(event.studentId(), event.teacherClassSubjectId());
     }
 
     @Override
@@ -243,8 +264,28 @@ public class GradeServiceImpl implements GradeService {
     // ── Private helpers
 
     private void updateStudentSituation(Grade grade) {
-        TeacherClassSubject tcs = grade.getAssessment().getTeacherClassSubject();
-        Student student = grade.getStudent();
+        if (grade == null || grade.getAssessment() == null) {
+            return;
+        }
+        updateStudentSituation(grade.getStudent(), grade.getAssessment().getTeacherClassSubject());
+    }
+
+    private void updateStudentSituation(Integer studentId, Integer tcsId) {
+        if (studentId == null || tcsId == null) {
+            return;
+        }
+        Student student = studentService.findById(studentId);
+        TeacherClassSubject tcs = teacherClassSubjectService.findById(tcsId);
+        if (student == null || tcs == null) {
+            return;
+        }
+        updateStudentSituation(student, tcs);
+    }
+
+    private void updateStudentSituation(Student student, TeacherClassSubject tcs) {
+        if (student == null || tcs == null) {
+            return;
+        }
         SchoolSettings settings = schoolSettingsService.findSettings();
 
         List<Grade> allGrades = gradeRepository.findByStudentAndAssessment_TeacherClassSubject(student, tcs);
@@ -257,22 +298,30 @@ public class GradeServiceImpl implements GradeService {
                 .distinct()
                 .count();
 
-        int divisor = (tcs.getClassRoom() != null && tcs.getClassRoom().getPeriodType() != null)
-                ? tcs.getClassRoom().getPeriodType().getDivisor()
-                : 1;
+        var academicYear = tcs.getClassRoom() != null ? tcs.getClassRoom().getAcademicYear() : null;
+        var periodType = tcs.getClassRoom() != null ? tcs.getClassRoom().getPeriodType() : null;
+        int divisor = periodType != null ? periodType.getDivisor() : 1;
 
-        if (periodsWithGrades < divisor) {
+        boolean allPeriodsClosed = false;
+        if (academicPeriodRepository != null && academicYear != null && periodType != null) {
+            List<AcademicPeriod> divisionPeriods = academicPeriodRepository
+                    .findByAcademicYearAndPeriodTypeOrderByIdAsc(academicYear, periodType);
+            if (divisionPeriods != null && !divisionPeriods.isEmpty()) {
+                allPeriodsClosed = divisionPeriods.stream().allMatch(AcademicPeriod::isClosed);
+            }
+        }
+
+        if (periodsWithGrades < divisor && !allPeriodsClosed) {
             allGrades.forEach(g -> g.setStudentSituation(StudentSituation.PENDING));
             return;
         }
 
-        var academicYear = tcs.getClassRoom() != null ? tcs.getClassRoom().getAcademicYear() : null;
         BigDecimal minGrade = (academicYear != null && academicYear.getMinimumGrade() != null)
                 ? academicYear.getMinimumGrade()
-                : (settings != null ? settings.getMinimumGrade() : new BigDecimal("6.0"));
+                : (settings != null && settings.getMinimumGrade() != null ? settings.getMinimumGrade() : new BigDecimal("6.0"));
         BigDecimal minAttendance = (academicYear != null && academicYear.getMinimumAttendance() != null)
                 ? academicYear.getMinimumAttendance()
-                : (settings != null ? settings.getMinimumAttendance() : new BigDecimal("75.0"));
+                : (settings != null && settings.getMinimumAttendance() != null ? settings.getMinimumAttendance() : new BigDecimal("75.00"));
 
         BigDecimal average = calculateAverage(student.getId(), tcs.getId());
         BigDecimal frequency = attendanceService.calculateFrequency(student.getId(), tcs.getId());
@@ -294,7 +343,7 @@ public class GradeServiceImpl implements GradeService {
                 .previousGrade(previousValue)
                 .newGrade(newValue)
                 .notes(notes)
-                .changedBy(authenticatedUserService.findAuthenticatedUserOrNull())
+                .changedBy(authenticatedUserService != null ? authenticatedUserService.findAuthenticatedUserOrNull() : null)
                 .build();
         gradeHistoryRepository.save(history);
     }

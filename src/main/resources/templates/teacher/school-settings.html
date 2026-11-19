@@ -170,10 +170,15 @@
         return localStorage.getItem('jwt_token') || '';
     }
 
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        return String(unsafe).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
     function showAlert(message, type) {
         const container = document.getElementById('alertContainer');
         const cleanMsg = (message && String(message).trim()) ? String(message).trim() : 'Ocorreu um erro ao processar a solicitação.';
-        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${cleanMsg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+        container.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${escapeHtml(cleanMsg)}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
         window.scrollTo(0, 0);
     }
 
@@ -255,7 +260,7 @@
                 document.getElementById('cep').value = formatCep(data.cep || '');
                 document.getElementById('address').value = data.address || '';
                 document.getElementById('minimumGrade').value = data.minimumGrade || '6.0';
-                document.getElementById('minimumAttendance').value = data.minimumAttendance || '70.00';
+                document.getElementById('minimumAttendance').value = data.minimumAttendance || '75.00';
                 updateMap(data.address, data.cep);
             } else if (response.status === 404) {
                 showAlert('As configurações ainda não foram definidas pela Direção.', 'info');

@@ -73,6 +73,10 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
                     + period.getPeriodType().getLabel() + ".");
         }
 
+        if (period.getStartDate() != null || period.getEndDate() != null) {
+            validateChronology(period, period.getStartDate(), period.getEndDate());
+        }
+
         period.setClosed(false);
         return academicPeriodRepository.save(period);
     }
@@ -373,12 +377,49 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
     }
 
     private void validateChronology(AcademicPeriod existing, LocalDate newStartDate, LocalDate newEndDate) {
+        String targetName = existing.getName() != null ? existing.getName() : "Novo período";
+        if (newStartDate != null && newEndDate != null && !newStartDate.isBefore(newEndDate)) {
+            throw new IllegalStateException(
+                    "A data de início (" + newStartDate.format(DATE_FMT)
+                    + ") deve ser anterior à data de término (" + newEndDate.format(DATE_FMT)
+                    + ") do período '" + targetName + "'. Verifique o intervalo de datas informado.");
+        }
+
         List<AcademicPeriod> allPeriods = academicPeriodRepository
                 .findByAcademicYearAndPeriodTypeOrderByIdAsc(existing.getAcademicYear(), existing.getPeriodType());
+        if (allPeriods == null || allPeriods.isEmpty()) {
+            return;
+        }
+
+        if (existing.getId() == null) {
+            AcademicPeriod previous = allPeriods.get(allPeriods.size() - 1);
+            if (previous.getEndDate() != null && newStartDate != null && newStartDate.isBefore(previous.getEndDate())) {
+                throw new IllegalStateException(
+                        "A data de início (" + newStartDate.format(DATE_FMT)
+                        + ") do período '" + targetName
+                        + "' não pode ser anterior à data de término ("
+                        + previous.getEndDate().format(DATE_FMT)
+                        + ") do período anterior '" + previous.getName() + "'.");
+            }
+            if (newStartDate != null && newEndDate != null) {
+                for (AcademicPeriod other : allPeriods) {
+                    if (other.getStartDate() != null && other.getEndDate() != null
+                            && newStartDate.isBefore(other.getEndDate())
+                            && newEndDate.isAfter(other.getStartDate())) {
+                        throw new IllegalStateException(
+                                "O intervalo do período '" + targetName
+                                + "' sobrepõe o período '" + other.getName()
+                                + "' (" + other.getStartDate().format(DATE_FMT)
+                                + " a " + other.getEndDate().format(DATE_FMT) + ").");
+                    }
+                }
+            }
+            return;
+        }
 
         int currentIndex = -1;
         for (int i = 0; i < allPeriods.size(); i++) {
-            if (allPeriods.get(i).getId().equals(existing.getId())) {
+            if (existing.getId().equals(allPeriods.get(i).getId())) {
                 currentIndex = i;
                 break;
             }
@@ -411,13 +452,6 @@ public class AcademicPeriodServiceImpl implements AcademicPeriodService {
                             + ") do período seguinte '" + next.getName() + "'.");
                 }
             }
-        }
-
-        if (newStartDate != null && newEndDate != null && !newStartDate.isBefore(newEndDate)) {
-            throw new IllegalStateException(
-                    "A data de início (" + newStartDate.format(DATE_FMT)
-                    + ") deve ser anterior à data de término (" + newEndDate.format(DATE_FMT)
-                    + ") do período '" + existing.getName() + "'. Verifique o intervalo de datas informado.");
         }
     }
 

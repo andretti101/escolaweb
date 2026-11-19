@@ -6,6 +6,7 @@ import com.andretti101.escolaweb.dto.response.*;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -15,6 +16,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminAiTools {
@@ -32,12 +34,12 @@ public class AdminAiTools {
     private final SchoolSettingsService schoolSettingsService;
 
     private static final java.util.regex.Pattern FORBIDDEN_SQL_PATTERN = java.util.regex.Pattern.compile(
-            "\\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|EXECUTE|GRANT|REVOKE|CREATE|REPLACE|MERGE|INTO|LOCK|CALL)\\b",
+            "\\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|EXECUTE|GRANT|REVOKE|CREATE|REPLACE|MERGE|INTO|LOCK|CALL|SET|COPY)\\b",
             java.util.regex.Pattern.CASE_INSENSITIVE
     );
 
     private static final java.util.regex.Pattern SENSITIVE_SQL_PATTERN = java.util.regex.Pattern.compile(
-            "\\b(password_reset_tokens|refresh_tokens|flyway_schema_history|chat_message_history|password|pg_sleep|pg_read_file|lo_import|lo_export)\\b",
+            "\\b(password_reset_tokens|refresh_tokens|flyway_schema_history|chat_message_history|password|pg_sleep|pg_read_file|lo_import|lo_export|pg_catalog|pg_stat_activity|information_schema|pg_shadow|pg_authid|pg_roles|pg_user|current_setting)\\b",
             java.util.regex.Pattern.CASE_INSENSITIVE
     );
 
@@ -71,7 +73,9 @@ public class AdminAiTools {
                     ReportCardDTO report = reportCardService.generateReportCard(e.getStudent().getId(), year.getId());
                     String st = report.generalSituation().name();
                     counts.put(st, counts.getOrDefault(st, 0) + 1);
-                } catch (Exception ex) {}
+                } catch (Exception ex) {
+                    log.debug("Não foi possível gerar boletim para matrícula {}: {}", e.getId(), ex.getMessage());
+                }
             }
             return counts.entrySet().stream()
                 .map(entry -> "Situação: " + entry.getKey() + " -> " + entry.getValue() + " alunos")
@@ -207,8 +211,8 @@ public class AdminAiTools {
             trimmedSql = trimmedSql.substring(0, trimmedSql.length() - 1).trim();
         }
 
-        if (trimmedSql.contains(";")) {
-            return "Erro de segurança: Múltiplas instruções SQL em um único comando não são permitidas.";
+        if (trimmedSql.contains(";") || trimmedSql.contains("--") || trimmedSql.contains("/*") || trimmedSql.contains("*/")) {
+            return "Erro de segurança: Múltiplas instruções ou comentários SQL em um único comando não são permitidos.";
         }
 
         String upperSql = trimmedSql.toUpperCase(Locale.ROOT);
@@ -225,16 +229,34 @@ public class AdminAiTools {
         }
 
         final String finalSql = trimmedSql;
-        return transactionTemplate.execute(status -> {
+        TransactionTemplate readOnlyTemplate = transactionTemplate.getTransactionManager() != null
+                ? new TransactionTemplate(transactionTemplate.getTransactionManager())
+                : transactionTemplate;
+        if (readOnlyTemplate != transactionTemplate) {
+            readOnlyTemplate.setReadOnly(true);
+            readOnlyTemplate.setTimeout(5);
+        }
+        return readOnlyTemplate.execute(status -> {
             status.setRollbackOnly();
             try {
                 try {
                     jdbcTemplate.execute("SET TRANSACTION READ ONLY");
-                } catch (Exception ignored) {
-                    // Ignora caso o dialeto ou driver já esteja em transação ativa sem suporte a re-set
+                } catch (Exception ex) {
+                    log.debug("Driver/dialeto não suportou SET TRANSACTION READ ONLY explícito: {}", ex.getMessage());
                 }
-                List<Map<String, Object>> results = jdbcTemplate.queryForList(finalSql);
-                if (results.isEmpty()) return "Nenhum resultado encontrado.";
+                List<Map<String, Object>> rawResults = jdbcTemplate.queryForList(finalSql);
+                if (rawResults.isEmpty()) return "Nenhum resultado encontrado.";
+                List<Map<String, Object>> results = new ArrayList<>(rawResults.size());
+                for (Map<String, Object> row : rawResults) {
+                    Map<String, Object> sanitized = new LinkedHashMap<>();
+                    for (Map.Entry<String, Object> entry : row.entrySet()) {
+                        if (entry.getKey() != null && entry.getKey().toLowerCase(Locale.ROOT).contains("password")) {
+                            continue;
+                        }
+                        sanitized.put(entry.getKey(), entry.getValue());
+                    }
+                    results.add(sanitized);
+                }
                 if (results.size() > 50) return "Foram encontrados " + results.size() + " resultados. Mostrando os 50 primeiros:\n" + results.subList(0, 50).toString();
                 return results.toString();
             } catch (Exception e) {

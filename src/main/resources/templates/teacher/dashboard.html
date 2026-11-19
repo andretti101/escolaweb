@@ -336,7 +336,7 @@
                                             <h5 class="card-title mb-0"><i class="bx bx-history text-info me-2"></i>Últimas Aulas Registradas</h5>
                                             <small class="text-muted">Histórico recente do seu diário de classe</small>
                                         </div>
-                                        <a href="/teacher/lessons.html" class="btn btn-sm btn-outline-primary">Ver Diário</a>
+                                        <a href="/professor/aulas" class="btn btn-sm btn-outline-primary">Ver Diário</a>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
@@ -373,21 +373,21 @@
                                     <div class="card-body pt-3">
                                         <div class="row g-3">
                                             <div class="col-md-4 col-12">
-                                                <a href="/teacher/lessons.html" class="card-hover card bg-label-info border-0 p-3 text-center h-100">
+                                                <a href="/professor/aulas" class="card-hover card bg-label-info border-0 p-3 text-center h-100">
                                                     <i class="bx bx-book-reader fs-2 mb-2 text-info"></i>
                                                     <h6 class="mb-1 text-info fw-semibold">Diário de Classe</h6>
                                                     <small class="text-muted" style="font-size:0.75rem;">Fazer chamada e notas</small>
                                                 </a>
                                             </div>
                                             <div class="col-md-4 col-12">
-                                                <a href="/teacher/assessments.html" class="card-hover card bg-label-success border-0 p-3 text-center h-100">
+                                                <a href="/professor/avaliacoes" class="card-hover card bg-label-success border-0 p-3 text-center h-100">
                                                     <i class="bx bx-task fs-2 mb-2 text-success"></i>
                                                     <h6 class="mb-1 text-success fw-semibold">Avaliações</h6>
                                                     <small class="text-muted" style="font-size:0.75rem;">Criar provas e trabalhos</small>
                                                 </a>
                                             </div>
                                             <div class="col-md-4 col-12">
-                                                <a href="/teacher/my-students.html" class="card-hover card bg-label-primary border-0 p-3 text-center h-100">
+                                                <a href="/professor/meus-alunos" class="card-hover card bg-label-primary border-0 p-3 text-center h-100">
                                                     <i class="bx bx-bar-chart-alt-2 fs-2 mb-2 text-primary"></i>
                                                     <h6 class="mb-1 text-primary fw-semibold">Desempenho</h6>
                                                     <small class="text-muted" style="font-size:0.75rem;">Acompanhar alunos</small>
@@ -454,15 +454,6 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function logout() {
-            localStorage.removeItem('jwt_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('user_id');
-            localStorage.removeItem('user_name');
-            localStorage.removeItem('user');
-            window.location.href = '/login.html';
-        }
-
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('jwt_token');
             let userEmail = '';
@@ -485,7 +476,8 @@
             // ── Nome e avatar a partir do token ou localStorage ──────────────
             if (token) {
                 try {
-                    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                    let base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                    while (base64.length % 4) base64 += '=';
                     const payload = JSON.parse(atob(base64));
                     if (payload.sub) {
                         userEmail = payload.sub;
@@ -545,17 +537,17 @@
                         <div class="col-md-6 col-lg-4">
                             <div class="class-card card h-100 p-3 shadow-none">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span class="badge bg-label-primary fs-6 fw-bold">Turma ${t.classRoomName}</span>
-                                    <span class="badge bg-label-info">${t.subjectName}</span>
+                                    <span class="badge bg-label-primary fs-6 fw-bold">Turma ${escapeHtml(t.classRoomName)}</span>
+                                    <span class="badge bg-label-info">${escapeHtml(t.subjectName)}</span>
                                 </div>
                                 <div class="mb-3 text-muted small">
                                     <div><i class="bx bx-calendar-star me-1 text-primary"></i> ${t.minAssessmentsPerPeriod || 1} a ${t.maxAssessmentsPerPeriod || 3} avaliações / período</div>
                                 </div>
                                 <div class="d-flex gap-2 mt-auto">
-                                    <a href="/teacher/lessons.html" class="btn btn-sm btn-outline-info flex-grow-1">
+                                    <a href="/professor/aulas" class="btn btn-sm btn-outline-info flex-grow-1">
                                         <i class="bx bx-book-reader me-1"></i> Aulas
                                     </a>
-                                    <a href="/teacher/assessments.html" class="btn btn-sm btn-outline-success flex-grow-1">
+                                    <a href="/professor/avaliacoes" class="btn btn-sm btn-outline-success flex-grow-1">
                                         <i class="bx bx-task me-1"></i> Notas
                                     </a>
                                 </div>

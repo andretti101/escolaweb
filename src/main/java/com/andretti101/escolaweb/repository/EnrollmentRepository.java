@@ -43,6 +43,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     List<Enrollment> findByActiveTrue();
 
     @EntityGraph(attributePaths = {"student", "classRoom", "classRoom.academicYear"})
+    List<Enrollment> findByStudent_IdInAndActiveTrue(java.util.Collection<Integer> studentIds);
+
+    @EntityGraph(attributePaths = {"student", "classRoom", "classRoom.academicYear"})
+    List<Enrollment> findByStudent_IdIn(java.util.Collection<Integer> studentIds);
+
+    @EntityGraph(attributePaths = {"student", "classRoom", "classRoom.academicYear"})
     Page<Enrollment> findByActiveTrue(Pageable pageable);
 
     boolean existsByStudentAndClassRoom(Student student, ClassRoom classRoom);

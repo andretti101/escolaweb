@@ -30,6 +30,35 @@ public class StudentServiceImpl implements StudentService {
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.context.MessageSource messageSource;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.andretti101.escolaweb.repository.EnrollmentRepository enrollmentRepository;
+
+    private org.springframework.data.domain.Page<Student> preloadEnrollments(org.springframework.data.domain.Page<Student> page) {
+        if (page == null || page.isEmpty() || enrollmentRepository == null) {
+            return page;
+        }
+        List<Student> students = page.getContent();
+        List<Integer> ids = students.stream()
+                .map(Student::getId)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+        if (ids.isEmpty()) {
+            return page;
+        }
+        List<com.andretti101.escolaweb.model.entity.Enrollment> enrollments = enrollmentRepository.findByStudent_IdIn(ids);
+        java.util.Map<Integer, List<com.andretti101.escolaweb.model.entity.Enrollment>> byStudentId = enrollments != null
+                ? enrollments.stream()
+                        .filter(e -> e.getStudent() != null && e.getStudent().getId() != null)
+                        .collect(java.util.stream.Collectors.groupingBy(e -> e.getStudent().getId()))
+                : java.util.Map.of();
+        for (Student s : students) {
+            if (s.getId() != null) {
+                s.setEnrollments(new java.util.ArrayList<>(byStudentId.getOrDefault(s.getId(), List.of())));
+            }
+        }
+        return page;
+    }
+
     // Registra estudante garantindo unicidade de matrícula e e-mail
     @Override
     @Transactional
@@ -148,7 +177,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<Student> findAll(org.springframework.data.domain.Pageable pageable) {
-        return studentRepository.findAll(pageable);
+        return preloadEnrollments(studentRepository.findAll(pageable));
     }
 
     @Override
@@ -160,7 +189,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<Student> findAllActive(org.springframework.data.domain.Pageable pageable) {
-        return studentRepository.findByActiveTrue(pageable);
+        return preloadEnrollments(studentRepository.findByActiveTrue(pageable));
     }
 
     @Override
@@ -172,7 +201,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<Student> findAllActiveUnenrolled(org.springframework.data.domain.Pageable pageable) {
-        return studentRepository.findActiveUnenrolled(pageable);
+        return preloadEnrollments(studentRepository.findActiveUnenrolled(pageable));
     }
 
     @Override

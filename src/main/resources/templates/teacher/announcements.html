@@ -48,7 +48,7 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="mb-0">Avisos e Eventos</h5>
-                        <a href="/teacher/create/announcement.html" class="btn btn-primary">
+                        <a href="/professor/cadastrar/aviso" class="btn btn-primary">
                             <i class="bx bx-plus me-1"></i> Novo Aviso
                         </a>
                     </div>
@@ -91,14 +91,16 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("jwt_token");
     if (!token) {
-        window.location.href = "/login.html";
+        window.location.href = "/entrar";
         return;
     }
     
     const userId = parseInt(localStorage.getItem("user_id"));
 
     try {
-        const url = window.location.pathname.includes('my-announcements') ? '/api/announcements/my-announcements' : '/api/announcements/my-teaching-classrooms';
+        const currentPath = window.location.pathname || '';
+        const isMyAnnouncements = currentPath.includes('my-announcements') || currentPath.includes('meus-avisos');
+        const url = isMyAnnouncements ? '/api/announcements/my-announcements' : '/api/announcements/my-teaching-classrooms';
         const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -147,7 +149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         const sortedClasses = Array.from(uniqueClasses.entries()).sort((a, b) => a[1].localeCompare(b[1]));
                         
                         sortedClasses.forEach(([id, name]) => {
-                            filterEl.insertAdjacentHTML('beforeend', '<option value="' + id + '">' + name + '</option>');
+                            filterEl.insertAdjacentHTML('beforeend', '<option value="' + escapeHtml(id) + '">' + escapeHtml(name) + '</option>');
                         });
                         
                         if (!filterEl.dataset.listenerAdded) {
@@ -198,19 +200,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                     ? new Date(item.eventDate + "T00:00:00").toLocaleDateString('pt-BR') 
                     : 'Sem data';
 
-                let userIdStr = '';
-                try {
-                    const token = localStorage.getItem('jwt_token');
-                    if (token) {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        userIdStr = payload.userId;
-                    }
-                } catch (e) {
-                    console.debug('Erro ao decodificar token para obter userId:', e);
-                }
-                
-                const canEdit = item.authorId == userIdStr;
-                const editButtonHtml = canEdit ? '<a href="/teacher/edit/announcement.html?id=' + item.id + '" class="btn btn-sm btn-icon btn-outline-primary" title="Editar"><i class="bx bx-pencil"></i></a> <a href="javascript:void(0);" onclick="deleteAnnouncement(' + item.id + ')" class="btn btn-sm btn-icon btn-outline-danger ms-1" title="Excluir"><i class="bx bx-trash"></i></a>' : '';
+                const canEdit = !Number.isNaN(userId) && Number(item.authorId) === userId;
+                const editButtonHtml = canEdit ? '<a href="/professor/editar/aviso?id=' + item.id + '" class="btn btn-sm btn-icon btn-outline-primary" title="Editar"><i class="bx bx-pencil"></i></a> <a href="javascript:void(0);" onclick="deleteAnnouncement(' + item.id + ')" class="btn btn-sm btn-icon btn-outline-danger ms-1" title="Excluir"><i class="bx bx-trash"></i></a>' : '';
 
                 htmlString += '<div class="col-md-6 col-lg-4 mb-4">' +
                         '<div class="card card-announcement h-100 ' + borderClass + '">' +
@@ -272,45 +263,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById('upcoming-container').innerHTML = `<div class="col-12"><div class="alert alert-danger">Erro ao carregar avisos.</div></div>`;
     }
 });
-
-function _showConfirmModal_old(title, message, onConfirm) {
-    let modalEl = document.getElementById('customConfirmModal');
-    if (!modalEl) {
-        const html = `
-        <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="customConfirmModalTitle"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p id="customConfirmModalMessage" style="white-space: pre-wrap;"></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-danger" id="customConfirmModalBtn">Excluir</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-        document.body.insertAdjacentHTML('beforeend', html);
-        modalEl = document.getElementById('customConfirmModal');
-    }
-    document.getElementById('customConfirmModalTitle').textContent = title;
-    document.getElementById('customConfirmModalMessage').textContent = message;
-    
-    const confirmBtn = document.getElementById('customConfirmModalBtn');
-    const newBtn = confirmBtn.cloneNode(true);
-    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-    
-    const modal = new bootstrap.Modal(modalEl);
-    newBtn.addEventListener('click', () => {
-        modal.hide();
-        onConfirm();
-    });
-    modal.show();
-}
 
 window.deleteAnnouncement = function(id) {
     showConfirmModal("Excluir Aviso", "Tem certeza que deseja excluir este aviso? Esta ação não pode ser desfeita.", async () => {

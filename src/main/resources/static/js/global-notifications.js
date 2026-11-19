@@ -41,6 +41,14 @@
             return container;
         }
 
+        function decodeJwtPayload(jwtStr) {
+            const parts = jwtStr.split('.');
+            if (parts.length !== 3) return null;
+            let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            while (base64.length % 4) base64 += '=';
+            return JSON.parse(atob(base64));
+        }
+
         function getUserRole() {
             const currentPath = window.location.pathname || '';
             if (currentPath.includes('/aluno') || currentPath.includes('/student')) return 'STUDENT';
@@ -52,11 +60,8 @@
             if (storedRole) return storedRole.toUpperCase();
 
             try {
-                const parts = token.split('.');
-                if (parts.length === 3) {
-                    const payload = JSON.parse(atob(parts[1]));
-                    if (payload.role) return String(payload.role).toUpperCase();
-                }
+                const payload = decodeJwtPayload(token);
+                if (payload && payload.role) return String(payload.role).toUpperCase();
             } catch (_e) {}
 
             return 'STUDENT';
@@ -280,7 +285,9 @@
                 }
             } else if (typeof message.body === 'string') {
                 if (message.body.includes("NEW_CHAT_MESSAGE") || message.body.includes("NEW_GLOBAL_TEACHER_MESSAGE")) {
-                    if (!window.location.pathname.includes('chat.html')) {
+                    const currentChatPath = window.location.pathname || '';
+                    const isOnChatPage = currentChatPath.endsWith('/chat.html') || /\/(direcao|secretaria|professor|aluno)\/chat\/?$/.test(currentChatPath);
+                    if (!isOnChatPage) {
                         const chatDivs = [
                             document.querySelector('[data-i18n="Chat da Turma"]'),
                             document.querySelector('[data-i18n="Sala dos Professores"]'),
@@ -303,6 +310,19 @@
             // Canal global da instituição (comunicados gerais da direção)
             stompClient.subscribe('/topic/global/notifications', function(message) {
                 processIncomingMessage(message);
+            });
+
+            // Canal de atualização em tempo real da grade horária
+            stompClient.subscribe('/topic/timetable', function(message) {
+                let detail = null;
+                if (message && message.body) {
+                    try {
+                        detail = JSON.parse(message.body);
+                    } catch (_e) {
+                        detail = message.body;
+                    }
+                }
+                window.dispatchEvent(new CustomEvent('timetable:updated', { detail }));
             });
         }, function(error) {
             // Silencioso em produção / navegação local

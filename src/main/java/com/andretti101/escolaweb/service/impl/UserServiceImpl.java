@@ -20,6 +20,7 @@ import com.andretti101.escolaweb.service.ReportCardService;
 import com.andretti101.escolaweb.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -147,6 +149,73 @@ public class UserServiceImpl implements UserService {
         return PagedResponse.of(dtoList, page.getPageable(), page.getTotalElements());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<UserSummaryDTO> findSummaries(List<UserRole> roles, Boolean active, String search, String situation, Pageable pageable) {
+        boolean hasSearch = search != null && !search.isBlank();
+        boolean hasSituation = situation != null && !situation.isBlank() && !"ALL".equalsIgnoreCase(situation);
+        if (!hasSearch && !hasSituation) {
+            return findSummaries(roles, active, pageable);
+        }
+
+        List<User> candidateUsers;
+        if (roles == null || roles.isEmpty()) {
+            candidateUsers = userRepository.findUsersFiltered(null, active);
+        } else if (roles.size() == 1) {
+            candidateUsers = userRepository.findUsersFiltered(roles.get(0), active);
+        } else {
+            candidateUsers = userRepository.findUsersFiltered(null, active).stream()
+                    .filter(u -> roles.contains(u.getRole()))
+                    .toList();
+        }
+
+        List<UserSummaryDTO> allSummaries = candidateUsers.isEmpty() ? List.of() : mapUsersToSummaries(candidateUsers);
+        String q = hasSearch ? search.trim().toLowerCase(Locale.ROOT) : "";
+        String sit = hasSituation ? situation.trim().toUpperCase(Locale.ROOT) : "";
+
+        List<UserSummaryDTO> filtered = allSummaries.stream()
+                .filter(u -> {
+                    if (hasSituation) {
+                        if (u.role() != UserRole.STUDENT) {
+                            return false;
+                        }
+                        if ("UNENROLLED".equals(sit)) {
+                            if (u.className() != null && !u.className().isBlank()) return false;
+                        } else if ("PENDING".equals(sit)) {
+                            if (u.className() == null || u.className().isBlank()) return false;
+                            if (u.generalSituation() != null && u.generalSituation() != StudentSituation.PENDING) return false;
+                        } else {
+                            if (u.generalSituation() == null || !u.generalSituation().name().equalsIgnoreCase(sit)) {
+                                return false;
+                            }
+                        }
+                    }
+                    if (hasSearch) {
+                        boolean matchName = u.name() != null && u.name().toLowerCase(Locale.ROOT).contains(q);
+                        boolean matchEmail = u.email() != null && u.email().toLowerCase(Locale.ROOT).contains(q);
+                        boolean matchEnroll = u.enrollmentNumber() != null && u.enrollmentNumber().toLowerCase(Locale.ROOT).contains(q);
+                        boolean matchClass = u.className() != null && u.className().toLowerCase(Locale.ROOT).contains(q);
+                        boolean matchYear = u.academicYear() != null && u.academicYear().toLowerCase(Locale.ROOT).contains(q);
+                        boolean matchSubj = u.subjects() != null && u.subjects().stream().anyMatch(s -> s != null && s.toLowerCase(Locale.ROOT).contains(q));
+                        boolean matchRooms = u.classrooms() != null && u.classrooms().stream().anyMatch(c -> c != null && c.toLowerCase(Locale.ROOT).contains(q));
+                        return matchName || matchEmail || matchEnroll || matchClass || matchYear || matchSubj || matchRooms;
+                    }
+                    return true;
+                })
+                .toList();
+
+        Pageable effectivePageable = (pageable == null || pageable.isUnpaged())
+                ? PageRequest.of(0, Math.max(1, filtered.size()), Sort.by("name").ascending())
+                : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                        pageable.getSort().isUnsorted() ? Sort.by("name").ascending() : pageable.getSort());
+
+        int start = (int) Math.min((long) effectivePageable.getPageNumber() * effectivePageable.getPageSize(), filtered.size());
+        int end = Math.min(start + effectivePageable.getPageSize(), filtered.size());
+        List<UserSummaryDTO> pageSlice = filtered.subList(start, end);
+
+        return PagedResponse.of(pageSlice, effectivePageable, filtered.size());
+    }
+
     // Calcula métricas consolidadas leves para os cards do dashboard (sem carregar registros inteiros na memória)
     @Override
     @Transactional(readOnly = true)
@@ -213,7 +282,8 @@ public class UserServiceImpl implements UserService {
                         }
                     }
                 }
-            } catch (Exception ignored) {
+            } catch (Exception ex) {
+                log.debug("Não foi possível consolidar estatísticas acadêmicas no UserServiceImpl: {}", ex.getMessage());
             }
         }
 
@@ -244,37 +314,45 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toSet());
 
         if (!studentIds.isEmpty()) {
-            List<Enrollment> activeEnrollments = enrollmentRepository.findByActiveTrue();
-            for (Enrollment e : activeEnrollments) {
-                if (e.getStudent() != null && e.getStudent().getId() != null
-                        && studentIds.contains(e.getStudent().getId())) {
-                    Integer sId = e.getStudent().getId();
-                    Enrollment current = studentActiveEnrollmentMap.get(sId);
-                    if (current == null) {
-                        studentActiveEnrollmentMap.put(sId, e);
-                    } else if (current.getClassRoom() != null && !current.getClassRoom().isActive()
-                            && e.getClassRoom() != null && e.getClassRoom().isActive()) {
-                        studentActiveEnrollmentMap.put(sId, e);
+            List<Enrollment> activeEnrollments = enrollmentRepository.findByStudent_IdInAndActiveTrue(studentIds);
+            if (activeEnrollments == null || activeEnrollments.isEmpty()) {
+                activeEnrollments = enrollmentRepository.findByActiveTrue();
+            }
+            if (activeEnrollments != null) {
+                for (Enrollment e : activeEnrollments) {
+                    if (e.getStudent() != null && e.getStudent().getId() != null
+                            && studentIds.contains(e.getStudent().getId())) {
+                        Integer sId = e.getStudent().getId();
+                        Enrollment current = studentActiveEnrollmentMap.get(sId);
+                        if (current == null) {
+                            studentActiveEnrollmentMap.put(sId, e);
+                        } else if (current.getClassRoom() != null && !current.getClassRoom().isActive()
+                                && e.getClassRoom() != null && e.getClassRoom().isActive()) {
+                            studentActiveEnrollmentMap.put(sId, e);
+                        }
                     }
                 }
             }
 
             try {
-                AcademicYear activeYear = academicYearRepository.findByActiveTrue().orElse(null);
-                if (activeYear != null) {
-                    List<Enrollment> currentYearEnrollments = studentActiveEnrollmentMap.values().stream()
-                            .filter(e -> e.getClassRoom() != null
-                                    && e.getClassRoom().getAcademicYear() != null
-                                    && e.getClassRoom().getAcademicYear().getId().equals(activeYear.getId()))
-                            .toList();
-                    if (!currentYearEnrollments.isEmpty()) {
-                        List<ReportCardDTO> reports = reportCardService.generateReportCardsBatch(currentYearEnrollments, activeYear);
-                        for (ReportCardDTO r : reports) {
-                            studentSituationMap.put(r.studentId(), r.generalSituation());
+                if (academicYearRepository != null && reportCardService != null) {
+                    AcademicYear activeYear = academicYearRepository.findByActiveTrue().orElse(null);
+                    if (activeYear != null) {
+                        List<Enrollment> currentYearEnrollments = studentActiveEnrollmentMap.values().stream()
+                                .filter(e -> e.getClassRoom() != null
+                                        && e.getClassRoom().getAcademicYear() != null
+                                        && e.getClassRoom().getAcademicYear().getId().equals(activeYear.getId()))
+                                .toList();
+                        if (!currentYearEnrollments.isEmpty()) {
+                            List<ReportCardDTO> reports = reportCardService.generateReportCardsBatch(currentYearEnrollments, activeYear);
+                            for (ReportCardDTO r : reports) {
+                                studentSituationMap.put(r.studentId(), r.generalSituation());
+                            }
                         }
                     }
                 }
-            } catch (Exception ignored) {
+            } catch (Exception ex) {
+                log.debug("Não foi possível consolidar estatísticas acadêmicas no UserServiceImpl: {}", ex.getMessage());
             }
         }
 
@@ -287,16 +365,21 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toSet());
 
         if (!teacherIds.isEmpty()) {
-            List<TeacherClassSubject> tcsList = teacherClassSubjectRepository.findAll();
-            for (TeacherClassSubject tcs : tcsList) {
-                if (tcs.isActive() && tcs.getTeacher() != null && tcs.getTeacher().getId() != null
-                        && teacherIds.contains(tcs.getTeacher().getId())) {
-                    Integer tId = tcs.getTeacher().getId();
-                    if (tcs.getClassRoom() != null && tcs.getClassRoom().isActive() && tcs.getClassRoom().getName() != null) {
-                        teacherClassroomsMap.computeIfAbsent(tId, k -> new TreeSet<>()).add(tcs.getClassRoom().getName());
-                    }
-                    if (tcs.getSubject() != null && tcs.getSubject().getName() != null) {
-                        teacherSubjectsMap.computeIfAbsent(tId, k -> new TreeSet<>()).add(tcs.getSubject().getName());
+            List<TeacherClassSubject> tcsList = teacherClassSubjectRepository.findByTeacher_IdInAndActiveTrue(teacherIds);
+            if (tcsList == null || tcsList.isEmpty()) {
+                tcsList = teacherClassSubjectRepository.findAll();
+            }
+            if (tcsList != null) {
+                for (TeacherClassSubject tcs : tcsList) {
+                    if (tcs.isActive() && tcs.getTeacher() != null && tcs.getTeacher().getId() != null
+                            && teacherIds.contains(tcs.getTeacher().getId())) {
+                        Integer tId = tcs.getTeacher().getId();
+                        if (tcs.getClassRoom() != null && tcs.getClassRoom().isActive() && tcs.getClassRoom().getName() != null) {
+                            teacherClassroomsMap.computeIfAbsent(tId, k -> new TreeSet<>()).add(tcs.getClassRoom().getName());
+                        }
+                        if (tcs.getSubject() != null && tcs.getSubject().getName() != null) {
+                            teacherSubjectsMap.computeIfAbsent(tId, k -> new TreeSet<>()).add(tcs.getSubject().getName());
+                        }
                     }
                 }
             }
