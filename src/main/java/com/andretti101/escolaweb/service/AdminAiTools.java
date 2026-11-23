@@ -200,7 +200,6 @@ public class AdminAiTools {
     }
 
     @Tool(description = "Executa consultas SQL (PostgreSQL) no banco de dados para análises customizadas. Útil para descobrir 'quem é o aluno com a pior nota', cruzar dados não previstos e responder análises gerais. Retorna até 50 resultados.")
-    @Transactional(readOnly = true, timeout = 5)
     public String executeFlexibleSql(String sql) {
         if (sql == null || sql.trim().isEmpty()) {
             return "Erro de validação: Instrução SQL não informada.";
@@ -232,12 +231,9 @@ public class AdminAiTools {
         TransactionTemplate readOnlyTemplate = transactionTemplate.getTransactionManager() != null
                 ? new TransactionTemplate(transactionTemplate.getTransactionManager())
                 : transactionTemplate;
-        if (readOnlyTemplate != transactionTemplate) {
-            readOnlyTemplate.setReadOnly(true);
-            readOnlyTemplate.setTimeout(5);
-        }
+        readOnlyTemplate.setReadOnly(true);
+        readOnlyTemplate.setTimeout(5);
         return readOnlyTemplate.execute(status -> {
-            status.setRollbackOnly();
             try {
                 try {
                     jdbcTemplate.execute("SET TRANSACTION READ ONLY");

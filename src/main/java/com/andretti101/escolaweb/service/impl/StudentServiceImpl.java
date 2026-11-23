@@ -66,6 +66,7 @@ public class StudentServiceImpl implements StudentService {
         validateEmailAvailable(student.getEmail());
         validateRegistrationNumberAvailable(student.getRegistrationNumber());
         student.setPassword(passwordEncoder.encode(student.getPassword()));
+        student.setRole(com.andretti101.escolaweb.model.enums.UserRole.STUDENT);
         student.setActive(true);
         return studentRepository.save(student);
     }
@@ -157,6 +158,9 @@ public class StudentServiceImpl implements StudentService {
         Student student = findStudentOrThrow(id);
         if (announcementRepository.existsByAuthor_Id(id) || chatMessageRepository.existsBySender_Id(id)) {
             throw new BusinessException("Não é possível excluir o usuário pois existem comunicados ou mensagens vinculadas. Recomenda-se desativar o cadastro.");
+        }
+        if (enrollmentRepository != null && !enrollmentRepository.findByStudent(student).isEmpty()) {
+            throw new BusinessException("Não é possível excluir o aluno pois existem matrículas ou registros acadêmicos vinculados. Recomenda-se desativar o cadastro.");
         }
         refreshTokenService.revokeAllByUser(student);
         studentRepository.deleteById(id);

@@ -209,37 +209,37 @@
                     <!-- Contexto: Ano Letivo Vigente -->
                     <div class="card mb-4 border-0 shadow-sm">
                         <div class="card-body py-3 px-4">
-                            <div class="row align-items-center gy-3">
-                                <div class="col-md-4 d-flex align-items-center">
-                                    <div class="avatar avatar-md me-3 flex-shrink-0">
+                            <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3 text-center text-lg-start">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar avatar-md flex-shrink-0">
                                         <span class="avatar-initial rounded-circle bg-label-primary">
                                             <i class="bx bx-calendar-star fs-4"></i>
                                         </span>
                                     </div>
-                                    <div>
+                                    <div class="text-start">
                                         <small class="text-muted text-uppercase fw-semibold d-block" style="font-size: 0.75rem;">Ano Letivo Vigente</small>
                                         <div class="d-flex align-items-center gap-2">
                                             <span class="fs-4 fw-bold text-dark" id="activeYearLabel">Carregando...</span>
-                                            <span class="badge bg-success" id="activeYearBadge">Ativo</span>
+                                            <span class="badge bg-success flex-shrink-0" id="activeYearBadge">Ativo</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-5 d-flex flex-wrap gap-4 align-items-center border-start-md ps-md-4">
-                                    <div>
-                                        <small class="text-muted d-block">Média Mínima de Aprovação</small>
+                                <div class="d-flex flex-wrap align-items-center justify-content-center gap-4 py-1 py-lg-0">
+                                    <div class="text-center px-2">
+                                        <small class="text-muted d-block" style="font-size: 0.75rem;">Média Mínima de Aprovação</small>
                                         <span class="fw-bold fs-5 text-primary" id="minGradeValue">—</span>
                                     </div>
-                                    <div>
-                                        <small class="text-muted d-block">Frequência Mínima Exigida</small>
+                                    <div class="text-center px-2">
+                                        <small class="text-muted d-block" style="font-size: 0.75rem;">Frequência Mínima Exigida</small>
                                         <span class="fw-bold fs-5 text-info" id="minAttendanceValue">—</span>
                                     </div>
-                                    <div>
-                                        <small class="text-muted d-block">Períodos Cadastrados</small>
+                                    <div class="text-center px-2">
+                                        <small class="text-muted d-block" style="font-size: 0.75rem;">Períodos Cadastrados</small>
                                         <span class="fw-bold fs-5 text-warning" id="periodsCountValue">—</span>
                                     </div>
                                 </div>
-                                <div class="col-md-3 text-md-end">
-                                    <a href="/principal/academic-years.html" class="btn btn-sm btn-outline-primary">
+                                <div class="flex-shrink-0">
+                                    <a href="/principal/academic-years.html" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center">
                                         <i class="bx bx-cog me-1"></i> Configurar Anos
                                     </a>
                                 </div>
@@ -406,34 +406,76 @@
                                     <h5 class="card-title mb-0"><i class="bx bx-rocket text-warning me-2"></i>Ações Estratégicas da Direção</h5>
                                     <small class="text-muted">Acessos rápidos para fluxos administrativos</small>
                                 </div>
-                                <div class="card-body pt-3">
-                                    <div class="row g-3">
+                                <div class="card-body pt-3 d-flex flex-column">
+                                    <div class="row g-3 flex-grow-1 align-content-between">
                                         <div class="col-6">
-                                            <a href="/principal/create/academic-year.html" class="action-card card bg-label-primary border-0 p-3 text-center h-100">
+                                            <a href="/direcao/cadastrar/ano-letivo" class="action-card card bg-label-primary border-0 p-3 text-center h-100">
                                                 <i class="bx bx-calendar-star fs-2 mb-2 text-primary"></i>
                                                 <h6 class="mb-0 text-primary fw-semibold">Novo Ano</h6>
                                                 <small class="text-muted" style="font-size:0.75rem;">Criar ano letivo</small>
                                             </a>
                                         </div>
                                         <div class="col-6">
-                                            <a href="/principal/create/academic-period.html" class="action-card card bg-label-info border-0 p-3 text-center h-100">
+                                            <a href="/direcao/cadastrar/periodo" class="action-card card bg-label-info border-0 p-3 text-center h-100">
                                                 <i class="bx bx-time fs-2 mb-2 text-info"></i>
                                                 <h6 class="mb-0 text-info fw-semibold">Novo Período</h6>
                                                 <small class="text-muted" style="font-size:0.75rem;">Bimestre / Trimestre</small>
                                             </a>
                                         </div>
                                         <div class="col-6">
-                                            <a href="/principal/year-conclusion.html" class="action-card card bg-label-warning border-0 p-3 text-center h-100">
+                                            <a href="/direcao/conclusao-ano" class="action-card card bg-label-warning border-0 p-3 text-center h-100">
                                                 <i class="bx bx-check-shield fs-2 mb-2 text-warning"></i>
                                                 <h6 class="mb-0 text-warning fw-semibold">Conclusão de Ano</h6>
                                                 <small class="text-muted" style="font-size:0.75rem;">Fechar ano letivo</small>
                                             </a>
                                         </div>
                                         <div class="col-6">
-                                            <a href="/principal/year-conclusion-results.html" class="action-card card bg-label-success border-0 p-3 text-center h-100">
+                                            <a href="/direcao/resultado-conclusao-ano" class="action-card card bg-label-success border-0 p-3 text-center h-100">
                                                 <i class="bx bx-bar-chart-alt-2 fs-2 mb-2 text-success"></i>
                                                 <h6 class="mb-0 text-success fw-semibold">Histórico de Ano</h6>
                                                 <small class="text-muted" style="font-size:0.75rem;">Resultados e médias</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/direcao/grade-horaria" class="action-card card bg-label-danger border-0 p-3 text-center h-100">
+                                                <i class="bx bx-calendar fs-2 mb-2 text-danger"></i>
+                                                <h6 class="mb-0 text-danger fw-semibold">Grade Horária</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Quadro semanal</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/direcao/turmas" class="action-card card bg-label-secondary border-0 p-3 text-center h-100">
+                                                <i class="bx bx-group fs-2 mb-2 text-secondary"></i>
+                                                <h6 class="mb-0 text-secondary fw-semibold">Turmas e Vagas</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Gestão de turmas</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/direcao/avisos" class="action-card card bg-label-info border-0 p-3 text-center h-100">
+                                                <i class="bx bx-bell fs-2 mb-2 text-info"></i>
+                                                <h6 class="mb-0 text-info fw-semibold">Mural de Avisos</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Comunicados gerais</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/direcao/configuracoes-escola" class="action-card card bg-label-primary border-0 p-3 text-center h-100">
+                                                <i class="bx bx-cog fs-2 mb-2 text-primary"></i>
+                                                <h6 class="mb-0 text-primary fw-semibold">Configurações</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Dados da instituição</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/direcao/cardapio" class="action-card card bg-label-warning border-0 p-3 text-center h-100">
+                                                <i class="bx bx-restaurant fs-2 mb-2 text-warning"></i>
+                                                <h6 class="mb-0 text-warning fw-semibold">Cardápio Escolar</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Refeições e nutrição</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-6">
+                                            <a href="/direcao/chat" class="action-card card bg-label-success border-0 p-3 text-center h-100">
+                                                <i class="bx bx-message-rounded-dots fs-2 mb-2 text-success"></i>
+                                                <h6 class="mb-0 text-success fw-semibold">Central de Chat</h6>
+                                                <small class="text-muted" style="font-size:0.75rem;">Comunicação escolar</small>
                                             </a>
                                         </div>
                                     </div>

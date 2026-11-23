@@ -21,7 +21,44 @@
     <script src="/assets/vendor/js/helpers.js"></script>
     <script src="/assets/js/config.js"></script>
     <link rel="stylesheet" href="/assets/css/dark-mode.css" />
-<script src="/js/global-modals.js"></script>
+    <script src="/js/global-modals.js"></script>
+    <style>
+        .table-compact-students th {
+            padding: 0.55rem 0.75rem !important;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table-compact-students td {
+            padding: 0.4rem 0.75rem !important;
+            font-size: 0.85rem;
+        }
+        .grade-badge-sm {
+            font-size: 0.73rem !important;
+            padding: 0.2rem 0.45rem !important;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        .period-tag-sm {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #8592a3;
+            letter-spacing: 0.4px;
+            margin-bottom: 2px;
+        }
+        .student-avatar-xs {
+            width: 28px;
+            height: 28px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 <body>
     <div class="layout-wrapper layout-content-navbar">
@@ -36,8 +73,45 @@
                     </div>
                     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
                         <div class="navbar-nav align-items-center w-100 d-none d-md-flex">
-                            <span class="fs-4 fw-bold text-primary">Portal do Professor</span>
+                            <span class="fs-4 fw-bold">
+                                <i class="bx bx-chalkboard fs-3 text-primary me-2"></i>
+                                <span class="text-primary">Portal do Professor</span>
+                            </span>
                         </div>
+
+                        <ul class="navbar-nav flex-row align-items-center ms-auto">
+                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                                    <div class="avatar avatar-online">
+                                        <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitial">P</span>
+                                    </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="#">
+                                            <div class="d-flex">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar avatar-online">
+                                                        <span class="avatar-initial rounded-circle bg-label-primary" id="dropdownAvatarInitialInner">P</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <span class="fw-semibold d-block" id="dropdownUserName">Professor</span>
+                                                    <small class="text-muted">Corpo Docente</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li><div class="dropdown-divider"></div></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="logout()">
+                                            <i class="bx bx-power-off me-2"></i>
+                                            <span class="align-middle">Sair</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
                 </nav>
 
@@ -57,17 +131,17 @@
 
                         <div id="alertContainer"></div>
 
-                        <div class="card">
+                        <div class="card shadow-sm">
                             <div class="table-responsive text-nowrap">
-                                <table class="table table-hover">
-                                    <thead>
+                                <table class="table table-hover table-sm align-middle mb-0 table-compact-students">
+                                    <thead class="table-light">
                                         <tr>
-                                            <th>Aluno</th>
-                                            <th>Notas</th>
-                                            <th>Média</th>
-                                            <th>Presenças</th>
-                                            <th>Faltas</th>
-                                            <th>F. Justificadas</th>
+                                            <th style="width: 25%;">Aluno</th>
+                                            <th style="width: 45%;">Notas</th>
+                                            <th class="text-center" style="width: 7.5%;">Média</th>
+                                            <th class="text-center" style="width: 7.5%;">Presenças</th>
+                                            <th class="text-center" style="width: 7.5%;">Faltas</th>
+                                            <th class="text-center" style="width: 7.5%;">F. Justificadas</th>
                                         </tr>
                                     </thead>
                                     <tbody id="studentsTableBody">
@@ -79,7 +153,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="card-footer border-top text-muted" id="studentsCount"></div>
+                            <div class="card-footer border-top text-muted py-2 px-3 small" id="studentsCount"></div>
                         </div>
                     </div>
 
@@ -115,8 +189,25 @@
             return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+
         async function init() {
             if (!jwtToken || !teacherId) return;
+
+            const userName = localStorage.getItem('user_name');
+            if (userName) {
+                const initial = userName.charAt(0).toUpperCase();
+                const elInit = document.getElementById('dropdownAvatarInitial');
+                const elInner = document.getElementById('dropdownAvatarInitialInner');
+                const elName = document.getElementById('dropdownUserName');
+                if (elInit) elInit.textContent = initial;
+                if (elInner) elInner.textContent = initial;
+                if (elName) elName.textContent = userName;
+            }
+
             try {
                 const res = await fetch(`/api/teacher-class-subjects/teacher/${teacherId}`, {
                     headers: {'Authorization': `Bearer ${jwtToken}`}
@@ -234,9 +325,9 @@
                                 const detailTitle = g.recoveryValue != null
                                     ? `${g.assessmentTitle} (1ª Nota: ${firstGradeLabel} | Rec: ${Number(g.recoveryValue).toFixed(2)})`
                                     : g.assessmentTitle;
-                                return `<span class="badge bg-label-primary me-1 mb-1" title="${escapeHtml(detailTitle)}">${eff.toFixed(2)}</span>`;
+                                return `<span class="badge bg-label-primary grade-badge-sm me-1 mb-1" title="${escapeHtml(detailTitle)}">${eff.toFixed(2)}</span>`;
                             }).join('');
-                            gradesListHtml += `<div class="d-inline-block me-4 mb-2"><span class="d-block small fw-bold text-muted mb-1" style="font-size: 0.75rem;">${escapeHtml(pName)}</span>${badgesHtml}</div>`;
+                            gradesListHtml += `<div class="d-inline-flex flex-column me-3 mb-0"><span class="period-tag-sm">${escapeHtml(pName)}</span><div class="d-flex flex-wrap gap-1">${badgesHtml}</div></div>`;
                         }
                     }
                     
@@ -252,16 +343,24 @@
 
                 const results = await Promise.all(promises);
                 
-                tbody.innerHTML = results.map(r => `
+                tbody.innerHTML = results.map(r => {
+                    const initial = (r.studentName || 'A').trim().charAt(0).toUpperCase();
+                    return `
                     <tr>
-                        <td class="pt-3 fw-bold" style="vertical-align: top;">${escapeHtml(r.studentName)}</td>
-                        <td class="pt-3" style="white-space: normal; vertical-align: top;">${r.gradesHtml}</td>
-                        <td class="pt-3 fw-semibold" style="vertical-align: top;">${r.avg}</td>
-                        <td class="pt-3" style="vertical-align: top;"><span class="badge bg-label-success">${r.presences}</span></td>
-                        <td class="pt-3" style="vertical-align: top;"><span class="badge bg-label-danger">${r.absences}</span></td>
-                        <td class="pt-3" style="vertical-align: top;"><span class="badge bg-label-warning">${r.justified}</span></td>
+                        <td class="align-middle">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="student-avatar-xs bg-label-primary text-primary">${initial}</span>
+                                <span class="fw-bold text-truncate" style="max-width: 220px;" title="${escapeHtml(r.studentName)}">${escapeHtml(r.studentName)}</span>
+                            </div>
+                        </td>
+                        <td class="align-middle" style="white-space: normal;">${r.gradesHtml}</td>
+                        <td class="text-center align-middle"><span class="badge bg-label-info fw-bold grade-badge-sm">${r.avg}</span></td>
+                        <td class="text-center align-middle"><span class="badge bg-label-success grade-badge-sm">${r.presences}</span></td>
+                        <td class="text-center align-middle"><span class="badge bg-label-danger grade-badge-sm">${r.absences}</span></td>
+                        <td class="text-center align-middle"><span class="badge bg-label-warning grade-badge-sm">${r.justified}</span></td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
                 
                 document.getElementById('studentsCount').textContent = `${results.length} aluno(s)`;
 

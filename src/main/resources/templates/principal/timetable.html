@@ -233,22 +233,20 @@
 
                     <!-- Seletor de Turma e Filtros -->
                     <div class="card mb-4 shadow-sm">
-                        <div class="card-body">
-                            <div class="row align-items-center g-3">
-                                <div class="col-md-5">
-                                    <label for="selectClassroom" class="form-label fw-bold">Selecione a Turma:</label>
+                        <div class="card-body py-3 px-4">
+                            <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3">
+                                <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2 w-100" style="max-width: 480px;">
+                                    <label for="selectClassroom" class="form-label fw-bold mb-0 text-nowrap">Selecione a Turma:</label>
                                     <select id="selectClassroom" class="form-select">
                                         <option value="">Carregando turmas...</option>
                                     </select>
                                 </div>
-                                <div class="col-md-7">
-                                    <div id="classroomInfoBadge" class="p-2 rounded bg-light border d-none">
-                                        <div class="d-flex flex-wrap gap-3 align-items-center small text-muted">
-                                            <span><strong>Série:</strong> <span id="infoGrade">-</span></span>
-                                            <span><strong>Turno:</strong> <span id="infoShift">-</span></span>
-                                            <span><strong>Ano Letivo:</strong> <span id="infoYear">-</span></span>
-                                            <span><strong>Total de Horários:</strong> <span id="infoSlotCount" class="badge bg-primary">0</span></span>
-                                        </div>
+                                <div id="classroomInfoBadge" class="p-2 px-3 rounded bg-light border d-none">
+                                    <div class="d-flex flex-wrap gap-3 align-items-center small text-muted">
+                                        <span><strong>Série:</strong> <span id="infoGrade">-</span></span>
+                                        <span><strong>Turno:</strong> <span id="infoShift">-</span></span>
+                                        <span><strong>Ano Letivo:</strong> <span id="infoYear">-</span></span>
+                                        <span><strong>Total de Horários:</strong> <span id="infoSlotCount" class="badge bg-primary">0</span></span>
                                     </div>
                                 </div>
                             </div>

@@ -52,6 +52,23 @@ class AdminAiToolsTest {
 
     @BeforeEach
     void setUp() {
+        subjectRepository.findByNameIgnoreCase("Filosofia IA Teste").ifPresent(s -> {
+            teacherClassSubjectRepository.deleteAll(teacherClassSubjectRepository.findBySubject(s));
+            subjectRepository.delete(s);
+        });
+        teacherRepository.findAll().stream()
+                .filter(t -> "prof.ai.ativo@example.com".equalsIgnoreCase(t.getEmail()) || "prof.ai.inativo@example.com".equalsIgnoreCase(t.getEmail()))
+                .forEach(t -> {
+                    teacherClassSubjectRepository.deleteAll(teacherClassSubjectRepository.findByTeacher(t));
+                    teacherRepository.delete(t);
+                });
+        classRoomRepository.findAll().stream()
+                .filter(c -> "Turma IA Ativa 101".equalsIgnoreCase(c.getName()) || "Turma IA Inativa 102".equalsIgnoreCase(c.getName()))
+                .forEach(c -> {
+                    teacherClassSubjectRepository.deleteAll(teacherClassSubjectRepository.findByClassRoom(c));
+                    classRoomRepository.delete(c);
+                });
+
         activeYear = academicYearRepository.findByActiveTrue().orElseGet(() ->
                 academicYearRepository.save(AcademicYear.builder()
                         .year(2026)

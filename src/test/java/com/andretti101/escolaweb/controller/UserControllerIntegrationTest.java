@@ -10,7 +10,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -180,5 +183,105 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", not(empty())))
                 .andExpect(jsonPath("$.content[*].role", everyItem(anyOf(is("PRINCIPAL"), is("SECRETARY")))));
+    }
+
+    @Test
+    @WithMockUser(roles = "SECRETARY")
+    @DisplayName("GET /api/users com role=STUDENT e className=M1-A filtra alunos não vazios pela turma ativa")
+    void getUsers_filterStudentByClassName_returnsMatchingStudents() throws Exception {
+        mockMvc.perform(get("/api/users")
+                        .param("role", "STUDENT")
+                        .param("className", "M1-A"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", not(empty())))
+                .andExpect(jsonPath("$.content[*].role", everyItem(is("STUDENT"))))
+                .andExpect(jsonPath("$.content[*].className", everyItem(equalToIgnoringCase("M1-A"))));
+    }
+
+    @Test
+    @WithMockUser(roles = "PRINCIPAL")
+    @DisplayName("GET /api/users com role=TEACHER, subject e className filtra professores pela disciplina e turma")
+    void getUsers_filterTeacherBySubject_returnsMatchingTeachers() throws Exception {
+        mockMvc.perform(get("/api/users")
+                        .param("role", "TEACHER")
+                        .param("subject", "Matemática")
+                        .param("className", "M1-A"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", not(empty())))
+                .andExpect(jsonPath("$.content[*].role", everyItem(is("TEACHER"))));
+    }
+
+    @Test
+    @WithMockUser(roles = "SECRETARY")
+    @DisplayName("Desativar usuário reflete em GET /api/users?active=false, em GET /api/users (Todos) e em GET /api/users/stats?active=false")
+    void getUsers_filterInactive_returnsDeactivatedUserAndStats() throws Exception {
+        mockMvc.perform(put("/api/students/15/deactivate"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.active", is(false)));
+
+        mockMvc.perform(get("/api/users")
+                        .param("role", "STUDENT")
+                        .param("active", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(15)))
+                .andExpect(jsonPath("$.content[0].active", is(false)));
+
+        mockMvc.perform(get("/api/users/stats")
+                        .param("active", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalStudents", is(1)))
+                .andExpect(jsonPath("$.studentsPending", is(1)));
+    }
+
+    @Test
+    @WithMockUser(roles = "SECRETARY")
+    @DisplayName("DELETE /api/students/{id} bloqueia exclusão de aluno com matrícula/histórico (400) e permite excluir aluno recém-criado sem vínculos (204)")
+    void deleteStudent_blocksWhenEnrolledAndSucceedsWhenUnenrolled() throws Exception {
+        // Aluno 15 possui matrículas e histórico (e chat_hidden_messages), deve retornar 400 Bad Request amigável
+        mockMvc.perform(delete("/api/students/15"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("matrículas")));
+
+        String statsBeforeBody = mockMvc.perform(get("/api/users/stats"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        Integer pendingBefore = com.jayway.jsonpath.JsonPath.read(statsBeforeBody, "$.studentsPending");
+        Integer totalBefore = com.jayway.jsonpath.JsonPath.read(statsBeforeBody, "$.totalStudents");
+
+        // Criar novo aluno sem matrícula: não deve inflar studentsPending e pode ser excluído com 204
+        String newStudentJson = """
+                {
+                    "name": "Aluno Sem Matricula Teste",
+                    "email": "sem.matricula.teste@example.com",
+                    "password": "senhaSegura123",
+                    "registrationNumber": "2026999",
+                    "birthDate": "2011-05-10"
+                }
+                """;
+
+        String createdBody = mockMvc.perform(post("/api/students")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content(newStudentJson))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        Integer newId = com.jayway.jsonpath.JsonPath.read(createdBody, "$.id");
+
+        // Deve constar no filtro UNENROLLED e não inflar studentsPending acima dos alunos matriculados
+        mockMvc.perform(get("/api/users")
+                        .param("role", "STUDENT")
+                        .param("situation", "UNENROLLED"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].id", is(newId)));
+
+        mockMvc.perform(get("/api/users/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalStudents", is(totalBefore + 1)))
+                .andExpect(jsonPath("$.studentsPending", is(pendingBefore)));
+
+        mockMvc.perform(delete("/api/students/{id}", newId))
+                .andExpect(status().isNoContent());
     }
 }

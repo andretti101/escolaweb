@@ -45,12 +45,20 @@ public class UserController {
             @RequestParam(required = false) String search,
             @Parameter(description = "Filtrar situação acadêmica do aluno (APPROVED, FAILED, PENDING, UNENROLLED)")
             @RequestParam(required = false) String situation,
+            @Parameter(description = "Filtrar por turma (nome ou ID)")
+            @RequestParam(required = false) String className,
+            @Parameter(description = "Filtrar por disciplina")
+            @RequestParam(required = false) String subject,
             @ParameterObject Pageable pageable) {
         java.util.List<UserRole> resolvedRoles = parseRoles(role);
-        if ((search == null || search.isBlank()) && (situation == null || situation.isBlank() || "ALL".equalsIgnoreCase(situation))) {
+        boolean hasSearch = search != null && !search.isBlank();
+        boolean hasSituation = situation != null && !situation.isBlank() && !"ALL".equalsIgnoreCase(situation);
+        boolean hasClassName = className != null && !className.isBlank() && !"ALL".equalsIgnoreCase(className);
+        boolean hasSubject = subject != null && !subject.isBlank() && !"ALL".equalsIgnoreCase(subject);
+        if (!hasSearch && !hasSituation && !hasClassName && !hasSubject) {
             return ResponseEntity.ok(userService.findSummaries(resolvedRoles, active, pageable));
         }
-        return ResponseEntity.ok(userService.findSummaries(resolvedRoles, active, search, situation, pageable));
+        return ResponseEntity.ok(userService.findSummaries(resolvedRoles, active, search, situation, className, subject, pageable));
     }
 
     private java.util.List<UserRole> parseRoles(java.util.List<String> roleParams) {

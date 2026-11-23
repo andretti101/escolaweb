@@ -37,6 +37,7 @@ public class SecretaryServiceImpl implements SecretaryService {
             throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
         secretary.setPassword(passwordEncoder.encode(secretary.getPassword()));
+        secretary.setRole(com.andretti101.escolaweb.model.enums.UserRole.SECRETARY);
         secretary.setActive(true);
         return secretaryRepository.save(secretary);
     }

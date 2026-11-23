@@ -8,7 +8,7 @@
     <title>Usuários | Escola Web</title>
     <script src="/js/auth-guard.js"></script>
     <meta name="description" content="Gestão Consolidada de Usuários do Sistema"/>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet"/>
@@ -24,8 +24,12 @@
     <script src="/js/global-modals.js"></script>
     <style>
         .inactive-row {
-            opacity: 0.65;
-            background-color: #f8f9fa;
+            opacity: 0.72;
+            background-color: rgba(133, 146, 163, 0.08) !important;
+        }
+        .inactive-row .user-name-text {
+            text-decoration: line-through;
+            color: #8592a3 !important;
         }
         .user-initials {
             width: 38px;
@@ -36,18 +40,20 @@
             justify-content: center;
             font-weight: 600;
             font-size: 0.95rem;
+            flex-shrink: 0;
         }
         .stat-card {
             cursor: pointer;
-            transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
             border: 2px solid transparent !important;
         }
         .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(105, 108, 255, 0.12);
         }
         .stat-card.active-stat {
             border: 2px solid #696cff !important;
+            box-shadow: 0 4px 14px rgba(105, 108, 255, 0.18);
         }
         .sit-stat-card {
             cursor: pointer;
@@ -60,6 +66,43 @@
         .sit-stat-card.active-sit-stat {
             outline: 2px solid currentColor;
             outline-offset: 2px;
+        }
+        .role-choice-card {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid rgba(67, 89, 113, 0.12);
+        }
+        .role-choice-card:hover {
+            transform: translateY(-4px);
+            border-color: #696cff;
+            box-shadow: 0 8px 20px rgba(105, 108, 255, 0.15);
+        }
+        .table-compact-users {
+            width: 100% !important;
+        }
+        .table-compact-users th,
+        .table-compact-users td {
+            padding: 0.45rem 0.45rem !important;
+            font-size: 0.815rem;
+        }
+        .table-compact-users .user-initials {
+            width: 30px;
+            height: 30px;
+            font-size: 0.82rem;
+        }
+        .table-compact-users .badge {
+            font-size: 0.72rem;
+            padding: 0.3em 0.55em;
+            font-weight: 600;
+        }
+        .action-btn-group .btn-icon {
+            width: 26px !important;
+            height: 26px !important;
+            padding: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0.85rem !important;
         }
     </style>
 </head>
@@ -80,9 +123,12 @@
 
                     <!-- Header com Botão de Ação -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="fw-bold mb-0">
-                            <span class="text-muted fw-light">Gestão de Pessoas /</span> Usuários
-                        </h4>
+                        <div>
+                            <h4 class="fw-bold mb-1">
+                                <span class="text-muted fw-light">Gestão de Pessoas /</span> Usuários
+                            </h4>
+                            <small class="text-muted">Selecione o tipo de usuário para habilitar os filtros específicos e gerenciar cadastros.</small>
+                        </div>
                         <div class="btn-group">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bx bx-user-plus me-1"></i> Cadastrar Usuário
@@ -113,64 +159,119 @@
                         </div>
                     </div>
 
-                    <!-- Cards de Resumo / Filtro Rápido (Gestores -> Professores -> Alunos) -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-6 col-md-3">
-                            <div class="card stat-card active-stat h-100" id="cardFilterAll" onclick="setRoleFilter('ALL')">
-                                <div class="card-body p-3 d-flex align-items-center gap-3">
-                                    <div class="badge bg-label-primary p-2 rounded">
-                                        <i class="bx bx-group fs-3"></i>
-                                    </div>
-                                    <div>
-                                        <small class="text-muted d-block">Todos</small>
-                                        <h5 class="mb-0 fw-bold" id="statTotalUsers">0</h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
+                    <!-- 1. Seleção do Tipo de Usuário (Cards Superiores) -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-4">
                             <div class="card stat-card h-100" id="cardFilterStaff" onclick="setRoleFilter('STAFF')">
-                                <div class="card-body p-3 d-flex align-items-center gap-3">
-                                    <div class="badge bg-label-warning p-2 rounded">
-                                        <i class="bx bx-shield fs-3"></i>
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="badge bg-label-warning p-3 rounded">
+                                            <i class="bx bx-shield fs-3"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold d-block text-heading">Gestão Escolar</span>
+                                            <small class="text-muted">Direção &amp; Secretaria</small>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <small class="text-muted d-block">Gestão</small>
-                                        <h5 class="mb-0 fw-bold" id="statStaff">0</h5>
+                                    <div class="text-end">
+                                        <h4 class="mb-0 fw-bold" id="statStaff">0</h4>
+                                        <small class="text-muted" id="statStaffLabel">usuários</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col-12 col-md-4">
                             <div class="card stat-card h-100" id="cardFilterTeacher" onclick="setRoleFilter('TEACHER')">
-                                <div class="card-body p-3 d-flex align-items-center gap-3">
-                                    <div class="badge bg-label-success p-2 rounded">
-                                        <i class="bx bx-chalkboard fs-3"></i>
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="badge bg-label-success p-3 rounded">
+                                            <i class="bx bx-chalkboard fs-3"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold d-block text-heading">Professores</span>
+                                            <small class="text-muted">Corpo Docente</small>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <small class="text-muted d-block">Professores</small>
-                                        <h5 class="mb-0 fw-bold" id="statTeachers">0</h5>
+                                    <div class="text-end">
+                                        <h4 class="mb-0 fw-bold" id="statTeachers">0</h4>
+                                        <small class="text-muted" id="statTeachersLabel">usuários</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6 col-md-3">
+                        <div class="col-12 col-md-4">
                             <div class="card stat-card h-100" id="cardFilterStudent" onclick="setRoleFilter('STUDENT')">
-                                <div class="card-body p-3 d-flex align-items-center gap-3">
-                                    <div class="badge bg-label-info p-2 rounded">
-                                        <i class="bx bx-user fs-3"></i>
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="badge bg-label-primary p-3 rounded">
+                                            <i class="bx bx-user fs-3"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold d-block text-heading">Alunos</span>
+                                            <small class="text-muted">Corpo Discente</small>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <small class="text-muted d-block">Alunos</small>
-                                        <h5 class="mb-0 fw-bold" id="statStudents">0</h5>
+                                    <div class="text-end">
+                                        <h4 class="mb-0 fw-bold" id="statStudents">0</h4>
+                                        <small class="text-muted" id="statStudentsLabel">usuários</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Indicadores / Botões de Filtro de Situação dos Alunos -->
-                    <div class="row g-3 mb-4" id="studentSituationRow">
+                    <!-- Mensagem de Alerta -->
+                    <div id="alertContainer"></div>
+
+                    <!-- Estado Inicial: Solicita ao usuário escolher qual perfil deseja consultar -->
+                    <div class="card mb-4 border-0 shadow-sm" id="initialRolePrompt">
+                        <div class="card-body text-center py-5 px-4">
+                            <div class="avatar avatar-lg mx-auto mb-3">
+                                <span class="avatar-initial rounded-circle bg-label-primary">
+                                    <i class="bx bx-search-alt fs-2"></i>
+                                </span>
+                            </div>
+                            <h5 class="fw-bold mb-2">Qual tipo de usuário você deseja procurar?</h5>
+                            <p class="text-muted mb-4 mx-auto" style="max-width: 540px;">
+                                Selecione abaixo uma das categorias de perfil para carregar os filtros específicos e a listagem correspondente.
+                            </p>
+                            <div class="row g-3 justify-content-center" style="max-width: 780px; margin: 0 auto;">
+                                <div class="col-12 col-sm-4">
+                                    <div class="card role-choice-card h-100 p-3" onclick="setRoleFilter('STAFF')">
+                                        <div class="badge bg-label-warning p-3 rounded-circle mx-auto mb-2" style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bx bx-shield fs-3"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-1">Gestão Escolar</h6>
+                                        <small class="text-muted d-block mb-2">Diretores e Secretários</small>
+                                        <span class="btn btn-sm btn-outline-warning mt-auto">Selecionar Gestão</span>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <div class="card role-choice-card h-100 p-3" onclick="setRoleFilter('TEACHER')">
+                                        <div class="badge bg-label-success p-3 rounded-circle mx-auto mb-2" style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bx bx-chalkboard fs-3"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-1">Professores</h6>
+                                        <small class="text-muted d-block mb-2">Filtrar por matéria e turma</small>
+                                        <span class="btn btn-sm btn-outline-success mt-auto">Selecionar Professores</span>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <div class="card role-choice-card h-100 p-3" onclick="setRoleFilter('STUDENT')">
+                                        <div class="badge bg-label-primary p-3 rounded-circle mx-auto mb-2" style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bx bx-user fs-3"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-1">Alunos</h6>
+                                        <small class="text-muted d-block mb-2">Filtrar por turma e situação</small>
+                                        <span class="btn btn-sm btn-outline-primary mt-auto">Selecionar Alunos</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicadores / Botões de Filtro de Situação dos Alunos (Apenas quando Alunos estiver selecionado) -->
+                    <div class="row g-3 mb-4 d-none" id="studentSituationRow">
                         <div class="col-12 col-md-4">
                             <div class="card sit-stat-card h-100 border-0 shadow-sm" id="cardSitApproved" onclick="toggleSituationFilter('APPROVED')" style="background: rgba(113, 221, 55, 0.08); border-left: 4px solid #71dd37 !important;">
                                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
@@ -221,76 +322,102 @@
                         </div>
                     </div>
 
-                    <!-- Barra de Filtros e Busca Global -->
-                    <div class="card mb-4">
-                        <div class="card-body py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <!-- Barra de Filtros Específicos por Perfil (Aparece após selecionar o tipo de usuário) -->
+                    <div class="card mb-4 d-none" id="filtersCard">
+                        <div class="card-body py-3 d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
                             <div class="d-flex flex-wrap align-items-center gap-2">
-                                <!-- Filtro de Papel -->
-                                <select id="roleFilter" class="form-select form-select-sm" style="width: auto;">
-                                    <option value="ALL">Todos os Papéis</option>
-                                    <option value="STAFF">Gestão (Direção & Secretaria)</option>
-                                    <option value="TEACHER">Professores</option>
-                                    <option value="STUDENT">Alunos</option>
-                                </select>
+                                <!-- Seletor de Tipo de Usuário -->
+                                <div class="d-flex align-items-center gap-1">
+                                    <label for="roleFilter" class="form-label mb-0 small fw-semibold text-muted me-1">Perfil:</label>
+                                    <select id="roleFilter" class="form-select form-select-sm fw-semibold" style="width: auto;">
+                                        <option value="">Selecione um perfil...</option>
+                                        <option value="STAFF">Gestão Escolar</option>
+                                        <option value="TEACHER">Professores</option>
+                                        <option value="STUDENT">Alunos</option>
+                                    </select>
+                                </div>
 
-                                <!-- Filtro de Situação dos Alunos -->
-                                <select id="situationFilter" class="form-select form-select-sm" style="width: auto;">
-                                    <option value="ALL">Todas as Situações</option>
-                                    <option value="APPROVED">Somente Aprovados</option>
-                                    <option value="PENDING">Somente Pendentes</option>
-                                    <option value="STUDYING">Cursando</option>
-                                    <option value="FAILED">Somente Reprovados</option>
-                                    <option value="UNENROLLED">Sem Matrícula</option>
-                                </select>
+                                <!-- Filtros exclusivos para GESTÃO -->
+                                <div id="staffSpecificFilters" class="d-none flex-wrap align-items-center gap-2">
+                                    <select id="staffSubRoleFilter" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="ALL">Todos os Cargos (Direção e Secretaria)</option>
+                                        <option value="PRINCIPAL">Somente Direção</option>
+                                        <option value="SECRETARY">Somente Secretaria</option>
+                                    </select>
+                                </div>
 
-                                <!-- Filtro de Status -->
-                                <div class="btn-group" role="group">
-                                    <input type="radio" class="btn-check" name="statusFilter" id="filterActive" value="active" checked/>
+                                <!-- Filtros exclusivos para PROFESSORES -->
+                                <div id="teacherSpecificFilters" class="d-none flex-wrap align-items-center gap-2">
+                                    <select id="teacherSubjectFilter" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="ALL">Todas as Disciplinas</option>
+                                    </select>
+                                    <select id="teacherClassFilter" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="ALL">Todas as Turmas</option>
+                                    </select>
+                                </div>
+
+                                <!-- Filtros exclusivos para ALUNOS -->
+                                <div id="studentSpecificFilters" class="d-none flex-wrap align-items-center gap-2">
+                                    <select id="studentClassFilter" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="ALL">Todas as Turmas</option>
+                                    </select>
+                                    <select id="situationFilter" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="ALL">Todas as Situações</option>
+                                        <option value="APPROVED">Somente Aprovados</option>
+                                        <option value="PENDING">Somente Pendentes</option>
+                                        <option value="FAILED">Somente Reprovados</option>
+                                        <option value="UNENROLLED">Sem Matrícula</option>
+                                    </select>
+                                </div>
+
+                                <!-- Filtro de Status (Ativos / Desativados / Todos) -->
+                                <div class="btn-group" role="group" aria-label="Filtro de Status">
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all" checked/>
+                                    <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
+
+                                    <input type="radio" class="btn-check" name="statusFilter" id="filterActive" value="active"/>
                                     <label class="btn btn-outline-success btn-sm" for="filterActive">Ativos</label>
 
                                     <input type="radio" class="btn-check" name="statusFilter" id="filterInactive" value="inactive"/>
-                                    <label class="btn btn-outline-danger btn-sm" for="filterInactive">Inativos</label>
-
-                                    <input type="radio" class="btn-check" name="statusFilter" id="filterAll" value="all"/>
-                                    <label class="btn btn-outline-primary btn-sm" for="filterAll">Todos</label>
+                                    <label class="btn btn-outline-danger btn-sm" for="filterInactive">Desativados</label>
                                 </div>
                             </div>
 
                             <!-- Busca rápida -->
-                            <div class="input-group input-group-sm" style="max-width: 320px;">
+                            <div class="input-group input-group-sm" style="max-width: 340px;">
                                 <span class="input-group-text"><i class="bx bx-search"></i></span>
-                                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nome, email, matrícula, turma..."/>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nome, e-mail..."/>
+                                <button class="btn btn-outline-secondary" type="button" id="btnClearFilters" title="Limpar filtros" onclick="resetProfileFilters()">
+                                    <i class="bx bx-reset"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Mensagem de Alerta -->
-                    <div id="alertContainer"></div>
-
                     <!-- ======================================================== -->
                     <!-- 1. TABELA DE GESTORES (DIREÇÃO & SECRETARIA)              -->
                     <!-- ======================================================== -->
-                    <div class="card mb-4" id="sectionStaff">
+                    <div class="card mb-4 d-none table-scrollable" id="sectionStaff">
                         <div class="card-header d-flex justify-content-between align-items-center py-3 bg-lighter">
                             <h5 class="m-0 d-flex align-items-center gap-2">
                                 <i class="bx bx-shield text-warning fs-4"></i> Gestão Escolar (Direção &amp; Secretaria)
                             </h5>
                             <span class="badge bg-label-warning" id="countStaffBadge">0</span>
                         </div>
-                        <div class="table-responsive text-nowrap">
-                            <table class="table table-hover align-middle mb-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm table-compact-users align-middle mb-0">
                                 <thead class="table-light">
                                 <tr>
                                     <th>Gestor</th>
                                     <th>Cargo</th>
                                     <th>Data de Cadastro</th>
                                     <th>Status</th>
-                                    <th class="text-center">Ações</th>
+                                    <th class="text-center" style="width: 120px; min-width: 120px;">Ações</th>
                                 </tr>
                                 </thead>
                                 <tbody id="tbodyStaff">
                                 <tr>
-                                    <td colspan="5" class="text-center py-3 text-muted">Carregando gestores...</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Selecione o perfil para carregar.</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -300,27 +427,27 @@
                     <!-- ======================================================== -->
                     <!-- 2. TABELA DE PROFESSORES                                 -->
                     <!-- ======================================================== -->
-                    <div class="card mb-4" id="sectionTeachers">
+                    <div class="card mb-4 d-none table-scrollable" id="sectionTeachers">
                         <div class="card-header d-flex justify-content-between align-items-center py-3 bg-lighter">
                             <h5 class="m-0 d-flex align-items-center gap-2">
                                 <i class="bx bx-chalkboard text-success fs-4"></i> Corpo Docente (Professores)
                             </h5>
                             <span class="badge bg-label-success" id="countTeachersBadge">0</span>
                         </div>
-                        <div class="table-responsive text-nowrap">
-                            <table class="table table-hover align-middle mb-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm table-compact-users align-middle mb-0">
                                 <thead class="table-light">
                                 <tr>
                                     <th>Professor</th>
                                     <th>Disciplinas Lecionadas</th>
                                     <th>Turmas Vinculadas</th>
                                     <th>Status</th>
-                                    <th class="text-center">Ações</th>
+                                    <th class="text-center" style="width: 120px; min-width: 120px;">Ações</th>
                                 </tr>
                                 </thead>
                                 <tbody id="tbodyTeachers">
                                 <tr>
-                                    <td colspan="5" class="text-center py-3 text-muted">Carregando professores...</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Selecione o perfil para carregar.</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -330,30 +457,30 @@
                     <!-- ======================================================== -->
                     <!-- 3. TABELA DE ALUNOS                                      -->
                     <!-- ======================================================== -->
-                    <div class="card mb-4" id="sectionStudents">
+                    <div class="card mb-4 d-none table-scrollable" id="sectionStudents">
                         <div class="card-header d-flex justify-content-between align-items-center py-3 bg-lighter">
                             <h5 class="m-0 d-flex align-items-center gap-2">
-                                <i class="bx bx-user text-primary fs-4"></i> Alunos Matriculados
+                                <i class="bx bx-user text-primary fs-4"></i> Alunos Cadastrados
                             </h5>
                             <span class="badge bg-label-primary" id="countStudentsBadge">0</span>
                         </div>
-                        <div class="table-responsive text-nowrap">
-                            <table class="table table-hover align-middle mb-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm table-compact-users align-middle mb-0">
                                 <thead class="table-light">
                                 <tr>
-                                    <th>Aluno</th>
-                                    <th>Turma / Ano</th>
-                                    <th>Matrícula</th>
-                                    <th class="fw-bold">Situação Geral</th>
-                                    <th>Data Nasc.</th>
-                                    <th>Contatos</th>
-                                    <th>Status</th>
-                                    <th class="text-center">Ações</th>
+                                    <th style="min-width: 150px;">Aluno</th>
+                                    <th style="min-width: 90px;">Turma / Ano</th>
+                                    <th style="min-width: 75px;">Matrícula</th>
+                                    <th style="min-width: 85px;">Situação Geral</th>
+                                    <th style="min-width: 85px;">Data Nasc.</th>
+                                    <th style="min-width: 110px;">Contatos</th>
+                                    <th style="min-width: 75px;">Status</th>
+                                    <th class="text-center" style="width: 120px; min-width: 120px;">Ações</th>
                                 </tr>
                                 </thead>
                                 <tbody id="tbodyStudents">
                                 <tr>
-                                    <td colspan="8" class="text-center py-3 text-muted">Carregando alunos...</td>
+                                    <td colspan="8" class="text-center py-4 text-muted">Selecione o perfil para carregar.</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -387,12 +514,26 @@
 <script src="/assets/js/main.js"></script>
 
 <script>
-    const jwtToken = localStorage.getItem('jwt_token');
+    function getToken() {
+        return localStorage.getItem('jwt_token') || '';
+    }
+
+    function handleUnauthorized() {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/entrar';
+    }
+
     let allUsers = [];
+    let selectedRole = '';
     let selectedSituation = 'ALL';
+    let currentPage = 0;
+    const pageSize = 20;
+    let totalPages = 1;
+    let totalElements = 0;
 
     function escapeHtml(unsafe) {
-        if (!unsafe) return '';
+        if (unsafe === null || unsafe === undefined) return '';
         return unsafe.toString()
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -401,25 +542,216 @@
             .replace(/'/g, "&#039;");
     }
 
-    const roleBadges = {
-        'STUDENT': { label: 'Aluno', color: 'primary', icon: 'bx-user', bg: 'bg-label-primary' },
-        'TEACHER': { label: 'Professor', color: 'success', icon: 'bx-chalkboard', bg: 'bg-label-success' },
-        'SECRETARY': { label: 'Secretaria', color: 'info', icon: 'bx-folder-open', bg: 'bg-label-info' },
-        'PRINCIPAL': { label: 'Direção', color: 'warning', icon: 'bx-shield', bg: 'bg-label-warning' }
-    };
+    function getEditUrl(u) {
+        if (!u || !u.id) return null;
+        switch (u.role) {
+            case 'STUDENT': return `/secretaria/editar/aluno?id=${u.id}`;
+            case 'TEACHER': return `/secretaria/editar/professor?id=${u.id}`;
+            case 'SECRETARY': return `/secretaria/editar/secretario?id=${u.id}`;
+            case 'PRINCIPAL': return `/secretaria/editar/diretor?id=${u.id}`;
+            default: return null;
+        }
+    }
+
+    function getRoleApiEndpoint(role) {
+        switch (role) {
+            case 'STUDENT': return '/api/students';
+            case 'TEACHER': return '/api/teachers';
+            case 'SECRETARY': return '/api/secretaries';
+            case 'PRINCIPAL': return '/api/principals';
+            default: return null;
+        }
+    }
+
+    function getRoleLabelPt(role) {
+        switch (role) {
+            case 'STUDENT': return 'aluno';
+            case 'TEACHER': return 'professor';
+            case 'SECRETARY': return 'secretário(a)';
+            case 'PRINCIPAL': return 'diretor(a)';
+            default: return 'usuário';
+        }
+    }
+
+    function getCurrentUserEmail() {
+        const token = getToken();
+        if (!token) return '';
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            return (payload.sub || '').toLowerCase();
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function isCurrentUser(u) {
+        if (!u) return false;
+        const currentId = localStorage.getItem('user_id');
+        if (currentId && String(u.id) === String(currentId)) return true;
+        const currentEmail = getCurrentUserEmail();
+        return Boolean(currentEmail && u.email && u.email.toLowerCase() === currentEmail);
+    }
+
+    async function loadFilterOptions() {
+        try {
+            const headers = { 'Authorization': `Bearer ${getToken()}` };
+            const [classesRes, subjectsRes] = await Promise.all([
+                fetch('/api/classrooms?activeOnly=true&size=1000', { headers }),
+                fetch('/api/subjects?activeOnly=true&size=1000', { headers })
+            ]);
+
+            if (classesRes.ok) {
+                const cData = await classesRes.json();
+                const classes = Array.isArray(cData) ? cData : (cData.content || []);
+                const classNames = [...new Set(classes.map(c => c.name).filter(Boolean))].sort();
+                const studentClassSelect = document.getElementById('studentClassFilter');
+                const teacherClassSelect = document.getElementById('teacherClassFilter');
+
+                studentClassSelect.innerHTML = '<option value="ALL">Todas as Turmas</option>';
+                teacherClassSelect.innerHTML = '<option value="ALL">Todas as Turmas</option>';
+
+                classNames.forEach(name => {
+                    const opt1 = document.createElement('option');
+                    opt1.value = name;
+                    opt1.textContent = name;
+                    studentClassSelect.appendChild(opt1);
+
+                    const opt2 = document.createElement('option');
+                    opt2.value = name;
+                    opt2.textContent = name;
+                    teacherClassSelect.appendChild(opt2);
+                });
+            }
+
+            if (subjectsRes.ok) {
+                const sData = await subjectsRes.json();
+                const subjects = Array.isArray(sData) ? sData : (sData.content || []);
+                const subjectNames = [...new Set(subjects.map(s => s.name).filter(Boolean))].sort();
+                const teacherSubjectSelect = document.getElementById('teacherSubjectFilter');
+                teacherSubjectSelect.innerHTML = '<option value="ALL">Todas as Disciplinas</option>';
+                subjectNames.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    teacherSubjectSelect.appendChild(opt);
+                });
+            }
+        } catch (e) {
+            console.debug('Erro ao carregar opções de filtros:', e);
+        }
+    }
+
+    function updateFilterVisibility(role) {
+        const initialPrompt = document.getElementById('initialRolePrompt');
+        const filtersCard = document.getElementById('filtersCard');
+        const studentSitRow = document.getElementById('studentSituationRow');
+        const staffFilters = document.getElementById('staffSpecificFilters');
+        const teacherFilters = document.getElementById('teacherSpecificFilters');
+        const studentFilters = document.getElementById('studentSpecificFilters');
+        const searchInput = document.getElementById('searchInput');
+
+        const staffSection = document.getElementById('sectionStaff');
+        const teachersSection = document.getElementById('sectionTeachers');
+        const studentsSection = document.getElementById('sectionStudents');
+
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active-stat'));
+
+        if (!role) {
+            initialPrompt.classList.remove('d-none');
+            filtersCard.classList.add('d-none');
+            studentSitRow.classList.add('d-none');
+            staffSection.classList.add('d-none');
+            teachersSection.classList.add('d-none');
+            studentsSection.classList.add('d-none');
+            document.getElementById('paginationContainer').innerHTML = '';
+            return;
+        }
+
+        initialPrompt.classList.add('d-none');
+        filtersCard.classList.remove('d-none');
+
+        staffFilters.classList.add('d-none');
+        staffFilters.classList.remove('d-flex');
+        teacherFilters.classList.add('d-none');
+        teacherFilters.classList.remove('d-flex');
+        studentFilters.classList.add('d-none');
+        studentFilters.classList.remove('d-flex');
+        studentSitRow.classList.add('d-none');
+
+        staffSection.classList.add('d-none');
+        teachersSection.classList.add('d-none');
+        studentsSection.classList.add('d-none');
+
+        if (role === 'STAFF') {
+            document.getElementById('cardFilterStaff').classList.add('active-stat');
+            staffFilters.classList.remove('d-none');
+            staffFilters.classList.add('d-flex');
+            staffSection.classList.remove('d-none');
+            searchInput.placeholder = 'Buscar gestor por nome ou e-mail...';
+        } else if (role === 'TEACHER') {
+            document.getElementById('cardFilterTeacher').classList.add('active-stat');
+            teacherFilters.classList.remove('d-none');
+            teacherFilters.classList.add('d-flex');
+            teachersSection.classList.remove('d-none');
+            searchInput.placeholder = 'Buscar professor por nome, e-mail, disciplina ou turma...';
+        } else if (role === 'STUDENT') {
+            document.getElementById('cardFilterStudent').classList.add('active-stat');
+            studentFilters.classList.remove('d-none');
+            studentFilters.classList.add('d-flex');
+            studentSitRow.classList.remove('d-none');
+            studentsSection.classList.remove('d-none');
+            searchInput.placeholder = 'Buscar aluno por nome, e-mail, matrícula ou turma...';
+        }
+    }
+
+    function resetProfileFilters() {
+        document.getElementById('staffSubRoleFilter').value = 'ALL';
+        document.getElementById('teacherSubjectFilter').value = 'ALL';
+        document.getElementById('teacherClassFilter').value = 'ALL';
+        document.getElementById('studentClassFilter').value = 'ALL';
+        document.getElementById('situationFilter').value = 'ALL';
+        document.getElementById('searchInput').value = '';
+        const filterAllRadio = document.getElementById('filterAll');
+        if (filterAllRadio) filterAllRadio.checked = true;
+        selectedSituation = 'ALL';
+        updateSituationCardStyles();
+        loadStats();
+        if (selectedRole) {
+            loadUsers(0);
+        }
+    }
 
     function setRoleFilter(role) {
-        const select = document.getElementById('roleFilter');
-        select.value = role;
-        
-        // Highlight active stat card
-        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active-stat'));
-        if (role === 'ALL') document.getElementById('cardFilterAll').classList.add('active-stat');
-        else if (role === 'STAFF') document.getElementById('cardFilterStaff').classList.add('active-stat');
-        else if (role === 'TEACHER') document.getElementById('cardFilterTeacher').classList.add('active-stat');
-        else if (role === 'STUDENT') document.getElementById('cardFilterStudent').classList.add('active-stat');
+        const previousRole = selectedRole;
+        if (role === 'PRINCIPAL' || role === 'SECRETARY') {
+            selectedRole = 'STAFF';
+            document.getElementById('roleFilter').value = 'STAFF';
+            document.getElementById('staffSubRoleFilter').value = role;
+        } else {
+            selectedRole = role || '';
+            document.getElementById('roleFilter').value = selectedRole;
+            if (selectedRole === 'STAFF') {
+                document.getElementById('staffSubRoleFilter').value = 'ALL';
+            }
+        }
 
-        loadUsers(0);
+        if (previousRole && previousRole !== selectedRole) {
+            document.getElementById('teacherSubjectFilter').value = 'ALL';
+            document.getElementById('teacherClassFilter').value = 'ALL';
+            document.getElementById('studentClassFilter').value = 'ALL';
+        }
+
+        if (selectedRole !== 'STUDENT') {
+            selectedSituation = 'ALL';
+            document.getElementById('situationFilter').value = 'ALL';
+            updateSituationCardStyles();
+        }
+
+        updateFilterVisibility(selectedRole);
+
+        if (selectedRole) {
+            loadUsers(0);
+        }
     }
 
     function toggleSituationFilter(situation) {
@@ -430,8 +762,7 @@
         }
         document.getElementById('situationFilter').value = selectedSituation;
         updateSituationCardStyles();
-        if (selectedSituation !== 'ALL') {
-            // Se clicou no filtro de situação, seleciona Alunos
+        if (selectedRole !== 'STUDENT') {
             setRoleFilter('STUDENT');
         } else {
             loadUsers(0);
@@ -445,38 +776,52 @@
         else if (selectedSituation === 'FAILED') document.getElementById('cardSitFailed').classList.add('active-sit-stat');
     }
 
-    function getEditUrl(u) {
-        if (!u.id) return null;
-        switch (u.role) {
-            case 'STUDENT': return `/secretaria/editar/aluno?id=${u.id}`;
-            case 'TEACHER': return `/secretaria/editar/professor?id=${u.id}`;
-            case 'SECRETARY': return `/secretaria/editar/secretario?id=${u.id}`;
-            case 'PRINCIPAL': return `/secretaria/editar/diretor?id=${u.id}`;
-            default: return null;
+    function applyStatLabel(elId, statusVal, inactiveCount) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        el.classList.remove('text-muted', 'text-danger', 'fw-semibold');
+        if (statusVal === 'active') {
+            el.textContent = 'ativos';
+            el.classList.add('text-muted');
+        } else if (statusVal === 'inactive') {
+            el.textContent = 'desativados';
+            el.classList.add('text-danger', 'fw-semibold');
+        } else if (inactiveCount > 0) {
+            el.textContent = `no total (${inactiveCount} desativado${inactiveCount > 1 ? 's' : ''})`;
+            el.classList.add('text-danger', 'fw-semibold');
+        } else {
+            el.textContent = 'no total';
+            el.classList.add('text-muted');
         }
     }
 
-    let currentPage = 0;
-    const pageSize = 20;
-    let totalPages = 1;
-    let totalElements = 0;
-
     async function loadStats() {
         try {
-            const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'active';
+            const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'all';
+            const headers = { 'Authorization': `Bearer ${getToken()}` };
             let url = '/api/users/stats';
             if (statusVal === 'active') url += '?active=true';
             else if (statusVal === 'inactive') url += '?active=false';
 
-            const res = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${jwtToken || ''}` }
-            });
+            const requests = [fetch(url, { headers })];
+            if (statusVal === 'all') {
+                requests.push(fetch('/api/users/stats?active=false', { headers }));
+            }
+
+            const [res, inactiveRes] = await Promise.all(requests);
+            if (res.status === 401) return handleUnauthorized();
             if (res.ok) {
                 const stats = await res.json();
-                document.getElementById('statTotalUsers').textContent = stats.totalUsers ?? 0;
+                const inactiveStats = (inactiveRes && inactiveRes.ok) ? await inactiveRes.json() : null;
+
                 document.getElementById('statStaff').textContent = stats.totalStaff ?? 0;
                 document.getElementById('statTeachers').textContent = stats.totalTeachers ?? 0;
                 document.getElementById('statStudents').textContent = stats.totalStudents ?? 0;
+
+                applyStatLabel('statStaffLabel', statusVal, inactiveStats?.totalStaff ?? 0);
+                applyStatLabel('statTeachersLabel', statusVal, inactiveStats?.totalTeachers ?? 0);
+                applyStatLabel('statStudentsLabel', statusVal, inactiveStats?.totalStudents ?? 0);
+
                 document.getElementById('statStudentsApproved').textContent = stats.studentsApproved ?? 0;
                 document.getElementById('statStudentsPending').textContent = stats.studentsPending ?? 0;
                 document.getElementById('statStudentsFailed').textContent = stats.studentsFailed ?? 0;
@@ -487,32 +832,47 @@
     }
 
     async function loadUsers(page = 0) {
+        if (!selectedRole) return;
         if (page < 0) return;
-        if (totalPages > 0 && page >= totalPages && page !== 0) return;
         currentPage = page;
+
         try {
-            const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'active';
-            const roleVal = document.getElementById('roleFilter')?.value || 'ALL';
-            const sitVal = document.getElementById('situationFilter')?.value || 'ALL';
+            const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'all';
             const searchVal = (document.getElementById('searchInput')?.value || '').trim();
 
             let url = `/api/users?page=${currentPage}&size=${pageSize}`;
             if (statusVal === 'active') url += '&active=true';
             else if (statusVal === 'inactive') url += '&active=false';
-            if (roleVal === 'TEACHER') url += '&role=TEACHER';
-            else if (roleVal === 'STUDENT') url += '&role=STUDENT';
-            else if (roleVal === 'STAFF') url += '&role=STAFF';
-            else if (roleVal === 'PRINCIPAL') url += '&role=PRINCIPAL';
-            else if (roleVal === 'SECRETARY') url += '&role=SECRETARY';
+
+            if (selectedRole === 'STAFF') {
+                const subRole = document.getElementById('staffSubRoleFilter')?.value || 'ALL';
+                if (subRole === 'PRINCIPAL') url += '&role=PRINCIPAL';
+                else if (subRole === 'SECRETARY') url += '&role=SECRETARY';
+                else url += '&role=STAFF';
+            } else if (selectedRole === 'TEACHER') {
+                url += '&role=TEACHER';
+                const subj = document.getElementById('teacherSubjectFilter')?.value || 'ALL';
+                const cls = document.getElementById('teacherClassFilter')?.value || 'ALL';
+                if (subj && subj !== 'ALL') url += `&subject=${encodeURIComponent(subj)}`;
+                if (cls && cls !== 'ALL') url += `&className=${encodeURIComponent(cls)}`;
+            } else if (selectedRole === 'STUDENT') {
+                url += '&role=STUDENT';
+                const sitVal = document.getElementById('situationFilter')?.value || 'ALL';
+                const cls = document.getElementById('studentClassFilter')?.value || 'ALL';
+                if (sitVal && sitVal !== 'ALL') url += `&situation=${encodeURIComponent(sitVal)}`;
+                if (cls && cls !== 'ALL') url += `&className=${encodeURIComponent(cls)}`;
+            }
+
             if (searchVal) url += `&search=${encodeURIComponent(searchVal)}`;
-            if (sitVal && sitVal !== 'ALL') url += `&situation=${encodeURIComponent(sitVal)}`;
 
             const res = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${jwtToken || ''}` }
+                headers: { 'Authorization': `Bearer ${getToken()}` }
             });
+            if (res.status === 401) return handleUnauthorized();
+
             if (res.ok) {
                 const data = await res.json();
-                if (data && data.content) {
+                if (data && Array.isArray(data.content)) {
                     allUsers = data.content;
                     totalPages = data.totalPages ?? 1;
                     totalElements = data.totalElements ?? data.content.length;
@@ -521,21 +881,31 @@
                     totalPages = 1;
                     totalElements = data.length;
                 } else {
-                    allUsers = Object.keys(data)
+                    allUsers = Object.keys(data || {})
                         .filter(k => !isNaN(k))
-                        .sort((a,b) => Number(a) - Number(b))
+                        .sort((a, b) => Number(a) - Number(b))
                         .map(k => data[k]);
-                    totalPages = data.totalPages ?? 1;
-                    totalElements = data.totalElements ?? allUsers.length;
+                    totalPages = data?.totalPages ?? 1;
+                    totalElements = data?.totalElements ?? allUsers.length;
                 }
                 renderTables();
                 renderPagination();
             } else {
-                document.getElementById('tbodyStaff').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Erro ao carregar usuários.</td></tr>';
+                showTableError('Erro ao carregar usuários.');
             }
         } catch (e) {
             console.error('Erro na requisição:', e);
-            document.getElementById('tbodyStaff').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Falha de conexão com o servidor.</td></tr>';
+            showTableError('Falha de conexão com o servidor.');
+        }
+    }
+
+    function showTableError(msg) {
+        if (selectedRole === 'STAFF') {
+            document.getElementById('tbodyStaff').innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${escapeHtml(msg)}</td></tr>`;
+        } else if (selectedRole === 'TEACHER') {
+            document.getElementById('tbodyTeachers').innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${escapeHtml(msg)}</td></tr>`;
+        } else if (selectedRole === 'STUDENT') {
+            document.getElementById('tbodyStudents').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">${escapeHtml(msg)}</td></tr>`;
         }
     }
 
@@ -543,7 +913,7 @@
         const container = document.getElementById('paginationContainer');
         if (!container) return;
 
-        if (totalPages <= 1) {
+        if (!selectedRole || totalPages <= 1) {
             container.innerHTML = '';
             return;
         }
@@ -592,219 +962,272 @@
         container.innerHTML = html;
     }
 
+    function renderStatusBadge(isActive) {
+        return isActive
+            ? '<span class="badge bg-label-success"><i class="bx bx-check-circle me-1"></i>Ativo</span>'
+            : '<span class="badge bg-label-danger"><i class="bx bx-block me-1"></i>Desativado</span>';
+    }
+
+    function renderActionButtons(u) {
+        const editUrl = getEditUrl(u);
+        const editBtn = editUrl
+            ? `<a href="${editUrl}" class="btn btn-sm btn-icon btn-outline-secondary" title="Editar Cadastro"><i class="bx bx-edit-alt"></i></a>`
+            : '';
+
+        const perfBtn = u.role === 'STUDENT'
+            ? `<a href="/secretaria/desempenho-aluno?studentId=${u.id}" class="btn btn-sm btn-icon btn-outline-primary" title="Ver Desempenho Escolar"><i class="bx bx-line-chart"></i></a>`
+            : '';
+
+        const selfUser = isCurrentUser(u);
+        const toggleBtn = selfUser
+            ? `<button type="button" class="btn btn-sm btn-icon btn-outline-secondary" title="Você não pode desativar sua própria conta" disabled><i class="bx bx-power-off"></i></button>`
+            : (u.active
+                ? `<button type="button" class="btn btn-sm btn-icon btn-outline-warning" title="Desativar Usuário" onclick="toggleUserStatus(${u.id}, '${u.role}', false)"><i class="bx bx-power-off"></i></button>`
+                : `<button type="button" class="btn btn-sm btn-icon btn-outline-success" title="Reativar Usuário" onclick="toggleUserStatus(${u.id}, '${u.role}', true)"><i class="bx bx-check-circle"></i></button>`);
+
+        const deleteBtn = selfUser
+            ? `<button type="button" class="btn btn-sm btn-icon btn-outline-secondary" title="Você não pode excluir sua própria conta" disabled><i class="bx bx-trash"></i></button>`
+            : `<button type="button" class="btn btn-sm btn-icon btn-outline-danger" title="Excluir Usuário" onclick="deleteUser(${u.id}, '${u.role}')"><i class="bx bx-trash"></i></button>`;
+
+        return `
+            <div class="d-inline-flex align-items-center justify-content-center gap-1 text-nowrap action-btn-group">
+                ${perfBtn}
+                ${editBtn}
+                ${toggleBtn}
+                ${deleteBtn}
+            </div>
+        `;
+    }
+
     function renderTables() {
-        const roleVal = document.getElementById('roleFilter').value;
         const sitVal = document.getElementById('situationFilter').value;
         selectedSituation = sitVal;
         updateSituationCardStyles();
-        const statusVal = document.querySelector('input[name="statusFilter"]:checked')?.value || 'active';
 
-        // Base users filter by status
-        let baseUsers = allUsers.filter(u => {
-            if (statusVal === 'active' && !u.active) return false;
-            if (statusVal === 'inactive' && u.active) return false;
-            return true;
-        });
+        if (selectedRole === 'STAFF') {
+            const staffUsers = allUsers.filter(u => u.role === 'PRINCIPAL' || u.role === 'SECRETARY');
+            document.getElementById('countStaffBadge').textContent = `${totalElements} ${totalElements === 1 ? 'gestor' : 'gestores'}`;
 
-        // 1. Gestores (Direção & Secretaria)
-        const staffSection = document.getElementById('sectionStaff');
-        const staffUsers = baseUsers.filter(u => u.role === 'PRINCIPAL' || u.role === 'SECRETARY');
+            const tbodyStaff = document.getElementById('tbodyStaff');
+            if (staffUsers.length === 0) {
+                tbodyStaff.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum gestor encontrado com os filtros selecionados.</td></tr>';
+            } else {
+                tbodyStaff.innerHTML = staffUsers.map(u => {
+                    const initial = (u.name || 'G').charAt(0).toUpperCase();
+                    const isDir = u.role === 'PRINCIPAL';
+                    const roleBadge = isDir
+                        ? '<span class="badge bg-label-warning"><i class="bx bx-shield me-1"></i>Direção</span>'
+                        : '<span class="badge bg-label-info"><i class="bx bx-folder-open me-1"></i>Secretaria</span>';
+                    const dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : '-';
+                    const inactiveLabel = !u.active ? '<span class="badge bg-danger" style="font-size: 0.65rem;">Desativado</span>' : '';
 
-        // 2. Professores
-        const teachersSection = document.getElementById('sectionTeachers');
-        const teacherUsers = baseUsers.filter(u => u.role === 'TEACHER');
-
-        // 3. Alunos
-        const studentsSection = document.getElementById('sectionStudents');
-        const studentUsers = baseUsers.filter(u => u.role === 'STUDENT');
-
-        // Visibilidade das Seções baseada no Papel Selecionado
-        if (roleVal === 'ALL') {
-            staffSection.style.display = 'block';
-            teachersSection.style.display = 'block';
-            studentsSection.style.display = 'block';
-        } else if (roleVal === 'STAFF') {
-            staffSection.style.display = 'block';
-            teachersSection.style.display = 'none';
-            studentsSection.style.display = 'none';
-        } else if (roleVal === 'TEACHER') {
-            staffSection.style.display = 'none';
-            teachersSection.style.display = 'block';
-            studentsSection.style.display = 'none';
-        } else if (roleVal === 'STUDENT') {
-            staffSection.style.display = 'none';
-            teachersSection.style.display = 'none';
-            studentsSection.style.display = 'block';
-        }
-
-        // Atualizar Badges de Contagem de Cada Tabela
-        document.getElementById('countStaffBadge').textContent = staffUsers.length + (staffUsers.length === 1 ? ' gestor' : ' gestores');
-        document.getElementById('countTeachersBadge').textContent = teacherUsers.length + (teacherUsers.length === 1 ? ' professor' : ' professores');
-        document.getElementById('countStudentsBadge').textContent = studentUsers.length + (studentUsers.length === 1 ? ' aluno' : ' alunos');
-
-        // Renderizar Tabela 1: Gestores
-        const tbodyStaff = document.getElementById('tbodyStaff');
-        if (staffUsers.length === 0) {
-            tbodyStaff.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum gestor encontrado.</td></tr>';
-        } else {
-            tbodyStaff.innerHTML = staffUsers.map(u => {
-                const initial = (u.name || 'G').charAt(0).toUpperCase();
-                const isDir = u.role === 'PRINCIPAL';
-                const roleBadge = isDir
-                    ? '<span class="badge bg-label-warning"><i class="bx bx-shield me-1"></i>Direção</span>'
-                    : '<span class="badge bg-label-info"><i class="bx bx-folder-open me-1"></i>Secretaria</span>';
-                const dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : '-';
-                const statusBadge = u.active
-                    ? '<span class="badge bg-label-success">Ativo</span>'
-                    : '<span class="badge bg-label-secondary">Inativo</span>';
-
-                const editUrl = getEditUrl(u);
-                const editBtn = editUrl
-                    ? `<a href="${editUrl}" class="btn btn-sm btn-icon btn-outline-secondary" title="Editar Usuário"><i class="bx bx-edit-alt"></i></a>`
-                    : '<span class="text-muted small">-</span>';
-
-                return `
-                    <tr class="${u.active ? '' : 'inactive-row'}">
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="user-initials bg-label-warning me-3">${escapeHtml(initial)}</span>
-                                <div>
-                                    <span class="fw-semibold d-block text-dark">${escapeHtml(u.name)}</span>
-                                    <small class="text-muted">${escapeHtml(u.email)}</small>
+                    return `
+                        <tr class="${u.active ? '' : 'inactive-row'}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="user-initials ${u.active ? 'bg-label-warning' : 'bg-label-secondary'} me-3">${escapeHtml(initial)}</span>
+                                    <div>
+                                        <div class="d-flex align-items-center flex-wrap gap-2">
+                                            <span class="fw-semibold text-dark user-name-text">${escapeHtml(u.name)}</span>
+                                            ${inactiveLabel}
+                                        </div>
+                                        <small class="text-muted">${escapeHtml(u.email)}</small>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>${roleBadge}</td>
-                        <td class="text-muted">${dateStr}</td>
-                        <td>${statusBadge}</td>
-                        <td class="text-center">${editBtn}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
+                            </td>
+                            <td>${roleBadge}</td>
+                            <td class="text-muted">${dateStr}</td>
+                            <td>${renderStatusBadge(u.active)}</td>
+                            <td class="text-center text-nowrap" style="width: 120px; min-width: 120px;">${renderActionButtons(u)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        } else if (selectedRole === 'TEACHER') {
+            const teacherUsers = allUsers.filter(u => u.role === 'TEACHER');
+            document.getElementById('countTeachersBadge').textContent = `${totalElements} ${totalElements === 1 ? 'professor' : 'professores'}`;
 
-        // Renderizar Tabela 2: Professores
-        const tbodyTeachers = document.getElementById('tbodyTeachers');
-        if (teacherUsers.length === 0) {
-            tbodyTeachers.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum professor encontrado.</td></tr>';
-        } else {
-            tbodyTeachers.innerHTML = teacherUsers.map(u => {
-                const initial = (u.name || 'P').charAt(0).toUpperCase();
-                const subs = (u.subjects && u.subjects.length > 0)
-                    ? u.subjects.map(s => `<span class="badge bg-label-success me-1 mb-1">${escapeHtml(s)}</span>`).join('')
-                    : '<span class="text-muted small">Sem disciplinas vinculadas</span>';
-                const cls = (u.classrooms && u.classrooms.length > 0)
-                    ? u.classrooms.map(c => `<span class="badge bg-label-info me-1 mb-1">${escapeHtml(c)}</span>`).join('')
-                    : '<span class="text-muted small">Sem turmas vinculadas</span>';
-                const statusBadge = u.active
-                    ? '<span class="badge bg-label-success">Ativo</span>'
-                    : '<span class="badge bg-label-secondary">Inativo</span>';
+            const tbodyTeachers = document.getElementById('tbodyTeachers');
+            if (teacherUsers.length === 0) {
+                tbodyTeachers.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nenhum professor encontrado com os filtros selecionados.</td></tr>';
+            } else {
+                tbodyTeachers.innerHTML = teacherUsers.map(u => {
+                    const initial = (u.name || 'P').charAt(0).toUpperCase();
+                    const subs = (u.subjects && u.subjects.length > 0)
+                        ? u.subjects.map(s => `<span class="badge bg-label-success me-1 mb-1">${escapeHtml(s)}</span>`).join('')
+                        : '<span class="text-muted small">Sem disciplinas vinculadas</span>';
+                    const cls = (u.classrooms && u.classrooms.length > 0)
+                        ? u.classrooms.map(c => `<span class="badge bg-label-info me-1 mb-1">${escapeHtml(c)}</span>`).join('')
+                        : '<span class="text-muted small">Sem turmas vinculadas</span>';
+                    const inactiveLabel = !u.active ? '<span class="badge bg-danger" style="font-size: 0.65rem;">Desativado</span>' : '';
 
-                const editUrl = getEditUrl(u);
-                const editBtn = editUrl
-                    ? `<a href="${editUrl}" class="btn btn-sm btn-icon btn-outline-secondary" title="Editar Professor"><i class="bx bx-edit-alt"></i></a>`
-                    : '<span class="text-muted small">-</span>';
-
-                return `
-                    <tr class="${u.active ? '' : 'inactive-row'}">
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="user-initials bg-label-success me-3">${escapeHtml(initial)}</span>
-                                <div>
-                                    <span class="fw-semibold d-block text-dark">${escapeHtml(u.name)}</span>
-                                    <small class="text-muted">${escapeHtml(u.email)}</small>
+                    return `
+                        <tr class="${u.active ? '' : 'inactive-row'}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="user-initials ${u.active ? 'bg-label-success' : 'bg-label-secondary'} me-2">${escapeHtml(initial)}</span>
+                                    <div>
+                                        <div class="d-flex align-items-center flex-wrap gap-2">
+                                            <span class="fw-semibold text-dark user-name-text">${escapeHtml(u.name)}</span>
+                                            ${inactiveLabel}
+                                        </div>
+                                        <small class="text-muted">${escapeHtml(u.email)}</small>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td><div class="d-flex flex-wrap">${subs}</div></td>
-                        <td><div class="d-flex flex-wrap">${cls}</div></td>
-                        <td>${statusBadge}</td>
-                        <td class="text-center">${editBtn}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
+                            </td>
+                            <td><div class="d-flex flex-wrap">${subs}</div></td>
+                            <td><div class="d-flex flex-wrap">${cls}</div></td>
+                            <td>${renderStatusBadge(u.active)}</td>
+                            <td class="text-center text-nowrap" style="width: 120px; min-width: 120px;">${renderActionButtons(u)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        } else if (selectedRole === 'STUDENT') {
+            const studentUsers = allUsers.filter(u => u.role === 'STUDENT');
+            document.getElementById('countStudentsBadge').textContent = `${totalElements} ${totalElements === 1 ? 'aluno' : 'alunos'}`;
 
-        // Renderizar Tabela 3: Alunos (com Coluna Dedicada para Situação Geral)
-        const tbodyStudents = document.getElementById('tbodyStudents');
-        if (studentUsers.length === 0) {
-            tbodyStudents.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhum aluno encontrado.</td></tr>';
-        } else {
-            tbodyStudents.innerHTML = studentUsers.map(u => {
-                const initial = (u.name || 'A').charAt(0).toUpperCase();
-                const turmaBadge = u.className 
-                    ? `<span class="badge bg-label-primary"><i class="bx bx-group me-1"></i>${escapeHtml(u.className)}</span>` 
-                    : '<span class="text-muted small">Sem turma</span>';
-                const anoText = u.academicYear ? `<small class="text-muted d-block mt-1">Ano: ${escapeHtml(u.academicYear)}</small>` : '';
+            const tbodyStudents = document.getElementById('tbodyStudents');
+            if (studentUsers.length === 0) {
+                tbodyStudents.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhum aluno encontrado com os filtros selecionados.</td></tr>';
+            } else {
+                tbodyStudents.innerHTML = studentUsers.map(u => {
+                    const initial = (u.name || 'A').charAt(0).toUpperCase();
+                    const turmaBadge = u.className
+                        ? `<span class="badge bg-label-primary mb-1"><i class="bx bx-group me-1"></i>${escapeHtml(u.className)}</span>`
+                        : '<span class="text-muted small">Sem turma</span>';
+                    const anoText = u.academicYear ? `<small class="text-muted d-block" style="font-size: 0.72rem;">Ano ${escapeHtml(u.academicYear)}</small>` : '';
 
-                const regText = u.enrollmentNumber 
-                    ? `<span class="badge bg-label-secondary fw-semibold">${escapeHtml(u.enrollmentNumber)}</span>` 
-                    : '<span class="text-muted small">-</span>';
+                    const regText = u.enrollmentNumber
+                        ? `<span class="badge bg-label-secondary fw-semibold">${escapeHtml(u.enrollmentNumber)}</span>`
+                        : '<span class="text-muted small">-</span>';
 
-                // Situação Geral (Coluna Própria e Clara)
-                const sitMap = {
-                    'APPROVED': { text: 'Aprovado', badge: 'bg-label-success' },
-                    'FAILED': { text: 'Reprovado', badge: 'bg-label-danger' },
-                    'PENDING': { text: 'Pendente', badge: 'bg-label-warning' },
-                    'STUDYING': { text: 'Cursando', badge: 'bg-label-info' },
-                    'UNENROLLED': { text: 'Sem Matrícula', badge: 'bg-label-secondary' }
-                };
-                const sitKey = (u.generalSituation && typeof u.generalSituation === 'object') ? u.generalSituation.name : (u.generalSituation || 'PENDING');
-                const sitObj = sitMap[sitKey] || (u.active ? { text: 'Pendente', badge: 'bg-label-warning' } : { text: 'Inativo', badge: 'bg-label-secondary' });
-                const situationBadge = `<span class="badge ${sitObj.badge} fs-6">${escapeHtml(sitObj.text)}</span>`;
+                    const sitMap = {
+                        'APPROVED': { text: 'Aprovado', badge: 'bg-label-success' },
+                        'FAILED': { text: 'Reprovado', badge: 'bg-label-danger' },
+                        'PENDING': { text: 'Pendente', badge: 'bg-label-warning' },
+                        'UNENROLLED': { text: 'Sem Matrícula', badge: 'bg-label-secondary' }
+                    };
+                    let sitKey = (u.generalSituation && typeof u.generalSituation === 'object') ? u.generalSituation.name : u.generalSituation;
+                    if (!sitKey) {
+                        sitKey = u.className ? 'PENDING' : 'UNENROLLED';
+                    }
+                    const sitObj = sitMap[sitKey] || { text: 'Pendente', badge: 'bg-label-warning' };
+                    const situationBadge = `<span class="badge ${sitObj.badge}">${escapeHtml(sitObj.text)}</span>`;
 
-                // Data de Nascimento
-                let birthText = '<span class="text-muted small">-</span>';
-                if (u.birthDate) {
-                    const parts = u.birthDate.split('-');
-                    const formattedBirth = (parts.length === 3) ? `${parts[2]}/${parts[1]}/${parts[0]}` : u.birthDate;
-                    birthText = `<span class="text-dark small"><i class="bx bx-calendar me-1 text-muted"></i>${escapeHtml(formattedBirth)}</span>`;
-                }
+                    let birthText = '<span class="text-muted small">-</span>';
+                    if (u.birthDate) {
+                        const parts = u.birthDate.split('-');
+                        const formattedBirth = (parts.length === 3) ? `${parts[2]}/${parts[1]}/${parts[0]}` : u.birthDate;
+                        birthText = `<span class="text-dark small"><i class="bx bx-calendar me-1 text-muted"></i>${escapeHtml(formattedBirth)}</span>`;
+                    }
 
-                // Telefones
-                const phoneItem = u.ownPhone ? `<div class="small text-muted"><i class="bx bx-phone me-1 text-primary"></i>${escapeHtml(u.ownPhone)}</div>` : '';
-                const guardianItem = u.guardianPhone ? `<div class="small text-muted"><i class="bx bx-user-voice me-1 text-info"></i>Resp: ${escapeHtml(u.guardianPhone)}</div>` : '';
-                const contactHtml = (phoneItem || guardianItem) ? `${phoneItem}${guardianItem}` : '<span class="text-muted small">-</span>';
+                    const phoneItem = u.ownPhone ? `<div class="small text-muted" style="font-size: 0.75rem;"><i class="bx bx-phone me-1 text-primary"></i>${escapeHtml(u.ownPhone)}</div>` : '';
+                    const guardianItem = u.guardianPhone ? `<div class="small text-muted" style="font-size: 0.75rem;"><i class="bx bx-user-voice me-1 text-info"></i>Resp: ${escapeHtml(u.guardianPhone)}</div>` : '';
+                    const contactHtml = (phoneItem || guardianItem) ? `${phoneItem}${guardianItem}` : '<span class="text-muted small">-</span>';
+                    const inactiveLabel = !u.active ? '<span class="badge bg-danger" style="font-size: 0.65rem;">Desativado</span>' : '';
 
-                const statusBadge = u.active
-                    ? '<span class="badge bg-label-success">Ativo</span>'
-                    : '<span class="badge bg-label-secondary">Inativo</span>';
-
-                const editUrl = getEditUrl(u);
-                const editBtn = editUrl
-                    ? `<a href="${editUrl}" class="btn btn-sm btn-icon btn-outline-secondary me-1" title="Editar Aluno"><i class="bx bx-edit-alt"></i></a>`
-                    : '';
-                const performanceBtn = `<a href="/secretaria/desempenho-aluno?studentId=${u.id}" class="btn btn-sm btn-icon btn-outline-primary" title="Ver Desempenho Escolar"><i class="bx bx-line-chart"></i></a>`;
-
-                return `
-                    <tr class="${u.active ? '' : 'inactive-row'}">
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="user-initials bg-label-primary me-3">${escapeHtml(initial)}</span>
-                                <div>
-                                    <span class="fw-semibold d-block text-dark">${escapeHtml(u.name)}</span>
-                                    <small class="text-muted">${escapeHtml(u.email)}</small>
+                    return `
+                        <tr class="${u.active ? '' : 'inactive-row'}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="user-initials ${u.active ? 'bg-label-primary' : 'bg-label-secondary'} me-2">${escapeHtml(initial)}</span>
+                                    <div style="min-width: 0;">
+                                        <div class="d-flex align-items-center flex-wrap gap-1">
+                                            <span class="fw-semibold text-dark user-name-text text-truncate d-inline-block" style="max-width: 155px;" title="${escapeHtml(u.name)}">${escapeHtml(u.name)}</span>
+                                            ${inactiveLabel}
+                                        </div>
+                                        <small class="text-muted d-block text-truncate" style="max-width: 155px;" title="${escapeHtml(u.email)}">${escapeHtml(u.email)}</small>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>${turmaBadge} ${anoText}</td>
-                        <td>${regText}</td>
-                        <td>${situationBadge}</td>
-                        <td>${birthText}</td>
-                        <td>${contactHtml}</td>
-                        <td>${statusBadge}</td>
-                        <td class="text-center">
-                            <div class="d-inline-flex align-items-center">
-                                ${performanceBtn}
-                                ${editBtn}
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+                            </td>
+                            <td>${turmaBadge} ${anoText}</td>
+                            <td>${regText}</td>
+                            <td>${situationBadge}</td>
+                            <td>${birthText}</td>
+                            <td>${contactHtml}</td>
+                            <td>${renderStatusBadge(u.active)}</td>
+                            <td class="text-center text-nowrap" style="width: 120px; min-width: 120px;">${renderActionButtons(u)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
         }
     }
 
+    async function toggleUserStatus(id, role, activate) {
+        const user = allUsers.find(u => u.id === id);
+        if (isCurrentUser(user)) {
+            await window.showAlertModal('Aviso', 'Você não pode desativar sua própria conta.');
+            return;
+        }
+        const label = getRoleLabelPt(role);
+        const name = user ? user.name : `${label} #${id}`;
+        const action = activate ? 'ativar' : 'desativar';
+        const baseEndpoint = getRoleApiEndpoint(role);
+        if (!baseEndpoint) return;
+
+        if (!(await window.showConfirmModal('Atenção', `Deseja realmente ${action} o(a) ${label} "${name}"?`))) return;
+
+        try {
+            const response = await fetch(`${baseEndpoint}/${id}/${activate ? 'activate' : 'deactivate'}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+
+            if (response.status === 401) return handleUnauthorized();
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => null);
+                const fallback = `Não foi possível ${action} o(a) ${label}.`;
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                throw new Error(msg);
+            }
+
+            await loadStats();
+            await loadUsers(currentPage);
+        } catch (error) {
+            await window.showAlertModal('Aviso', error.message);
+        }
+    }
+
+    async function deleteUser(id, role) {
+        const user = allUsers.find(u => u.id === id);
+        if (isCurrentUser(user)) {
+            await window.showAlertModal('Aviso', 'Você não pode excluir sua própria conta.');
+            return;
+        }
+        const label = getRoleLabelPt(role);
+        const name = user ? user.name : `${label} #${id}`;
+        const baseEndpoint = getRoleApiEndpoint(role);
+        if (!baseEndpoint) return;
+
+        if (!(await window.showConfirmModal('Excluir Usuário', `TEM CERTEZA que deseja EXCLUIR DEFINITIVAMENTE o(a) ${label} "${name}" do sistema?\n\nEsta ação não poderá ser desfeita.`))) return;
+
+        try {
+            const response = await fetch(`${baseEndpoint}/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+
+            if (response.status === 401) return handleUnauthorized();
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => null);
+                const fallback = `Não foi possível excluir o(a) ${label} pois existem registros vinculados. Recomenda-se desativar o cadastro.`;
+                const msg = window.extractErrorMessage ? window.extractErrorMessage(err, fallback) : (err?.message || fallback);
+                throw new Error(msg);
+            }
+
+            await loadStats();
+            await loadUsers(0);
+            await window.showAlertModal('Sucesso', `O(A) ${label} "${name}" foi excluído(a) com sucesso.`);
+        } catch (error) {
+            await window.showAlertModal('Aviso', error.message);
+        }
+    }
+
+    // Eventos de Filtros
     let searchDebounceTimer;
     document.getElementById('searchInput').addEventListener('input', () => {
         clearTimeout(searchDebounceTimer);
@@ -812,33 +1235,53 @@
             loadUsers(0);
         }, 300);
     });
+
     document.getElementById('roleFilter').addEventListener('change', (e) => {
         setRoleFilter(e.target.value);
     });
+
+    document.getElementById('staffSubRoleFilter').addEventListener('change', () => {
+        loadUsers(0);
+    });
+
+    document.getElementById('teacherSubjectFilter').addEventListener('change', () => {
+        loadUsers(0);
+    });
+
+    document.getElementById('teacherClassFilter').addEventListener('change', () => {
+        loadUsers(0);
+    });
+
+    document.getElementById('studentClassFilter').addEventListener('change', () => {
+        loadUsers(0);
+    });
+
     document.getElementById('situationFilter').addEventListener('change', (e) => {
         selectedSituation = e.target.value;
         updateSituationCardStyles();
-        if (selectedSituation !== 'ALL') {
-            setRoleFilter('STUDENT');
-        } else {
-            loadUsers(0);
-        }
+        loadUsers(0);
     });
+
     document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
         radio.addEventListener('change', () => {
             loadStats();
-            loadUsers(0);
+            if (selectedRole) {
+                loadUsers(0);
+            }
         });
     });
 
+    // Inicialização
     const initialRoleParam = new URLSearchParams(window.location.search).get('role');
-    const validInitialRoles = ['ALL', 'STAFF', 'TEACHER', 'STUDENT'];
+    const validInitialRoles = ['STAFF', 'TEACHER', 'STUDENT', 'PRINCIPAL', 'SECRETARY'];
 
     loadStats();
+    loadFilterOptions();
+
     if (initialRoleParam && validInitialRoles.includes(initialRoleParam.toUpperCase())) {
         setRoleFilter(initialRoleParam.toUpperCase());
     } else {
-        loadUsers(0);
+        updateFilterVisibility('');
     }
 </script>
 <script src="/js/load-sidebar.js"></script>

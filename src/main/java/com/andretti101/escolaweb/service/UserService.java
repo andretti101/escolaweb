@@ -18,6 +18,9 @@ public interface UserService {
     com.andretti101.escolaweb.dto.response.PagedResponse<com.andretti101.escolaweb.dto.response.UserSummaryDTO> findSummaries(com.andretti101.escolaweb.model.enums.UserRole role, Boolean active, org.springframework.data.domain.Pageable pageable);
     com.andretti101.escolaweb.dto.response.PagedResponse<com.andretti101.escolaweb.dto.response.UserSummaryDTO> findSummaries(java.util.List<com.andretti101.escolaweb.model.enums.UserRole> roles, Boolean active, org.springframework.data.domain.Pageable pageable);
     default com.andretti101.escolaweb.dto.response.PagedResponse<com.andretti101.escolaweb.dto.response.UserSummaryDTO> findSummaries(java.util.List<com.andretti101.escolaweb.model.enums.UserRole> roles, Boolean active, String search, String situation, org.springframework.data.domain.Pageable pageable) {
+        return findSummaries(roles, active, search, situation, null, null, pageable);
+    }
+    default com.andretti101.escolaweb.dto.response.PagedResponse<com.andretti101.escolaweb.dto.response.UserSummaryDTO> findSummaries(java.util.List<com.andretti101.escolaweb.model.enums.UserRole> roles, Boolean active, String search, String situation, String className, String subject, org.springframework.data.domain.Pageable pageable) {
         return findSummaries(roles, active, pageable);
     }
     com.andretti101.escolaweb.dto.response.UserStatsDTO getUserStats(Boolean active);

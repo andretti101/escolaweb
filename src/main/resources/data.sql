@@ -355,9 +355,9 @@ INSERT INTO class_rooms (id, active, created_at, number, period_type, school_gra
  (4, false, '2025-01-20 09:00:00', 'F9-A', 'TRIMESTER', 'FUNDAMENTAL_9', 'MORNING',   '2025-01-20 09:00:00', 2),
  (5, false, '2025-01-20 09:00:00', 'M1-A', 'BIMESTER',  'MEDIO_1',        'MORNING',   '2025-01-20 09:00:00', 2),
  (6, false, '2025-01-20 09:00:00', 'M2-A', 'TRIMESTER', 'MEDIO_2',        'AFTERNOON', '2025-01-20 09:00:00', 2),
- (7, true,  '2026-01-20 09:00:00', 'M1-A', 'TRIMESTER', 'MEDIO_1',        'MORNING',   '2026-01-20 09:00:00', 3),
- (8, true,  '2026-01-20 09:00:00', 'M2-A', 'BIMESTER',  'MEDIO_2',        'MORNING',   '2026-01-20 09:00:00', 3),
- (9, true,  '2026-01-20 09:00:00', 'M3-A', 'TRIMESTER', 'MEDIO_3',        'AFTERNOON', '2026-01-20 09:00:00', 3),
+ (7, true,  '2026-01-20 09:00:00', 'M1-A',   'TRIMESTER', 'MEDIO_1',        'MORNING',   '2026-01-20 09:00:00', 3),
+ (8, true,  '2026-01-20 09:00:00', 'M2-A',   'BIMESTER',  'MEDIO_2',        'MORNING',   '2026-01-20 09:00:00', 3),
+ (9, true,  '2026-01-20 09:00:00', 'M3-A',   'TRIMESTER', 'MEDIO_3',        'AFTERNOON', '2026-01-20 09:00:00', 3),
  -- Turmas de Tempo Integral:
  (10, false, '2024-01-20 09:00:00', 'F8-INT', 'TRIMESTER', 'FUNDAMENTAL_8', 'FULL_TIME', '2024-01-20 09:00:00', 1),
  (11, false, '2024-01-20 09:00:00', 'F9-INT', 'BIMESTER',  'FUNDAMENTAL_9', 'FULL_TIME', '2024-01-20 09:00:00', 1),
@@ -376,13 +376,18 @@ INSERT INTO class_rooms (id, active, created_at, number, period_type, school_gra
 -- Cada aluno (IDs 11 a 60) é matriculado, em cada ano, na turma da sua coorte:
 --   - Coortes Regulares A, B, C (IDs 11 a 40): turmas 1 a 9
 --   - Coortes Integrais D e E (IDs 41 a 60): turmas 10 a 15
--- Situação geral: APPROVED nos anos encerrados e PENDING em 2026 (o ano
--- ainda não terminou). Matrículas de anos encerrados ficam inativas.
+-- Situação geral: histórico realista em anos anteriores (aprovados e reprovados; anos encerrados não deixam pendências) e PENDING em 2026 (ano ativo).
+-- Matrículas de anos encerrados ficam inativas.
 INSERT INTO enrollments (active, created_at, enrollment_date, general_situation, class_room_id, student_id)
 SELECT ay.active,
        ay.start_date::timestamp - interval '15 days',   -- criada 15 dias antes do início do ano
        ay.start_date,
-       CASE WHEN ay.active THEN 'PENDING' ELSE 'APPROVED' END,
+       CASE 
+           WHEN ay.active THEN 'PENDING'
+           WHEN ay.year = 2025 AND s.id IN (17, 27, 37, 38, 47, 57, 67) THEN 'FAILED'
+           WHEN ay.year = 2024 AND s.id IN (18, 28, 39, 48, 58) THEN 'FAILED'
+           ELSE 'APPROVED'
+       END,
        c.id,
        s.id
 FROM students s
@@ -394,7 +399,12 @@ UNION ALL
 SELECT ay.active,
        ay.start_date::timestamp - interval '15 days',
        ay.start_date,
-       CASE WHEN ay.active THEN 'PENDING' ELSE 'APPROVED' END,
+       CASE 
+           WHEN ay.active THEN 'PENDING'
+           WHEN ay.year = 2025 AND s.id IN (17, 27, 37, 38, 47, 57, 67) THEN 'FAILED'
+           WHEN ay.year = 2024 AND s.id IN (18, 28, 39, 48, 58) THEN 'FAILED'
+           ELSE 'APPROVED'
+       END,
        c.id,
        s.id
 FROM students s
@@ -406,7 +416,12 @@ UNION ALL
 SELECT ay.active,
        ay.start_date::timestamp - interval '15 days',
        ay.start_date,
-       CASE WHEN ay.active THEN 'PENDING' ELSE 'APPROVED' END,
+       CASE 
+           WHEN ay.active THEN 'PENDING'
+           WHEN ay.year = 2025 AND s.id IN (17, 27, 37, 38, 47, 57, 67) THEN 'FAILED'
+           WHEN ay.year = 2024 AND s.id IN (18, 28, 39, 48, 58) THEN 'FAILED'
+           ELSE 'APPROVED'
+       END,
        c.id,
        s.id
 FROM students s
@@ -616,7 +631,6 @@ SELECT
     CASE 
         WHEN n.i = 4 THEN 'Atividade avaliativa formativa / entrega de relatório preliminar'
         WHEN n.i = 5 THEN 'Encontro de consolidação de dúvidas antes da avaliação trimestral'
-        ELSE NULL
     END,
     x.d::timestamp + interval '8 hours',
     t.id,
@@ -679,7 +693,7 @@ UPDATE attendances SET updated_at = created_at + interval '2 days' WHERE status 
 INSERT INTO assessments (assessment_type, created_at, assessment_date, description, title, updated_at, period_id, teacher_class_subject_id, active)
 SELECT k.typ,
        p.start_date::timestamp + interval '7 days',
-       p.start_date + k.off + ((t.subject_id - 1) % 4),
+       p.start_date + k.offset_days + ((t.subject_id - 1) % 4),
        CASE k.n
            WHEN 1 THEN 
                CASE sb.id
@@ -761,7 +775,7 @@ CROSS JOIN LATERAL (
                WHEN p.id = 21 THEN (gs.n - 1)
                WHEN p.id = 9  THEN (gs.n * 6)
                ELSE (gs.n * 12)
-           END AS off
+           END AS offset_days
 ) AS k
 ORDER BY t.id, p.id, k.n;
 
@@ -841,8 +855,9 @@ ORDER BY a.id, e.student_id;
 
 -- Histórico de notas: 1 em cada 20 notas foi revisada com motivos pedagógicos variados e realistas.
 -- Registrado pelo professor responsável da turma/disciplina (ou pela coordenação/secretaria quando aplicável).
-INSERT INTO grade_history (changed_at, new_grade, notes, old_grade, grade_id, changed_by)
+INSERT INTO grade_history (changed_at, grade_kind, new_grade, notes, old_grade, grade_id, changed_by)
 SELECT g.created_at + interval '1 day',
+       'ORIGINAL',
        g.score,
        (ARRAY[
            'Retificação após deferimento de recurso na questão discursiva',
@@ -864,6 +879,26 @@ FROM grades g
 JOIN assessments a ON a.id = g.assessment_id
 JOIN teacher_class_subject tcs ON tcs.id = a.teacher_class_subject_id
 WHERE g.id % 20 = 0
+ORDER BY g.id;
+
+-- Histórico de recuperações: notas de recuperação lançadas possuem registro formal de auditoria com tipo RECOVERY.
+INSERT INTO grade_history (changed_at, grade_kind, new_grade, notes, old_grade, grade_id, changed_by)
+SELECT g.created_at + interval '3 days',
+       'RECOVERY',
+       g.recovery_score,
+       (ARRAY[
+           'Lançamento de nota de recuperação paralela após plantão pedagógico',
+           'Nota de recuperação trimestral registrada após prova de nivelamento',
+           'Recuperação contínua de aprendizagem registrada após trabalho orientado',
+           'Reavaliação de conteúdos essenciais em prova de recuperação'
+       ])[(g.id / 3) % 4 + 1],
+       NULL,
+       g.id,
+       tcs.teacher_id
+FROM grades g
+JOIN assessments a ON a.id = g.assessment_id
+JOIN teacher_class_subject tcs ON tcs.id = a.teacher_class_subject_id
+WHERE g.id % 15 = 0
 ORDER BY g.id;
 
 -- =====================================================================
@@ -900,54 +935,58 @@ INSERT INTO announcement_classrooms (announcement_id, class_room_id) VALUES
 -- =====================================================================
 -- 13. CHAT
 -- =====================================================================
--- Mensagens dos chats das turmas 7 (coorte A), 8 (coorte B), 14 (coorte D Integral),
--- 15 (coorte E Integral), 18 (coorte F Noturno) e do chat global dos professores (is_global_teacher_chat = true, sem turma).
+-- Mensagens dos chats das turmas e do chat global dos professores.
+-- Regras de acesso e visibilidade do chat:
+--   - Professores têm acesso EXCLUSIVO ao chat global de professores (is_global_teacher_chat = true, sem turma);
+--   - Alunos têm acesso EXCLUSIVO ao chat da sua própria turma (classroom_id específico, is_global_teacher_chat = false);
+--   - Gestão escolar (Direção id 1 e Secretaria id 2) possui acesso a ambos os canais;
+--   - Não há interação direta de professores dentro dos chats de turma de alunos, nem de alunos no chat dos professores.
 --   replied_to_id    -> mensagem respondida (resposta encadeada);
 --   is_edited        -> mensagem editada pelo autor;
 --   is_deleted       -> mensagem apagada pelo autor;
 --   deleted_by_admin -> mensagem removida pela moderação.
 -- Inclui mensagens arquivadas de 2024 e 2025 para consulta no arquivo histórico.
 INSERT INTO chat_messages (id, archived, content, deleted_by_admin, is_deleted, is_edited, is_global_teacher_chat, "timestamp", classroom_id, replied_to_id, sender_id) VALUES
- (1, false, 'Bom dia, turma! Lembrem que a prova de Língua Portuguesa é na próxima semana.', false, false, false, false, '2026-09-28 07:45:00', 7, NULL, 3),
- (2, false, 'Professora, a prova vai incluir interpretação de texto?', false, false, false, false, '2026-09-28 07:52:00', 7, 1, 11),
- (3, false, 'Vai sim, e também gramática. Revisem os exercícios das últimas aulas.', false, false, true,  false, '2026-09-28 08:05:00', 7, 2, 3),
- (4, false, 'Alguém tem o material da aula de ontem?', false, true,  false, false, '2026-09-29 18:20:00', 7, NULL, 13),
- (5, false, 'Turma, o trabalho de Matemática pode ser entregue até sexta-feira.', false, false, false, false, '2026-10-01 13:10:00', 8, NULL, 4),
- (6, false, 'Obrigada, professor!', false, false, false, false, '2026-10-01 13:25:00', 8, 5, 22),
- (7, false, 'Pessoal, lembrete da reunião pedagógica na sexta, às 17h30.', false, false, false, true, '2026-10-02 16:10:00', NULL, NULL, 1),
- (8, false, 'Confirmado, estarei presente.', false, false, false, true, '2026-10-02 16:20:00', NULL, 7, 5),
+ (1, false, 'Pessoal, alguém já começou a estudar para o simulado da próxima semana?', false, false, false, false, '2026-09-28 07:45:00', 7, NULL, 11),
+ (2, false, 'Eu já comecei! A prova vai incluir interpretação de texto e gramática.', false, false, false, false, '2026-09-28 07:52:00', 7, 1, 12),
+ (3, false, 'Boa! Vamos montar um grupo de estudos na biblioteca depois da aula?', false, false, true,  false, '2026-09-28 08:05:00', 7, 2, 11),
+ (4, false, 'Alguém tem as anotações da aula de ontem para compartilhar?', false, true,  false, false, '2026-09-29 18:20:00', 7, NULL, 13),
+ (5, false, 'Turma, lembrem que a entrega da lista de exercícios de Matemática em grupo é até sexta-feira.', false, false, false, false, '2026-10-01 13:10:00', 8, NULL, 21),
+ (6, false, 'Nosso grupo já finalizou a primeira parte! Quem precisar de ajuda avisa.', false, false, false, false, '2026-10-01 13:25:00', 8, 5, 22),
+ (7, false, 'Prezados professores, lembrete da reunião pedagógica na sexta, às 17h30.', false, false, false, true, '2026-10-02 16:10:00', NULL, NULL, 1),
+ (8, false, 'Confirmado, estarei presente com o relatório das turmas.', false, false, false, true, '2026-10-02 16:20:00', NULL, 7, 5),
  (9, false, 'Mensagem removida pela moderação.', true, true, false, false, '2026-10-03 10:00:00', 8, NULL, 25),
- (10, true, 'Bom dia, turma! Sejam bem-vindos ao ano letivo de 2024.', false, false, false, false, '2024-02-15 08:00:00', 1, NULL, 3),
- (11, true, 'Bom dia, professora Mariana! Ansioso pelo ano.', false, false, false, false, '2024-02-15 08:05:00', 1, 10, 11),
- (12, true, 'Lembrem-se de trazer o material para a aula de gramática amanhã.', false, false, false, false, '2024-03-10 09:30:00', 1, NULL, 3),
- (13, true, 'Turma, lista de exercícios preparatória para a prova já está liberada.', false, false, false, false, '2024-04-18 10:00:00', 2, NULL, 4),
- (14, true, 'Professor, teremos revisão antes da avaliação?', false, false, false, false, '2024-04-18 10:15:00', 2, 13, 21),
- (15, true, 'Sim, faremos resolução de dúvidas na quarta-feira.', false, false, false, false, '2024-04-18 10:20:00', 2, 14, 4),
- (16, true, 'Colegas, reunião geral do corpo docente agendada para sexta-feira, 14h.', false, false, false, true, '2024-02-16 14:00:00', NULL, NULL, 1),
- (17, true, 'Presença confirmada. Levarei as pautas do planejamento.', false, false, false, true, '2024-02-16 14:20:00', NULL, 16, 3),
- (18, true, 'Iniciando o ano letivo de 2025! Bons estudos a todos.', false, false, false, false, '2025-02-18 08:00:00', 4, NULL, 3),
- (19, true, 'Professora, qual o tema da primeira redação?', false, false, false, false, '2025-02-25 09:00:00', 4, NULL, 11),
- (20, true, 'O tema será Convivência e Cidadania na Escola.', false, false, false, false, '2025-02-25 09:12:00', 4, 19, 3),
- (21, true, 'Pessoal do 1º Médio, entrega do trabalho de trigonometria até dia 25.', false, false, false, false, '2025-04-15 11:00:00', 5, NULL, 4),
- (22, true, 'Entendido professor Carlos, obrigado!', false, false, false, false, '2025-04-15 11:05:00', 5, 21, 21),
- (23, true, 'Lembrete: fechamento das médias do 2º trimestre até o dia 28/08/2025.', false, false, false, true, '2025-08-20 15:00:00', NULL, NULL, 1),
+ (10, true, 'Bom dia, pessoal! Sejam bem-vindos ao 8º ano.', false, false, false, false, '2024-02-15 08:00:00', 1, NULL, 11),
+ (11, true, 'Bom dia! Muito animada para começarmos as aulas deste ano.', false, false, false, false, '2024-02-15 08:05:00', 1, 10, 12),
+ (12, true, 'Lembrem de trazer os livros e cadernos para a atividade de redação amanhã.', false, false, false, false, '2024-03-10 09:30:00', 1, NULL, 13),
+ (13, true, 'Turma, a lista preparatória para a prova já está liberada no mural.', false, false, false, false, '2024-04-18 10:00:00', 2, NULL, 21),
+ (14, true, 'Alguém sabe se teremos aula de revisão antes da avaliação?', false, false, false, false, '2024-04-18 10:15:00', 2, 13, 22),
+ (15, true, 'Sim, o professor combinou de tirar dúvidas na quarta-feira.', false, false, false, false, '2024-04-18 10:20:00', 2, 14, 23),
+ (16, true, 'Colegas docentes, reunião geral agendada para sexta-feira, 14h.', false, false, false, true, '2024-02-16 14:00:00', NULL, NULL, 1),
+ (17, true, 'Presença confirmada. Levarei as pautas do planejamento anual.', false, false, false, true, '2024-02-16 14:20:00', NULL, 16, 3),
+ (18, true, 'Iniciando o 9º ano! Preparados para a reta final do fundamental?', false, false, false, false, '2025-02-18 08:00:00', 4, NULL, 11),
+ (19, true, 'Alguém já sabe qual será o tema da primeira redação?', false, false, false, false, '2025-02-25 09:00:00', 4, NULL, 12),
+ (20, true, 'Ouvi dizer que será sobre Convivência e Cidadania na Escola.', false, false, false, false, '2025-02-25 09:12:00', 4, 19, 14),
+ (21, true, 'Pessoal do 1º Médio, entrega do trabalho de trigonometria até dia 25.', false, false, false, false, '2025-04-15 11:00:00', 5, NULL, 21),
+ (22, true, 'Obrigada pelo aviso! Nosso grupo vai adiantar a pesquisa.', false, false, false, false, '2025-04-15 11:05:00', 5, 21, 22),
+ (23, true, 'Lembrete aos professores: fechamento das médias do 2º trimestre até o dia 28/08/2025.', false, false, false, true, '2025-08-20 15:00:00', NULL, NULL, 1),
  (24, true, 'Notas de Língua Portuguesa já devidamente consolidadas no sistema.', false, false, false, true, '2025-08-22 16:30:00', NULL, 23, 3),
- (25, true, 'Boas-vindas ao 1º ano do Ensino Médio de 2024! Nosso cronograma está disponível.', false, false, false, false, '2024-02-19 08:30:00', 3, NULL, 4),
- (26, true, 'Professor, os livros didáticos serão entregues nesta semana?', false, false, false, false, '2024-02-19 08:45:00', 3, 25, 31),
- (27, true, 'Turma do 2º Médio de 2025: projeto interdisciplinar com entrega no final do trimestre.', false, false, false, false, '2025-03-12 10:00:00', 6, NULL, 5),
- (28, true, 'Combinado, professora Patrícia! Já formamos os grupos de pesquisa.', false, false, false, false, '2025-03-12 10:20:00', 6, 27, 31),
- (29, false, 'Bom dia a todos da 1ª série do Ensino Médio Integral! Sejam bem-vindos.', false, false, false, false, '2026-09-28 07:40:00', 14, NULL, 3),
- (30, false, 'Bom dia, professora Mariana! Ansioso pelos projetos do contraturno.', false, false, false, false, '2026-09-28 07:48:00', 14, 29, 41),
- (31, false, 'Excelente! Teremos oficinas práticas de redação e clube de leitura.', false, false, false, false, '2026-09-28 07:55:00', 14, 30, 3),
- (32, false, 'Turma do 2º Médio Integral, lembrete: entrega do relatório de Ciências na sexta.', false, false, false, false, '2026-10-01 13:00:00', 15, NULL, 4),
- (33, false, 'Professor Carlos, o relatório pode incluir gráficos comparativos?', false, false, false, false, '2026-10-01 13:15:00', 15, 32, 51),
- (34, false, 'Com certeza, Miguel! Gráficos enriquecerão muito a análise.', false, false, false, false, '2026-10-01 13:20:00', 15, 33, 4),
- (35, true,  'Boas-vindas à primeira turma de Ensino Integral de 2024!', false, false, false, false, '2024-02-15 08:00:00', 10, NULL, 3),
- (36, true,  'Iniciando o ano letivo de 2025 para a turma de Ensino Médio Integral.', false, false, false, false, '2025-02-18 08:00:00', 13, NULL, 4),
- (37, false, 'Boa noite a todos da 3ª série do Ensino Médio Noturno! Sejam bem-vindos.', false, false, false, false, '2026-09-28 18:50:00', 18, NULL, 3),
- (38, false, 'Boa noite, professora Mariana! Ansiosos para a reta final do ano.', false, false, false, false, '2026-09-28 18:55:00', 18, 37, 61),
- (39, true,  'Boas-vindas ao 1º ano do Ensino Médio Noturno de 2024!', false, false, false, false, '2024-02-15 19:00:00', 16, NULL, 3),
- (40, true,  'Início do ano letivo de 2025 para a turma do 2º Médio Noturno.', false, false, false, false, '2025-02-18 19:00:00', 17, NULL, 4);
+ (25, true, 'Boas-vindas ao 1º ano do Ensino Médio de 2024! Novo ciclo começando.', false, false, false, false, '2024-02-19 08:30:00', 3, NULL, 31),
+ (26, true, 'Alguém já foi retirar os livros didáticos na biblioteca?', false, false, false, false, '2024-02-19 08:45:00', 3, 25, 32),
+ (27, true, 'Turma do 2º Médio de 2025: projeto interdisciplinar com entrega no final do trimestre.', false, false, false, false, '2025-03-12 10:00:00', 6, NULL, 31),
+ (28, true, 'Combinado! Já formamos os grupos de pesquisa para o projeto.', false, false, false, false, '2025-03-12 10:20:00', 6, 27, 32),
+ (29, false, 'Bom dia a todos do 1º Médio Integral! Curtiram as opções de contraturno?', false, false, false, false, '2026-09-28 07:40:00', 14, NULL, 41),
+ (30, false, 'Bom dia! Ansiosa pelos projetos práticos de laboratório.', false, false, false, false, '2026-09-28 07:48:00', 14, 29, 42),
+ (31, false, 'Teremos oficinas de redação e clube de leitura também!', false, false, false, false, '2026-09-28 07:55:00', 14, 30, 43),
+ (32, false, 'Turma do 2º Médio Integral, lembrete: entrega do relatório de Ciências na sexta.', false, false, false, false, '2026-10-01 13:00:00', 15, NULL, 51),
+ (33, false, 'Nosso relatório já inclui os gráficos comparativos das amostras!', false, false, false, false, '2026-10-01 13:15:00', 15, 32, 52),
+ (34, false, 'Excelente, Sophia! Os gráficos vão enriquecer a análise.', false, false, false, false, '2026-10-01 13:20:00', 15, 33, 51),
+ (35, true,  'Boas-vindas à primeira turma de Ensino Integral de 2024!', false, false, false, false, '2024-02-15 08:00:00', 10, NULL, 41),
+ (36, true,  'Iniciando o ano letivo de 2025 para a turma de Ensino Médio Integral.', false, false, false, false, '2025-02-18 08:00:00', 13, NULL, 51),
+ (37, false, 'Boa noite a todos da 3ª série do Ensino Médio Noturno! Reta final.', false, false, false, false, '2026-09-28 18:50:00', 18, NULL, 61),
+ (38, false, 'Boa noite! Foco total nos estudos para os vestibulares.', false, false, false, false, '2026-09-28 18:55:00', 18, 37, 62),
+ (39, true,  'Boas-vindas ao 1º ano do Ensino Médio Noturno de 2024!', false, false, false, false, '2024-02-15 19:00:00', 16, NULL, 61),
+ (40, true,  'Início do ano letivo de 2025 para a turma do 2º Médio Noturno.', false, false, false, false, '2025-02-18 19:00:00', 17, NULL, 61);
 
 -- Mensagem ocultada por um usuário apenas para si mesmo (aluno 15 ocultou a mensagem 4).
 INSERT INTO chat_hidden_messages (id, hidden_at, message_id, user_id) VALUES
@@ -957,7 +996,7 @@ INSERT INTO chat_hidden_messages (id, hidden_at, message_id, user_id) VALUES
 -- (usado para calcular as mensagens não lidas).
 INSERT INTO chat_read_receipts (id, is_global_teacher_chat, last_read_at, last_read_message_id, classroom_id, user_id) VALUES
  (1, false, '2026-09-28 08:10:00', 3, 7, 11),
- (2, false, '2026-10-01 13:30:00', 6, 8, 4),
+ (2, false, '2026-10-01 13:30:00', 6, 8, 21),
  (3, true,  '2026-10-02 16:25:00', 8, NULL, 3),
  (4, true,  '2026-10-02 16:25:00', 8, NULL, 1),
  (5, false, '2026-09-28 08:00:00', 31, 14, 41),

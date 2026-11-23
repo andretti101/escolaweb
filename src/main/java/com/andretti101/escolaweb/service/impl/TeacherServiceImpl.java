@@ -48,6 +48,7 @@ public class TeacherServiceImpl implements TeacherService {
             throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
         teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
+        teacher.setRole(com.andretti101.escolaweb.model.enums.UserRole.TEACHER);
         teacher.setActive(true);
         teacher.setSubjects(resolveSubjects(teacher.getSubjects()));
         return teacherRepository.save(teacher);

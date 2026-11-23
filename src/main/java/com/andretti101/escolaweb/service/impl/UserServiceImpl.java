@@ -152,9 +152,17 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<UserSummaryDTO> findSummaries(List<UserRole> roles, Boolean active, String search, String situation, Pageable pageable) {
+        return findSummaries(roles, active, search, situation, null, null, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<UserSummaryDTO> findSummaries(List<UserRole> roles, Boolean active, String search, String situation, String className, String subject, Pageable pageable) {
         boolean hasSearch = search != null && !search.isBlank();
         boolean hasSituation = situation != null && !situation.isBlank() && !"ALL".equalsIgnoreCase(situation);
-        if (!hasSearch && !hasSituation) {
+        boolean hasClassName = className != null && !className.isBlank() && !"ALL".equalsIgnoreCase(className);
+        boolean hasSubject = subject != null && !subject.isBlank() && !"ALL".equalsIgnoreCase(subject);
+        if (!hasSearch && !hasSituation && !hasClassName && !hasSubject) {
             return findSummaries(roles, active, pageable);
         }
 
@@ -172,6 +180,8 @@ public class UserServiceImpl implements UserService {
         List<UserSummaryDTO> allSummaries = candidateUsers.isEmpty() ? List.of() : mapUsersToSummaries(candidateUsers);
         String q = hasSearch ? search.trim().toLowerCase(Locale.ROOT) : "";
         String sit = hasSituation ? situation.trim().toUpperCase(Locale.ROOT) : "";
+        String clsFilter = hasClassName ? className.trim() : "";
+        String subFilter = hasSubject ? subject.trim() : "";
 
         List<UserSummaryDTO> filtered = allSummaries.stream()
                 .filter(u -> {
@@ -188,6 +198,26 @@ public class UserServiceImpl implements UserService {
                             if (u.generalSituation() == null || !u.generalSituation().name().equalsIgnoreCase(sit)) {
                                 return false;
                             }
+                        }
+                    }
+                    if (hasClassName) {
+                        if (u.role() == UserRole.STUDENT) {
+                            boolean matchByName = u.className() != null && u.className().equalsIgnoreCase(clsFilter);
+                            boolean matchById = u.classroomId() != null && String.valueOf(u.classroomId()).equals(clsFilter);
+                            if (!matchByName && !matchById) return false;
+                        } else if (u.role() == UserRole.TEACHER) {
+                            boolean matchTeacherClass = u.classrooms() != null && u.classrooms().stream().anyMatch(c -> c != null && c.equalsIgnoreCase(clsFilter));
+                            if (!matchTeacherClass) return false;
+                        } else {
+                            return false;
+                        }
+                    }
+                    if (hasSubject) {
+                        if (u.role() == UserRole.TEACHER) {
+                            boolean matchTeacherSub = u.subjects() != null && u.subjects().stream().anyMatch(s -> s != null && s.equalsIgnoreCase(subFilter));
+                            if (!matchTeacherSub) return false;
+                        } else {
+                            return false;
                         }
                     }
                     if (hasSearch) {
@@ -243,7 +273,8 @@ public class UserServiceImpl implements UserService {
         long pending = 0;
         long failed = 0;
 
-        if (totalStudents > 0 && (active == null || Boolean.TRUE.equals(active))) {
+        if (totalStudents > 0) {
+            long enrolledInActiveYear = 0;
             try {
                 AcademicYear activeYear = academicYearRepository.findByActiveTrue().orElse(null);
                 if (activeYear != null) {
@@ -268,16 +299,19 @@ public class UserServiceImpl implements UserService {
                                     && e.getClassRoom().getAcademicYear() != null
                                     && e.getClassRoom().getAcademicYear().getId().equals(activeYear.getId()))
                             .toList();
+                    enrolledInActiveYear = currentYearEnrollments.size();
 
                     if (!currentYearEnrollments.isEmpty()) {
                         List<ReportCardDTO> reports = reportCardService.generateReportCardsBatch(currentYearEnrollments, activeYear);
-                        for (ReportCardDTO r : reports) {
-                            if (r.generalSituation() == StudentSituation.APPROVED) {
-                                approved++;
-                            } else if (r.generalSituation() == StudentSituation.FAILED) {
-                                failed++;
-                            } else {
-                                pending++;
+                        if (reports != null) {
+                            for (ReportCardDTO r : reports) {
+                                if (r.generalSituation() == StudentSituation.APPROVED) {
+                                    approved++;
+                                } else if (r.generalSituation() == StudentSituation.FAILED) {
+                                    failed++;
+                                } else {
+                                    pending++;
+                                }
                             }
                         }
                     }
@@ -285,11 +319,11 @@ public class UserServiceImpl implements UserService {
             } catch (Exception ex) {
                 log.debug("Não foi possível consolidar estatísticas acadêmicas no UserServiceImpl: {}", ex.getMessage());
             }
-        }
 
-        long remaining = totalStudents - (approved + failed + pending);
-        if (remaining > 0) {
-            pending += remaining;
+            long remainingEnrolled = enrolledInActiveYear - (approved + failed + pending);
+            if (remainingEnrolled > 0) {
+                pending += remainingEnrolled;
+            }
         }
 
         return new UserStatsDTO(
@@ -412,7 +446,9 @@ public class UserServiceImpl implements UserService {
                     }
                     generalSituation = studentSituationMap.get(student.getId());
                     if (generalSituation == null) {
-                        generalSituation = enr.getGeneralSituation();
+                        generalSituation = enr.getGeneralSituation() != null
+                                ? enr.getGeneralSituation()
+                                : StudentSituation.PENDING;
                     }
                 }
             } else if (u instanceof Teacher teacher) {
@@ -432,11 +468,19 @@ public class UserServiceImpl implements UserService {
                 }
             }
 
+            UserRole resolvedRole = u.getRole();
+            if (resolvedRole == null) {
+                if (u instanceof Student) resolvedRole = UserRole.STUDENT;
+                else if (u instanceof Teacher) resolvedRole = UserRole.TEACHER;
+                else if (u instanceof com.andretti101.escolaweb.model.entity.Secretary) resolvedRole = UserRole.SECRETARY;
+                else if (u instanceof com.andretti101.escolaweb.model.entity.Principal) resolvedRole = UserRole.PRINCIPAL;
+            }
+
             return new UserSummaryDTO(
                     u.getId(),
                     u.getName(),
                     u.getEmail(),
-                    u.getRole(),
+                    resolvedRole,
                     u.isActive(),
                     u.getCreatedAt(),
                     enrollmentNumber,

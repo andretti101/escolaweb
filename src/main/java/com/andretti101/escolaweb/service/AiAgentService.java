@@ -19,6 +19,9 @@ public class AiAgentService {
     private final TeacherAiTools teacherAiTools;
     private final AdminAiTools adminAiTools;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.ai.google.genai.chat.fallback-model:gemini-2.5-flash}")
+    private String fallbackModel;
+
     private volatile ChatClient cachedChatClient;
     private volatile MessageChatMemoryAdvisor cachedMemoryAdvisor;
 
@@ -153,7 +156,7 @@ public class AiAgentService {
         MessageChatMemoryAdvisor memoryAdvisor = getMemoryAdvisor();
 
         try {
-            // Tentativa principal usando o modelo configurado (gemini-2.0-flash)
+            // Tentativa principal usando o modelo configurado (ex: gemini-3.5-flash-lite)
             return chatClient.prompt()
                     .system(systemPrompt)
                     .advisors(memoryAdvisor)
@@ -172,7 +175,7 @@ public class AiAgentService {
                         .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                         .tools(tools)
                         .user(message)
-                        .options(org.springframework.ai.google.genai.GoogleGenAiChatOptions.builder().model("gemini-2.0-flash-lite").build())
+                        .options(org.springframework.ai.google.genai.GoogleGenAiChatOptions.builder().model(fallbackModel).build())
                         .call()
                         .content();
             } catch (Exception fallbackException) {

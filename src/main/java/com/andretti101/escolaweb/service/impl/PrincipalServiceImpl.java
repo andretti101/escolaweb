@@ -37,6 +37,7 @@ public class PrincipalServiceImpl implements PrincipalService {
             throw new IllegalStateException(messageSource.getMessage("error.email.in.use", null, org.springframework.context.i18n.LocaleContextHolder.getLocale()));
         }
         principal.setPassword(passwordEncoder.encode(principal.getPassword()));
+        principal.setRole(com.andretti101.escolaweb.model.enums.UserRole.PRINCIPAL);
         principal.setActive(true);
         return principalRepository.save(principal);
     }
